@@ -40,6 +40,6 @@ output/*/index.html
 
 # Sphinx
 docs/_build
-REAMDE.html
+README.html
 
 _sandbox

@@ -1,0 +1,19 @@
+# -*- coding: utf-8 -*-
+# vi: set ft=python :
+# konch config
+# http://konch.readthedocs.org/
+import konch
+from webargs import Arg
+from marshmallow import Schema, fields
+
+from restkit import swagger
+
+konch.config({
+    'context': {
+        'sw': swagger,
+        'Arg': Arg,
+        'Schema': Schema,
+        'fields': fields,
+    },
+    'prompt': '>>> ',
+})

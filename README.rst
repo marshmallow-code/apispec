@@ -14,13 +14,6 @@ Features
 - Automatic API documentation. (todo)
 
 
-Requirements
-------------
-
-- Python >= 2.7 or >= 3.3
-- webargs>=0.7.0
-- marshmallow>=1.0-a
-
 License
 -------
 
