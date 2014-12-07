@@ -8,8 +8,8 @@ import warnings
 
 from marshmallow import fields
 
-from restkit.compat import text_type, binary_type, iteritems
-from restkit.exceptions import RestkitError
+from smore.compat import text_type, binary_type, iteritems
+from smore.exceptions import smoreError
 
 SWAGGER_VERSION = '2.0'
 
@@ -210,7 +210,7 @@ def schema2jsonschema(schema_cls):
     :rtype: dict, a JSON Schema Object
     """
     if not hasattr(schema_cls, 'Meta') or not hasattr(schema_cls.Meta, 'title'):
-        raise RestkitError('Must define "title" in Meta options.')
+        raise smoreError('Must define "title" in Meta options.')
     if getattr(schema_cls.Meta, 'fields', None) or getattr(schema_cls.Meta, 'additional', None):
         warnings.warn('Only explicitly-declared fields will be included in the Schema Object. '
                 'Fields defined in Meta.fields or Meta.addtional are excluded.')

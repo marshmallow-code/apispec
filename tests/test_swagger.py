@@ -4,10 +4,10 @@ from pytest import mark, raises
 from webargs import Arg
 from marshmallow import fields, Schema
 
-from restkit import swagger
-from restkit.exceptions import RestkitError
-from restkit.swagger import arg2parameter, arg2property
-from restkit.compat import binary_type
+from smore import swagger
+from smore.exceptions import SmoreError
+from smore.swagger import arg2parameter, arg2property
+from smore.compat import binary_type
 
 
 class TestArgToSwagger:
@@ -252,7 +252,7 @@ class TestMarshmallowSchemaToModelDefinition:
         class UserSchema():
             _id = fields.Int()
 
-        with raises(RestkitError) as excinfo:
+        with raises(SmoreError) as excinfo:
             swagger.schema2jsonschema(UserSchema)
         assert 'Must define "title" in Meta options' in str(excinfo)
 

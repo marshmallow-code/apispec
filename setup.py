@@ -44,7 +44,7 @@ def find_version(fname):
         raise RuntimeError('Cannot find version information')
     return version
 
-__version__ = find_version("restkit/__init__.py")
+__version__ = find_version("smore/__init__.py")
 
 
 def read(fname):
@@ -53,21 +53,21 @@ def read(fname):
     return content
 
 setup(
-    name='restkit',
+    name='smore',
     version=__version__,
     description='A collection of utilities for designing and documenting RESTful APIs with webargs and marshmallow.',
     long_description=(read("README.rst") + '\n\n' +
                         read("HISTORY.rst")),
     author='Steven Loria',
     author_email='sloria1@gmail.com',
-    url='https://github.com/sloria/restkit',
+    url='https://github.com/sloria/smore',
     packages=find_packages(exclude=("test*", )),
-    package_dir={'restkit': 'restkit'},
+    package_dir={'smore': 'smore'},
     include_package_data=True,
     install_requires=REQUIRES,
     license=read("LICENSE"),
     zip_safe=False,
-    keywords='restkit',
+    keywords='smore marshmallow webargs',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',

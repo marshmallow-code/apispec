@@ -22,7 +22,7 @@ def watch():
 def clean():
     run("rm -rf build")
     run("rm -rf dist")
-    run("rm -rf restkit.egg-info")
+    run("rm -rf smore.egg-info")
     clean_docs()
     print("Cleaned up.")
 
