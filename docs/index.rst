@@ -40,7 +40,7 @@ API Guide
 restkit.swagger
 ---------------
 
-.. automodule:: restkit.swagger
+.. automodule:: smore.swagger
     :inherited-members:
 
 
