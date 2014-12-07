@@ -6,7 +6,7 @@ import konch
 from webargs import Arg
 from marshmallow import Schema, fields
 
-from restkit import swagger
+from smore import swagger
 
 konch.config({
     'context': {
