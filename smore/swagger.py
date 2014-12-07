@@ -9,14 +9,14 @@ import warnings
 from marshmallow import fields
 
 from smore.compat import text_type, binary_type, iteritems
-from smore.exceptions import smoreError
+from smore.exceptions import SmoreError
 
 SWAGGER_VERSION = '2.0'
 
 ##### webargs #####
 
 # Python type => (JSON Schema type, format)
-TYPE_MAP = {
+__type_map__ = {
     text_type: ('string', None),
     binary_type: ('string', 'byte'),
     int: ('integer', 'int32'),
@@ -27,7 +27,7 @@ TYPE_MAP = {
     set: ('array', None),
 }
 
-TARGET_MAP = {
+__target_map__ = {
     'querystring': 'query',
     'json': 'body',
     'headers': 'header',
@@ -37,7 +37,7 @@ TARGET_MAP = {
 
 
 def _get_json_type(pytype):
-    json_type, fmt = TYPE_MAP.get(pytype, ('string', None))
+    json_type, fmt = __type_map__.get(pytype, ('string', None))
     return json_type, fmt
 
 def arg2parameter(arg, name=None, default_in='body'):
@@ -48,7 +48,7 @@ def arg2parameter(arg, name=None, default_in='body'):
     :raise: TranslationError if arg object cannot be translated to a Parameter Object schema.
     :rtype: dict, a Parameter Object
     """
-    swagger_target = TARGET_MAP.get(arg.target, default_in)
+    swagger_target = __target_map__.get(arg.target, default_in)
     ret = {
         'in': swagger_target,
         'required': arg.required,
@@ -210,7 +210,7 @@ def schema2jsonschema(schema_cls):
     :rtype: dict, a JSON Schema Object
     """
     if not hasattr(schema_cls, 'Meta') or not hasattr(schema_cls.Meta, 'title'):
-        raise smoreError('Must define "title" in Meta options.')
+        raise SmoreError('Must define "title" in Meta options.')
     if getattr(schema_cls.Meta, 'fields', None) or getattr(schema_cls.Meta, 'additional', None):
         warnings.warn('Only explicitly-declared fields will be included in the Schema Object. '
                 'Fields defined in Meta.fields or Meta.addtional are excluded.')
