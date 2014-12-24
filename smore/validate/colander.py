@@ -6,7 +6,7 @@ from .core import ValidationError, BaseConverter
 from colander import Invalid
 
 class from_colander(BaseConverter):
-    """Convert a colander validator from colander to a marshmallow validator.
+    """Convert a colander validator to a marshmallow validator.
 
     Example::
 
