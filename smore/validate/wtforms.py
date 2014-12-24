@@ -50,7 +50,7 @@ class from_wtforms(BaseConverter):
             try:
                 wtf_validator(dummy_form, field)
             except WTFValidationError as err:
-                raise ValidationError(str(err))
+                raise ValidationError(err.args[0])
         return marshmallow_validator
 
 def make_converter(locales):

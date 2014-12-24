@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import pytest
 
 from marshmallow import fields
@@ -87,8 +89,9 @@ class TestWTFormsValidation:
         )
         with pytest.raises(UnmarshallingError) as excinfo:
             field.deserialize('toolong')
-
-        assert 'Feld kann nicht l\xe4nger als 1 Zeichen sein.' in str(excinfo)
+        # lol
+        validation_msg = excinfo.value.underlying_exception.args[0]
+        assert 'Feld kann nicht l\xe4nger als 1 Zeichen sein.' in validation_msg
 
     def test_make_converter(self):
         f = make_converter(['de_DE', 'de'])
@@ -102,8 +105,8 @@ class TestWTFormsValidation:
         )
         with pytest.raises(UnmarshallingError) as excinfo:
             field.deserialize('toolong')
-
-        assert 'Feld kann nicht l\xe4nger als 1 Zeichen sein.' in str(excinfo)
+        validation_msg = excinfo.value.underlying_exception.args[0]
+        assert 'Feld kann nicht l\xe4nger als 1 Zeichen sein.' in validation_msg
 
 # Colander
 
