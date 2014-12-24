@@ -25,7 +25,7 @@ dummy_form = dict()
 class from_wtforms(BaseConverter):
     """Convert a WTForms validator from `wtforms.validators` to a marshmallow validator.
 
-    Example::
+    Example: ::
 
         from marshmallow import fields
         from smore.validate.wtforms import from_wtforms
