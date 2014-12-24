@@ -38,7 +38,7 @@ class TestValidationError:
 
 # WTForms
 
-from smore.validate.wtforms import from_wtforms
+from smore.validate.wtforms import from_wtforms, make_converter
 from wtforms.validators import AnyOf, NoneOf, Length
 
 class TestWTFormsValidation:
@@ -75,6 +75,35 @@ class TestWTFormsValidation:
         # both errors are returned
         assert "Invalid value, can't be any of: nil, null, NULL." in str(excinfo)
         assert 'Field must be at least 4 characters long' in str(excinfo)
+
+    def test_from_wtforms_with_translation(self):
+        field = fields.Field(
+            validate=from_wtforms(
+                [
+                    Length(max=1)
+                ],
+                locales=['de_DE', 'de']
+            )
+        )
+        with pytest.raises(UnmarshallingError) as excinfo:
+            field.deserialize('toolong')
+
+        assert 'Feld kann nicht l\xe4nger als 1 Zeichen sein.' in str(excinfo)
+
+    def test_make_converter(self):
+        f = make_converter(['de_DE', 'de'])
+        field = fields.Field(
+            validate=f(
+                [
+                    Length(max=1)
+                ],
+                locales=['de_DE', 'de']
+            )
+        )
+        with pytest.raises(UnmarshallingError) as excinfo:
+            field.deserialize('toolong')
+
+        assert 'Feld kann nicht l\xe4nger als 1 Zeichen sein.' in str(excinfo)
 
 # Colander
 
