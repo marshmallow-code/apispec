@@ -14,8 +14,9 @@ if HAS_WEBARGS:
         webargs' ``ValidationError`` (if webargs is installed) and marshmallow's
         ``ValidationError`` so that the same validation functions can be used in either library.
         """
-        #TODO: handle both marshmallow `field` and webargs `status_code` kwargs
-        pass
+        #TODO: handle both marshmallow `field` and webargs `status_code` kwargs?
+        def __init__(self, *args, **kwargs):
+            MarshmallowValidationError.__init__(self, *args, **kwargs)
 else:
     class ValidationError(MarshmallowValidationError):
         """Raised when a validation fails. Inherits from both
@@ -42,6 +43,6 @@ class BaseConverter(object):
             try:
                 validator(val)
             except ValidationError as err:
-                errors.append(str(err))
+                errors.extend(err.messages)
         if errors:
             raise ValidationError(errors)

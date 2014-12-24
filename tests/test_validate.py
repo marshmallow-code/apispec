@@ -42,7 +42,7 @@ class TestWTFormsValidation:
             field.deserialize('green')
         assert 'Invalid value' in str(excinfo)
 
-    def test_from_wtforms_multi():
+    def test_from_wtforms_multi(self):
         field = fields.Field(
             validate=from_wtforms(
                 Length(min=4),

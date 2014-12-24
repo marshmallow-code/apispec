@@ -56,4 +56,3 @@ class from_wtforms(BaseConverter):
             except WTFValidationError as err:
                 raise ValidationError(str(err))
         return marshmallow_validator
-
