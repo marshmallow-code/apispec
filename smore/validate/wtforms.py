@@ -25,7 +25,7 @@ dummy_form = dict()
 class from_wtforms(BaseConverter):
     """Convert a WTForms validator from `wtforms.validators` to a marshmallow validator.
 
-    Example::
+    Example: ::
 
         from marshmallow import fields
         from smore.validate.wtforms import from_wtforms
@@ -46,7 +46,6 @@ class from_wtforms(BaseConverter):
     def make_validator(self, wtf_validator):
         def marshmallow_validator(value):
             field = DummyField(value, _translations=self._translations)
-            field.data = value
             try:
                 wtf_validator(dummy_form, field)
             except WTFValidationError as err:
