@@ -8,11 +8,12 @@ and marshmallow :class:`Schemas <marshmallow.Schema>`.
 
 Swagger 2.0 spec: https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md
 """
+from __future__ import absolute_import, unicode_literals
 import warnings
 
 from marshmallow import fields
+from marshmallow.compat import text_type, binary_type, iteritems
 
-from smore.compat import text_type, binary_type, iteritems
 from smore.exceptions import SmoreError
 
 SWAGGER_VERSION = '2.0'
@@ -228,4 +229,3 @@ def args2parameters(args, default_in='body'):
         arg2parameter(arg, name=arg.source or name, default_in=default_in)
         for name, arg in iteritems(args)
     ]
-

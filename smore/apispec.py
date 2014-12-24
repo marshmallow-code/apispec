@@ -13,6 +13,7 @@ class APISpec(object):
         def decorator(func):
             self.registry[func.__name__] = webargs
             self.metadata.update(self.registry)
+
             @wraps(func)
             def wrapper(func, *args, **kwargs):
                 return func(*args, **kwargs)

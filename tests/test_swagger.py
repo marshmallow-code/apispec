@@ -3,11 +3,11 @@
 from pytest import mark, raises
 from webargs import Arg
 from marshmallow import fields, Schema
+from marshmallow.compat import binary_type
 
 from smore import swagger
 from smore.exceptions import SmoreError
 from smore.swagger import arg2parameter, arg2property
-from smore.compat import binary_type
 
 
 class TestArgToSwagger:
