@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
-import sys
+import datetime as dt
 import os
+import sys
 
-from marshmallow.compat import OrderedDict
 sys.path.insert(0, os.path.abspath('..'))
 import smore
 
@@ -24,8 +25,8 @@ intersphinx_mapping = {
 
 source_suffix = '.rst'
 master_doc = 'index'
-project = u'smore'
-copyright = u'Steven Loria 2014'
+project = 'smore'
+copyright = 'Steven Loria {0:%Y}'.format(dt.datetime.utcnow())
 
 version = release = smore.__version__
 

@@ -1,4 +1,4 @@
-Contributing guidelines
+Contributing Guidelines
 =======================
 
 In General
@@ -104,3 +104,8 @@ To build the docs: ::
     $ invoke docs -b
 
 The ``-b`` (for "browse") automatically opens up the docs in your browser after building.
+
+.. _Sphinx: http://sphinx.pocoo.org/
+.. _`reStructured Text`: http://docutils.sourceforge.net/rst.html
+
+.. _`smore`: https://github.com/sloria/smore
