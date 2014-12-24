@@ -1,6 +1,6 @@
-*******
-restkit
-*******
+*****
+smore
+*****
 
 A collection of utilities for designing and documenting RESTful APIs built with `webargs <http://webargs.readthedocs.org/en/latest/>`_ and `marshmallow <http://marshmallow.readthedocs.org/en/latest/>`_.
 
@@ -21,9 +21,9 @@ Get it now
 ==========
 ::
 
-   pip install -U restkit
+   pip install -U smore
 
-restkit supports Python >= 2.7 or >= 3.3.
+smore supports Python >= 2.7 or >= 3.3.
 
 Dependencies
 -------------
@@ -36,13 +36,24 @@ API Guide
 
 .. module:: restkit
 
-
-restkit.swagger
----------------
+smore.swagger
+-------------
 
 .. automodule:: smore.swagger
     :inherited-members:
 
+
+smore.validate
+--------------
+
+.. automodule:: smore.validate.core
+    :members:
+
+.. automodule:: smore.validate.wtforms
+    :members:
+
+.. automodule:: smore.validate.colander
+    :members:
 
 Project Info
 ============

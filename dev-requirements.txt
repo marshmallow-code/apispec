@@ -2,7 +2,10 @@ invoke
 flake8
 
 # soft dependencies
-webargs
+webargs>=0.9.0
+# smore.validate dependencies
+wtforms>=2.0.0
+colander>=1.0
 
 # testing
 pytest

@@ -10,7 +10,7 @@ Features
 --------
 
 - Convert ``webarg.Args`` and ``marshmallow.Schemas`` into `Swagger 2.0 <http://swagger.io>`_ API definitions. (in progress)
-- Use validators from 3rd party libraries (WTForms, colander, etc.) within marshmallow (todo)
+- Use validators from 3rd party libraries (WTForms, colander, etc.) within marshmallow (in progress)
 - Pagination support for marshmallow schemas. (todo)
 - Automatic API documentation. (todo)
 
