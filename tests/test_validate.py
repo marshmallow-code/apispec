@@ -25,6 +25,17 @@ class TestValidationError:
         with pytest.raises(WebargsValidationError):
             a.validated('', '')
 
+    def test_webargs_validation_with_status_code(self):
+
+        def validator(val):
+            raise ValidationError('denied', status_code=401)
+        a = Arg(validate=validator)
+        with pytest.raises(WebargsValidationError) as excinfo:
+            a.validated('', '')
+        exc = excinfo.value
+        assert exc.status_code == 401
+
+
 # WTForms
 
 from smore.validate.wtforms import from_wtforms
