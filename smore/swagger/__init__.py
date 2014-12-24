@@ -25,6 +25,7 @@ FIELD_MAPPING = {
     fields.Number: ('number', None),
     fields.Float: ('number', 'float'),
     fields.Fixed: ('number', None),
+    fields.Decimal: ('number', None),
     fields.String: ('string', None),
     fields.Boolean: ('boolean', None),
     fields.UUID: ('string', 'uuid'),
