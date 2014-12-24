@@ -2,6 +2,9 @@
 smore
 *****
 
+.. image:: https://travis-ci.org/sloria/smore.svg?branch=dev
+    :target: https://travis-ci.org/sloria/smore
+
 **EXPERIMENTAL: Nothing here is stable. Right now this is just a playground to try out some ideas.**
 
 A collection of utilities for designing and documenting RESTful APIs built with  `marshmallow <https://marshmallow.readthedocs.org/en/latest/>`_.
