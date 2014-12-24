@@ -10,10 +10,6 @@ else:
 
 if HAS_WEBARGS:
     class ValidationError(WebargsValidationError, MarshmallowValidationError):
-        """Raised when a validation fails. Inherits from both
-        webargs' ``ValidationError`` and marshmallow's ``ValidationError``
-        so that the same validation function can be used in either library.
-        """
         #TODO: handle both marshmallow `field` and webargs `status_code` kwargs
         pass
 else:
@@ -21,6 +17,10 @@ else:
         """Raised when validation fails."""
         pass
 
+ValidationError.__doc__ = """Raised when a validation fails. Inherits from both
+webargs' ``ValidationError`` (if webargs is installed) and marshmallow's
+``ValidationError`` so that the same validation functions can be used in either library.
+"""
 
 class BaseConverter(object):
     """Base converter validator that converts a third-party validators into

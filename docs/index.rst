@@ -2,58 +2,36 @@
 smore
 *****
 
-A collection of utilities for designing and documenting RESTful APIs built with `webargs <http://webargs.readthedocs.org/en/latest/>`_ and `marshmallow <http://marshmallow.readthedocs.org/en/latest/>`_.
+Release v\ |version| (:ref:`Changelog <changelog>`)
 
-Release v\ |version|. (:ref:`Changelog <changelog>`)
+.. warning::
 
-.. contents::
-   :local:
-   :depth: 2
+    This project is not yet released. Follow its progress on `GitHub <https://github.com/sloria/smore>`_.
 
-Features
-========
-
-- Convert ``webarg.Args`` and ``marshmallow.Schemas`` into `Swagger 2.0 <http://swagger.io>`_ API definitions. (in progress)
-- Pagination support for marshmallow serializers. (todo)
-- Automatic API documentation. (todo)
-
-Get it now
-==========
-::
-
-   pip install -U smore
-
-smore supports Python >= 2.7 or >= 3.3.
-
-Dependencies
--------------
-
-- webargs>=0.7.0
-- marshmallow>=1.0-a
-
-API Guide
-=========
-
-.. module:: restkit
-
-smore.swagger
--------------
-
-.. automodule:: smore.swagger
-    :inherited-members:
+A collection of utilities for designing and documenting RESTful APIs built with  `marshmallow <https://marshmallow.readthedocs.org/en/latest/>`_.
 
 
-smore.validate
---------------
+.. TODO: uncomment when this is released
+.. - `smore @ PyPI <http://pypi.python.org/pypi/smore>`_
+- `smore @ GitHub <https://github.com/sloria/smore>`_
+- `Issue Tracker <https://github.com/sloria/smore/issues>`_
 
-.. automodule:: smore.validate.core
-    :members:
+.. TODO: uncomment when this is released
+.. Get it now
+.. ==========
+.. ::
 
-.. automodule:: smore.validate.wtforms
-    :members:
+..    pip install -U smore
 
-.. automodule:: smore.validate.colander
-    :members:
+Modules
+=======
+
+.. toctree::
+    :maxdepth: 2
+
+    modules/swagger
+    modules/validate
+
 
 Project Info
 ============
@@ -63,4 +41,3 @@ Project Info
 
    license
    changelog
-   authors

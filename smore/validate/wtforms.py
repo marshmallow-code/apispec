@@ -37,6 +37,8 @@ class from_wtforms(BaseConverter):
 
     Example::
 
+        from marshmallow import fields
+        from smore.validate.wtforms import from_wtforms
         from wtforms.validators import Length
 
         password = fields.Str(

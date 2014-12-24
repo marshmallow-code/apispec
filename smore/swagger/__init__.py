@@ -4,7 +4,7 @@ and marshmallow :class:`Schemas <marshmallow.Schema>`.
 
 .. note::
 
-    Even though this module supports webargs, webargs is not a hard dependency of smore.
+    Even though this module supports webargs, webargs is an optional dependency.
 
 Swagger 2.0 spec: https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md
 """
