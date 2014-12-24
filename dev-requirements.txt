@@ -1,7 +1,12 @@
-pytest
-pytest-xdist
-tox>=1.5.0
-sphinx
-wheel
 invoke
 flake8
+
+# soft dependencies
+webargs
+
+# testing
+pytest
+tox>=1.5.0
+
+# packaging
+wheel
