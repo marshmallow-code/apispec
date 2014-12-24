@@ -6,8 +6,7 @@ from setuptools.command.test import test as TestCommand
 
 
 REQUIRES = [
-    'webargs>=0.7.0',
-    'marshmallow>=1.0.0-a',
+    'marshmallow>=1.2.0',
 ]
 
 TEST_REQUIRES = [
@@ -55,7 +54,8 @@ def read(fname):
 setup(
     name='smore',
     version=__version__,
-    description='A collection of utilities for designing and documenting RESTful APIs with webargs and marshmallow.',
+    description='A collection of utilities for designing and documenting RESTful APIs '
+                'with marshmallow.',
     long_description=(read("README.rst") + '\n\n' +
                         read("HISTORY.rst")),
     author='Steven Loria',
@@ -67,7 +67,7 @@ setup(
     install_requires=REQUIRES,
     license=read("LICENSE"),
     zip_safe=False,
-    keywords='smore marshmallow webargs',
+    keywords='smore marshmallow webargs rest api',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',

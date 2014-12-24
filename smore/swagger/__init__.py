@@ -2,6 +2,10 @@
 """Utilities for generating Swagger spec entities from webargs :class:`Args <webargs.core.Arg>`
 and marshmallow :class:`Schemas <marshmallow.Schema>`.
 
+.. note::
+
+    Even though this module supports webargs, webargs is not a hard dependency of smore.
+
 Swagger 2.0 spec: https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md
 """
 import warnings
@@ -12,6 +16,110 @@ from smore.compat import text_type, binary_type, iteritems
 from smore.exceptions import SmoreError
 
 SWAGGER_VERSION = '2.0'
+
+##### marshmallow #####
+
+# marshmallow field => (JSON Schema type, format)
+FIELD_MAPPING = {
+    fields.Integer: ('integer', 'int32'),
+    fields.Number: ('number', None),
+    fields.Float: ('number', 'float'),
+    fields.Fixed: ('number', None),
+    fields.String: ('string', None),
+    fields.Boolean: ('boolean', None),
+    fields.UUID: ('string', 'uuid'),
+    fields.DateTime: ('string', 'date-time'),
+    fields.Date: ('string', 'date'),
+    fields.Time: ('string', None),
+    fields.Email: ('string', 'email'),
+    fields.URL: ('string', 'url'),
+    # Assume base Field and Raw are strings
+    fields.Field: ('string', None),
+    fields.Raw: ('string', None),
+    fields.List: ('array', None),
+}
+
+def _get_json_type_for_field(field):
+    json_type, fmt = FIELD_MAPPING.get(type(field), ('string', None))
+    return json_type, fmt
+
+def field2property(field):
+    """Return the JSON Schema property definition given a marshmallow
+    :class:`Field <marshmallow.fields.Field>`.
+
+    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#schemaObject
+
+    :param Field field: A marshmallow field.
+    :rtype: dict, a Property Object
+    """
+    type_, fmt = _get_json_type_for_field(field)
+    ret = {
+        'type': type_,
+        'description': field.metadata.get('description', '')
+    }
+    if fmt:
+        ret['format'] = fmt
+    if field.default:
+        ret['default'] = field.default
+    ret['required'] = field.required
+    ret.update(field.metadata)
+    return ret
+
+def schema2jsonschema(schema_cls):
+    """Return the JSON Schema Object for a given marshmallow
+    :class:`Schema <marshmallow.Schema>`. The Schema must define ``name`` in
+    its ``class Meta`` options.
+
+    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#schemaObject
+
+    Example: ::
+
+        class UserSchema(Schema):
+            _id = fields.Int()
+            email = fields.Email(description='email address of the user')
+            name = fields.Str()
+
+            class Meta:
+                title = 'User'
+                description = 'A registered user'
+
+        schema2jsonschema(UserSchema)
+        # {
+        #     'title': 'User', 'description': 'A registered user',
+        #     'properties': {
+        #         'name': {'required': False,
+        #                 'description': '',
+        #                 'type': 'string'},
+        #         '_id': {'format': 'int32',
+        #                 'required': False,
+        #                 'description': '',
+        #                 'type': 'integer'},
+        #         'email': {'format': 'email',
+        #                 'required': False,
+        #                 'description': 'email address of the user',
+        #                 'type': 'string'}
+        #     }
+        # }
+
+
+
+    :param type schema_cls: A marshmallow :class:`Schema <marshmallow.Schema>`
+    :rtype: dict, a JSON Schema Object
+    """
+    if not hasattr(schema_cls, 'Meta') or not hasattr(schema_cls.Meta, 'title'):
+        raise SmoreError('Must define "title" in Meta options.')
+    if getattr(schema_cls.Meta, 'fields', None) or getattr(schema_cls.Meta, 'additional', None):
+        warnings.warn('Only explicitly-declared fields will be included in the Schema Object. '
+                'Fields defined in Meta.fields or Meta.addtional are excluded.')
+    ret = {
+        'title': schema_cls.Meta.title,
+        'description': getattr(schema_cls.Meta, 'description', ''),
+        'properties': {
+            field_name: field2property(field_obj)
+            for field_name, field_obj in iteritems(schema_cls._declared_fields)
+        }
+    }
+    return ret
 
 ##### webargs #####
 
@@ -120,106 +228,3 @@ def args2parameters(args, default_in='body'):
         for name, arg in iteritems(args)
     ]
 
-##### marshmallow #####
-
-# marshmallow field => (JSON Schema type, format)
-FIELD_MAPPING = {
-    fields.Integer: ('integer', 'int32'),
-    fields.Number: ('number', None),
-    fields.Float: ('number', 'float'),
-    fields.Fixed: ('number', None),
-    fields.String: ('string', None),
-    fields.Boolean: ('boolean', None),
-    fields.UUID: ('string', 'uuid'),
-    fields.DateTime: ('string', 'date-time'),
-    fields.Date: ('string', 'date'),
-    fields.Time: ('string', None),
-    fields.Email: ('string', 'email'),
-    fields.URL: ('string', 'url'),
-    # Assume base Field and Raw are strings
-    fields.Field: ('string', None),
-    fields.Raw: ('string', None),
-    fields.List: ('array', None),
-}
-
-def _get_json_type_for_field(field):
-    json_type, fmt = FIELD_MAPPING.get(type(field), ('string', None))
-    return json_type, fmt
-
-def field2property(field):
-    """Return the JSON Schema property definition given a marshmallow
-    :class:`Field <marshmallow.fields.Field>`.
-
-    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#schemaObject
-
-    :param Field field: A marshmallow field.
-    :rtype: dict, a Property Object
-    """
-    type_, fmt = _get_json_type_for_field(field)
-    ret = {
-        'type': type_,
-        'description': field.metadata.get('description', '')
-    }
-    if fmt:
-        ret['format'] = fmt
-    if field.default:
-        ret['default'] = field.default
-    ret['required'] = field.required
-    ret.update(field.metadata)
-    return ret
-
-def schema2jsonschema(schema_cls):
-    """Return the JSON Schema Object for a given marshmallow
-    :class:`Schema <marshmallow.Schema>`. The Schema must define ``name`` in
-    its ``class Meta`` options.
-
-    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#schemaObject
-
-    Example: ::
-
-        class UserSchema(Schema):
-            _id = fields.Int()
-            email = fields.Email(description='email address of the user')
-            name = fields.Str()
-
-            class Meta:
-                title = 'User'
-                description = 'A registered user'
-
-        schema2jsonschema(UserSchema)
-        # {
-        #     'title': 'User', 'description': 'A registered user',
-        #     'properties': {
-        #         'name': {'required': False,
-        #                 'description': '',
-        #                 'type': 'string'},
-        #         '_id': {'format': 'int32',
-        #                 'required': False,
-        #                 'description': '',
-        #                 'type': 'integer'},
-        #         'email': {'format': 'email',
-        #                 'required': False,
-        #                 'description': 'email address of the user',
-        #                 'type': 'string'}
-        #     }
-        # }
-
-
-
-    :param type schema_cls: A marshmallow :class:`Schema <marshmallow.Schema>`
-    :rtype: dict, a JSON Schema Object
-    """
-    if not hasattr(schema_cls, 'Meta') or not hasattr(schema_cls.Meta, 'title'):
-        raise SmoreError('Must define "title" in Meta options.')
-    if getattr(schema_cls.Meta, 'fields', None) or getattr(schema_cls.Meta, 'additional', None):
-        warnings.warn('Only explicitly-declared fields will be included in the Schema Object. '
-                'Fields defined in Meta.fields or Meta.addtional are excluded.')
-    ret = {
-        'title': schema_cls.Meta.title,
-        'description': getattr(schema_cls.Meta, 'description', ''),
-        'properties': {
-            field_name: field2property(field_obj)
-            for field_name, field_obj in iteritems(schema_cls._declared_fields)
-        }
-    }
-    return ret

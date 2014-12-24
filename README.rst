@@ -2,7 +2,7 @@
 smore
 *****
 
-**EXPERIMENTAL: Nothing here is stable. Right now this is just a sandbox to play with some ideas.**
+**EXPERIMENTAL: Nothing here is stable. Right now this is just a playground to try out some ideas.**
 
 A collection of utilities for designing and documenting RESTful APIs.
 
