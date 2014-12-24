@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
-from functools import partial
+import functools
 
+from wtforms import i18n
 from wtforms.validators import ValidationError as WTFValidationError
-from wtforms.i18n import get_translations
 
 from .core import BaseConverter, ValidationError
 
@@ -41,7 +41,7 @@ class from_wtforms(BaseConverter):
     """
     def __init__(self, validators, locales=None):
         BaseConverter.__init__(self, validators)
-        self._translations = get_translations(locales)
+        self._translations = i18n.get_translations(locales)
 
     def make_validator(self, wtf_validator):
         def marshmallow_validator(value):
@@ -53,5 +53,20 @@ class from_wtforms(BaseConverter):
                 raise ValidationError(err.args[0])
         return marshmallow_validator
 
-def make_converter(locales):
-    return partial(from_wtforms, locales=locales)
+def make_converter(locales=None):
+    """Return a WTForms validator converter that uses the
+    given locales.
+
+    Example: ::
+
+        from marshmallow import fields
+        from smore.validate.wtforms import make_converter
+        from wtforms.validators import Length
+
+        from_wtf = make_converter(['de_DE', 'de'])
+
+        field = fields.Str(from_wtf([Length(max=3)]))
+
+    :param list locales: List of locales for error messages.
+    """
+    return functools.partial(from_wtforms, locales=locales)

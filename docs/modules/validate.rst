@@ -3,8 +3,15 @@
 
 .. autoexception:: smore.validate.ValidationError
 
+
+WTForms support
+---------------
+
 .. automodule:: smore.validate.wtforms
     :members:
+
+colander support
+----------------
 
 .. automodule:: smore.validate.colander
     :members:
