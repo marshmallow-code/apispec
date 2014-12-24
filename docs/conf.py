@@ -3,7 +3,6 @@
 import sys
 import os
 
-import alabaster
 from marshmallow.compat import OrderedDict
 sys.path.insert(0, os.path.abspath('..'))
 import smore
@@ -12,7 +11,6 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
-    'alabaster',
 ]
 
 primary_domain = 'py'
