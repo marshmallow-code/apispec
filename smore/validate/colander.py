@@ -15,10 +15,10 @@ class from_colander(BaseConverter):
         from colander import Length
 
         password = fields.Str(
-            validate=from_colander(Length(min=8, max=100))
+            validate=from_colander([Length(min=8, max=100)])
         )
 
-    :param validators: Colander validators as positional arguments.
+    :param list validators: Colander validators.
     """
 
     def make_validator(self, colander_validator):

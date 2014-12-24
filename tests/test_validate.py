@@ -45,7 +45,7 @@ class TestWTFormsValidation:
 
     def test_from_wtforms(self):
         field = fields.Field(
-            validate=from_wtforms(AnyOf(['red', 'blue']))
+            validate=from_wtforms([AnyOf(['red', 'blue'])])
         )
 
         assert field.deserialize('red') == 'red'
@@ -56,8 +56,10 @@ class TestWTFormsValidation:
     def test_from_wtforms_multi(self):
         field = fields.Field(
             validate=from_wtforms(
-                Length(min=4),
-                NoneOf(['nil', 'null', 'NULL'])
+                [
+                    Length(min=4),
+                    NoneOf(['nil', 'null', 'NULL'])
+                ]
             )
         )
         assert field.deserialize('thisisfine') == 'thisisfine'
@@ -82,7 +84,7 @@ from colander import ContainsOnly
 class TestColanderValidation:
     def test_from_colander(self):
         field = fields.Field(
-            validate=from_colander(ContainsOnly([1]))
+            validate=from_colander([ContainsOnly([1])])
         )
         assert field.deserialize([1]) == [1]
         with pytest.raises(UnmarshallingError) as excinfo:

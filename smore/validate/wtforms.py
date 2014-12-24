@@ -44,10 +44,10 @@ class from_wtforms(BaseConverter):
         from wtforms.validators import Length
 
         password = fields.Str(
-            validate=from_wtforms(Length(min=8, max=100))
+            validate=from_wtforms([Length(min=8, max=100)])
         )
 
-    :param validators: WTForms validators as positional arguments.
+    :param list validators: WTForms validators.
     """
 
     def make_validator(self, wtf_validator):

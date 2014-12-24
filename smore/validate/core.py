@@ -31,7 +31,7 @@ class BaseConverter(object):
     marshmallow validators.
     """
 
-    def __init__(self, *validators):
+    def __init__(self, validators):
         self.validators = validators
 
     def make_validator(self, validator):
