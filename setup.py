@@ -1,36 +1,17 @@
 # -*- coding: utf-8 -*-
 import re
-import sys
 from setuptools import setup, find_packages
-from setuptools.command.test import test as TestCommand
 
 
 REQUIRES = [
     'marshmallow>=1.2.0',
 ]
 
-TEST_REQUIRES = [
-    'pytest'
-]
-
-class PyTest(TestCommand):
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = [
-            '--verbose'
-        ]
-        self.test_suite = True
-
-    def run_tests(self):
-        import pytest
-        errcode = pytest.main(self.test_args)
-        sys.exit(errcode)
-
 
 def find_version(fname):
-    '''Attempts to find the version number in the file names fname.
+    """Attempts to find the version number in the file names fname.
     Raises RuntimeError if not found.
-    '''
+    """
     version = ''
     with open(fname, 'r') as fp:
         reg = re.compile(r'__version__ = [\'"]([^\'"]*)[\'"]')
@@ -55,9 +36,8 @@ setup(
     name='smore',
     version=__version__,
     description='A collection of utilities for designing and documenting RESTful APIs '
-                'with marshmallow.',
-    long_description=(read("README.rst") + '\n\n' +
-                        read("HISTORY.rst")),
+                'built with marshmallow.',
+    long_description=read("README.rst"),
     author='Steven Loria',
     author_email='sloria1@gmail.com',
     url='https://github.com/sloria/smore',
@@ -80,6 +60,4 @@ setup(
         'Programming Language :: Python :: 3.4',
     ],
     test_suite='tests',
-    tests_require=TEST_REQUIRES,
-    cmdclass={'test': PyTest}
 )
