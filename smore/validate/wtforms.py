@@ -46,7 +46,6 @@ class from_wtforms(BaseConverter):
     def make_validator(self, wtf_validator):
         def marshmallow_validator(value):
             field = DummyField(value, _translations=self._translations)
-            field.data = value
             try:
                 wtf_validator(dummy_form, field)
             except WTFValidationError as err:
