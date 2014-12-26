@@ -5,9 +5,8 @@ from .exceptions import PluginError
 class APISpec(object):
 
     def __init__(self, *args, **kwargs):
-        self.registry = {}
         self._definitions = {}
-        self._extensions = {}
+        self._plugins = {}
 
     def to_dict(self):
         return {
@@ -31,7 +30,7 @@ class APISpec(object):
         :param str name: Import path to the plugin.
         :raise: PluginError if the given plugin is invalid.
         """
-        if name in self._extensions:
+        if name in self._plugins:
             return
         try:
             mod = __import__(
@@ -41,9 +40,9 @@ class APISpec(object):
             raise PluginError(
                 'Could not import plugin "{0}"'.format(name)
             )
-        try:
-            mod.setup(self)
-        except AttributeError:
+        if not hasattr(mod, 'setup'):
             raise PluginError('Plugin "{0}" has no setup() function.')
-        self._extensions[name] = mod
+        else:
+            mod.setup(self)
+        self._plugins[name] = mod
         return None

@@ -50,7 +50,7 @@ class TestExtensions:
     @mock.patch('tests.plugins.dummy_plugin.setup')
     def test_setup_plugin(self, mock_setup, spec):
         spec.setup_plugin('tests.plugins.dummy_plugin')
-        assert 'tests.plugins.dummy_plugin' in spec._extensions
+        assert 'tests.plugins.dummy_plugin' in spec._plugins
         mock_setup.assert_called_once
         spec.setup_plugin('tests.plugins.dummy_plugin')
         assert mock_setup.call_count == 1
