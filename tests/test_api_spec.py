@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 import pytest
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from smore.apispec import APISpec
+from smore.apispec.exceptions import PluginError
 
 
 @pytest.fixture()
@@ -38,3 +43,18 @@ class TestDefinitions:
         )
         defs_json = spec.to_dict()['definitions']
         assert defs_json['Pet']['enum'] == enum
+
+
+class TestExtensions:
+
+    @mock.patch('tests.plugins.dummy_plugin.setup')
+    def test_setup_plugin(self, mock_setup, spec):
+        spec.setup_plugin('tests.plugins.dummy_plugin')
+        assert 'tests.plugins.dummy_plugin' in spec._extensions
+        mock_setup.assert_called_once
+        spec.setup_plugin('tests.plugins.dummy_plugin')
+        assert mock_setup.call_count == 1
+
+    def test_setup_plugin_doesnt_exist(self, spec):
+        with pytest.raises(PluginError):
+            spec.setup_plugin('plugin.doesnt.exist')
