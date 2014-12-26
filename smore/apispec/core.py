@@ -1,21 +1,19 @@
-from functools import wraps
+# -*- coding: utf-8 -*-
 
 class APISpec(object):
 
     def __init__(self, *args, **kwargs):
-        self.metadata = kwargs
         self.registry = {}
+        self._definitions = {}
 
     def to_dict(self):
-        return self.metadata
+        return {
+            'definitions': self._definitions,
+        }
 
-    def annotate(self, webargs=None):
-        def decorator(func):
-            self.registry[func.__name__] = webargs
-            self.metadata.update(self.registry)
-
-            @wraps(func)
-            def wrapper(func, *args, **kwargs):
-                return func(*args, **kwargs)
-            return wrapper
-        return decorator
+    def definition(self, name, properties=None, **kwargs):
+        ret = {}
+        if properties:
+            ret['properties'] = properties
+        ret.update(kwargs)
+        self._definitions[name] = ret
