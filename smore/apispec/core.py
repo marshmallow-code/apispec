@@ -7,6 +7,7 @@ class APISpec(object):
     def __init__(self, *args, **kwargs):
         self._definitions = {}
         self._plugins = {}
+        self._definition_helpers = []
 
     def to_dict(self):
         return {
@@ -46,3 +47,18 @@ class APISpec(object):
             mod.setup(self)
         self._plugins[name] = mod
         return None
+
+    def register_definition_helper(self, func):
+        """Register a new definition helper. The helper **must** meet the following conditions:
+
+        - Receive the definition `name` as the first argument.
+        - Receive **kwargs.
+        - Return a `dict` representation of the definition's Schema object.
+
+        The helper may define any named arguments after the `name` argument.
+
+        https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#definitionsObject
+
+        :param callable func: The definition helper function.
+        """
+        self._definition_helpers.append(func)

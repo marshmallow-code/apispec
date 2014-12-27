@@ -14,7 +14,7 @@ def spec():
     return APISpec(
         title='Swagger Petstore',
         version='1.0.0',
-        description='This is a sample server Petstore server.  You can find out more '
+        description='This is a sample Petstore server.  You can find out more '
         'about Swagger at <a href=\"http://swagger.wordnik.com\">http://swagger.wordnik.com</a> '
         'or on irc.freenode.net, #swagger.  For this sample, you can use the api '
         'key \"special-key\" to test the authorization filters'
@@ -58,3 +58,9 @@ class TestExtensions:
     def test_setup_plugin_doesnt_exist(self, spec):
         with pytest.raises(PluginError):
             spec.setup_plugin('plugin.doesnt.exist')
+
+    def test_register_definition_helper(self, spec):
+        def my_definition_helper(name, schema, **kwargs):
+            pass
+        spec.register_definition_helper(my_definition_helper)
+        assert my_definition_helper in spec._definition_helpers
