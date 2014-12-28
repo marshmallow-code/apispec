@@ -53,6 +53,8 @@ def field2property(field):
     :param Field field: A marshmallow field.
     :rtype: dict, a Property Object
     """
+    if isinstance(field, fields.Nested):
+        return schema2jsonschema(field.schema.__class__)
     type_, fmt = _get_json_type_for_field(field)
     ret = {
         'type': type_,

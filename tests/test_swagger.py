@@ -265,3 +265,17 @@ class TestMarshmallowSchemaToModelDefinition:
         expected_msg = 'Only explicitly-declared fields will be included in the Schema Object.'
         assert expected_msg in str(warning.message)
         assert issubclass(warning.category, UserWarning)
+
+
+class CategorySchema(Schema):
+    id = fields.Int()
+
+class PetSchema(Schema):
+    category = fields.Nested(CategorySchema)
+
+class TestNesting:
+
+    def test_nested_fields(self):
+        res = swagger.schema2jsonschema(PetSchema)
+        props = res['properties']
+        assert props['category'] == swagger.schema2jsonschema(CategorySchema)
