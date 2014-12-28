@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+import mock
 
 from smore.apispec import APISpec
 from smore.apispec.exceptions import PluginError
