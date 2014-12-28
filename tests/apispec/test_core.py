@@ -41,6 +41,67 @@ class TestDefinitions:
         defs_json = spec.to_dict()['definitions']
         assert defs_json['Pet']['enum'] == enum
 
+class TestPath:
+    paths = {
+        '/pet/{petId}': {
+            'get': {
+                'parameters': [
+                    {
+                        'required': True,
+                        'format': 'int64',
+                        'name': 'petId',
+                        'in': 'path',
+                        'type': 'integer',
+                        'description': 'ID of pet that needs to be fetched'
+                    }
+                ],
+                'responses': {
+                    "200": {
+                        "schema": {'$ref': '#/definitions/Pet'},
+                        'description': 'successful operation'
+                    },
+                    "400": {
+                        "description": "Invalid ID supplied"
+                    },
+                    "404": {
+                        "description": "Pet not found"
+                    }
+                },
+                "produces": [
+                    "application/json",
+                    "application/xml"
+                ],
+                "operationId": "getPetById",
+                "summary": "Find pet by ID",
+                'description': ('Returns a pet when ID < 10.  '
+                            'ID > 10 or nonintegers will simulate API error conditions'),
+                'tags': ['pet']
+            }
+        }
+    }
+
+    def test_add_path(self, spec):
+        route_spec = self.paths['/pet/{petId}']['get']
+        spec.add_path(
+            path='/pet/{petId}',
+            method='GET',
+            parameters=route_spec['parameters'],
+            responses=route_spec['responses'],
+            produces=route_spec['produces'],
+            operation_id=route_spec['operationId'],
+            summary=route_spec['summary'],
+            description=route_spec['description'],
+            tags=route_spec['tags']
+        )
+
+        p = spec._paths['/pet/{petId}']['get']
+        assert p['parameters'] == route_spec['parameters']
+        assert p['responses'] == route_spec['responses']
+        assert p['operationId'] == route_spec['operationId']
+        assert p['summary'] == route_spec['summary']
+        assert p['description'] == route_spec['description']
+        assert p['tags'] == route_spec['tags']
+
 
 class TestExtensions:
 
