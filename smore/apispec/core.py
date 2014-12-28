@@ -2,6 +2,24 @@
 
 from .exceptions import APISpecError, PluginError
 
+
+_PATH_CORRECTIONS = {
+    'operation_id': 'operationId',
+    'external_docs': 'externalDocs'
+}
+
+def _serialize_operation(operation):
+    """Return operation dict, making necessary casing corrections
+    to each key.
+    """
+    ret = {}
+    for key, val in operation.items():
+        if key in _PATH_CORRECTIONS:
+            ret[_PATH_CORRECTIONS[key]] = val
+        else:
+            ret[key] = val
+    return ret
+
 class Path(object):
     """Represents a Paths object. Stores a single operation for the path.
 
@@ -11,12 +29,7 @@ class Path(object):
     def __init__(self, path=None, method=None, operation=None, **kwargs):
         self.path = path
         self.method = method
-        self.operation = operation or {}
-        # Fix casing of operationId
-        try:
-            self.operation['operationId'] = self.operation.pop('operation_id')
-        except KeyError:
-            pass
+        self.operation = _serialize_operation(operation or {})
 
     def to_dict(self):
         if not self.path:
