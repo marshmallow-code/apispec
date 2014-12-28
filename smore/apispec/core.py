@@ -3,32 +3,20 @@
 from .exceptions import APISpecError, PluginError
 
 class Path(object):
-    """Represents a Paths object.
+    """Represents a Paths object. Stores a single operation for the path.
 
     https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#pathsObject
     """
 
-    # Valid fields for Path items Object:
-    # https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#pathItemObject
-    OPERATION_FIELDS = ('parameters', 'responses', 'produces',
-                        'summary', 'description', 'tags')
-
-    def __init__(self, path=None, method=None, **kwargs):
+    def __init__(self, path=None, method=None, operation=None, **kwargs):
         self.path = path
         self.method = method
-        operation_config = {}
-        kw = kwargs.copy()
-        for key in self.OPERATION_FIELDS:
-            try:
-                operation_config[key] = kw.pop(key)
-            except KeyError:
-                pass
-        # Special-case operationId to fix casing
+        self.operation = operation or {}
+        # Fix casing of operationId
         try:
-            operation_config['operationId'] = kwargs.pop('operation_id')
+            self.operation['operationId'] = self.operation.pop('operation_id')
         except KeyError:
             pass
-        self.operation = operation_config
 
     def to_dict(self):
         if not self.path:
@@ -46,7 +34,7 @@ class Path(object):
             self.path = path.path
         if path.method:
             self.method = path.method
-        self.operation.update(path.path_config)
+        self.operation.update(path.operation)
 
 
 class APISpec(object):
@@ -76,17 +64,17 @@ class APISpec(object):
 
     # NOTE: path and method are required, but they have defaults because
     # they may be added by a plugin
-    def add_path(self, path=None, method=None, **kwargs):
+    def add_path(self, path=None, method=None, operation=None, **kwargs):
         """Add a new path object to the spec.
 
         https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#paths-object-
         """
         path_config = {}
-        base = Path(path=path, method=method, path_config=path_config, **kwargs)
+        base = Path(path=path, method=method, path_config=path_config, operation=operation)
         # Execute plugins' helpers
         for func in self._path_helpers:
             base.update(func(
-                path=path, method=method, **kwargs
+                path=path, method=method, operation=operation, **kwargs
             ))
 
         self._paths.update(base.to_dict())

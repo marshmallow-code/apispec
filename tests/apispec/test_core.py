@@ -85,13 +85,15 @@ class TestPath:
         spec.add_path(
             path='/pet/{petId}',
             method='GET',
-            parameters=route_spec['parameters'],
-            responses=route_spec['responses'],
-            produces=route_spec['produces'],
-            operation_id=route_spec['operationId'],
-            summary=route_spec['summary'],
-            description=route_spec['description'],
-            tags=route_spec['tags']
+            operation=dict(
+                parameters=route_spec['parameters'],
+                responses=route_spec['responses'],
+                produces=route_spec['produces'],
+                operation_id=route_spec['operationId'],
+                summary=route_spec['summary'],
+                description=route_spec['description'],
+                tags=route_spec['tags']
+            )
         )
 
         p = spec._paths['/pet/{petId}']['get']
@@ -169,5 +171,9 @@ class TestPathHelpers:
         def path_helper(view_func, **kwargs):
             return Path(path=view_func['path'], method='get')
         spec.register_path_helper(path_helper)
-        spec.add_path(view_func={'path': '/pet/{petId}'}, produces=('application/xml', ))
+        spec.add_path(
+            view_func={'path': '/pet/{petId}'},
+            operation=dict(
+                produces=('application/xml', ))
+        )
         assert spec._paths == paths
