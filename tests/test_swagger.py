@@ -239,7 +239,7 @@ class TestMarshmallowSchemaToModelDefinition:
         assert props['email']['format'] == 'email'
         assert props['email']['description'] == 'email address of the user'
 
-    def test_description_may_be_added(self):
+    def test_title_and_description_may_be_added(self):
         class UserSchema(Schema):
             class Meta:
                 title = 'User'
@@ -247,14 +247,7 @@ class TestMarshmallowSchemaToModelDefinition:
 
         res = swagger.schema2jsonschema(UserSchema)
         assert res['description'] == 'A registered user'
-
-    def test_error_raised_if_no_title(self):
-        class UserSchema():
-            _id = fields.Int()
-
-        with raises(SmoreError) as excinfo:
-            swagger.schema2jsonschema(UserSchema)
-        assert 'Must define "title" in Meta options' in str(excinfo)
+        assert res['title'] == 'User'
 
     def test_only_explicitly_declared_fields_are_translated(self, recwarn):
         class UserSchema(Schema):

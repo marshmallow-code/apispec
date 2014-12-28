@@ -69,8 +69,8 @@ def field2property(field):
 
 def schema2jsonschema(schema_cls):
     """Return the JSON Schema Object for a given marshmallow
-    :class:`Schema <marshmallow.Schema>`. The Schema must define ``name`` in
-    its ``class Meta`` options.
+    :class:`Schema <marshmallow.Schema>`. Schema may optionally provide the ``title`` and
+    ``description`` class Meta options.
 
     https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#schemaObject
 
@@ -108,19 +108,20 @@ def schema2jsonschema(schema_cls):
     :param type schema_cls: A marshmallow :class:`Schema <marshmallow.Schema>`
     :rtype: dict, a JSON Schema Object
     """
-    if not hasattr(schema_cls, 'Meta') or not hasattr(schema_cls.Meta, 'title'):
-        raise SmoreError('Must define "title" in Meta options.')
     if getattr(schema_cls.Meta, 'fields', None) or getattr(schema_cls.Meta, 'additional', None):
         warnings.warn('Only explicitly-declared fields will be included in the Schema Object. '
                 'Fields defined in Meta.fields or Meta.addtional are excluded.')
     ret = {
-        'title': schema_cls.Meta.title,
-        'description': getattr(schema_cls.Meta, 'description', ''),
         'properties': {
             field_name: field2property(field_obj)
             for field_name, field_obj in iteritems(schema_cls._declared_fields)
         }
     }
+    if hasattr(schema_cls, 'Meta'):
+        if hasattr(schema_cls.Meta, 'title'):
+            ret['title'] = schema_cls.Meta.title
+        if hasattr(schema_cls.Meta, 'description'):
+            ret['description'] = schema_cls.Meta.description
     return ret
 
 ##### webargs #####
