@@ -4,12 +4,15 @@ from .exceptions import PluginError
 
 class APISpec(object):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, plugins=(), *args, **kwargs):
         # Metadata
         self._definitions = {}
         # Plugin and helpers
         self._plugins = {}
         self._definition_helpers = []
+
+        for plugin_path in plugins:
+            self.setup_plugin(plugin_path)
 
     def to_dict(self):
         return {
@@ -30,28 +33,28 @@ class APISpec(object):
     # PLUGIN INTERFACE
 
     # adapted from Sphinx
-    def setup_plugin(self, name):
+    def setup_plugin(self, path):
         """Import and setup a plugin. No-op if called twice
         for the same plugin.
 
         :param str name: Import path to the plugin.
         :raise: PluginError if the given plugin is invalid.
         """
-        if name in self._plugins:
+        if path in self._plugins:
             return
         try:
             mod = __import__(
-                name, globals=None, locals=None, fromlist=('setup', )
+                path, globals=None, locals=None, fromlist=('setup', )
             )
         except ImportError:
             raise PluginError(
-                'Could not import plugin "{0}"'.format(name)
+                'Could not import plugin "{0}"'.format(path)
             )
         if not hasattr(mod, 'setup'):
             raise PluginError('Plugin "{0}" has no setup() function.')
         else:
             mod.setup(self)
-        self._plugins[name] = mod
+        self._plugins[path] = mod
         return None
 
     def register_definition_helper(self, func):
