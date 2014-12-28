@@ -1,6 +1,32 @@
 # -*- coding: utf-8 -*-
 
-from .exceptions import PluginError
+from .exceptions import APISpecError, PluginError
+
+class Path(object):
+
+    def __init__(self, path=None, method=None, path_config=None, **kwargs):
+        self.path = path
+        self.method = method
+        self.path_config = path_config or {}
+
+    def to_dict(self):
+        if not self.path:
+            raise APISpecError('Path template is not specified')
+        if not self.method:
+            raise APISpecError('Method is not specified')
+        return {
+            self.path: {
+                self.method.lower(): self.path_config
+            }
+        }
+
+    def update(self, path):
+        if path.path:
+            self.path = path.path
+        if path.method:
+            self.method = path.method
+        self.path_config.update(path.path_config)
+
 
 class APISpec(object):
     """Stores metadata that describes a RESTful API using the Swagger 2.0 specification.
@@ -29,39 +55,30 @@ class APISpec(object):
 
     # NOTE: path and method are required, but they have defaults because
     # they may be added by a plugin
-    def add_path(self, path=None, method=None, parameters=(), responses=(),
-            produces=(), operation_id=None, summary=None, description=None, tags=()):
+    def add_path(self, path=None, method=None, **kwargs):
         """Add a new path object to the spec.
 
         https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#paths-object-
         """
-        method_key = method.lower() if method is not None else None
-        ret = {
-            path: {
-                method_key: dict(
-                    parameters=parameters,
-                    responses=responses,
-                    produces=produces or self.default_content_types,
-                    operationId=operation_id,
-                    summary=summary,
-                    description=description,
-                    tags=tags
-                )
-            }
-        }
-
+        path_config = {}
+        for key in ('parameters', 'responses', 'produces',
+                    'summary', 'description', 'tags'):
+            try:
+                path_config[key] = kwargs.pop(key)
+            except KeyError:
+                pass
+        try:
+            path_config['operationId'] = kwargs.pop('operation_id')
+        except KeyError:
+            pass
+        base = Path(path=path, method=method, path_config=path_config, **kwargs)
         # Execute plugins' helpers
         for func in self._path_helpers:
-            ret.update(func(
-                path=path, method=method, parameters=parameters(), responses=responses,
-                produced=produces, operation_id=operation_id, summary=summary,
-                description=description, tags=tags
+            base.update(func(
+                path=path, method=method, **kwargs
             ))
 
-        path_tpl = list(ret.keys())[0]
-        if not path_tpl:  # Path template not specified
-            raise ValueError('Must specify path template')
-        self._paths.update(ret)
+        self._paths.update(base.to_dict())
 
     def definition(self, name, properties=None, enum=None, **kwargs):
         """Add a new definition to the spec.
@@ -69,13 +86,13 @@ class APISpec(object):
         https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#definitionsObject
         """
         ret = {}
+        # Execute all helpers from plugins
+        for func in self._definition_helpers:
+            ret.update(func(name, **kwargs))
         if properties:
             ret['properties'] = properties
         if enum:
             ret['enum'] = enum
-        # Execute all helpers from plugins
-        for func in self._definition_helpers:
-            ret.update(func(name, **kwargs))
         self._definitions[name] = ret
 
     # PLUGIN INTERFACE

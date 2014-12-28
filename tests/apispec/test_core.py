@@ -2,7 +2,7 @@
 import pytest
 import mock
 
-from smore.apispec import APISpec
+from smore.apispec import APISpec, Path
 from smore.apispec.exceptions import PluginError
 
 
@@ -125,6 +125,13 @@ class TestExtensions:
         spec.register_definition_helper(my_definition_helper)
         assert my_definition_helper in spec._definition_helpers
 
+    def test_register_path_helper(self, spec):
+        def my_path_helper(**kwargs):
+            pass
+
+        spec.register_path_helper(my_path_helper)
+        assert my_path_helper in spec._path_helpers
+
 
 class TestDefinitionHelpers:
 
@@ -149,3 +156,18 @@ class TestDefinitionHelpers:
         spec.definition('Pet', fmt='int32')
         expected = {'properties': {'age': {'type': 'number', 'format': 'int32'}}}
         assert spec._definitions['Pet'] == expected
+
+class TestPathHelpers:
+
+    def test_path_helper_is_used(self, spec):
+        paths = {
+            '/pet/{petId}': {
+                'get': {}
+            }
+        }
+
+        def path_helper(view_func, **kwargs):
+            return Path(path=view_func['path'], method='get')
+        spec.register_path_helper(path_helper)
+        spec.add_path(view_func={'path': '/pet/{petId}'})
+        assert spec._paths == paths

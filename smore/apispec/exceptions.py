@@ -2,5 +2,8 @@
 
 from smore.exceptions import SmoreError
 
-class PluginError(SmoreError):
+class APISpecError(SmoreError):
+    pass
+
+class PluginError(APISpecError):
     pass
