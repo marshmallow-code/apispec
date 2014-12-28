@@ -16,10 +16,13 @@ class APISpec(object):
             'definitions': self._definitions,
         }
 
-    def definition(self, name, properties=None, **kwargs):
+    def definition(self, name, properties=None, enum=None, **kwargs):
         ret = {}
         if properties:
             ret['properties'] = properties
+        if enum:
+            ret['enum'] = enum
+        # Execute all helpers from plugins
         for func in self._definition_helpers:
             ret.update(func(name, **kwargs))
         self._definitions[name] = ret

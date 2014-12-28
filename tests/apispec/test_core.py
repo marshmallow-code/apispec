@@ -34,7 +34,7 @@ class TestDefinitions:
         assert 'Pet' in defs_json
         assert defs_json['Pet']['properties'] == self.properties
 
-    def test_definition_stores_kwargs(self, spec):
+    def test_definition_stores_enum(self, spec):
         enum = ['name', 'photoUrls']
         spec.definition(
             'Pet',
@@ -47,12 +47,14 @@ class TestDefinitions:
 
 class TestExtensions:
 
-    @mock.patch('tests.plugins.dummy_plugin.setup')
+    DUMMY_PLUGIN = 'tests.apispec.plugins.dummy_plugin'
+
+    @mock.patch(DUMMY_PLUGIN + '.setup')
     def test_setup_plugin(self, mock_setup, spec):
-        spec.setup_plugin('tests.plugins.dummy_plugin')
-        assert 'tests.plugins.dummy_plugin' in spec._plugins
+        spec.setup_plugin(self.DUMMY_PLUGIN)
+        assert self.DUMMY_PLUGIN in spec._plugins
         mock_setup.assert_called_once
-        spec.setup_plugin('tests.plugins.dummy_plugin')
+        spec.setup_plugin(self.DUMMY_PLUGIN)
         assert mock_setup.call_count == 1
 
     def test_setup_plugin_doesnt_exist(self, spec):
