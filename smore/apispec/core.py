@@ -18,6 +18,8 @@ class APISpec(object):
         ret = {}
         if properties:
             ret['properties'] = properties
+        for func in self._definition_helpers:
+            ret.update(func(name, **kwargs))
         ret.update(kwargs)
         self._definitions[name] = ret
 

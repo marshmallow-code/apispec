@@ -64,3 +64,16 @@ class TestExtensions:
             pass
         spec.register_definition_helper(my_definition_helper)
         assert my_definition_helper in spec._definition_helpers
+
+
+class TestDefinitionHelpers:
+
+    def test_definition_helpers_are_used(self, spec):
+        properties = {'properties': {'name': {'type': 'string'}}}
+
+        def definition_helper(name, **kwargs):
+            return properties
+        spec.register_definition_helper(definition_helper)
+        spec.definition('Pet', {})
+        assert spec._definitions['Pet'] == properties
+
