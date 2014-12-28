@@ -5,7 +5,9 @@ from .exceptions import PluginError
 class APISpec(object):
 
     def __init__(self, *args, **kwargs):
+        # Metadata
         self._definitions = {}
+        # Plugin and helpers
         self._plugins = {}
         self._definition_helpers = []
 
@@ -20,7 +22,6 @@ class APISpec(object):
             ret['properties'] = properties
         for func in self._definition_helpers:
             ret.update(func(name, **kwargs))
-        ret.update(kwargs)
         self._definitions[name] = ret
 
     # PLUGIN INTERFACE

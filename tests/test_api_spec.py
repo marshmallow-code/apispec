@@ -77,3 +77,15 @@ class TestDefinitionHelpers:
         spec.definition('Pet', {})
         assert spec._definitions['Pet'] == properties
 
+    def test_multiple_definition_helpers(self, spec):
+        def helper1(name, **kwargs):
+            return {'properties': {'age': {'type': 'number'}}}
+
+        def helper2(name, fmt, **kwargs):
+            return {'properties': {'age': {'type': 'number', 'format': fmt}}}
+
+        spec.register_definition_helper(helper1)
+        spec.register_definition_helper(helper2)
+        spec.definition('Pet', fmt='int32')
+        expected = {'properties': {'age': {'type': 'number', 'format': 'int32'}}}
+        assert spec._definitions['Pet'] == expected
