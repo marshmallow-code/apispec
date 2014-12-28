@@ -14,7 +14,6 @@ import warnings
 from marshmallow import fields
 from marshmallow.compat import text_type, binary_type, iteritems
 
-from smore.exceptions import SmoreError
 
 SWAGGER_VERSION = '2.0'
 
