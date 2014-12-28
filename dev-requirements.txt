@@ -10,6 +10,7 @@ colander>=1.0
 # testing
 pytest
 tox>=1.5.0
+mock
 
 # packaging
 wheel
