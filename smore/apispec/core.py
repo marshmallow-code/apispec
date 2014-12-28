@@ -12,18 +12,20 @@ def _serialize_operation(operation):
     """Return operation dict, making necessary casing corrections
     to each key.
     """
-    ret = {}
-    for key, val in operation.items():
-        if key in _PATH_CORRECTIONS:
-            ret[_PATH_CORRECTIONS[key]] = val
-        else:
-            ret[key] = val
-    return ret
+    return {
+        _PATH_CORRECTIONS.get(key, key): val
+        for key, val in operation.items()
+    }
 
 class Path(object):
     """Represents a Paths object. Stores a single operation for the path.
 
     https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#pathsObject
+
+    :param str path: The path template, e.g. ``"/pet/{petId}"``
+    :param str method: The HTTP method.
+    :param dict operation: The operation object, as a `dict`. See
+        https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operationObject
     """
 
     def __init__(self, path=None, method=None, operation=None, **kwargs):
@@ -138,7 +140,7 @@ class APISpec(object):
         """Register a new definition helper. The helper **must** meet the following conditions:
 
         - Receive the definition `name` as the first argument.
-        - Receive **kwargs.
+        - Include ``**kwargs`` in its signature.
         - Return a `dict` representation of the definition's Schema object.
 
         The helper may define any named arguments after the `name` argument.
@@ -150,4 +152,11 @@ class APISpec(object):
         self._definition_helpers.append(func)
 
     def register_path_helper(self, func):
+        """Register a new path helper. The helper **must** meet the following conditions:
+
+        - Include ``**kwargs`` in signature.
+        - Return a `smore.apispec.core.Path` object.
+
+        The helper may define any named arguments in its signature.
+        """
         self._path_helpers.append(func)

@@ -3,7 +3,7 @@ import pytest
 import mock
 
 from smore.apispec import APISpec, Path
-from smore.apispec.exceptions import PluginError
+from smore.apispec.exceptions import PluginError, APISpecError
 
 
 @pytest.fixture()
@@ -104,6 +104,16 @@ class TestPath:
         assert p['description'] == route_spec['description']
         assert p['tags'] == route_spec['tags']
 
+    def test_add_path_with_no_path_raises_error(self, spec):
+        with pytest.raises(APISpecError) as excinfo:
+            spec.add_path(method='get')
+        assert 'Path template is not specified' in str(excinfo)
+
+    def test_add_path_with_no_method_raises_error(self, spec):
+        with pytest.raises(APISpecError) as excinfo:
+            spec.add_path(path='/pet/{petId}')
+        assert 'Method is not specified' in str(excinfo)
+
 
 class TestExtensions:
 
@@ -162,12 +172,6 @@ class TestDefinitionHelpers:
 class TestPathHelpers:
 
     def test_path_helper_is_used(self, spec):
-        paths = {
-            '/pet/{petId}': {
-                'get': {'produces': ('application/xml', )}
-            }
-        }
-
         def path_helper(view_func, **kwargs):
             return Path(path=view_func['path'], method='get')
         spec.register_path_helper(path_helper)
@@ -176,4 +180,10 @@ class TestPathHelpers:
             operation=dict(
                 produces=('application/xml', ))
         )
-        assert spec._paths == paths
+        expected = {
+            '/pet/{petId}': {
+                'get': {'produces': ('application/xml', )}
+            }
+        }
+
+        assert spec._paths == expected
