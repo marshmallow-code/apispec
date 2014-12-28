@@ -162,12 +162,12 @@ class TestPathHelpers:
     def test_path_helper_is_used(self, spec):
         paths = {
             '/pet/{petId}': {
-                'get': {}
+                'get': {'produces': ('application/xml', )}
             }
         }
 
         def path_helper(view_func, **kwargs):
             return Path(path=view_func['path'], method='get')
         spec.register_path_helper(path_helper)
-        spec.add_path(view_func={'path': '/pet/{petId}'})
+        spec.add_path(view_func={'path': '/pet/{petId}'}, produces=('application/xml', ))
         assert spec._paths == paths

@@ -3,11 +3,32 @@
 from .exceptions import APISpecError, PluginError
 
 class Path(object):
+    """Represents a Paths object.
 
-    def __init__(self, path=None, method=None, path_config=None, **kwargs):
+    https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#pathsObject
+    """
+
+    # Valid fields for Path items Object:
+    # https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#pathItemObject
+    OPERATION_FIELDS = ('parameters', 'responses', 'produces',
+                        'summary', 'description', 'tags')
+
+    def __init__(self, path=None, method=None, **kwargs):
         self.path = path
         self.method = method
-        self.path_config = path_config or {}
+        operation_config = {}
+        kw = kwargs.copy()
+        for key in self.OPERATION_FIELDS:
+            try:
+                operation_config[key] = kw.pop(key)
+            except KeyError:
+                pass
+        # Special-case operationId to fix casing
+        try:
+            operation_config['operationId'] = kwargs.pop('operation_id')
+        except KeyError:
+            pass
+        self.operation = operation_config
 
     def to_dict(self):
         if not self.path:
@@ -16,7 +37,7 @@ class Path(object):
             raise APISpecError('Method is not specified')
         return {
             self.path: {
-                self.method.lower(): self.path_config
+                self.method.lower(): self.operation
             }
         }
 
@@ -25,7 +46,7 @@ class Path(object):
             self.path = path.path
         if path.method:
             self.method = path.method
-        self.path_config.update(path.path_config)
+        self.operation.update(path.path_config)
 
 
 class APISpec(object):
@@ -61,16 +82,6 @@ class APISpec(object):
         https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#paths-object-
         """
         path_config = {}
-        for key in ('parameters', 'responses', 'produces',
-                    'summary', 'description', 'tags'):
-            try:
-                path_config[key] = kwargs.pop(key)
-            except KeyError:
-                pass
-        try:
-            path_config['operationId'] = kwargs.pop('operation_id')
-        except KeyError:
-            pass
         base = Path(path=path, method=method, path_config=path_config, **kwargs)
         # Execute plugins' helpers
         for func in self._path_helpers:
