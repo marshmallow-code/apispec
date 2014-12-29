@@ -56,7 +56,7 @@ class APISpec(object):
             'paths': self._paths,
         }
 
-    def add_path(self, path=None, method=None, operations=None, **kwargs):
+    def add_path(self, path=None, operations=None, **kwargs):
         """Add a new path object to the spec.
 
         https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#paths-object-
