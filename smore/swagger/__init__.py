@@ -53,10 +53,6 @@ def field2property(field, use_refs=True):
     :param Field field: A marshmallow field.
     :rtype: dict, a Property Object
     """
-    if isinstance(field, fields.Nested):
-        if use_refs and field.metadata.get('ref'):
-            return {'$ref': field.metadata['ref']}
-        return schema2jsonschema(field.schema.__class__)
     type_, fmt = _get_json_type_for_field(field)
     ret = {
         'type': type_,
@@ -68,6 +64,16 @@ def field2property(field, use_refs=True):
         ret['default'] = field.default
     ret['required'] = field.required
     ret.update(field.metadata)
+    if isinstance(field, fields.Nested):
+        if use_refs and field.metadata.get('ref'):
+            schema = {'$ref': field.metadata['ref']}
+        else:
+            schema = schema2jsonschema(field.schema.__class__)
+        if field.many:
+            ret['type'] = 'array'
+            ret['items'] = schema
+        else:
+            ret = schema
     return ret
 
 def schema2jsonschema(schema_cls):
