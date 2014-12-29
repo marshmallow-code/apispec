@@ -54,3 +54,26 @@ class TestPathHelpers:
         post_op = spec._paths['/hello']['post']
         assert get_op['description'] == 'get a greeting'
         assert post_op['description'] == 'post a greeting'
+
+    def test_integration_with_docstring_introspection(self, app, spec):
+
+        @app.route('/hello')
+        def hello():
+            """Get a greeting.
+
+            ---
+            get:
+                description: get a greeting
+            post:
+                description: post a greeting
+            foo:
+                description: not a valid operation
+            """
+            return 'hi'
+
+        spec.add_path(view=hello)
+        get_op = spec._paths['/hello']['get']
+        post_op = spec._paths['/hello']['post']
+        assert get_op['description'] == 'get a greeting'
+        assert post_op['description'] == 'post a greeting'
+        assert 'foo' not in spec._paths['/hello']

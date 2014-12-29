@@ -6,6 +6,7 @@ from flask import current_app
 from marshmallow.compat import iteritems
 from smore.apispec import Path
 from smore.apispec.exceptions import APISpecError
+from smore.apispec import utils
 
 def _rule_for_view(view):
     view_funcs = current_app.view_functions
@@ -20,12 +21,13 @@ def _rule_for_view(view):
     rule = current_app.url_map._rules_by_endpoint[endpoint][0]
     return rule
 
+
 def path_from_view(view, operations, **kwargs):
     rule = _rule_for_view(view)
     path = rule.rule
+    operations = utils.load_operations_from_docstring(view.__doc__)
     path = Path(path=path, operations=operations)
     return path
-
 
 def setup(spec):
     spec.register_path_helper(path_from_view)
