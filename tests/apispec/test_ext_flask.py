@@ -35,7 +35,7 @@ class TestPathHelpers:
         def hello():
             return 'hi'
 
-        spec.add_path(view=hello, operation={'parameters': '..params..'})
+        spec.add_path(view=hello, operations={'get': {'parameters': '..params..'}})
         assert '/hello' in spec._paths
         assert 'get' in spec._paths['/hello']
         assert spec._paths['/hello']['get'] == {'parameters': '..params..'}
