@@ -2,8 +2,8 @@
 smore
 *****
 
-.. image:: https://travis-ci.org/sloria/smore.svg?branch=dev
-    :target: https://travis-ci.org/sloria/smore
+.. image:: https://travis-ci.org/marshmallow-code/smore.svg?branch=dev
+    :target: https://travis-ci.org/marshmallow-code/smore
 
 **EXPERIMENTAL: Nothing here is stable. Right now this is just a playground to try out some ideas.**
 
