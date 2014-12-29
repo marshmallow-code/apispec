@@ -3,22 +3,8 @@
 from .exceptions import APISpecError, PluginError
 
 
-_PATH_CORRECTIONS = {
-    'operation_id': 'operationId',
-    'external_docs': 'externalDocs'
-}
-
-def _serialize_operation(operation):
-    """Return operation dict, making necessary casing corrections
-    to each key.
-    """
-    return {
-        _PATH_CORRECTIONS.get(key, key): val
-        for key, val in operation.items()
-    }
-
 class Path(object):
-    """Represents a Paths object. Stores a single operation for the path.
+    """Represents a Swagger Path object.
 
     https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#pathsObject
 
@@ -28,10 +14,10 @@ class Path(object):
         https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operationObject
     """
 
-    def __init__(self, path=None, method=None, operation=None, **kwargs):
+    def __init__(self, path=None, method=None, operations=None, **kwargs):
         self.path = path
         self.method = method
-        self.operation = _serialize_operation(operation or {})
+        self.operations = operations or {}
 
     def to_dict(self):
         if not self.path:
@@ -39,9 +25,7 @@ class Path(object):
         if not self.method:
             raise APISpecError('Method is not specified')
         return {
-            self.path: {
-                self.method.lower(): self.operation
-            }
+            self.path: self.operations
         }
 
     def update(self, path):
@@ -49,14 +33,14 @@ class Path(object):
             self.path = path.path
         if path.method:
             self.method = path.method
-        self.operation.update(path.operation)
+        self.operations.update(path.operations)
 
 
 class APISpec(object):
     """Stores metadata that describes a RESTful API using the Swagger 2.0 specification.
     """
 
-    DEFAULT_CONTENT_TYPES = ['application/json']
+    DEFAULT_CONTENT_TYPES = ('application/json', )
 
     def __init__(self, plugins=(), default_content_types=None, *args, **kwargs):
         # Metadata
@@ -79,24 +63,19 @@ class APISpec(object):
 
     # NOTE: path and method are required, but they have defaults because
     # they may be added by a plugin
-    def add_path(self, path=None, method=None, operation=None, **kwargs):
+    def add_path(self, path=None, method=None, operations=None, **kwargs):
         """Add a new path object to the spec.
 
         https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#paths-object-
         """
         path_config = {}
-        path = Path(path=path, method=method, path_config=path_config, operation=operation)
+        path = Path(path=path, method=method, path_config=path_config, operations=operations)
         # Execute plugins' helpers
         for func in self._path_helpers:
             ret = func(
-                path=path, method=method, operation=operation, **kwargs
+                path=path, method=method, operations=operations, **kwargs
             )
-            if isinstance(ret, Path):
-                path.update(ret)
-            else:  # collection of paths
-                for each in ret:
-                    path.update(each)
-
+            path.update(ret)
         self._paths.update(path.to_dict())
 
     def definition(self, name, properties=None, enum=None, **kwargs):

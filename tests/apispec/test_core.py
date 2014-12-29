@@ -85,14 +85,16 @@ class TestPath:
         spec.add_path(
             path='/pet/{petId}',
             method='GET',
-            operation=dict(
-                parameters=route_spec['parameters'],
-                responses=route_spec['responses'],
-                produces=route_spec['produces'],
-                operation_id=route_spec['operationId'],
-                summary=route_spec['summary'],
-                description=route_spec['description'],
-                tags=route_spec['tags']
+            operations=dict(
+                get=dict(
+                    parameters=route_spec['parameters'],
+                    responses=route_spec['responses'],
+                    produces=route_spec['produces'],
+                    operationId=route_spec['operationId'],
+                    summary=route_spec['summary'],
+                    description=route_spec['description'],
+                    tags=route_spec['tags']
+                )
             )
         )
 
@@ -177,8 +179,11 @@ class TestPathHelpers:
         spec.register_path_helper(path_helper)
         spec.add_path(
             view_func={'path': '/pet/{petId}'},
-            operation=dict(
-                produces=('application/xml', ))
+            operations=dict(
+                get=dict(
+                    produces=('application/xml', )
+                )
+            )
         )
         expected = {
             '/pet/{petId}': {
