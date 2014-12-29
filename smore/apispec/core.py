@@ -35,13 +35,10 @@ class APISpec(object):
     """Stores metadata that describes a RESTful API using the Swagger 2.0 specification.
     """
 
-    DEFAULT_CONTENT_TYPES = ('application/json', )
-
     def __init__(self, plugins=(), default_content_types=None, *args, **kwargs):
         # Metadata
         self._definitions = {}
         self._paths = {}
-        self.default_content_types = default_content_types or self.DEFAULT_CONTENT_TYPES
         # Plugin and helpers
         self._plugins = {}
         self._definition_helpers = []
