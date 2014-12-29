@@ -18,14 +18,14 @@ Questions, Feature Requests, Bug Reports, and Feedback. . .
 
 . . .should all be reported on the `Github Issue Tracker`_ .
 
-.. _`Github Issue Tracker`: https://github.com/sloria/smore/issues?state=open
+.. _`Github Issue Tracker`: https://github.com/marshmallow-code/smore/issues?state=open
 
 Setting Up for Local Development
 ++++++++++++++++++++++++++++++++
 
 1. Fork smore_ on Github. ::
 
-    $ git clone https://github.com/sloria/smore.git
+    $ git clone https://github.com/marshmallow-code/smore.git
     $ cd smore
 
 2. Install development requirements. It is highly recommended that you use a virtualenv. ::
@@ -77,7 +77,7 @@ Pull Requests
 - If the pull request adds functionality, it is tested and the docs are updated.
 - You've added yourself to ``AUTHORS.rst``.
 
-4. Submit a pull request to ``sloria:dev`` or the appropriate maintenance branch. The `Travis CI <https://travis-ci.org/sloria/smore>`_ build must be passing before your pull request is merged.
+4. Submit a pull request to ``marshmallow-code:dev`` or the appropriate maintenance branch. The `Travis CI <https://travis-ci.org/marshmallow-code/smore>`_ build must be passing before your pull request is merged.
 
 Running Tests
 +++++++++++++
@@ -108,4 +108,4 @@ The ``-b`` (for "browse") automatically opens up the docs in your browser after 
 .. _Sphinx: http://sphinx.pocoo.org/
 .. _`reStructured Text`: http://docutils.sourceforge.net/rst.html
 
-.. _`smore`: https://github.com/sloria/smore
+.. _`smore`: https://github.com/marshmallow-code/smore

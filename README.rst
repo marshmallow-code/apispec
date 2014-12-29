@@ -27,4 +27,4 @@ Documentation is available at http://smore.readthedocs.org/ .
 License
 -------
 
-MIT licensed. See the bundled `LICENSE <https://github.com/sloria/restkit/blob/master/LICENSE>`_ file for more details.
+MIT licensed. See the bundled `LICENSE <https://github.com/marshmallow-code/smore/blob/master/LICENSE>`_ file for more details.

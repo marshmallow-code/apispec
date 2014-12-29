@@ -40,7 +40,7 @@ setup(
     long_description=read("README.rst"),
     author='Steven Loria',
     author_email='sloria1@gmail.com',
-    url='https://github.com/sloria/smore',
+    url='https://github.com/marshmallow-code/smore',
     packages=find_packages(exclude=("test*", )),
     package_dir={'smore': 'smore'},
     include_package_data=True,
