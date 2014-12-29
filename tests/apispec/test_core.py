@@ -2,8 +2,8 @@
 import pytest
 import mock
 
-from smore.apispec import APISpec
-from smore.apispec.exceptions import PluginError
+from smore.apispec import APISpec, Path
+from smore.apispec.exceptions import PluginError, APISpecError
 
 
 @pytest.fixture()
@@ -41,6 +41,79 @@ class TestDefinitions:
         defs_json = spec.to_dict()['definitions']
         assert defs_json['Pet']['enum'] == enum
 
+class TestPath:
+    paths = {
+        '/pet/{petId}': {
+            'get': {
+                'parameters': [
+                    {
+                        'required': True,
+                        'format': 'int64',
+                        'name': 'petId',
+                        'in': 'path',
+                        'type': 'integer',
+                        'description': 'ID of pet that needs to be fetched'
+                    }
+                ],
+                'responses': {
+                    "200": {
+                        "schema": {'$ref': '#/definitions/Pet'},
+                        'description': 'successful operation'
+                    },
+                    "400": {
+                        "description": "Invalid ID supplied"
+                    },
+                    "404": {
+                        "description": "Pet not found"
+                    }
+                },
+                "produces": [
+                    "application/json",
+                    "application/xml"
+                ],
+                "operationId": "getPetById",
+                "summary": "Find pet by ID",
+                'description': ('Returns a pet when ID < 10.  '
+                            'ID > 10 or nonintegers will simulate API error conditions'),
+                'tags': ['pet']
+            }
+        }
+    }
+
+    def test_add_path(self, spec):
+        route_spec = self.paths['/pet/{petId}']['get']
+        spec.add_path(
+            path='/pet/{petId}',
+            method='GET',
+            operation=dict(
+                parameters=route_spec['parameters'],
+                responses=route_spec['responses'],
+                produces=route_spec['produces'],
+                operation_id=route_spec['operationId'],
+                summary=route_spec['summary'],
+                description=route_spec['description'],
+                tags=route_spec['tags']
+            )
+        )
+
+        p = spec._paths['/pet/{petId}']['get']
+        assert p['parameters'] == route_spec['parameters']
+        assert p['responses'] == route_spec['responses']
+        assert p['operationId'] == route_spec['operationId']
+        assert p['summary'] == route_spec['summary']
+        assert p['description'] == route_spec['description']
+        assert p['tags'] == route_spec['tags']
+
+    def test_add_path_with_no_path_raises_error(self, spec):
+        with pytest.raises(APISpecError) as excinfo:
+            spec.add_path(method='get')
+        assert 'Path template is not specified' in str(excinfo)
+
+    def test_add_path_with_no_method_raises_error(self, spec):
+        with pytest.raises(APISpecError) as excinfo:
+            spec.add_path(path='/pet/{petId}')
+        assert 'Method is not specified' in str(excinfo)
+
 
 class TestExtensions:
 
@@ -63,6 +136,13 @@ class TestExtensions:
             pass
         spec.register_definition_helper(my_definition_helper)
         assert my_definition_helper in spec._definition_helpers
+
+    def test_register_path_helper(self, spec):
+        def my_path_helper(**kwargs):
+            pass
+
+        spec.register_path_helper(my_path_helper)
+        assert my_path_helper in spec._path_helpers
 
 
 class TestDefinitionHelpers:
@@ -88,3 +168,22 @@ class TestDefinitionHelpers:
         spec.definition('Pet', fmt='int32')
         expected = {'properties': {'age': {'type': 'number', 'format': 'int32'}}}
         assert spec._definitions['Pet'] == expected
+
+class TestPathHelpers:
+
+    def test_path_helper_is_used(self, spec):
+        def path_helper(view_func, **kwargs):
+            return Path(path=view_func['path'], method='get')
+        spec.register_path_helper(path_helper)
+        spec.add_path(
+            view_func={'path': '/pet/{petId}'},
+            operation=dict(
+                produces=('application/xml', ))
+        )
+        expected = {
+            '/pet/{petId}': {
+                'get': {'produces': ('application/xml', )}
+            }
+        }
+
+        assert spec._paths == expected

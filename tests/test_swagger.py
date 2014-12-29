@@ -265,3 +265,36 @@ class TestMarshmallowSchemaToModelDefinition:
         expected_msg = 'Only explicitly-declared fields will be included in the Schema Object.'
         assert expected_msg in str(warning.message)
         assert issubclass(warning.category, UserWarning)
+
+
+class CategorySchema(Schema):
+    id = fields.Int()
+    name = fields.Str()
+
+class PetSchema(Schema):
+    category = fields.Nested(CategorySchema)
+
+class TestNesting:
+
+    def test_field2property_nested(self):
+        category = fields.Nested(CategorySchema)
+        assert swagger.field2property(category) == swagger.schema2jsonschema(CategorySchema)
+
+        cat_with_ref = fields.Nested(CategorySchema, ref='Category')
+        assert swagger.field2property(cat_with_ref) == {'$ref': 'Category'}
+
+    def test_field2property_nested_many(self):
+        categories = fields.Nested(CategorySchema, many=True)
+        res = swagger.field2property(categories)
+        assert res['type'] == 'array'
+        assert res['items'] == swagger.schema2jsonschema(CategorySchema)
+
+        cats_with_ref = fields.Nested(CategorySchema, many=True, ref='Category')
+        res = swagger.field2property(cats_with_ref)
+        assert res['type'] == 'array'
+        assert res['items'] == {'$ref': 'Category'}
+
+    def test_schema2jsonschema_with_nested_fields(self):
+        res = swagger.schema2jsonschema(PetSchema)
+        props = res['properties']
+        assert props['category'] == swagger.schema2jsonschema(CategorySchema)
