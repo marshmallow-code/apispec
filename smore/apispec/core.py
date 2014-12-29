@@ -85,14 +85,19 @@ class APISpec(object):
         https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#paths-object-
         """
         path_config = {}
-        base = Path(path=path, method=method, path_config=path_config, operation=operation)
+        path = Path(path=path, method=method, path_config=path_config, operation=operation)
         # Execute plugins' helpers
         for func in self._path_helpers:
-            base.update(func(
+            ret = func(
                 path=path, method=method, operation=operation, **kwargs
-            ))
+            )
+            if isinstance(ret, Path):
+                path.update(ret)
+            else:  # collection of paths
+                for each in ret:
+                    path.update(each)
 
-        self._paths.update(base.to_dict())
+        self._paths.update(path.to_dict())
 
     def definition(self, name, properties=None, enum=None, **kwargs):
         """Add a new definition to the spec.
