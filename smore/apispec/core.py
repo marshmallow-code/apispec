@@ -98,9 +98,9 @@ class APISpec(object):
             mod = __import__(
                 path, globals=None, locals=None, fromlist=('setup', )
             )
-        except ImportError:
+        except ImportError as err:
             raise PluginError(
-                'Could not import plugin "{0}"'.format(path)
+                'Could not import plugin "{0}"\n\n{1}'.format(path, err)
             )
         if not hasattr(mod, 'setup'):
             raise PluginError('Plugin "{0}" has no setup() function.')

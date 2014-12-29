@@ -6,7 +6,7 @@ webargs>=0.9.0
 # smore.validate dependencies
 WTForms>=2.0.1
 colander>=1.0
-flask
+Flask
 
 # testing
 pytest
