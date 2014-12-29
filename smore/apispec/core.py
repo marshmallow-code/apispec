@@ -14,16 +14,13 @@ class Path(object):
         https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operationObject
     """
 
-    def __init__(self, path=None, method=None, operations=None, **kwargs):
+    def __init__(self, path=None, operations=None, **kwargs):
         self.path = path
-        self.method = method
         self.operations = operations or {}
 
     def to_dict(self):
         if not self.path:
             raise APISpecError('Path template is not specified')
-        if not self.method:
-            raise APISpecError('Method is not specified')
         return {
             self.path: self.operations
         }
@@ -31,8 +28,6 @@ class Path(object):
     def update(self, path):
         if path.path:
             self.path = path.path
-        if path.method:
-            self.method = path.method
         self.operations.update(path.operations)
 
 
@@ -61,19 +56,16 @@ class APISpec(object):
             'paths': self._paths,
         }
 
-    # NOTE: path and method are required, but they have defaults because
-    # they may be added by a plugin
-    def add_path(self, path=None, method=None, operations=None, **kwargs):
+    def add_path(self, path=None, operations=None, **kwargs):
         """Add a new path object to the spec.
 
         https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#paths-object-
         """
-        path_config = {}
-        path = Path(path=path, method=method, path_config=path_config, operations=operations)
+        path = Path(path=path, operations=operations)
         # Execute plugins' helpers
         for func in self._path_helpers:
             ret = func(
-                path=path, method=method, operations=operations, **kwargs
+                path=path, operations=operations, **kwargs
             )
             path.update(ret)
         self._paths.update(path.to_dict())
