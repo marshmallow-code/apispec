@@ -44,7 +44,7 @@ def _get_json_type_for_field(field):
     json_type, fmt = FIELD_MAPPING.get(type(field), ('string', None))
     return json_type, fmt
 
-def field2property(field):
+def field2property(field, use_refs=True):
     """Return the JSON Schema property definition given a marshmallow
     :class:`Field <marshmallow.fields.Field>`.
 
@@ -54,6 +54,8 @@ def field2property(field):
     :rtype: dict, a Property Object
     """
     if isinstance(field, fields.Nested):
+        if use_refs and field.metadata.get('ref'):
+            return {'$ref': field.metadata['ref']}
         return schema2jsonschema(field.schema.__class__)
     type_, fmt = _get_json_type_for_field(field)
     ret = {
