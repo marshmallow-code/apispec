@@ -84,7 +84,6 @@ class TestPath:
         route_spec = self.paths['/pet/{petId}']['get']
         spec.add_path(
             path='/pet/{petId}',
-            method='GET',
             operations=dict(
                 get=dict(
                     parameters=route_spec['parameters'],
@@ -108,14 +107,8 @@ class TestPath:
 
     def test_add_path_with_no_path_raises_error(self, spec):
         with pytest.raises(APISpecError) as excinfo:
-            spec.add_path(method='get')
+            spec.add_path()
         assert 'Path template is not specified' in str(excinfo)
-
-    def test_add_path_with_no_method_raises_error(self, spec):
-        with pytest.raises(APISpecError) as excinfo:
-            spec.add_path(path='/pet/{petId}')
-        assert 'Method is not specified' in str(excinfo)
-
 
 class TestExtensions:
 
