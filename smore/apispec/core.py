@@ -64,7 +64,8 @@ class APISpec(object):
             ret = func(
                 path=path, operations=operations, **kwargs
             )
-            path.update(ret)
+            if isinstance(ret, Path):
+                path.update(ret)
         self._paths.update(path.to_dict())
 
     def definition(self, name, properties=None, enum=None, **kwargs):
