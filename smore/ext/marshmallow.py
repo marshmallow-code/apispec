@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 from marshmallow.compat import iteritems
 from marshmallow import class_registry
 
