@@ -5,6 +5,7 @@ from setuptools import setup, find_packages
 
 REQUIRES = [
     'marshmallow>=1.2.0',
+    'PyYAML>=3.10'
 ]
 
 
