@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+import re
 
 from flask import current_app
 
@@ -21,10 +22,15 @@ def _rule_for_view(view):
     rule = current_app.url_map._rules_by_endpoint[endpoint][0]
     return rule
 
+# from flask-restplus
+RE_URL = re.compile(r'<(?:[^:<>]+:)?([^<>]+)>')
+
+def flaskpath2swagger(path):
+    return RE_URL.sub(r'{\1}', path)
 
 def path_from_view(view, operations, **kwargs):
     rule = _rule_for_view(view)
-    path = rule.rule
+    path = flaskpath2swagger(rule.rule)
     operations = utils.load_operations_from_docstring(view.__doc__)
     path = Path(path=path, operations=operations)
     return path

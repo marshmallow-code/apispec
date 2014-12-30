@@ -59,7 +59,7 @@ class TestPathHelpers:
 
         @app.route('/hello')
         def hello():
-            """Get a greeting.
+            """A greeting endpoint.
 
             ---
             get:
@@ -77,3 +77,12 @@ class TestPathHelpers:
         assert get_op['description'] == 'get a greeting'
         assert post_op['description'] == 'post a greeting'
         assert 'foo' not in spec._paths['/hello']
+
+    def test_path_is_translated_to_swagger_template(self, app, spec):
+
+        @app.route('/pet/<pet_id>')
+        def get_pet(pet_id):
+            return 'representation of pet {pet_id}'.format(pet_id=pet_id)
+
+        spec.add_path(view=get_pet)
+        assert '/pet/{pet_id}' in spec._paths
