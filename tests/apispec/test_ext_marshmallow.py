@@ -46,9 +46,9 @@ class TestOperationHelper:
 
             ---
             get:
-                schema: PetSchema
                 responses:
                     200:
+                        schema: PetSchema
                         description: successful operation
             """
             return '...'
@@ -69,7 +69,9 @@ class TestOperationHelper:
 
             ---
             get:
-                schema: PetSchema
+                responses:
+                    200:
+                        schema: PetSchema
             """
             return '...'
 

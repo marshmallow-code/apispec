@@ -30,19 +30,20 @@ def schema_path_helper(spec, view, **kwargs):
         return
     operations = doc_operations.copy()
     plug = spec.plugins[NAME]
-    for method, config in iteritems(doc_operations):
-        if 'schema' in config:
-            schema_cls = class_registry.get_class(config['schema'])
-            if not operations[method].get('responses'):
-                operations[method]['responses'] = {}
-            # If Schema class has been registered as a definition, use {'$ref':...} syntax
-            if schema_cls in plug.get('refs', {}):
-                schema_dict = {'$ref': plug['refs'][schema_cls]}
-            else:  # use full schema object
-                schema_dict = swagger.schema2jsonschema(schema_cls)
-            if not operations[method]['responses'].get(200):
-                operations[method]['responses'][200] = {}
-            operations[method]['responses'][200]['schema'] = schema_dict
+    for method, operation_dict in iteritems(doc_operations):
+        for status_code, response_dict in iteritems(operation_dict.get('responses', {})):
+            if 'schema' in response_dict:
+                schema_cls = class_registry.get_class(response_dict['schema'])
+                if not operations[method].get('responses'):
+                    operations[method]['responses'] = {}
+                # If Schema class has been registered as a definition, use {'$ref':...} syntax
+                if schema_cls in plug.get('refs', {}):
+                    schema_dict = {'$ref': plug['refs'][schema_cls]}
+                else:  # use full schema object
+                    schema_dict = swagger.schema2jsonschema(schema_cls)
+                if not operations[method]['responses'].get(200):
+                    operations[method]['responses'][200] = {}
+                operations[method]['responses'][200]['schema'] = schema_dict
     return Path(operations=operations)
 
 def setup(spec):
