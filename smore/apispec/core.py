@@ -40,7 +40,7 @@ class APISpec(object):
         self._definitions = {}
         self._paths = {}
         # Plugin and helpers
-        self._plugins = {}
+        self.plugins = {}
         self._definition_helpers = []
         self._path_helpers = []
 
@@ -93,7 +93,7 @@ class APISpec(object):
         :param str name: Import path to the plugin.
         :raise: PluginError if the given plugin is invalid.
         """
-        if path in self._plugins:
+        if path in self.plugins:
             return
         try:
             mod = __import__(
@@ -107,7 +107,7 @@ class APISpec(object):
             raise PluginError('Plugin "{0}" has no setup() function.')
         else:
             mod.setup(self)
-        self._plugins[path] = mod
+        self.plugins[path] = {}
         return None
 
     def register_definition_helper(self, func):
