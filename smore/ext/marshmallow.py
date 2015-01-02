@@ -37,10 +37,12 @@ def schema_path_helper(spec, view, **kwargs):
                 operations[method]['responses'] = {}
             # If Schema class has been registered as a definition, use {'$ref':...} syntax
             if schema_cls in plug.get('refs', {}):
-                resp = {'$ref': plug['refs'][schema_cls]}
+                schema_dict = {'$ref': plug['refs'][schema_cls]}
             else:  # use full schema object
-                resp = swagger.schema2jsonschema(schema_cls)
-            operations[method]['responses']['200'] = resp
+                schema_dict = swagger.schema2jsonschema(schema_cls)
+            if not operations[method]['responses'].get(200):
+                operations[method]['responses'][200] = {}
+            operations[method]['responses'][200]['schema'] = schema_dict
     return Path(operations=operations)
 
 def setup(spec):

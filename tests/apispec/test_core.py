@@ -168,7 +168,7 @@ class TestDefinitionHelpers:
 class TestPathHelpers:
 
     def test_path_helper_is_used(self, spec):
-        def path_helper(view_func, **kwargs):
+        def path_helper(spec, view_func, **kwargs):
             return Path(path=view_func['path'], method='get')
         spec.register_path_helper(path_helper)
         spec.add_path(

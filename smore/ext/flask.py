@@ -28,7 +28,7 @@ RE_URL = re.compile(r'<(?:[^:<>]+:)?([^<>]+)>')
 def flaskpath2swagger(path):
     return RE_URL.sub(r'{\1}', path)
 
-def path_from_view(view, operations, **kwargs):
+def path_from_view(spec, view, operations, **kwargs):
     rule = _rule_for_view(view)
     path = flaskpath2swagger(rule.rule)
     operations = utils.load_operations_from_docstring(view.__doc__)
