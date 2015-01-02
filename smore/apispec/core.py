@@ -113,7 +113,8 @@ class APISpec(object):
     def register_definition_helper(self, func):
         """Register a new definition helper. The helper **must** meet the following conditions:
 
-        - Receive the definition `name` as the first argument.
+        - Receive the `APISpec` instance as the first argument.
+        - Receive the definition `name` as the second argument.
         - Include ``**kwargs`` in its signature.
         - Return a `dict` representation of the definition's Schema object.
 
@@ -128,6 +129,7 @@ class APISpec(object):
     def register_path_helper(self, func):
         """Register a new path helper. The helper **must** meet the following conditions:
 
+        - Receive the `APISpec` instance as the first argument.
         - Include ``**kwargs`` in signature.
         - Return a `smore.apispec.core.Path` object.
 
