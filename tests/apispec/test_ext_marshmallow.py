@@ -56,3 +56,22 @@ class TestOperationHelper:
         op = p['get']
         assert 'responses' in op
         assert op['responses']['200'] == swagger.schema2jsonschema(self.PetSchema)
+
+    def test_schema_in_docstring_uses_ref_if_available(self, spec):
+        spec.definition('Pet', schema=self.PetSchema)
+
+        def pet_view():
+            """Not much to see here.
+
+            ---
+            get:
+                schema: PetSchema
+            """
+            return '...'
+
+        spec.add_path(path='/pet', view=pet_view)
+        p = spec._paths['/pet']
+        assert 'get' in p
+        op = p['get']
+        assert 'responses' in op
+        assert op['responses']['200']['$ref'] == 'Pet'
