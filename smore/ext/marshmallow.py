@@ -8,13 +8,18 @@ from smore import swagger
 from smore.apispec.core import Path
 from smore.apispec.utils import load_operations_from_docstring
 
-def schema_definition_helper(name, schema, **kwargs):
+def schema_definition_helper(spec, name, schema, **kwargs):
     """Definition helper that allows using a marshmallow
     :class:`Schema <marshmallow.Schema>` to provide Swagger
     metadata.
 
     :param type schema: A marshmallow Schema class.
     """
+    # Store registered refs, keyed by Schema class
+    plug = spec.plugins['smore.ext.marshmallow']
+    if 'refs' not in plug:
+        plug['refs'] = {}
+    plug['refs'][schema] = name
     return swagger.schema2jsonschema(schema)
 
 def schema_path_helper(view, **kwargs):
