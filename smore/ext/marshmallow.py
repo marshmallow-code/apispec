@@ -22,7 +22,7 @@ def schema_definition_helper(spec, name, schema, **kwargs):
     plug['refs'][schema] = name
     return swagger.schema2jsonschema(schema)
 
-def schema_path_helper(view, **kwargs):
+def schema_path_helper(spec, view, **kwargs):
     doc_operations = load_operations_from_docstring(view.__doc__)
     if not doc_operations:
         return

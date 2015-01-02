@@ -62,7 +62,7 @@ class APISpec(object):
         # Execute plugins' helpers
         for func in self._path_helpers:
             ret = func(
-                path=path, operations=operations, **kwargs
+                self, path=path, operations=operations, **kwargs
             )
             if isinstance(ret, Path):
                 path.update(ret)
