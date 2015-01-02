@@ -76,7 +76,7 @@ class APISpec(object):
         ret = {}
         # Execute all helpers from plugins
         for func in self._definition_helpers:
-            ret.update(func(name, **kwargs))
+            ret.update(func(self, name, **kwargs))
         if properties:
             ret['properties'] = properties
         if enum:

@@ -117,7 +117,7 @@ class TestExtensions:
     @mock.patch(DUMMY_PLUGIN + '.setup')
     def test_setup_plugin(self, mock_setup, spec):
         spec.setup_plugin(self.DUMMY_PLUGIN)
-        assert self.DUMMY_PLUGIN in spec._plugins
+        assert self.DUMMY_PLUGIN in spec.plugins
         mock_setup.assert_called_once
         spec.setup_plugin(self.DUMMY_PLUGIN)
         assert mock_setup.call_count == 1
@@ -145,17 +145,18 @@ class TestDefinitionHelpers:
     def test_definition_helpers_are_used(self, spec):
         properties = {'properties': {'name': {'type': 'string'}}}
 
-        def definition_helper(name, **kwargs):
+        def definition_helper(spec, name, **kwargs):
+            assert type(spec) == APISpec
             return properties
         spec.register_definition_helper(definition_helper)
         spec.definition('Pet', {})
         assert spec._definitions['Pet'] == properties
 
     def test_multiple_definition_helpers(self, spec):
-        def helper1(name, **kwargs):
+        def helper1(spec, name, **kwargs):
             return {'properties': {'age': {'type': 'number'}}}
 
-        def helper2(name, fmt, **kwargs):
+        def helper2(spec, name, fmt, **kwargs):
             return {'properties': {'age': {'type': 'number', 'format': fmt}}}
 
         spec.register_definition_helper(helper1)
