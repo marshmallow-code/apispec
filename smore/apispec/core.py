@@ -1,6 +1,15 @@
 # -*- coding: utf-8 -*-
 
+from marshmallow.compat import iteritems
 from .exceptions import APISpecError, PluginError
+
+VALID_METHODS = [
+    'get',
+    'post',
+    'put',
+    'patch',
+    'delete',
+]
 
 
 class Path(object):
@@ -43,6 +52,8 @@ class APISpec(object):
         self.plugins = {}
         self._definition_helpers = []
         self._path_helpers = []
+        # {'get': {200: [my_helper]}}
+        self._response_helpers = {}
 
         for plugin_path in plugins:
             self.setup_plugin(plugin_path)
@@ -66,6 +77,20 @@ class APISpec(object):
             )
             if isinstance(ret, Path):
                 path.update(ret)
+
+        # TODO: reduce nesting
+        if path.operations:
+            for method in VALID_METHODS:
+                if method in path.operations:
+                    responses = path.operations[method].get('responses', [])
+                    for status_code, config in iteritems(responses):
+                        if status_code in self._response_helpers[method]:
+                            funcs = self._response_helpers[method][status_code]
+                            for func in funcs:
+                                path.operations[method]['responses'][status_code].update(
+                                    func(self, **kwargs)
+                                )
+
         self._paths.update(path.to_dict())
 
     def definition(self, name, properties=None, enum=None, **kwargs):
@@ -136,3 +161,16 @@ class APISpec(object):
         The helper may define any named arguments in its signature.
         """
         self._path_helpers.append(func)
+
+    def register_response_helper(self, func, method, status_code):
+        """Register a new response helper. The helper **must** meet the following conditions:
+
+        - Receive the `APISpec` instance as the first argument.
+        - Include ``**kwargs`` in signature.
+        - Return a `dict` response object.
+
+        The helper may define any named arguments in its signature.
+        """
+        if method not in self._response_helpers:
+            self._response_helpers[method] = {}
+        self._response_helpers[method].setdefault(status_code, []).append(func)
