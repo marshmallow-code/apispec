@@ -186,3 +186,25 @@ class TestPathHelpers:
         }
 
         assert spec._paths == expected
+
+class TestResponseHelpers:
+
+    def test_response_helper_is_used(self, spec):
+        def success_helper(spec, **kwargs):
+            return {'description': 'success!'}
+
+        spec.register_response_helper(success_helper, 'get', 200)
+        spec.add_path('/pet/{petId}', operations={
+            'get': {
+                'responses': {
+                    200: {
+                        'schema': {'$ref': 'Pet'}
+                    }
+                }
+            }
+        })
+
+        resp_obj = spec._paths['/pet/{petId}']['get']['responses'][200]
+        assert resp_obj['schema'] == {'$ref': 'Pet'}
+        assert resp_obj['description'] == 'success!'
+
