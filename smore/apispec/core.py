@@ -9,6 +9,7 @@ VALID_METHODS = [
     'put',
     'patch',
     'delete',
+    'head',
 ]
 
 
@@ -82,9 +83,9 @@ class APISpec(object):
         if path.operations:
             for method in VALID_METHODS:
                 if method in path.operations:
-                    responses = path.operations[method].get('responses', [])
+                    responses = path.operations[method].get('responses', {})
                     for status_code, config in iteritems(responses):
-                        if status_code in self._response_helpers[method]:
+                        if status_code in self._response_helpers.get(method, {}):
                             funcs = self._response_helpers[method][status_code]
                             for func in funcs:
                                 path.operations[method]['responses'][status_code].update(
@@ -171,6 +172,7 @@ class APISpec(object):
 
         The helper may define any named arguments in its signature.
         """
+        method = method.lower()
         if method not in self._response_helpers:
             self._response_helpers[method] = {}
         self._response_helpers[method].setdefault(status_code, []).append(func)

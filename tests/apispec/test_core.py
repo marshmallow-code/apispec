@@ -190,11 +190,11 @@ class TestPathHelpers:
 class TestResponseHelpers:
 
     def test_response_helper_is_used(self, spec):
-        def success_helper(spec, **kwargs):
-            return {'description': 'success!'}
+        def success_helper(spec, success_description, **kwargs):
+            return {'description': success_description}
 
         spec.register_response_helper(success_helper, 'get', 200)
-        spec.add_path('/pet/{petId}', operations={
+        spec.add_path('/pet/{petId}', success_description='success!', operations={
             'get': {
                 'responses': {
                     200: {
