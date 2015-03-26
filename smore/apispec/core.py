@@ -29,11 +29,15 @@ class Path(object):
         invalid = set(iterkeys(operations)) - set(VALID_METHODS)
         # Reject invalid http methods
         if invalid:
-            raise APISpecError('One or more HTTP methods are invalid: {0}'.format(", ".join(invalid)))
+            raise APISpecError(
+                'One or more HTTP methods are invalid: {0}'.format(", ".join(invalid))
+            )
         # Reject invalid operations definitions
         for method, operation in iteritems(operations):
             if len(operation.get('responses', {})) == 0:
-                raise APISpecError('One or more Responses are required for method {0}'.format(method))
+                raise APISpecError(
+                    'One or more Responses are required for method {0}'.format(method)
+                )
         self.operations = operations
 
     def to_dict(self):
