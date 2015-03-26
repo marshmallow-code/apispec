@@ -24,7 +24,11 @@ else:
         webargs' ``ValidationError`` (if webargs is installed) and marshmallow's
         ``ValidationError`` so that the same validation functions can be used in either library.
         """
-        pass
+
+        def __init__(self, message, field=None, **_):
+            # make the signature compatible with the above impl for when not HAS_WEBARGS
+            super(ValidationError, self).__init__(message, field)
+
 
 class BaseConverter(object):
     """Base converter validator that converts a third-party validators into

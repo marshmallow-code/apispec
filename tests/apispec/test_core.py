@@ -175,13 +175,26 @@ class TestPathHelpers:
             view_func={'path': '/pet/{petId}'},
             operations=dict(
                 get=dict(
-                    produces=('application/xml', )
+                    produces=('application/xml', ),
+                    responses={
+                        "200": {
+                            "schema": {'$ref': '#/definitions/Pet'},
+                            'description': 'successful operation'
+                        }
+                    }
                 )
             )
         )
         expected = {
             '/pet/{petId}': {
-                'get': {'produces': ('application/xml', )}
+                'get': {'produces': ('application/xml', ),
+                        'responses': {
+                            "200": {
+                                "schema": {'$ref': '#/definitions/Pet'},
+                                'description': 'successful operation'
+                            }
+                        }
+                }
             }
         }
 
