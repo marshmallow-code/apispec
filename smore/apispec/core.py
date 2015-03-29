@@ -96,8 +96,8 @@ class APISpec(object):
         methods = set(iterkeys(path.operations)) & set(iterkeys(self._response_helpers))
         for method in methods:
             responses = path.operations[method]['responses']
-            statii = set(iterkeys(responses)) & set(iterkeys(self._response_helpers[method]))
-            for status_code in statii:
+            statuses = set(iterkeys(responses)) & set(iterkeys(self._response_helpers[method]))
+            for status_code in statuses:
                 for func in self._response_helpers[method][status_code]:
                     responses[status_code].update(
                         func(self, **kwargs)
