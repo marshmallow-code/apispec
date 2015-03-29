@@ -9,6 +9,7 @@ from webargs import Arg, ValidationError as WebargsValidationError
 
 from smore.validate import ValidationError
 
+
 class TestValidationError:
 
     def test_marshmallow_validation(self):
@@ -42,6 +43,7 @@ class TestValidationError:
 
 from smore.validate.wtforms import from_wtforms, make_converter
 from wtforms.validators import AnyOf, NoneOf, Length
+
 
 class TestWTFormsValidation:
 

@@ -40,9 +40,11 @@ FIELD_MAPPING = {
     fields.List: ('array', None),
 }
 
+
 def _get_json_type_for_field(field):
     json_type, fmt = FIELD_MAPPING.get(type(field), ('string', None))
     return json_type, fmt
+
 
 def field2property(field, use_refs=True):
     """Return the JSON Schema property definition given a marshmallow
@@ -75,6 +77,7 @@ def field2property(field, use_refs=True):
         else:
             ret = schema
     return ret
+
 
 def schema2jsonschema(schema_cls):
     """Return the JSON Schema Object for a given marshmallow
@@ -160,15 +163,18 @@ def _get_json_type(pytype):
     json_type, fmt = __type_map__.get(pytype, ('string', None))
     return json_type, fmt
 
+
 def arg2parameter(arg, name=None, default_in='body'):
     """Return the Parameter Object definition for a :class:`webargs.Arg <webargs.core.Arg>`.
 
     https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#parameterObject
-
+    :param webargs.core.Arg arg: Webarg
+    :param str name: Field name
+    :param str default_in: Default location to look for ``name``
     :raise: TranslationError if arg object cannot be translated to a Parameter Object schema.
     :rtype: dict, a Parameter Object
     """
-    swagger_target = __target_map__.get(arg.target, default_in)
+    swagger_target = __target_map__.get(arg.location, default_in)
     ret = {
         'in': swagger_target,
         'required': arg.required,
@@ -186,6 +192,7 @@ def arg2parameter(arg, name=None, default_in='body'):
     else:
         ret.update(arg_as_property)
     return ret
+
 
 def arg2property(arg):
     """Return the JSON Schema property definition given a webargs :class:`Arg <webargs.core.Arg>`.
@@ -215,6 +222,7 @@ def arg2property(arg):
     ret.update(arg.metadata)
     return ret
 
+
 def args2parameters(args, default_in='body'):
     """Return an array of Swagger properties given a dictionary of webargs
     :class:`Args <webargs.core.Arg>`.
@@ -224,8 +232,8 @@ def args2parameters(args, default_in='body'):
     Example: ::
 
         args = {
-            'username': Arg(str, target='querystring', description='Username to log in'),
-            'password': Arg(str, target='querystring', description='Password in plain text'),
+            'username': Arg(str, location='querystring', description='Username to log in'),
+            'password': Arg(str, location='querystring', description='Password in plain text'),
         }
         args2parameters(args)
         # [{'required': False, 'type': 'string', 'in': 'query',

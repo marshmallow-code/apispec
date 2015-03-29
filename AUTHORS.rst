@@ -9,3 +9,5 @@ Lead
 
 Contributors (chronological)
 ============================
+
+- Josh Johnston `@Trii <https://github.com/Trii>`_

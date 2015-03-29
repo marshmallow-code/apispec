@@ -35,10 +35,10 @@ class TestPathHelpers:
         def hello():
             return 'hi'
 
-        spec.add_path(view=hello, operations={'get': {'parameters': '..params..'}})
+        spec.add_path(view=hello, operations={'get': {'parameters': '..params..', 'responses': {'200': '..params..'}}})
         assert '/hello' in spec._paths
         assert 'get' in spec._paths['/hello']
-        assert spec._paths['/hello']['get'] == {'parameters': '..params..'}
+        assert spec._paths['/hello']['get'] == {'parameters': '..params..', 'responses': {'200': '..params..'}}
 
     def test_path_with_multiple_methods(self, app, spec):
 
@@ -47,8 +47,8 @@ class TestPathHelpers:
             return 'hi'
 
         spec.add_path(view=hello, operations=dict(
-            get={'description': 'get a greeting'},
-            post={'description': 'post a greeting'}
+            get={'description': 'get a greeting', 'responses': {'200': '..params..'}},
+            post={'description': 'post a greeting', 'responses': {'200': '..params..'}}
         ))
         get_op = spec._paths['/hello']['get']
         post_op = spec._paths['/hello']['post']
@@ -64,10 +64,24 @@ class TestPathHelpers:
             ---
             get:
                 description: get a greeting
+                responses:
+                    200:
+                        description: a pet to be returned
+                        schema:
+                            $ref: #/definitions/Pet
+
             post:
                 description: post a greeting
+                responses:
+                    200:
+                        description:some data
+
             foo:
                 description: not a valid operation
+                responses:
+                    200:
+                        description:
+                            more junk
             """
             return 'hi'
 
