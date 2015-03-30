@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from marshmallow.compat import iteritems, iterkeys
+from marshmallow.compat import iterkeys
 from .exceptions import APISpecError, PluginError
 
 VALID_METHODS = [

@@ -9,14 +9,15 @@ The :mod:`smore.ext.webapp2 <webapp2>` module generates swagger path objects fro
 from __future__ import absolute_import
 
 import webapp2
-from marshmallow.compat import iteritems
+from marshmallow.compat import iteritems, basestring
 from smore.apispec import Path
 from smore.apispec.exceptions import APISpecError
 from smore.apispec import utils
 
 
 def path_from_route(spec, route, operations=None, **kwargs):
-    """Creates a :class:`smore.apispec.Path` object based off of a :class:`webapp2.Route` and their subclasses
+    """Creates a :class:`smore.apispec.Path` object based off of a :class:`webapp2.Route`
+    and their subclasses
 
     :param smore.apispec.APISpec spec:
     :param webapp2.Route route:
@@ -41,7 +42,8 @@ def path_from_route(spec, route, operations=None, **kwargs):
         else:
             handler = router.handlers[handler]
     for method, details in iteritems(merge_ops):
-        handler_method = getattr(handler, route.handler_method or method.lower().replace('-', '_'), None)
+        try_method = route.handler_method or method.lower().replace('-', '_')
+        handler_method = getattr(handler, try_method, None)
         docops = utils.load_operations_from_docstring(getattr(handler_method, '__doc__', ''))
         # Merge in any `method`: yaml subsection
         if docops and docops.get(method, None):
