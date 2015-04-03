@@ -114,11 +114,11 @@ class TestExtensions:
 
     DUMMY_PLUGIN = 'tests.apispec.plugins.dummy_plugin'
 
-    @mock.patch(DUMMY_PLUGIN + '.setup')
+    @mock.patch(DUMMY_PLUGIN + '.setup', autospec=True)
     def test_setup_plugin(self, mock_setup, spec):
         spec.setup_plugin(self.DUMMY_PLUGIN)
         assert self.DUMMY_PLUGIN in spec.plugins
-        mock_setup.assert_called_once
+        mock_setup.assert_called_once_with(spec)
         spec.setup_plugin(self.DUMMY_PLUGIN)
         assert mock_setup.call_count == 1
 
