@@ -35,12 +35,11 @@ def path_from_route(spec, route, operations=None, **kwargs):
             raise APISpecError("Method {0} is not handled by route {0}".format(method, path))
         merge_ops[method].update(details)
     handler = route.handler
-    router = webapp2.get_app().router
     if isinstance(handler, basestring):
-        if handler not in router.handlers:
-            router.handlers[handler] = handler = webapp2.import_string(handler)
+        if handler not in _route_cache.handlers:
+            _route_cache[handler] = handler = webapp2.import_string(handler)
         else:
-            handler = router.handlers[handler]
+            handler = _route_cache[handler]
     for method, details in iteritems(merge_ops):
         try_method = route.handler_method or method.lower().replace('-', '_')
         handler_method = getattr(handler, try_method, None)
@@ -58,3 +57,7 @@ def setup(spec):
     :param smore.apispec.APISpec spec: The APISpec instance the plugin will register data onto
     """
     spec.register_path_helper(path_from_route)
+
+_route_cache = {}
+
+__all__ = ['path_from_route', 'setup']
