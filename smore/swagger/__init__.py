@@ -147,7 +147,7 @@ __type_map__ = {
     set: ('array', None),
 }
 
-__target_map__ = {
+__location_map__ = {
     'querystring': 'query',
     'json': 'body',
     'headers': 'header',
@@ -168,15 +168,15 @@ def arg2parameter(arg, name=None, default_in='body'):
     :raise: TranslationError if arg object cannot be translated to a Parameter Object schema.
     :rtype: dict, a Parameter Object
     """
-    swagger_target = __target_map__.get(arg.target, default_in)
+    swagger_location = __location_map__.get(arg.location, default_in)
     ret = {
-        'in': swagger_target,
+        'in': swagger_location,
         'required': arg.required,
         'name': name or arg.metadata.get('name', 'body'),
     }
 
     arg_as_property = arg2property(arg)
-    if swagger_target == 'body':
+    if swagger_location == 'body':
         ret['name'] = 'body'
         ret['schema'] = {}
         schema_props = {}
@@ -224,8 +224,8 @@ def args2parameters(args, default_in='body'):
     Example: ::
 
         args = {
-            'username': Arg(str, target='querystring', description='Username to log in'),
-            'password': Arg(str, target='querystring', description='Password in plain text'),
+            'username': Arg(str, location='querystring', description='Username to log in'),
+            'password': Arg(str, location='querystring', description='Password in plain text'),
         }
         args2parameters(args)
         # [{'required': False, 'type': 'string', 'in': 'query',
@@ -236,6 +236,6 @@ def args2parameters(args, default_in='body'):
     :param dict args: Mapping of parameter names -> `Arg` objects.
     """
     return [
-        arg2parameter(arg, name=arg.source or name, default_in=default_in)
+        arg2parameter(arg, name=name, default_in=default_in)
         for name, arg in iteritems(args)
     ]

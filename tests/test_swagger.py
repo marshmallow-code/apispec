@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from pytest import mark, raises
+from pytest import mark
 from webargs import Arg
 from marshmallow import fields, Schema
 from marshmallow.compat import binary_type
 
 from smore import swagger
-from smore.exceptions import SmoreError
 from smore.swagger import arg2parameter, arg2property
 
 
@@ -22,74 +21,74 @@ class TestArgToSwagger:
         (set, 'array'),
     ])
     def test_type_translation(self, pytype, jsontype):
-        arg = Arg(pytype, target='form')
+        arg = Arg(pytype, location='form')
         result = arg2parameter(arg)
         assert result['type'] == jsontype
 
-    @mark.parametrize(('webargs_target', 'swagger_target'), [
+    @mark.parametrize(('webargs_location', 'swagger_location'), [
         ('querystring', 'query'),
         ('json', 'body'),
         ('headers', 'header'),
         ('form', 'formData'),
         ('files', 'formData')
     ])
-    def test_target_translation(self, webargs_target, swagger_target):
-        arg = Arg(int, target=webargs_target)
+    def test_location_translation(self, webargs_location, swagger_location):
+        arg = Arg(int, location=webargs_location)
         result = arg2parameter(arg)
-        assert result['in'] == swagger_target
+        assert result['in'] == swagger_location
 
-    def test_target_defaults_to_json_body(self):
-        # No target specified
+    def test_location_defaults_to_json_body(self):
+        # No location specified
         arg = Arg(int)
         result = arg2parameter(arg)
         assert result['in'] == 'body'
 
     def test_required_translation(self):
         arg = Arg(int, required=True)
-        arg.target = 'json'
+        arg.location = 'json'
         result = arg2parameter(arg)
         assert result['required'] is True
-        arg2 = Arg(int, target='json')
+        arg2 = Arg(int, location='json')
         result2 = arg2parameter(arg2)
         assert result2['required'] is False
 
     def test_arg_with_description(self):
-        arg = Arg(int, target='form', description='a webargs arg')
+        arg = Arg(int, location='form', description='a webargs arg')
         result = arg2parameter(arg)
         assert result['description'] == arg.metadata['description']
 
     def test_arg_with_format(self):
-        arg = Arg(int, target='form', format='int32')
+        arg = Arg(int, location='form', format='int32')
         result = arg2parameter(arg)
         assert result['format'] == 'int32'
 
     def test_arg_with_default(self):
-        arg = Arg(int, target='form', default=42)
+        arg = Arg(int, location='form', default=42)
         result = arg2parameter(arg)
         assert result['default'] == 42
 
-    def test_arg_name_is_body_if_target_is_json(self):
-        arg = Arg(int, target='json')
+    def test_arg_name_is_body_if_location_is_json(self):
+        arg = Arg(int, location='json')
         result = arg2parameter(arg)
         assert result['name'] == 'body'
 
     def test_arg_with_name(self):
-        arg = Arg(int, target='form', name='foo')
+        arg = Arg(int, location='form', name='foo')
         res = arg2parameter(arg)
         assert res['name'] == 'foo'
 
     def test_schema_if_json_body(self):
-        arg = Arg(int, target='json')
+        arg = Arg(int, location='json')
         res = arg2parameter(arg)
         assert 'schema' in res
 
     def test_no_schema_if_form_body(self):
-        arg = Arg(int, target='form')
+        arg = Arg(int, location='form')
         res = arg2parameter(arg)
         assert 'schema' not in res
 
     def test_arg2property_with_description(self):
-        arg = Arg(int, target='json', description='status')
+        arg = Arg(int, location='json', description='status')
         res = arg2property(arg)
         assert res['type'] == 'integer'
         assert res['description'] == arg.metadata['description']
@@ -100,7 +99,7 @@ class TestArgToSwagger:
         (binary_type, 'byte'),
     ])
     def test_arg2property_formats(self, pytype, expected_format):
-        arg = Arg(pytype, target='json')
+        arg = Arg(pytype, location='json')
         res = arg2property(arg)
         assert res['format'] == expected_format
 
@@ -116,7 +115,7 @@ class TestArgToSwagger:
         assert res['maxLength'] == 100
 
     def test_arg2swagger_puts_json_arguments_in_schema(self):
-        arg = Arg(int, target='json', description='a count', format='int32')
+        arg = Arg(int, location='json', description='a count', format='int32')
         res = arg2parameter(arg, 'username')
         assert res['name'] == 'body'
         assert 'description' not in res
@@ -131,7 +130,7 @@ class TestWebargsSchemaToSwagger:
 
     def test_args2parameters(self):
         args = {
-            'username': Arg(str, target='querystring',
+            'username': Arg(str, location='querystring',
                 required=False, description='The user name for login'),
         }
         result = swagger.args2parameters(args)
@@ -142,9 +141,9 @@ class TestWebargsSchemaToSwagger:
         assert username['required'] is False
         assert username['description'] == args['username'].metadata['description']
 
-    def test_arg2parameters_uses_source_for_name(self):
+    def test_arg2parameters_with_dest(self):
         args = {
-            'neat_header': Arg(str, target='headers', source='X-Neat-Header')
+            'X-Neat-Header': Arg(str, location='headers', dest='neat_header')
         }
         result = swagger.args2parameters(args)
         header = result[0]
