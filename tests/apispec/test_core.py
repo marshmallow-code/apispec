@@ -131,6 +131,10 @@ class TestPath:
             )
         )
 
+        p = spec._paths[path]
+        assert 'get' in p
+        assert 'put' in p
+
     def test_add_path_with_no_path_raises_error(self, spec):
         with pytest.raises(APISpecError) as excinfo:
             spec.add_path()
