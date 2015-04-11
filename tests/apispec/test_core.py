@@ -105,6 +105,32 @@ class TestPath:
         assert p['description'] == route_spec['description']
         assert p['tags'] == route_spec['tags']
 
+    def test_add_path_merges_paths(self, spec):
+        """Test that adding a second HTTP method to an existing path performs
+        a merge operation instead of an overwrite"""
+        path = '/pet/{petId}'
+        route_spec = self.paths[path]['get']
+        spec.add_path(
+            path=path,
+            operations=dict(
+                get=route_spec
+            )
+        )
+        spec.add_path(
+            path=path,
+            operations=dict(
+                put=dict(
+                    parameters=route_spec['parameters'],
+                    responses=route_spec['responses'],
+                    produces=route_spec['produces'],
+                    operationId='updatePet',
+                    summary='Updates an existing Pet',
+                    description='Use this method to make changes to Pet `petId`',
+                    tags=route_spec['tags']
+                )
+            )
+        )
+
     def test_add_path_with_no_path_raises_error(self, spec):
         with pytest.raises(APISpecError) as excinfo:
             spec.add_path()
