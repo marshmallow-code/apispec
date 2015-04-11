@@ -126,12 +126,13 @@ class TestArgToSwagger:
         assert schema_props['username']['description'] == arg.metadata['description']
         assert schema_props['username']['format'] == 'int32'
 
+
 class TestWebargsSchemaToSwagger:
 
     def test_args2parameters(self):
         args = {
-            'username': Arg(str, location='querystring',
-                required=False, description='The user name for login'),
+            'username': Arg(str, location='querystring', required=False,
+                            description='The user name for login'),
         }
         result = swagger.args2parameters(args)
         username = result[0]
@@ -270,8 +271,10 @@ class CategorySchema(Schema):
     id = fields.Int()
     name = fields.Str()
 
+
 class PetSchema(Schema):
     category = fields.Nested(CategorySchema)
+
 
 class TestNesting:
 

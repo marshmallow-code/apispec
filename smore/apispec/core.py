@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from marshmallow.compat import iteritems
+from marshmallow.compat import iteritems, iterkeys
 from .exceptions import APISpecError, PluginError
 
 VALID_METHODS = [
@@ -26,7 +26,20 @@ class Path(object):
 
     def __init__(self, path=None, operations=None, **kwargs):
         self.path = path
-        self.operations = operations or {}
+        operations = operations or {}
+        invalid = set(iterkeys(operations)) - set(VALID_METHODS)
+        # Reject invalid http methods
+        if invalid:
+            raise APISpecError(
+                'One or more HTTP methods are invalid: {0}'.format(", ".join(invalid))
+            )
+        # Reject invalid operations definitions
+        for method, operation in iteritems(operations):
+            if len(operation.get('responses', {})) == 0:
+                raise APISpecError(
+                    'One or more Responses are required for method {0}'.format(method)
+                )
+        self.operations = operations
 
     def to_dict(self):
         if not self.path:
@@ -79,18 +92,17 @@ class APISpec(object):
             if isinstance(ret, Path):
                 path.update(ret)
 
-        # TODO: reduce nesting
-        if path.operations:
-            for method in VALID_METHODS:
-                if method in path.operations:
-                    responses = path.operations[method].get('responses', {})
-                    for status_code, config in iteritems(responses):
-                        if status_code in self._response_helpers.get(method, {}):
-                            funcs = self._response_helpers[method][status_code]
-                            for func in funcs:
-                                path.operations[method]['responses'][status_code].update(
-                                    func(self, **kwargs)
-                                )
+        # Process response helpers for any path operations defined.
+        # Rule is that method + http status exist in both operations and helpers
+        methods = set(iterkeys(path.operations)) & set(iterkeys(self._response_helpers))
+        for method in methods:
+            responses = path.operations[method]['responses']
+            statuses = set(iterkeys(responses)) & set(iterkeys(self._response_helpers[method]))
+            for status_code in statuses:
+                for func in self._response_helpers[method][status_code]:
+                    responses[status_code].update(
+                        func(self, **kwargs)
+                    )
 
         self._paths.update(path.to_dict())
 
