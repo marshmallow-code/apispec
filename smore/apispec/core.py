@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from marshmallow.compat import iteritems, iterkeys
+from marshmallow.compat import iterkeys
 from .exceptions import APISpecError, PluginError
 
 VALID_METHODS = [
@@ -13,7 +13,7 @@ VALID_METHODS = [
 ]
 
 
-class Path(object):
+class Path(dict):
     """Represents a Swagger Path object.
 
     https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#pathsObject
@@ -28,18 +28,13 @@ class Path(object):
         self.path = path
         operations = operations or {}
         invalid = set(iterkeys(operations)) - set(VALID_METHODS)
-        # Reject invalid http methods
         if invalid:
             raise APISpecError(
                 'One or more HTTP methods are invalid: {0}'.format(", ".join(invalid))
             )
-        # Reject invalid operations definitions
-        for method, operation in iteritems(operations):
-            if len(operation.get('responses', {})) == 0:
-                raise APISpecError(
-                    'One or more Responses are required for method {0}'.format(method)
-                )
         self.operations = operations
+        kwargs.update(self.operations)
+        super(Path, self).__init__(**kwargs)
 
     def to_dict(self):
         if not self.path:
@@ -48,10 +43,11 @@ class Path(object):
             self.path: self.operations
         }
 
-    def update(self, path):
+    def update(self, path, **kwargs):
         if path.path:
             self.path = path.path
         self.operations.update(path.operations)
+        super(Path, self).update(path.operations)
 
 
 class APISpec(object):
@@ -92,6 +88,9 @@ class APISpec(object):
             if isinstance(ret, Path):
                 path.update(ret)
 
+        if not path.path:
+            raise APISpecError('Path template is not specified')
+
         # Process response helpers for any path operations defined.
         # Rule is that method + http status exist in both operations and helpers
         methods = set(iterkeys(path.operations)) & set(iterkeys(self._response_helpers))
@@ -104,7 +103,7 @@ class APISpec(object):
                         func(self, **kwargs)
                     )
 
-        self._paths.update(path.to_dict())
+        self._paths.setdefault(path.path, path).update(path)
 
     def definition(self, name, properties=None, enum=None, **kwargs):
         """Add a new definition to the spec.
