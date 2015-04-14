@@ -181,6 +181,7 @@ class TestMarshmallowFieldToSwagger:
         field = fields.List(fields.String)
         res = swagger.field2property(field)
         assert res['type'] == 'array'
+        assert res['items'] == swagger.field2property(fields.String())
 
     @mark.parametrize(('FieldClass', 'expected_format'), [
         (fields.Integer, 'int32'),

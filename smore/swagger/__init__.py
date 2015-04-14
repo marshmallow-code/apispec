@@ -76,6 +76,8 @@ def field2property(field, use_refs=True):
             ret['items'] = schema
         else:
             ret = schema
+    elif isinstance(field, fields.List):
+        ret['items'] = field2property(field.container)
     return ret
 
 
