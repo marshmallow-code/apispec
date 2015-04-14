@@ -207,13 +207,6 @@ class TestMarshmallowFieldToSwagger:
         res = swagger.field2property(field)
         assert res['default'] == 'foo'
 
-    def test_field_required(self):
-        field = fields.Str(required=True)
-        res = swagger.field2property(field)
-        assert res['required'] is True
-        field2 = fields.Str()
-        assert swagger.field2property(field2)['required'] is False
-
     def test_field_with_additional_metadata(self):
         field = fields.Str(minLength=6, maxLength=100)
         res = swagger.field2property(field)
@@ -239,6 +232,20 @@ class TestMarshmallowSchemaToModelDefinition:
         assert props['email']['type'] == 'string'
         assert props['email']['format'] == 'email'
         assert props['email']['description'] == 'email address of the user'
+
+    def test_required_fields(self):
+        class BandSchema(Schema):
+            drummer = fields.Str(required=True)
+            bassist = fields.Str()
+        res = swagger.schema2jsonschema(BandSchema)
+        assert res['required'] == ['drummer']
+
+    def test_no_required_fields(self):
+        class BandSchema(Schema):
+            drummer = fields.Str()
+            bassist = fields.Str()
+        res = swagger.schema2jsonschema(BandSchema)
+        assert 'required' not in res
 
     def test_title_and_description_may_be_added(self):
         class UserSchema(Schema):
