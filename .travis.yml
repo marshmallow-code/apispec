@@ -1,5 +1,8 @@
 # Config file for automatic testing at travis-ci.org
 
+# Containerized builds
+sudo: false
+
 language: python
 
 python:
