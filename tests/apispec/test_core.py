@@ -6,16 +6,31 @@ from smore.apispec import APISpec, Path
 from smore.apispec.exceptions import PluginError, APISpecError
 
 
+description = 'This is a sample Petstore server.  You can find out more '
+'about Swagger at <a href=\"http://swagger.wordnik.com\">http://swagger.wordnik.com</a> '
+'or on irc.freenode.net, #swagger.  For this sample, you can use the api '
+'key \"special-key\" to test the authorization filters'
+
+
 @pytest.fixture()
 def spec():
     return APISpec(
         title='Swagger Petstore',
         version='1.0.0',
-        description='This is a sample Petstore server.  You can find out more '
-        'about Swagger at <a href=\"http://swagger.wordnik.com\">http://swagger.wordnik.com</a> '
-        'or on irc.freenode.net, #swagger.  For this sample, you can use the api '
-        'key \"special-key\" to test the authorization filters'
+        description=description,
     )
+
+
+class TestMetadata:
+
+    def test_swagger_version(self, spec):
+        assert spec.to_dict()['swagger'] == '2.0'
+
+    def test_swagger_info(self, spec):
+        info = spec.to_dict()['info']
+        assert info['title'] == 'Swagger Petstore'
+        assert info['version'] == '1.0.0'
+        assert info['description'] == description
 
 
 class TestDefinitions:
@@ -40,6 +55,7 @@ class TestDefinitions:
         )
         defs_json = spec.to_dict()['definitions']
         assert defs_json['Pet']['enum'] == enum
+
 
 class TestPath:
     paths = {
@@ -140,6 +156,7 @@ class TestPath:
             spec.add_path()
         assert 'Path template is not specified' in str(excinfo)
 
+
 class TestExtensions:
 
     DUMMY_PLUGIN = 'tests.apispec.plugins.dummy_plugin'
@@ -195,6 +212,7 @@ class TestDefinitionHelpers:
         expected = {'properties': {'age': {'type': 'number', 'format': 'int32'}}}
         assert spec._definitions['Pet'] == expected
 
+
 class TestPathHelpers:
 
     def test_path_helper_is_used(self, spec):
@@ -217,13 +235,14 @@ class TestPathHelpers:
         )
         expected = {
             '/pet/{petId}': {
-                'get': {'produces': ('application/xml', ),
-                        'responses': {
-                            "200": {
-                                "schema": {'$ref': '#/definitions/Pet'},
-                                'description': 'successful operation'
-                            }
+                'get': {
+                    'produces': ('application/xml', ),
+                    'responses': {
+                        '200': {
+                            'schema': {'$ref': '#/definitions/Pet'},
+                            'description': 'successful operation',
                         }
+                    }
                 }
             }
         }
@@ -250,4 +269,3 @@ class TestResponseHelpers:
         resp_obj = spec._paths['/pet/{petId}']['get']['responses'][200]
         assert resp_obj['schema'] == {'$ref': 'Pet'}
         assert resp_obj['description'] == 'success!'
-

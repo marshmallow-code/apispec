@@ -12,6 +12,8 @@ VALID_METHODS = [
     'head',
 ]
 
+SWAGGER_VERSION = '2.0'
+
 
 class Path(dict):
     """Represents a Swagger Path object.
@@ -52,9 +54,18 @@ class Path(dict):
 
 class APISpec(object):
     """Stores metadata that describes a RESTful API using the Swagger 2.0 specification.
+
+    :param str title: API title
+    :param str version: API version
+    :param tuple plugins: Paths to plugin modules
     """
 
-    def __init__(self, plugins=(), default_content_types=None, *args, **kwargs):
+    def __init__(self, title, version, plugins=(), default_content_types=None, *args, **kwargs):
+        self.info = {
+            'title': title,
+            'version': version,
+        }
+        self.info.update(kwargs)
         # Metadata
         self._definitions = {}
         self._paths = {}
@@ -70,6 +81,8 @@ class APISpec(object):
 
     def to_dict(self):
         return {
+            'swagger': SWAGGER_VERSION,
+            'info': self.info,
             'definitions': self._definitions,
             'paths': self._paths,
         }

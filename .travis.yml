@@ -11,6 +11,7 @@ python:
 install:
   - pip install -r dev-requirements.txt
   - pip install -U .
+  - npm install -g swagger-tools
 
 before_script:
   - flake8 .
