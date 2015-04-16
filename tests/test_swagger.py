@@ -1,11 +1,17 @@
 # -*- coding: utf-8 -*-
 
+import json
+import tempfile
+import subprocess
+
+import pytest
 from pytest import mark
 from webargs import Arg
 from marshmallow import fields, Schema
 from marshmallow.compat import binary_type
 
 from smore import swagger
+from smore.apispec import APISpec
 from smore.swagger import arg2parameter, arg2property
 
 
@@ -308,3 +314,43 @@ class TestNesting:
         res = swagger.schema2jsonschema(PetSchema)
         props = res['properties']
         assert props['category'] == swagger.schema2jsonschema(CategorySchema)
+
+
+spec = APISpec(
+    title='Pets',
+    version='0.1',
+    plugins=['smore.ext.marshmallow'],
+)
+
+spec.definition('Category', schema=CategorySchema)
+
+spec.add_path(
+    view=None,
+    path='/category/{category_id}',
+    operations={
+        'get': {
+            'responses': {
+                200: {
+                    'description': 'A pet category',
+                    'schema': {'$ref': '#/definitions/Category'},
+                }
+            },
+            'parameters': [
+                {'name': 'category_id', 'in': 'path', 'type': 'string'},
+                {'name': 'q', 'in': 'query', 'type': 'string'},
+            ],
+        },
+    },
+)
+
+def test_swagger_tools_validate():
+    with tempfile.NamedTemporaryFile(mode='w') as fp:
+        json.dump(spec.to_dict(), fp)
+        fp.seek(0)
+        try:
+            subprocess.check_output(
+                ['swagger-tools', 'validate', fp.name],
+                stderr=subprocess.STDOUT,
+            )
+        except subprocess.CalledProcessError as error:
+            pytest.fail(error.output.decode('utf-8'))
