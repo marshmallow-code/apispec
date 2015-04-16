@@ -64,7 +64,6 @@ def field2property(field, use_refs=True):
         ret['format'] = fmt
     if field.default:
         ret['default'] = field.default
-    ret['required'] = field.required
     ret.update(field.metadata)
     if isinstance(field, fields.Nested):
         if use_refs and field.metadata.get('ref'):
@@ -76,6 +75,8 @@ def field2property(field, use_refs=True):
             ret['items'] = schema
         else:
             ret = schema
+    elif isinstance(field, fields.List):
+        ret['items'] = field2property(field.container)
     return ret
 
 
@@ -123,12 +124,11 @@ def schema2jsonschema(schema_cls):
     if getattr(schema_cls.Meta, 'fields', None) or getattr(schema_cls.Meta, 'additional', None):
         warnings.warn('Only explicitly-declared fields will be included in the Schema Object. '
                 'Fields defined in Meta.fields or Meta.addtional are excluded.')
-    ret = {
-        'properties': {
-            field_name: field2property(field_obj)
-            for field_name, field_obj in iteritems(schema_cls._declared_fields)
-        }
-    }
+    ret = {'properties': {}}
+    for field_name, field_obj in iteritems(schema_cls._declared_fields):
+        ret['properties'][field_name] = field2property(field_obj)
+        if field_obj.required:
+            ret.setdefault('required', []).append(field_name)
     if hasattr(schema_cls, 'Meta'):
         if hasattr(schema_cls.Meta, 'title'):
             ret['title'] = schema_cls.Meta.title

@@ -1,11 +1,17 @@
 # -*- coding: utf-8 -*-
 
+import json
+import tempfile
+import subprocess
+
+import pytest
 from pytest import mark
 from webargs import Arg
 from marshmallow import fields, Schema
 from marshmallow.compat import binary_type
 
 from smore import swagger
+from smore.apispec import APISpec
 from smore.swagger import arg2parameter, arg2property
 
 
@@ -181,6 +187,7 @@ class TestMarshmallowFieldToSwagger:
         field = fields.List(fields.String)
         res = swagger.field2property(field)
         assert res['type'] == 'array'
+        assert res['items'] == swagger.field2property(fields.String())
 
     @mark.parametrize(('FieldClass', 'expected_format'), [
         (fields.Integer, 'int32'),
@@ -205,13 +212,6 @@ class TestMarshmallowFieldToSwagger:
         field = fields.Str(default='foo')
         res = swagger.field2property(field)
         assert res['default'] == 'foo'
-
-    def test_field_required(self):
-        field = fields.Str(required=True)
-        res = swagger.field2property(field)
-        assert res['required'] is True
-        field2 = fields.Str()
-        assert swagger.field2property(field2)['required'] is False
 
     def test_field_with_additional_metadata(self):
         field = fields.Str(minLength=6, maxLength=100)
@@ -238,6 +238,20 @@ class TestMarshmallowSchemaToModelDefinition:
         assert props['email']['type'] == 'string'
         assert props['email']['format'] == 'email'
         assert props['email']['description'] == 'email address of the user'
+
+    def test_required_fields(self):
+        class BandSchema(Schema):
+            drummer = fields.Str(required=True)
+            bassist = fields.Str()
+        res = swagger.schema2jsonschema(BandSchema)
+        assert res['required'] == ['drummer']
+
+    def test_no_required_fields(self):
+        class BandSchema(Schema):
+            drummer = fields.Str()
+            bassist = fields.Str()
+        res = swagger.schema2jsonschema(BandSchema)
+        assert 'required' not in res
 
     def test_title_and_description_may_be_added(self):
         class UserSchema(Schema):
@@ -300,3 +314,43 @@ class TestNesting:
         res = swagger.schema2jsonschema(PetSchema)
         props = res['properties']
         assert props['category'] == swagger.schema2jsonschema(CategorySchema)
+
+
+spec = APISpec(
+    title='Pets',
+    version='0.1',
+    plugins=['smore.ext.marshmallow'],
+)
+
+spec.definition('Category', schema=CategorySchema)
+
+spec.add_path(
+    view=None,
+    path='/category/{category_id}',
+    operations={
+        'get': {
+            'responses': {
+                200: {
+                    'description': 'A pet category',
+                    'schema': {'$ref': '#/definitions/Category'},
+                }
+            },
+            'parameters': [
+                {'name': 'category_id', 'in': 'path', 'type': 'string'},
+                {'name': 'q', 'in': 'query', 'type': 'string'},
+            ],
+        },
+    },
+)
+
+def test_swagger_tools_validate():
+    with tempfile.NamedTemporaryFile(mode='w') as fp:
+        json.dump(spec.to_dict(), fp)
+        fp.seek(0)
+        try:
+            subprocess.check_output(
+                ['swagger-tools', 'validate', fp.name],
+                stderr=subprocess.STDOUT,
+            )
+        except subprocess.CalledProcessError as error:
+            pytest.fail(error.output.decode('utf-8'))
