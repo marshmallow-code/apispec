@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import pytest
-from marshmallow import Schema, fields
 
 from smore.apispec import APISpec
 from smore import swagger
+from .schemas import PetSchema
 
 @pytest.fixture()
 def spec():
@@ -21,12 +21,8 @@ def spec():
 
 class TestDefinitionHelper:
 
-    class PetSchema(Schema):
-        id = fields.Int()
-        name = fields.Str()
-
     def test_can_use_schema_as_definition(self, spec):
-        spec.definition('Pet', schema=self.PetSchema)
+        spec.definition('Pet', schema=PetSchema)
         assert 'Pet' in spec._definitions
         props = spec._definitions['Pet']['properties']
 
@@ -34,10 +30,6 @@ class TestDefinitionHelper:
         assert props['name']['type'] == 'string'
 
 class TestOperationHelper:
-
-    class PetSchema(Schema):
-        id = fields.Int()
-        name = fields.Str()
 
     def test_schema_in_docstring(self, spec):
 
@@ -48,7 +40,7 @@ class TestOperationHelper:
             get:
                 responses:
                     200:
-                        schema: PetSchema
+                        schema: smore.apispec.tests.schemas.PetSchema
                         description: successful operation
             """
             return '...'
@@ -58,11 +50,11 @@ class TestOperationHelper:
         assert 'get' in p
         op = p['get']
         assert 'responses' in op
-        assert op['responses'][200]['schema'] == swagger.schema2jsonschema(self.PetSchema)
+        assert op['responses'][200]['schema'] == swagger.schema2jsonschema(PetSchema)
         assert op['responses'][200]['description'] == 'successful operation'
 
     def test_schema_in_docstring_uses_ref_if_available(self, spec):
-        spec.definition('Pet', schema=self.PetSchema)
+        spec.definition('Pet', schema=PetSchema)
 
         def pet_view():
             """Not much to see here.
@@ -71,7 +63,7 @@ class TestOperationHelper:
             get:
                 responses:
                     200:
-                        schema: PetSchema
+                        schema: smore.apispec.tests.schemas.PetSchema
             """
             return '...'
 

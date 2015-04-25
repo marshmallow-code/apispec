@@ -14,6 +14,7 @@ python:
 install:
   - pip install -r dev-requirements.txt
   - pip install -U .
+  - pip install -U marshmallow --pre
   - npm install -g swagger-tools
 
 before_script:
