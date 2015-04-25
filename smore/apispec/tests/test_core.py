@@ -159,7 +159,7 @@ class TestPath:
 
 class TestExtensions:
 
-    DUMMY_PLUGIN = 'tests.apispec.plugins.dummy_plugin'
+    DUMMY_PLUGIN = 'smore.apispec.tests.plugins.dummy_plugin'
 
     @mock.patch(DUMMY_PLUGIN + '.setup', autospec=True)
     def test_setup_plugin(self, mock_setup, spec):

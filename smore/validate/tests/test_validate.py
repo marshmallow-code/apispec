@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import pytest
 
 from marshmallow import fields
-from marshmallow.exceptions import UnmarshallingError
+from marshmallow.exceptions import ValidationError as MarshmallowValidationError
 from webargs import Arg, ValidationError as WebargsValidationError
 
 from smore.validate import ValidationError
@@ -17,7 +17,7 @@ class TestValidationError:
             raise ValidationError('oh no')
 
         f = fields.Field(validate=validator)
-        with pytest.raises(UnmarshallingError):
+        with pytest.raises(MarshmallowValidationError):
             f.deserialize('')
 
     def test_webargs_validation(self):
@@ -53,7 +53,7 @@ class TestWTFormsValidation:
         )
 
         assert field.deserialize('red') == 'red'
-        with pytest.raises(UnmarshallingError) as excinfo:
+        with pytest.raises(MarshmallowValidationError) as excinfo:
             field.deserialize('green')
         assert 'Invalid value' in str(excinfo)
 
@@ -67,14 +67,14 @@ class TestWTFormsValidation:
             )
         )
         assert field.deserialize('thisisfine') == 'thisisfine'
-        with pytest.raises(UnmarshallingError) as excinfo:
+        with pytest.raises(MarshmallowValidationError) as excinfo:
             field.deserialize('bad')
         assert 'Field must be at least 4 characters long' in str(excinfo)
-        with pytest.raises(UnmarshallingError) as excinfo:
+        with pytest.raises(MarshmallowValidationError) as excinfo:
             field.deserialize('null')
         assert "Invalid value, can't be any of: nil, null, NULL." in str(excinfo)
 
-        with pytest.raises(UnmarshallingError) as excinfo:
+        with pytest.raises(MarshmallowValidationError) as excinfo:
             field.deserialize('nil')
         # both errors are returned
         assert "Invalid value, can't be any of: nil, null, NULL." in str(excinfo)
@@ -89,10 +89,10 @@ class TestWTFormsValidation:
                 locales=['de_DE', 'de']
             )
         )
-        with pytest.raises(UnmarshallingError) as excinfo:
+        with pytest.raises(MarshmallowValidationError) as excinfo:
             field.deserialize('toolong')
         # lol
-        validation_msg = excinfo.value.underlying_exception.args[0]
+        validation_msg = excinfo.value.args[0]
         assert 'Feld kann nicht l\xe4nger als 1 Zeichen sein.' in validation_msg
 
     def test_make_converter(self):
@@ -105,9 +105,9 @@ class TestWTFormsValidation:
                 locales=['de_DE', 'de']
             )
         )
-        with pytest.raises(UnmarshallingError) as excinfo:
+        with pytest.raises(MarshmallowValidationError) as excinfo:
             field.deserialize('toolong')
-        validation_msg = excinfo.value.underlying_exception.args[0]
+        validation_msg = excinfo.value.args[0]
         assert 'Feld kann nicht l\xe4nger als 1 Zeichen sein.' in validation_msg
 
 # Colander
@@ -121,7 +121,7 @@ class TestColanderValidation:
             validate=from_colander([ContainsOnly([1])])
         )
         assert field.deserialize([1]) == [1]
-        with pytest.raises(UnmarshallingError) as excinfo:
+        with pytest.raises(MarshmallowValidationError) as excinfo:
             field.deserialize([2])
         assert 'One or more of the choices you made was not acceptable' in str(excinfo)
 
