@@ -28,6 +28,7 @@ Modules
 .. toctree::
     :maxdepth: 2
 
+    modules/apispec
     modules/swagger
     modules/validate
 
