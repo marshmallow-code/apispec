@@ -18,10 +18,11 @@ class ModelConversionError(Exception):
 
 class ModelConverter(object):
 
-    FIELD_MAPPING = {
+    SQLA_TYPE_MAPPING = {
         sa.String: fields.String,
         sa.Unicode: fields.String,
         sa.Enum: fields.Field,
+        # TODO: Finish me
     }
     DIRECTION_MAPPING = {
         'MANYTOONE': fields.QuerySelect,
@@ -61,10 +62,10 @@ class ModelConverter(object):
         else:
             column = prop.columns[0]
             types = inspect.getmro(type(column.type))
-            # First search for a field class from self.FIELD_MAPPING
+            # First search for a field class from self.SQLA_TYPE_MAPPING
             for col_type in types:
-                if col_type in self.FIELD_MAPPING:
-                    field_cls = self.FIELD_MAPPING[col_type]
+                if col_type in self.SQLA_TYPE_MAPPING:
+                    field_cls = self.SQLA_TYPE_MAPPING[col_type]
                     break
             else:
                 # Try to find a field class based on the column's python_type
