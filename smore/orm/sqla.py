@@ -131,21 +131,27 @@ class SQLAlchemySchemaOpts(ma.SchemaOpts):
 
 class SQLAlchemySchemaMeta(ma.schema.SchemaMeta):
 
-    def __init__(cls, name, bases, attrs):
-        super(SQLAlchemySchemaMeta, cls).__init__(name, bases, attrs)
-        # Update cls._declared fields based on class Meta options, properly
+    # override SchemaMeta
+    @classmethod
+    def get_declared_fields(mcs, klass, *args, **kwargs):
+        """Updates declared fields with fields converted from the SQLAlchemy model
+        passed as the `model` class Meta option.
+        """
+        declared_fields = kwargs.get('dict_class', dict)()
         # inheriting from base classes
-        for base in inspect.getmro(cls):
-            opts = cls.OPTIONS_CLASS(cls.Meta)
+        for base in inspect.getmro(klass):
+            opts = klass.opts
             if opts.model:
                 Converter = opts.model_converter
                 converter = Converter()
-                fields_for_model = converter.fields_for_model(
+                declared_fields = converter.fields_for_model(
                     opts.model, opts.sqla_session, keygetter=opts.keygetter)
-                # FIXME: Generated fields will overwrite declared fields. Refactor once there
-                # is a hook for getting fields for a class
-                cls._declared_fields.update(fields_for_model)
                 break
+        base_fields = super(SQLAlchemySchemaMeta, mcs).get_declared_fields(
+            klass, *args, **kwargs
+        )
+        declared_fields.update(base_fields)
+        return declared_fields
 
 
 class SQLAlchemyModelSchema(with_metaclass(SQLAlchemySchemaMeta, ma.Schema)):
