@@ -83,22 +83,6 @@ class ModelConverter(object):
         }
         if hasattr(prop, 'columns'):
             column = prop.columns[0]
-            # From wtforms-sqlalchemy
-            # Support sqlalchemy.schema.ColumnDefault, so users can benefit
-            # from  setting defaults for fields, e.g.:
-            #   field = Column(DateTimeField, default=datetime.utcnow)
-            default = getattr(column, 'default', None)
-            if default is not None:
-                # Only actually change default if it has an attribute named
-                # 'arg' that's callable.
-                default = getattr(default, 'arg', None)
-
-                if default is not None:
-                    # ColumnDefault(val).arg can be also a plain value
-                    if callable(default):
-                        default = default(None)
-                kwargs['default'] = default
-
             if column.nullable:
                 kwargs['allow_none'] = True
 

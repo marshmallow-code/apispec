@@ -88,14 +88,6 @@ def models(Base):
 
 class TestModelFieldConversion:
 
-    @pytest.fixture()
-    def school(self, models):
-        return models.School(name='Univ. Of Whales')
-
-    @pytest.fixture()
-    def student(self, models, school):
-        return models.Student(full_name='Monty Python', current_school=school)
-
     def test_fields_for_model_types(self, models, session):
         fields_ = fields_for_model(models.Student, session=session, include_fk=True)
         assert type(fields_['id']) is fields.Int
@@ -107,11 +99,6 @@ class TestModelFieldConversion:
     def test_fields_for_model_handles_custom_types(self, models, session):
         fields_ = fields_for_model(models.Course, session=session, include_fk=True)
         assert type(fields_['grade']) is fields.Int
-
-    def test_defaults_set(self, models, session):
-        fields_ = fields_for_model(models.Student, session=session)
-        assert isinstance(fields_['date_created'].default, dt.datetime)
-        assert fields_['full_name'].default == 'noname'
 
     def test_length_validator_set(self, models, session):
         fields_ = fields_for_model(models.Student, session=session)
