@@ -67,10 +67,11 @@ def models(Base):
         id = sa.Column(sa.Integer, primary_key=True)
         full_name = sa.Column(sa.String(255), nullable=False, unique=True, default='noname')
         dob = sa.Column(sa.Date(), nullable=True)
-        current_school_id = sa.Column(sa.Integer, sa.ForeignKey(School.id), nullable=False)
         date_created = sa.Column(sa.DateTime, default=dt.datetime.utcnow)
 
+        current_school_id = sa.Column(sa.Integer, sa.ForeignKey(School.id), nullable=False)
         current_school = relationship(School, backref=backref('students'))
+
         courses = relationship(
             'Course',
             secondary=student_course,
@@ -95,37 +96,45 @@ class TestModelFieldConversion:
     def student(self, models, school):
         return models.Student(full_name='Monty Python', current_school=school)
 
-    def test_fields_for_model_types(self, models):
-        fields_ = fields_for_model(models.Student)
-        assert isinstance(fields_['id'], fields.Int)
-        assert isinstance(fields_['full_name'], fields.Str)
-        assert isinstance(fields_['dob'], fields.Date)
-        assert isinstance(fields_['current_school_id'], fields.Int)
-        assert isinstance(fields_['date_created'], fields.DateTime)
+    def test_fields_for_model_types(self, models, session):
+        fields_ = fields_for_model(models.Student, session=session)
+        assert type(fields_['id']) is fields.Int
+        assert type(fields_['full_name']) is fields.Str
+        assert type(fields_['dob']) is fields.Date
+        assert type(fields_['current_school_id']) is fields.Int
+        assert type(fields_['date_created']) is fields.DateTime
 
-    @pytest.mark.xfail  # TODO
-    def test_relationships_converted_to_queryselect(self, models):
-        fields_ = fields_for_model(models.Student)
-        assert isinstance(fields_['courses'], fields.QuerySelectList)
-
-    def test_defaults_set(self, models):
-        fields_ = fields_for_model(models.Student)
+    def test_defaults_set(self, models, session):
+        fields_ = fields_for_model(models.Student, session=session)
         assert isinstance(fields_['date_created'].default, dt.datetime)
         assert fields_['full_name'].default == 'noname'
 
-    def test_length_validator_set(self, models):
-        fields_ = fields_for_model(models.Student)
+    def test_length_validator_set(self, models, session):
+        fields_ = fields_for_model(models.Student, session=session)
         validator = contains_validator(fields_['full_name'], validate.Length)
         assert validator
         assert validator.max == 255
 
-    def test_sets_nullable(self, models):
-        fields_ = fields_for_model(models.Student)
+    def test_sets_nullable(self, models, session):
+        fields_ = fields_for_model(models.Student, session)
         assert fields_['dob'].allow_none is True
 
-    def test_sets_enum_choices(self, models):
-        fields_ = fields_for_model(models.Course)
+    def test_sets_enum_choices(self, models, session):
+        fields_ = fields_for_model(models.Course, session=session)
         validator = contains_validator(fields_['level'], validate.OneOf)
         assert validator
         assert validator.choices == ('Primary', 'Secondary')
 
+    def test_many_to_many_relationship(self, models, session):
+        student_fields = fields_for_model(models.Student, session=session)
+        assert type(student_fields['courses']) is fields.QuerySelectList
+
+        course_fields = fields_for_model(models.Course, session=session)
+        assert type(course_fields['students']) is fields.QuerySelectList
+
+    def test_many_to_one_relationship(self, models, session):
+        student_fields = fields_for_model(models.Student, session=session)
+        assert type(student_fields['current_school']) is fields.QuerySelect
+
+        school_fields = fields_for_model(models.School, session=session)
+        assert type(school_fields['students']) is fields.QuerySelectList
