@@ -6,8 +6,11 @@ import sqlalchemy as sa
 from sqlalchemy.orm.util import identity_key
 
 def get_pk_from_identity(obj):
-    cls, key = identity_key(instance=obj)
-    return ':'.join(text_type(x) for x in key)
+    _, key = identity_key(instance=obj)
+    if len(key) == 1:
+        return key[0]
+    else:  # Compund primary key
+        return ':'.join(text_type(x) for x in key)
 
 class ModelConversionError(Exception):
     pass
