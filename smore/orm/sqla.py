@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import inspect
 
-from marshmallow import Schema, validate, fields
-from marshmallow.compat import text_type
+import marshmallow as ma
+from marshmallow import validate, fields
+from marshmallow.compat import text_type, with_metaclass
 import sqlalchemy as sa
 from sqlalchemy.orm.util import identity_key
 
@@ -30,7 +31,7 @@ class ModelConverter(object):
         'ONETOMANY': fields.QuerySelectList,
     }
 
-    def fields_for_model(self, model, session=None, include_fk=False):
+    def fields_for_model(self, model, session=None, include_fk=False, keygetter=None):
         """Generate a dict of field_name: `marshmallow.Field` pairs for the
         given model.
 
@@ -46,13 +47,15 @@ class ModelConverter(object):
             if hasattr(prop, 'columns'):
                 if not include_fk and prop.columns[0].foreign_keys:
                     continue
-            field = self._property2field(prop, session=session)
+            field = self._property2field(prop, session=session, keygetter=keygetter)
             if field:
                 result[prop.key] = field
         return result
 
-    def _property2field(self, prop, session=None):
-        field_kwargs = self._get_field_kwargs_for_property(prop, session=session)
+    def _property2field(self, prop, session=None, keygetter=None):
+        field_kwargs = self._get_field_kwargs_for_property(
+            prop, session=session, keygetter=keygetter
+        )
         field_class = self._get_field_class_for_property(prop)
         return field_class(**field_kwargs)
 
@@ -69,15 +72,15 @@ class ModelConverter(object):
                     break
             else:
                 # Try to find a field class based on the column's python_type
-                if column.type.python_type in Schema.TYPE_MAPPING:
-                    field_cls = Schema.TYPE_MAPPING[column.type.python_type]
+                if column.type.python_type in ma.Schema.TYPE_MAPPING:
+                    field_cls = ma.Schema.TYPE_MAPPING[column.type.python_type]
                 else:
                     raise ModelConversionError(
-                        'Could not find field converter for %s (%r).' % (prop.key, types[0]))
+                        'Could not find field converter for {0} ({1}).'.format(prop.key, types[0]))
         return field_cls
 
     @staticmethod
-    def _get_field_kwargs_for_property(prop, session=None):
+    def _get_field_kwargs_for_property(prop, session=None, keygetter=None):
         kwargs = {
             'validate': []
         }
@@ -106,10 +109,44 @@ class ModelConverter(object):
             kwargs.update({
                 'allow_none': nullable,
                 'query': lambda: session.query(foreign_model).all(),
-                'keygetter': get_pk_from_identity,
+                'keygetter': keygetter or get_pk_from_identity,
             })
         return kwargs
 
 
 default_converter = ModelConverter()
 fields_for_model = default_converter.fields_for_model
+
+
+class SQLAlchemySchemaOpts(ma.SchemaOpts):
+
+    def __init__(self, meta):
+        super(SQLAlchemySchemaOpts, self).__init__(meta)
+        self.model = getattr(meta, 'model', None)
+        self.sqla_session = getattr(meta, 'sqla_session', None)
+        if self.model and not self.sqla_session:
+            raise ValueError('SQLAlchemyModelSchema requires the "sqla_session" class Meta option')
+        self.keygetter = getattr(meta, 'keygetter', get_pk_from_identity)
+        self.model_converter = getattr(meta, 'model_converter', ModelConverter)
+
+class SQLAlchemySchemaMeta(ma.schema.SchemaMeta):
+
+    def __init__(cls, name, bases, attrs):
+        super(SQLAlchemySchemaMeta, cls).__init__(name, bases, attrs)
+        # Update cls._declared fields based on class Meta options, properly
+        # inheriting from base classes
+        for base in inspect.getmro(cls):
+            opts = cls.OPTIONS_CLASS(cls.Meta)
+            if opts.model:
+                Converter = opts.model_converter
+                converter = Converter()
+                fields_for_model = converter.fields_for_model(
+                    opts.model, opts.sqla_session, keygetter=opts.keygetter)
+                # FIXME: Generated fields will overwrite declared fields. Refactor once there
+                # is a hook for getting fields for a class
+                cls._declared_fields.update(fields_for_model)
+                break
+
+
+class SQLAlchemyModelSchema(with_metaclass(SQLAlchemySchemaMeta, ma.Schema)):
+    OPTIONS_CLASS = SQLAlchemySchemaOpts

@@ -10,7 +10,7 @@ from marshmallow import fields, validate
 
 import pytest
 
-from ..sqla import fields_for_model
+from ..sqla import fields_for_model, SQLAlchemyModelSchema
 
 def contains_validator(field, v_type):
     for v in field.validators:
@@ -86,6 +86,33 @@ def models(Base):
             self.Student = Student
     return _models()
 
+
+@pytest.fixture()
+def schemas(models, session):
+    class CourseSchema(SQLAlchemyModelSchema):
+        class Meta:
+            model = models.Course
+            sqla_session = session
+
+    class SchoolSchema(SQLAlchemyModelSchema):
+        class Meta:
+            model = models.School
+            sqla_session = session
+
+    class StudentSchema(SQLAlchemyModelSchema):
+        class Meta:
+            model = models.Student
+            sqla_session = session
+
+    # Again, so we can use dot-notation
+    class _schemas(object):
+        def __init__(self):
+            self.CourseSchema = CourseSchema
+            self.SchoolSchema = SchoolSchema
+            self.StudentSchema = StudentSchema
+    return _schemas()
+
+
 class TestModelFieldConversion:
 
     def test_fields_for_model_types(self, models, session):
@@ -106,7 +133,7 @@ class TestModelFieldConversion:
         assert validator
         assert validator.max == 255
 
-    def test_sets_nullable(self, models, session):
+    def test_sets_allow_none_for_nullable_fields(self, models, session):
         fields_ = fields_for_model(models.Student, session)
         assert fields_['dob'].allow_none is True
 
@@ -137,3 +164,24 @@ class TestModelFieldConversion:
         student_fields2 = fields_for_model(models.Student, session=session, include_fk=True)
         assert 'current_school_id' in student_fields2
 
+class TestSQLASchema:
+
+    @pytest.fixture()
+    def school(self, models, session):
+        school_ = models.School(name='Univ. Of Whales')
+        session.add(school_)
+        return school_
+
+    @pytest.fixture()
+    def student(self, models, school, session):
+        student_ = models.Student(full_name='Monty Python', current_school=school)
+        session.add(student_)
+        return student_
+
+    def test_model_schema_dumping(self, schemas, student, session):
+        session.commit()
+        schema = schemas.StudentSchema()
+        result = schema.dump(student)
+        # fk excluded by default
+        assert 'current_school_id' not in result.data
+        assert result.data['current_school'] == student.current_school.id
