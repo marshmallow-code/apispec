@@ -97,12 +97,16 @@ class TestModelFieldConversion:
         return models.Student(full_name='Monty Python', current_school=school)
 
     def test_fields_for_model_types(self, models, session):
-        fields_ = fields_for_model(models.Student, session=session)
+        fields_ = fields_for_model(models.Student, session=session, exclude_fk=False)
         assert type(fields_['id']) is fields.Int
         assert type(fields_['full_name']) is fields.Str
         assert type(fields_['dob']) is fields.Date
         assert type(fields_['current_school_id']) is fields.Int
         assert type(fields_['date_created']) is fields.DateTime
+
+    def test_fields_for_model_handles_custom_types(self, models, session):
+        fields_ = fields_for_model(models.Course, session=session, exclude_fk=False)
+        assert type(fields_['grade']) is fields.Int
 
     def test_defaults_set(self, models, session):
         fields_ = fields_for_model(models.Student, session=session)
