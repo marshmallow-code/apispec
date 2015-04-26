@@ -3,10 +3,14 @@ flake8
 
 # soft dependencies
 webargs>=0.11.0
+
 # smore.validate dependencies
 WTForms>=2.0.1
 colander>=1.0
 Flask
+
+# smore.orm dependencies
+sqlalchemy>=1.0.0
 
 # testing
 pytest
