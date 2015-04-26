@@ -118,3 +118,14 @@ class TestModelFieldConversion:
         validator = contains_validator(fields_['full_name'], validate.Length)
         assert validator
         assert validator.max == 255
+
+    def test_sets_nullable(self, models):
+        fields_ = fields_for_model(models.Student)
+        assert fields_['dob'].allow_none is True
+
+    def test_sets_enum_choices(self, models):
+        fields_ = fields_for_model(models.Course)
+        validator = contains_validator(fields_['level'], validate.OneOf)
+        assert validator
+        assert validator.choices == ('Primary', 'Secondary')
+
