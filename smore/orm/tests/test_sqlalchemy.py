@@ -97,7 +97,7 @@ class TestModelFieldConversion:
         return models.Student(full_name='Monty Python', current_school=school)
 
     def test_fields_for_model_types(self, models, session):
-        fields_ = fields_for_model(models.Student, session=session, exclude_fk=False)
+        fields_ = fields_for_model(models.Student, session=session, include_fk=True)
         assert type(fields_['id']) is fields.Int
         assert type(fields_['full_name']) is fields.Str
         assert type(fields_['dob']) is fields.Date
@@ -105,7 +105,7 @@ class TestModelFieldConversion:
         assert type(fields_['date_created']) is fields.DateTime
 
     def test_fields_for_model_handles_custom_types(self, models, session):
-        fields_ = fields_for_model(models.Course, session=session, exclude_fk=False)
+        fields_ = fields_for_model(models.Course, session=session, include_fk=True)
         assert type(fields_['grade']) is fields.Int
 
     def test_defaults_set(self, models, session):
@@ -143,10 +143,10 @@ class TestModelFieldConversion:
         school_fields = fields_for_model(models.School, session=session)
         assert type(school_fields['students']) is fields.QuerySelectList
 
-    def test_exclude_fk(self, models, session):
-        student_fields = fields_for_model(models.Student, session=session, exclude_fk=True)
+    def test_include_fk(self, models, session):
+        student_fields = fields_for_model(models.Student, session=session, include_fk=False)
         assert 'current_school_id' not in student_fields
 
-        student_fields2 = fields_for_model(models.Student, session=session, exclude_fk=False)
+        student_fields2 = fields_for_model(models.Student, session=session, include_fk=True)
         assert 'current_school_id' in student_fields2
 

@@ -30,21 +30,21 @@ class ModelConverter(object):
         'ONETOMANY': fields.QuerySelectList,
     }
 
-    def fields_for_model(self, model, session=None, exclude_fk=True):
+    def fields_for_model(self, model, session=None, include_fk=False):
         """Generate a dict of field_name: `marshmallow.Field` pairs for the
         given model.
 
         :param model: The SQLAlchemy model
         :param Session session: SQLAlchemy session. Required if the model includes
             foreign key relationships.
-        :param bool exclude_fk: Whether to exclude foreign key fields from the
+        :param bool include_fk: Whether to include foreign key fields from the
             output.
         :return: dict of field_name: Field instance pairs
         """
         result = {}
         for prop in model.__mapper__.iterate_properties:
             if hasattr(prop, 'columns'):
-                if exclude_fk and prop.columns[0].foreign_keys:
+                if not include_fk and prop.columns[0].foreign_keys:
                     continue
             field = self._property2field(prop, session=session)
             if field:
