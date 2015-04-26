@@ -36,24 +36,8 @@ class ModelConverter(object):
         return result
 
     def _property2field(self, prop, session=None):
-        field_kwargs = self._get_field_kwargs_for_property(prop)
+        field_kwargs = self._get_field_kwargs_for_property(prop, session=session)
         field_class = self._get_field_class_for_property(prop)
-        if hasattr(prop, 'direction'):  # Simple column type
-            # Get field class based on python type
-            if not session:
-                raise ModelConversionError(
-                    'Cannot convert field {0}, need DB session.'.format(prop.key)
-                )
-            foreign_model = prop.mapper.class_
-            nullable = True
-            for pair in prop.local_remote_pairs:
-                if not pair[0].nullable:
-                    nullable = False
-            field_kwargs.update({
-                'allow_none': nullable,
-                'query': lambda: session.query(foreign_model).all(),
-                'keygetter': get_pk_from_identity,
-            })
         return field_class(**field_kwargs)
 
     def _get_field_class_for_property(self, prop):
@@ -77,7 +61,7 @@ class ModelConverter(object):
         return field_cls
 
     @staticmethod
-    def _get_field_kwargs_for_property(prop):
+    def _get_field_kwargs_for_property(prop, session=None):
         kwargs = {
             'validate': []
         }
@@ -108,6 +92,22 @@ class ModelConverter(object):
             # Add a length validator if a max length is set on the column
             if hasattr(column.type, 'length'):
                 kwargs['validate'].append(validate.Length(max=column.type.length))
+        if hasattr(prop, 'direction'):  # Relationship property
+            # Get field class based on python type
+            if not session:
+                raise ModelConversionError(
+                    'Cannot convert field {0}, need DB session.'.format(prop.key)
+                )
+            foreign_model = prop.mapper.class_
+            nullable = True
+            for pair in prop.local_remote_pairs:
+                if not pair[0].nullable:
+                    nullable = False
+            kwargs.update({
+                'allow_none': nullable,
+                'query': lambda: session.query(foreign_model).all(),
+                'keygetter': get_pk_from_identity,
+            })
         return kwargs
 
 
