@@ -138,3 +138,11 @@ class TestModelFieldConversion:
 
         school_fields = fields_for_model(models.School, session=session)
         assert type(school_fields['students']) is fields.QuerySelectList
+
+    def test_exclude_fk(self, models, session):
+        student_fields = fields_for_model(models.Student, session=session, exclude_fk=True)
+        assert 'current_school_id' not in student_fields
+
+        student_fields2 = fields_for_model(models.Student, session=session, exclude_fk=False)
+        assert 'current_school_id' in student_fields2
+
