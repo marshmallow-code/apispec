@@ -58,14 +58,19 @@ class APISpec(object):
     :param str title: API title
     :param str version: API version
     :param tuple plugins: Paths to plugin modules
+    :param dict info: Optional dict to add to `info`
+        See https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#infoObject
+    :param **dict options: Optional top-level keys
+        See https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#swagger-object
     """
 
-    def __init__(self, title, version, plugins=(), default_content_types=None, *args, **kwargs):
+    def __init__(self, title, version, plugins=(), info=None, **options):
         self.info = {
             'title': title,
             'version': version,
         }
-        self.info.update(kwargs)
+        self.info.update(info or {})
+        self.options = options
         # Metadata
         self._definitions = {}
         self._paths = {}
@@ -80,12 +85,14 @@ class APISpec(object):
             self.setup_plugin(plugin_path)
 
     def to_dict(self):
-        return {
+        ret = {
             'swagger': SWAGGER_VERSION,
             'info': self.info,
             'definitions': self._definitions,
             'paths': self._paths,
         }
+        ret.update(self.options)
+        return ret
 
     def add_path(self, path=None, operations=None, **kwargs):
         """Add a new path object to the spec.

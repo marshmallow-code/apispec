@@ -17,7 +17,8 @@ def spec():
     return APISpec(
         title='Swagger Petstore',
         version='1.0.0',
-        description=description,
+        info={'description': description},
+        security=[{'apiKey': []}],
     )
 
 
@@ -26,11 +27,12 @@ class TestMetadata:
     def test_swagger_version(self, spec):
         assert spec.to_dict()['swagger'] == '2.0'
 
-    def test_swagger_info(self, spec):
-        info = spec.to_dict()['info']
-        assert info['title'] == 'Swagger Petstore'
-        assert info['version'] == '1.0.0'
-        assert info['description'] == description
+    def test_swagger_metadata(self, spec):
+        metadata = spec.to_dict()
+        assert metadata['security'] == [{'apiKey': []}]
+        assert metadata['info']['title'] == 'Swagger Petstore'
+        assert metadata['info']['version'] == '1.0.0'
+        assert metadata['info']['description'] == description
 
 
 class TestDefinitions:
