@@ -158,6 +158,12 @@ class TestPath:
             spec.add_path()
         assert 'Path template is not specified' in str(excinfo)
 
+    def test_add_path_strips_base_path(self, spec):
+        spec.options['basePath'] = '/v1'
+        spec.add_path('/v1/pets')
+        assert '/pets' in spec._paths
+        assert '/v1/pets' not in spec._paths
+
 
 class TestExtensions:
 

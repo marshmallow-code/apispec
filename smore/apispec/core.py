@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import re
+
 from marshmallow.compat import iterkeys
 from .exceptions import APISpecError, PluginError
 
@@ -99,6 +101,9 @@ class APISpec(object):
 
         https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#paths-object-
         """
+        if path and 'basePath' in self.options:
+            pattern = '^{0}'.format(re.escape(self.options['basePath']))
+            path = re.sub(pattern, '', path)
         path = Path(path=path, operations=operations)
         # Execute plugins' helpers
         for func in self._path_helpers:
