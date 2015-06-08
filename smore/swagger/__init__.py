@@ -123,9 +123,12 @@ def schema2jsonschema(schema_cls):
     """
     if getattr(schema_cls.Meta, 'fields', None) or getattr(schema_cls.Meta, 'additional', None):
         warnings.warn('Only explicitly-declared fields will be included in the Schema Object. '
-                'Fields defined in Meta.fields or Meta.addtional are excluded.')
+                'Fields defined in Meta.fields or Meta.additional are excluded.')
     ret = {'properties': {}}
+    exclude = set(getattr(schema_cls.Meta, 'exclude', []))
     for field_name, field_obj in iteritems(schema_cls._declared_fields):
+        if field_name in exclude:
+            continue
         ret['properties'][field_name] = field2property(field_obj)
         if field_obj.required:
             ret.setdefault('required', []).append(field_name)

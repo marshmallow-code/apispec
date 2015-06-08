@@ -263,6 +263,17 @@ class TestMarshmallowSchemaToModelDefinition:
         assert res['description'] == 'A registered user'
         assert res['title'] == 'User'
 
+    def test_excluded_fields(self):
+        class WhiteStripesSchema(Schema):
+            class Meta:
+                exclude = ('bassist', )
+            guitarist = fields.Str()
+            drummer = fields.Str()
+            bassist = fields.Str()
+
+        res = swagger.schema2jsonschema(WhiteStripesSchema)
+        assert set(res['properties'].keys()) == set(['guitarist', 'drummer'])
+
     def test_only_explicitly_declared_fields_are_translated(self, recwarn):
         class UserSchema(Schema):
             _id = fields.Int()
