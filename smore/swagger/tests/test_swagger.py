@@ -58,6 +58,17 @@ class TestArgToSwagger:
         result2 = arg2parameter(arg2)
         assert result2['required'] is False
 
+    def test_collection_translation_multiple(self):
+        arg = Arg(int, multiple=True, location='querystring')
+        result = arg2parameter(arg)
+        assert result['type'] == 'array'
+        assert result['collectionFormat'] == 'multi'
+
+    def test_collection_translation_single(self):
+        arg = Arg(int, location='querystring')
+        result = arg2parameter(arg)
+        assert 'collectionFormat' not in result
+
     def test_arg_with_description(self):
         arg = Arg(int, location='form', description='a webargs arg')
         result = arg2parameter(arg)

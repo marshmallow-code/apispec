@@ -193,6 +193,8 @@ def arg2parameter(arg, name=None, default_in='body'):
             schema_props[name] = arg_as_property
         ret['schema']['properties'] = schema_props
     else:
+        if arg.multiple:
+            ret['collectionFormat'] = 'multi'
         ret.update(arg_as_property)
     return ret
 
@@ -216,8 +218,8 @@ def arg2property(arg):
         json_type, fmt = _get_json_type(arg.type)
     ret = {
         'type': json_type,
+        'description': arg.metadata.get('description', ''),
     }
-    ret['description'] = arg.metadata.get('description', '')
     if fmt:
         ret['format'] = fmt
     if arg.default:
