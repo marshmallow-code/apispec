@@ -222,9 +222,30 @@ def arg2property(arg):
     }
     if fmt:
         ret['format'] = fmt
+    if arg.multiple:
+        ret['items'] = type2items(arg.type)
     if arg.default:
         ret['default'] = arg.default
     ret.update(arg.metadata)
+    return ret
+
+
+def type2items(type):
+    """Return the JSON Schema property definition given a webargs :class:`Arg <webargs.core.Arg>`.
+
+    https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#itemsObject
+
+    Example: ::
+
+        type2items(int)
+        # {'type': 'integer', 'format': 'int32'}
+
+    :rtype: dict, an Items Object
+    """
+    json_type, fmt = _get_json_type(type)
+    ret = {'type': json_type}
+    if fmt:
+        ret['format'] = fmt
     return ret
 
 
