@@ -69,6 +69,11 @@ class TestArgToSwagger:
         result = arg2parameter(arg)
         assert 'collectionFormat' not in result
 
+    def test_items_multiple_querystring(self):
+        arg = Arg(int, multiple=True, location='querystring')
+        result = arg2parameter(arg)
+        assert result['items'] == {'type': 'integer', 'format': 'int32'}
+
     def test_arg_with_description(self):
         arg = Arg(int, location='form', description='a webargs arg')
         result = arg2parameter(arg)
@@ -358,8 +363,9 @@ spec.add_path(
                 }
             },
             'parameters': [
-                {'name': 'category_id', 'in': 'path', 'type': 'string'},
                 {'name': 'q', 'in': 'query', 'type': 'string'},
+                {'name': 'category_id', 'in': 'path', 'type': 'string'},
+                arg2parameter(Arg(str, multiple=True, location='querystring')),
             ],
         },
     },
