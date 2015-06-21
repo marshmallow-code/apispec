@@ -312,7 +312,7 @@ class CategorySchema(Schema):
 
 
 class PetSchema(Schema):
-    category = fields.Nested(CategorySchema)
+    category = fields.Nested(CategorySchema, many=True, ref='#/definitions/Category')
 
 
 class TestNesting:
@@ -336,9 +336,9 @@ class TestNesting:
         assert res['items'] == {'$ref': 'Category'}
 
     def test_schema2jsonschema_with_nested_fields(self):
-        res = swagger.schema2jsonschema(PetSchema)
+        res = swagger.schema2jsonschema(PetSchema, use_refs=False)
         props = res['properties']
-        assert props['category'] == swagger.schema2jsonschema(CategorySchema)
+        assert props['category']['items'] == swagger.schema2jsonschema(CategorySchema)
 
 
 spec = APISpec(
@@ -356,9 +356,9 @@ spec.add_path(
         'get': {
             'responses': {
                 200: {
-                    'description': 'A pet category',
-                    'schema': {'$ref': '#/definitions/Category'},
-                }
+                    'schema': swagger.schema2jsonschema(PetSchema),
+                    'description': 'A pet',
+                },
             },
             'parameters': [
                 {'name': 'q', 'in': 'query', 'type': 'string'},
