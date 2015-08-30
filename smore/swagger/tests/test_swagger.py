@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import json
-import tempfile
-import subprocess
-
 import pytest
 from pytest import mark
 from webargs import Arg
@@ -11,6 +7,8 @@ from marshmallow import fields, Schema
 from marshmallow.compat import binary_type
 
 from smore import swagger
+from smore import exceptions
+from smore.apispec import utils
 from smore.apispec import APISpec
 from smore.swagger import arg2parameter, arg2property
 
@@ -57,6 +55,22 @@ class TestArgToSwagger:
         arg2 = Arg(int, location='json')
         result2 = arg2parameter(arg2)
         assert result2['required'] is False
+
+    def test_collection_translation_multiple(self):
+        arg = Arg(int, multiple=True, location='querystring')
+        result = arg2parameter(arg)
+        assert result['type'] == 'array'
+        assert result['collectionFormat'] == 'multi'
+
+    def test_collection_translation_single(self):
+        arg = Arg(int, location='querystring')
+        result = arg2parameter(arg)
+        assert 'collectionFormat' not in result
+
+    def test_items_multiple_querystring(self):
+        arg = Arg(int, multiple=True, location='querystring')
+        result = arg2parameter(arg)
+        assert result['items'] == {'type': 'integer', 'format': 'int32'}
 
     def test_arg_with_description(self):
         arg = Arg(int, location='form', description='a webargs arg')
@@ -263,6 +277,17 @@ class TestMarshmallowSchemaToModelDefinition:
         assert res['description'] == 'A registered user'
         assert res['title'] == 'User'
 
+    def test_excluded_fields(self):
+        class WhiteStripesSchema(Schema):
+            class Meta:
+                exclude = ('bassist', )
+            guitarist = fields.Str()
+            drummer = fields.Str()
+            bassist = fields.Str()
+
+        res = swagger.schema2jsonschema(WhiteStripesSchema)
+        assert set(res['properties'].keys()) == set(['guitarist', 'drummer'])
+
     def test_only_explicitly_declared_fields_are_translated(self, recwarn):
         class UserSchema(Schema):
             _id = fields.Int()
@@ -287,7 +312,7 @@ class CategorySchema(Schema):
 
 
 class PetSchema(Schema):
-    category = fields.Nested(CategorySchema)
+    category = fields.Nested(CategorySchema, many=True, ref='#/definitions/Category')
 
 
 class TestNesting:
@@ -311,9 +336,9 @@ class TestNesting:
         assert res['items'] == {'$ref': 'Category'}
 
     def test_schema2jsonschema_with_nested_fields(self):
-        res = swagger.schema2jsonschema(PetSchema)
+        res = swagger.schema2jsonschema(PetSchema, use_refs=False)
         props = res['properties']
-        assert props['category'] == swagger.schema2jsonschema(CategorySchema)
+        assert props['category']['items'] == swagger.schema2jsonschema(CategorySchema)
 
 
 spec = APISpec(
@@ -331,26 +356,21 @@ spec.add_path(
         'get': {
             'responses': {
                 200: {
-                    'description': 'A pet category',
-                    'schema': {'$ref': '#/definitions/Category'},
-                }
+                    'schema': swagger.schema2jsonschema(PetSchema),
+                    'description': 'A pet',
+                },
             },
             'parameters': [
-                {'name': 'category_id', 'in': 'path', 'type': 'string'},
                 {'name': 'q', 'in': 'query', 'type': 'string'},
+                {'name': 'category_id', 'in': 'path', 'type': 'string'},
+                arg2parameter(Arg(str, multiple=True, location='querystring')),
             ],
         },
     },
 )
 
 def test_swagger_tools_validate():
-    with tempfile.NamedTemporaryFile(mode='w') as fp:
-        json.dump(spec.to_dict(), fp)
-        fp.seek(0)
-        try:
-            subprocess.check_output(
-                ['swagger-tools', 'validate', fp.name],
-                stderr=subprocess.STDOUT,
-            )
-        except subprocess.CalledProcessError as error:
-            pytest.fail(error.output.decode('utf-8'))
+    try:
+        utils.validate_swagger(spec)
+    except exceptions.SwaggerError as error:
+        pytest.fail(str(error))

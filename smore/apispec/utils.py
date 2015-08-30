@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 import re
-from marshmallow.compat import iteritems
+import json
+import tempfile
+import subprocess
 
 import yaml
+from marshmallow.compat import iteritems
+
+from smore import exceptions
 
 # from django.contrib.admindocs.utils
 def trim_docstring(docstring):
@@ -74,3 +79,20 @@ def load_operations_from_docstring(docstring):
                         if key in PATH_KEYS}
     else:
         return None
+
+def validate_swagger(spec):
+    """Validate the output of an :class:`APISpec` object.
+    Note: Requires installing the node package `swagger-tools`.
+
+    :raise: SwaggerError if validation fails.
+    """
+    with tempfile.NamedTemporaryFile(mode='w') as fp:
+        json.dump(spec.to_dict(), fp)
+        fp.seek(0)
+        try:
+            subprocess.check_output(
+                ['swagger-tools', 'validate', fp.name],
+                stderr=subprocess.STDOUT,
+            )
+        except subprocess.CalledProcessError as error:
+            raise exceptions.SwaggerError(error.output.decode('utf-8'))

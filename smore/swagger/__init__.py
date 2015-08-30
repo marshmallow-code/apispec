@@ -65,6 +65,9 @@ def field2property(field, use_refs=True):
     if field.default:
         ret['default'] = field.default
     ret.update(field.metadata)
+    # Avoid validation error with "Additional properties not allowed"
+    # Property "ref" is not valid in this context
+    ret.pop('ref', None)
     if isinstance(field, fields.Nested):
         if use_refs and field.metadata.get('ref'):
             schema = {'$ref': field.metadata['ref']}
@@ -76,11 +79,11 @@ def field2property(field, use_refs=True):
         else:
             ret = schema
     elif isinstance(field, fields.List):
-        ret['items'] = field2property(field.container)
+        ret['items'] = field2property(field.container, use_refs=use_refs)
     return ret
 
 
-def schema2jsonschema(schema_cls):
+def schema2jsonschema(schema_cls, use_refs=True):
     """Return the JSON Schema Object for a given marshmallow
     :class:`Schema <marshmallow.Schema>`. Schema may optionally provide the ``title`` and
     ``description`` class Meta options.
@@ -123,10 +126,13 @@ def schema2jsonschema(schema_cls):
     """
     if getattr(schema_cls.Meta, 'fields', None) or getattr(schema_cls.Meta, 'additional', None):
         warnings.warn('Only explicitly-declared fields will be included in the Schema Object. '
-                'Fields defined in Meta.fields or Meta.addtional are excluded.')
+                'Fields defined in Meta.fields or Meta.additional are excluded.')
     ret = {'properties': {}}
+    exclude = set(getattr(schema_cls.Meta, 'exclude', []))
     for field_name, field_obj in iteritems(schema_cls._declared_fields):
-        ret['properties'][field_name] = field2property(field_obj)
+        if field_name in exclude:
+            continue
+        ret['properties'][field_name] = field2property(field_obj, use_refs=use_refs)
         if field_obj.required:
             ret.setdefault('required', []).append(field_name)
     if hasattr(schema_cls, 'Meta'):
@@ -190,6 +196,8 @@ def arg2parameter(arg, name=None, default_in='body'):
             schema_props[name] = arg_as_property
         ret['schema']['properties'] = schema_props
     else:
+        if arg.multiple:
+            ret['collectionFormat'] = 'multi'
         ret.update(arg_as_property)
     return ret
 
@@ -213,13 +221,34 @@ def arg2property(arg):
         json_type, fmt = _get_json_type(arg.type)
     ret = {
         'type': json_type,
+        'description': arg.metadata.get('description', ''),
     }
-    ret['description'] = arg.metadata.get('description', '')
     if fmt:
         ret['format'] = fmt
+    if arg.multiple:
+        ret['items'] = type2items(arg.type)
     if arg.default:
         ret['default'] = arg.default
     ret.update(arg.metadata)
+    return ret
+
+
+def type2items(type):
+    """Return the JSON Schema property definition given a webargs :class:`Arg <webargs.core.Arg>`.
+
+    https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#itemsObject
+
+    Example: ::
+
+        type2items(int)
+        # {'type': 'integer', 'format': 'int32'}
+
+    :rtype: dict, an Items Object
+    """
+    json_type, fmt = _get_json_type(type)
+    ret = {'type': json_type}
+    if fmt:
+        ret['format'] = fmt
     return ret
 
 
