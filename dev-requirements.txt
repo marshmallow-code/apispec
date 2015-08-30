@@ -4,6 +4,7 @@ invoke
 flake8==2.4.1
 
 # soft dependencies
+webargs>=0.11.0
 Flask
 
 # testing
