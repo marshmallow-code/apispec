@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+import marshmallow
 from marshmallow.compat import iteritems
-from marshmallow import class_registry
+from marshmallow.utils import is_instance_or_subclass
 
 from smore import swagger
 from smore.apispec.core import Path
@@ -25,26 +26,35 @@ def schema_definition_helper(spec, name, schema, **kwargs):
     return swagger.schema2jsonschema(schema)
 
 def schema_path_helper(spec, view, **kwargs):
-    doc_operations = load_operations_from_docstring(view.__doc__)
-    if not doc_operations:
+    operations = (
+        load_operations_from_docstring(view.__doc__) or
+        kwargs.get('operations')
+    )
+    if not operations:
         return
-    operations = doc_operations.copy()
+    operations = operations.copy()
     plug = spec.plugins[NAME]
-    for method, operation_dict in iteritems(doc_operations):
+    for method, operation_dict in iteritems(operations):
         for status_code, response_dict in iteritems(operation_dict.get('responses', {})):
             if 'schema' in response_dict:
-                schema_cls = class_registry.get_class(response_dict['schema'])
-                if not operations[method].get('responses'):
-                    operations[method]['responses'] = {}
-                # If Schema class has been registered as a definition, use {'$ref':...} syntax
-                if schema_cls in plug.get('refs', {}):
-                    schema_dict = {'$ref': plug['refs'][schema_cls]}
-                else:  # use full schema object
-                    schema_dict = swagger.schema2jsonschema(schema_cls)
+                schema_dict = resolve_schema_dict(plug, response_dict['schema'])
                 if not operations[method]['responses'].get(200):
                     operations[method]['responses'][200] = {}
                 operations[method]['responses'][200]['schema'] = schema_dict
     return Path(operations=operations)
+
+def resolve_schema_dict(plug, schema):
+    if isinstance(schema, dict):
+        return schema
+    schema_cls = resolve_schema_cls(schema)
+    if schema_cls in plug.get('refs', {}):
+        return {'$ref': plug['refs'][schema_cls]}
+    return swagger.schema2jsonschema(schema_cls)
+
+def resolve_schema_cls(schema):
+    if is_instance_or_subclass(schema, marshmallow.Schema):
+        return schema
+    return marshmallow.class_registry.get_class(schema)
 
 def setup(spec):
     spec.register_definition_helper(schema_definition_helper)
