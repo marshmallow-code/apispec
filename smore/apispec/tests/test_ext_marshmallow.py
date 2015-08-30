@@ -31,6 +31,28 @@ class TestDefinitionHelper:
 
 class TestOperationHelper:
 
+    def test_schema(self, spec):
+
+        def pet_view():
+            return '...'
+
+        spec.add_path(
+            path='/pet',
+            view=pet_view,
+            operations={
+                'get': {
+                    'responses': {
+                        200: {'schema': PetSchema}
+                    }
+                }
+            }
+        )
+        p = spec._paths['/pet']
+        assert 'get' in p
+        op = p['get']
+        assert 'responses' in op
+        assert op['responses'][200]['schema'] == swagger.schema2jsonschema(PetSchema)
+
     def test_schema_in_docstring(self, spec):
 
         def pet_view():

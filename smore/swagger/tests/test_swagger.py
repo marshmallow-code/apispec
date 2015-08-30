@@ -362,7 +362,7 @@ spec.add_path(
             },
             'parameters': [
                 {'name': 'q', 'in': 'query', 'type': 'string'},
-                {'name': 'category_id', 'in': 'path', 'type': 'string'},
+                {'name': 'category_id', 'in': 'path', 'required': True, 'type': 'string'},
                 arg2parameter(Arg(str, multiple=True, location='querystring')),
             ],
         },
