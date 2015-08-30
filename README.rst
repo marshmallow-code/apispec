@@ -14,7 +14,6 @@ Features
 --------
 
 - Convert ``marshmallow.Schemas`` and ``webarg.Args`` into `Swagger 2.0 <http://swagger.io>`_ API definitions
-- Use validators from 3rd party libraries (WTForms, colander, etc.) within marshmallow
 - Pagination (todo)
 - Automatic API documentation (in progress)
 
@@ -23,6 +22,12 @@ Documentation
 -------------
 
 Documentation is available at http://smore.readthedocs.org/ .
+
+
+Projects that graduated from smore
+----------------------------------
+
+- `marshmallow-validators <https://github.com/marshmallow-code/marshmallow-validators>`_
 
 License
 -------

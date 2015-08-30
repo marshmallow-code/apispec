@@ -1,11 +1,9 @@
 invoke
-flake8
+
+# Syntax checking
+flake8==2.4.1
 
 # soft dependencies
-webargs>=0.11.0
-# smore.validate dependencies
-WTForms>=2.0.1
-colander>=1.0
 Flask
 
 # testing
