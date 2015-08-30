@@ -153,6 +153,21 @@ class TestPath:
         assert 'get' in p
         assert 'put' in p
 
+    def test_add_path_ensures_path_parameters_required(self, spec):
+        path = '/pet/{petId}'
+        spec.add_path(
+            path=path,
+            operations=dict(
+                put=dict(
+                    parameters=[{
+                        'name': 'petId',
+                        'in': 'path',
+                    }]
+                )
+            )
+        )
+        assert spec._paths[path]['put']['parameters'][0]['required'] is True
+
     def test_add_path_with_no_path_raises_error(self, spec):
         with pytest.raises(APISpecError) as excinfo:
             spec.add_path()

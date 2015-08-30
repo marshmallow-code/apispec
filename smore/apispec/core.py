@@ -17,6 +17,20 @@ VALID_METHODS = [
 SWAGGER_VERSION = '2.0'
 
 
+def clean_operations(operations):
+    """Ensure that all parameters with "in" equal to "path" are also required
+    as required by the Swagger specification.
+
+    See https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#parameterObject.
+
+    :param dict operations: Dict mapping status codes to operations
+    """
+    for operation in (operations or {}).values():
+        for parameter in operation.get('parameters', []):
+            if parameter['in'] == 'path':
+                parameter['required'] = True
+
+
 class Path(dict):
     """Represents a Swagger Path object.
 
@@ -31,6 +45,7 @@ class Path(dict):
     def __init__(self, path=None, operations=None, **kwargs):
         self.path = path
         operations = operations or {}
+        clean_operations(operations)
         invalid = set(iterkeys(operations)) - set(VALID_METHODS)
         if invalid:
             raise APISpecError(

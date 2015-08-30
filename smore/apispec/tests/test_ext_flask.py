@@ -35,10 +35,10 @@ class TestPathHelpers:
         def hello():
             return 'hi'
 
-        spec.add_path(view=hello, operations={'get': {'parameters': '..params..', 'responses': {'200': '..params..'}}})
+        spec.add_path(view=hello, operations={'get': {'parameters': [], 'responses': {'200': '..params..'}}})
         assert '/hello' in spec._paths
         assert 'get' in spec._paths['/hello']
-        assert spec._paths['/hello']['get'] == {'parameters': '..params..', 'responses': {'200': '..params..'}}
+        assert spec._paths['/hello']['get'] == {'parameters': [], 'responses': {'200': '..params..'}}
 
     def test_path_with_multiple_methods(self, app, spec):
 
