@@ -320,7 +320,7 @@ class TestNesting:
     def test_field2property_nested_spec(self):
         spec.definition('Category', schema=CategorySchema)
         category = fields.Nested(CategorySchema)
-        assert swagger.field2property(category, spec=spec) == {'$ref': 'Category'}
+        assert swagger.field2property(category, spec=spec) == {'$ref': '#/definitions/Category'}
 
     def test_field2property_nested_ref(self):
         category = fields.Nested(CategorySchema)

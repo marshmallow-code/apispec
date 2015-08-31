@@ -47,7 +47,7 @@ def resolve_schema_dict(spec, schema):
     plug = spec.plugins[NAME]
     schema_cls = resolve_schema_cls(schema)
     if schema_cls in plug.get('refs', {}):
-        return {'$ref': plug['refs'][schema_cls]}
+        return {'$ref': '#/definitions/{0}'.format(plug['refs'][schema_cls])}
     return swagger.schema2jsonschema(schema_cls, spec=spec)
 
 def resolve_schema_cls(schema):
