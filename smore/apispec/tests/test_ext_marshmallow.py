@@ -94,4 +94,4 @@ class TestOperationHelper:
         assert 'get' in p
         op = p['get']
         assert 'responses' in op
-        assert op['responses'][200]['schema']['$ref'] == 'Pet'
+        assert op['responses'][200]['schema']['$ref'] == '#/definitions/Pet'
