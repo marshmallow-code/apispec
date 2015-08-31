@@ -3,7 +3,6 @@ from __future__ import absolute_import
 
 import marshmallow
 from marshmallow.compat import iteritems
-from marshmallow.utils import is_instance_or_subclass
 
 from smore import swagger
 from smore.apispec.core import Path
@@ -23,7 +22,7 @@ def schema_definition_helper(spec, name, schema, **kwargs):
     if 'refs' not in plug:
         plug['refs'] = {}
     plug['refs'][schema] = name
-    return swagger.schema2jsonschema(schema)
+    return swagger.schema2jsonschema(schema, spec=spec)
 
 def schema_path_helper(spec, view, **kwargs):
     operations = (
@@ -33,27 +32,29 @@ def schema_path_helper(spec, view, **kwargs):
     if not operations:
         return
     operations = operations.copy()
-    plug = spec.plugins[NAME]
     for method, operation_dict in iteritems(operations):
         for status_code, response_dict in iteritems(operation_dict.get('responses', {})):
             if 'schema' in response_dict:
-                schema_dict = resolve_schema_dict(plug, response_dict['schema'])
+                schema_dict = resolve_schema_dict(spec, response_dict['schema'])
                 if not operations[method]['responses'].get(200):
                     operations[method]['responses'][200] = {}
                 operations[method]['responses'][200]['schema'] = schema_dict
     return Path(operations=operations)
 
-def resolve_schema_dict(plug, schema):
+def resolve_schema_dict(spec, schema):
     if isinstance(schema, dict):
         return schema
+    plug = spec.plugins[NAME]
     schema_cls = resolve_schema_cls(schema)
     if schema_cls in plug.get('refs', {}):
         return {'$ref': plug['refs'][schema_cls]}
-    return swagger.schema2jsonschema(schema_cls)
+    return swagger.schema2jsonschema(schema_cls, spec=spec)
 
 def resolve_schema_cls(schema):
-    if is_instance_or_subclass(schema, marshmallow.Schema):
+    if isinstance(schema, type) and issubclass(schema, marshmallow.Schema):
         return schema
+    if isinstance(schema, marshmallow.Schema):
+        return type(schema)
     return marshmallow.class_registry.get_class(schema)
 
 def setup(spec):

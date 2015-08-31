@@ -317,7 +317,12 @@ class PetSchema(Schema):
 
 class TestNesting:
 
-    def test_field2property_nested(self):
+    def test_field2property_nested_spec(self):
+        spec.definition('Category', schema=CategorySchema)
+        category = fields.Nested(CategorySchema)
+        assert swagger.field2property(category, spec=spec) == {'$ref': 'Category'}
+
+    def test_field2property_nested_ref(self):
         category = fields.Nested(CategorySchema)
         assert swagger.field2property(category) == swagger.schema2jsonschema(CategorySchema)
 
