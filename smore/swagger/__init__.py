@@ -46,7 +46,7 @@ def _get_json_type_for_field(field):
     return json_type, fmt
 
 
-def field2property(field, use_refs=True):
+def field2property(field, spec=None, use_refs=True):
     """Return the JSON Schema property definition given a marshmallow
     :class:`Field <marshmallow.fields.Field>`.
 
@@ -55,6 +55,7 @@ def field2property(field, use_refs=True):
     :param Field field: A marshmallow field.
     :rtype: dict, a Property Object
     """
+    from smore.ext.marshmallow import resolve_schema_dict
     type_, fmt = _get_json_type_for_field(field)
     ret = {
         'type': type_,
@@ -71,6 +72,8 @@ def field2property(field, use_refs=True):
     if isinstance(field, fields.Nested):
         if use_refs and field.metadata.get('ref'):
             schema = {'$ref': field.metadata['ref']}
+        elif spec:
+            schema = resolve_schema_dict(spec, field.schema)
         else:
             schema = schema2jsonschema(field.schema.__class__)
         if field.many:
@@ -79,11 +82,11 @@ def field2property(field, use_refs=True):
         else:
             ret = schema
     elif isinstance(field, fields.List):
-        ret['items'] = field2property(field.container, use_refs=use_refs)
+        ret['items'] = field2property(field.container, spec=spec, use_refs=use_refs)
     return ret
 
 
-def schema2jsonschema(schema_cls, use_refs=True):
+def schema2jsonschema(schema_cls, spec=None, use_refs=True):
     """Return the JSON Schema Object for a given marshmallow
     :class:`Schema <marshmallow.Schema>`. Schema may optionally provide the ``title`` and
     ``description`` class Meta options.
@@ -132,7 +135,7 @@ def schema2jsonschema(schema_cls, use_refs=True):
     for field_name, field_obj in iteritems(schema_cls._declared_fields):
         if field_name in exclude:
             continue
-        ret['properties'][field_name] = field2property(field_obj, use_refs=use_refs)
+        ret['properties'][field_name] = field2property(field_obj, spec=spec, use_refs=use_refs)
         if field_obj.required:
             ret.setdefault('required', []).append(field_name)
     if hasattr(schema_cls, 'Meta'):
