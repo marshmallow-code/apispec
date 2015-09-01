@@ -64,16 +64,25 @@ class TestOperationHelper:
                     200:
                         schema: smore.apispec.tests.schemas.PetSchema
                         description: successful operation
+            post:
+                responses:
+                    201:
+                        schema: smore.apispec.tests.schemas.PetSchema
+                        description: successful operation
             """
             return '...'
 
         spec.add_path(path='/pet', view=pet_view)
         p = spec._paths['/pet']
         assert 'get' in p
-        op = p['get']
-        assert 'responses' in op
-        assert op['responses'][200]['schema'] == swagger.schema2jsonschema(PetSchema)
-        assert op['responses'][200]['description'] == 'successful operation'
+        get = p['get']
+        assert 'responses' in get
+        assert get['responses'][200]['schema'] == swagger.schema2jsonschema(PetSchema)
+        assert get['responses'][200]['description'] == 'successful operation'
+        post = p['post']
+        assert 'responses' in post
+        assert post['responses'][201]['schema'] == swagger.schema2jsonschema(PetSchema)
+        assert post['responses'][201]['description'] == 'successful operation'
 
     def test_schema_in_docstring_uses_ref_if_available(self, spec):
         spec.definition('Pet', schema=PetSchema)
