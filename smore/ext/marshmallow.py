@@ -2,7 +2,6 @@
 from __future__ import absolute_import
 
 import marshmallow
-from marshmallow.compat import iteritems
 
 from smore import swagger
 from smore.apispec.core import Path
@@ -32,13 +31,10 @@ def schema_path_helper(spec, view, **kwargs):
     if not operations:
         return
     operations = operations.copy()
-    for method, operation_dict in iteritems(operations):
-        for status_code, response_dict in iteritems(operation_dict.get('responses', {})):
-            if 'schema' in response_dict:
-                schema_dict = resolve_schema_dict(spec, response_dict['schema'])
-                if not operations[method]['responses'].get(200):
-                    operations[method]['responses'][200] = {}
-                operations[method]['responses'][200]['schema'] = schema_dict
+    for operation in operations.values():
+        for response in operation.get('responses', {}).values():
+            if 'schema' in response:
+                response['schema'] = resolve_schema_dict(spec, response['schema'])
     return Path(operations=operations)
 
 def resolve_schema_dict(spec, schema):
