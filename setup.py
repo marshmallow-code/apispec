@@ -36,10 +36,10 @@ def read(fname):
 setup(
     name='smore',
     version=__version__,
-    description='A collection of utilities for designing and documenting RESTful APIs '
-                'built with marshmallow.',
-    long_description=read("README.rst"),
-    author='Steven Loria',
+    description='A collection of utilities for designing and documenting RESTful APIs. '
+                'Currently experimental.',
+    long_description=read('README.rst'),
+    author='Steven Loria, Josh Carp',
     author_email='sloria1@gmail.com',
     url='https://github.com/marshmallow-code/smore',
     packages=find_packages(exclude=("test*", )),
@@ -59,6 +59,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
     ],
     test_suite='tests',
 )

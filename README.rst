@@ -14,7 +14,7 @@ Features
 --------
 
 - Convert ``marshmallow.Schemas`` and ``webarg.Args`` into `Swagger 2.0 <http://swagger.io>`_ API definitions
-- Pagination (todo)
+- Pagination (in progress)
 - Automatic API documentation (in progress)
 
 

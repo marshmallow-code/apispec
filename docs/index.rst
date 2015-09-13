@@ -5,10 +5,9 @@ smore
 Release v\ |version| (:ref:`Changelog <changelog>`)
 
 .. warning::
-    This project is not yet released. Follow its progress on `GitHub <https://github.com/marshmallow-code/smore>`_.
+    Nothing here is stable. Right now this is a playground to try out some ideas. Follow its progress on `GitHub <https://github.com/marshmallow-code/smore>`_.
 
-A collection of utilities for designing and documenting RESTful APIs built with  `marshmallow <https://marshmallow.readthedocs.org/en/latest/>`_.
-
+A collection of utilities for designing and documenting RESTful APIs.
 
 - `smore @ GitHub <https://github.com/marshmallow-code/smore>`_
 - `Issue Tracker <https://github.com/marshmallow-code/smore/issues>`_

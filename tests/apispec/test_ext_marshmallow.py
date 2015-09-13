@@ -62,12 +62,12 @@ class TestOperationHelper:
             get:
                 responses:
                     200:
-                        schema: smore.apispec.tests.schemas.PetSchema
+                        schema: tests.apispec.schemas.PetSchema
                         description: successful operation
             post:
                 responses:
                     201:
-                        schema: smore.apispec.tests.schemas.PetSchema
+                        schema: tests.apispec.schemas.PetSchema
                         description: successful operation
             """
             return '...'
@@ -94,7 +94,7 @@ class TestOperationHelper:
             get:
                 responses:
                     200:
-                        schema: smore.apispec.tests.schemas.PetSchema
+                        schema: tests.apispec.schemas.PetSchema
             """
             return '...'
 

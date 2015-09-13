@@ -10,9 +10,10 @@ build_dir = os.path.join(docs_dir, '_build')
 
 @task
 def test():
-    """Run the tests."""
-    flake()
-    run('python setup.py test', echo=True)
+    # flake()
+    import pytest
+    errcode = pytest.main(['tests'])
+    sys.exit(errcode)
 
 @task
 def flake():
