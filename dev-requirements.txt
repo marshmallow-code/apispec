@@ -8,7 +8,9 @@ webargs>=0.11.0
 Flask
 
 # testing
-pytest
+# Need development version of pytest for py35 compat
+# https://github.com/pytest-dev/pytest/issues/744
+git+https://github.com/pytest-dev/pytest.git
 tox>=1.5.0
 mock
 

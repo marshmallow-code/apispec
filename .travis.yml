@@ -13,10 +13,10 @@ python:
   - "pypy"
 
 install:
-  - pip install -r dev-requirements.txt
   - pip install -U .
   - pip install -U marshmallow --pre
   - npm install -g swagger-tools
+  - pip install -r dev-requirements.txt
 
 before_script:
   - flake8 .
