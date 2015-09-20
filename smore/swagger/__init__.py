@@ -86,6 +86,77 @@ def field2property(field, spec=None, use_refs=True):
     return ret
 
 
+def schema2parameters(schema_cls, spec=None, use_refs=True, default_in='body',
+                      name='body', required=False):
+    """Return an array of Swagger parameters given a given marshmallow
+    :class:`Schema <marshmallow.Schema>`. If `default_in` is "body", then return an array
+    of a single parameter; else return an array of a parameter for each included field in
+    the :class:`Schema <marshmallow.Schema>`.
+
+    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#parameterObject
+    """
+    if default_in == 'body':
+        prop = schema2jsonschema(schema_cls, spec=spec, use_refs=use_refs)
+        return [property2parameter(prop, name=name or schema_cls.__name__, required=required)]
+    return [
+        field2parameter(field_name, field_obj, spec=spec, use_refs=use_refs, default_in=default_in)
+        for field_name, field_obj in iteritems(schema_cls._declared_fields)
+        if field_name not in getattr(schema_cls.Meta, 'exclude', [])
+    ]
+
+
+def field2parameter(name, field, spec=None, use_refs=True, default_in='body'):
+    location = field.metadata.pop('location', None)
+    prop = field2property(field, spec=spec, use_refs=use_refs)
+    return property2parameter(
+        prop, name=name, required=field.required, multiple=isinstance(field, fields.List),
+        location=location, default_in=default_in,
+    )
+
+
+def arg2parameter(arg, name='body', default_in='body'):
+    prop = arg2property(arg)
+    return property2parameter(
+        prop, name=arg.metadata.get('name', name), required=arg.required, multiple=arg.multiple,
+        location=arg.location, default_in=default_in,
+    )
+
+
+def property2parameter(prop, name='body', required=False, multiple=False, location=None,
+                       default_in='body'):
+    """Return the Parameter Object definition for a JSON Schema property.
+
+    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#parameterObject
+    :param dict prop: JSON Schema property
+    :param str name: Field name
+    :param bool required: Parameter is required
+    :param bool multiple: Parameter is repeated
+    :param str location: Location to look for ``name``
+    :param str default_in: Default location to look for ``name``
+    :raise: TranslationError if arg object cannot be translated to a Parameter Object schema.
+    :rtype: dict, a Parameter Object
+    """
+    swagger_location = __location_map__.get(location, default_in)
+    ret = {
+        'in': swagger_location,
+        'required': required,
+        'name': name,
+    }
+
+    if swagger_location == 'body':
+        ret['name'] = 'body'
+        ret['schema'] = {}
+        schema_props = {}
+        if name:
+            schema_props[name] = prop
+        ret['schema']['properties'] = schema_props
+    else:
+        if multiple:
+            ret['collectionFormat'] = 'multi'
+        ret.update(prop)
+    return ret
+
+
 def schema2jsonschema(schema_cls, spec=None, use_refs=True):
     """Return the JSON Schema Object for a given marshmallow
     :class:`Schema <marshmallow.Schema>`. Schema may optionally provide the ``title`` and
@@ -171,38 +242,6 @@ __location_map__ = {
 def _get_json_type(pytype):
     json_type, fmt = __type_map__.get(pytype, ('string', None))
     return json_type, fmt
-
-
-def arg2parameter(arg, name=None, default_in='body'):
-    """Return the Parameter Object definition for a :class:`webargs.Arg <webargs.core.Arg>`.
-
-    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#parameterObject
-    :param webargs.core.Arg arg: Webarg
-    :param str name: Field name
-    :param str default_in: Default location to look for ``name``
-    :raise: TranslationError if arg object cannot be translated to a Parameter Object schema.
-    :rtype: dict, a Parameter Object
-    """
-    swagger_location = __location_map__.get(arg.location, default_in)
-    ret = {
-        'in': swagger_location,
-        'required': arg.required,
-        'name': name or arg.metadata.get('name', 'body'),
-    }
-
-    arg_as_property = arg2property(arg)
-    if swagger_location == 'body':
-        ret['name'] = 'body'
-        ret['schema'] = {}
-        schema_props = {}
-        if name:
-            schema_props[name] = arg_as_property
-        ret['schema']['properties'] = schema_props
-    else:
-        if arg.multiple:
-            ret['collectionFormat'] = 'multi'
-        ret.update(arg_as_property)
-    return ret
 
 
 def arg2property(arg):

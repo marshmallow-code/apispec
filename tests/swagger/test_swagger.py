@@ -305,14 +305,31 @@ class TestMarshmallowSchemaToModelDefinition:
         assert expected_msg in str(warning.message)
         assert issubclass(warning.category, UserWarning)
 
+class TestMarshmallowSchemaToParameters:
+
+    def test_field_multiple(self):
+        field = fields.List(fields.Str, location='querystring')
+        res = swagger.field2parameter('field', field)
+        assert res['type'] == 'array'
+        assert res['items']['type'] == 'string'
+        assert res['collectionFormat'] == 'multi'
+
+    def test_field_required(self):
+        field = fields.Str(required=True)
+        res = swagger.field2parameter('field', field)
+        assert res['required'] is True
 
 class CategorySchema(Schema):
     id = fields.Int()
     name = fields.Str()
 
+class PageSchema(Schema):
+    offset = fields.Int()
+    limit = fields.Int()
 
 class PetSchema(Schema):
     category = fields.Nested(CategorySchema, many=True, ref='#/definitions/Category')
+    name = fields.Str()
 
 
 class TestNesting:
@@ -353,24 +370,37 @@ spec = APISpec(
 )
 
 spec.definition('Category', schema=CategorySchema)
+spec.definition('Pet', schema=PetSchema)
 
 spec.add_path(
     view=None,
     path='/category/{category_id}',
     operations={
         'get': {
-            'responses': {
-                200: {
-                    'schema': swagger.schema2jsonschema(PetSchema),
-                    'description': 'A pet',
-                },
-            },
             'parameters': [
                 {'name': 'q', 'in': 'query', 'type': 'string'},
                 {'name': 'category_id', 'in': 'path', 'required': True, 'type': 'string'},
                 arg2parameter(Arg(str, multiple=True, location='querystring')),
-            ],
+            ] + swagger.schema2parameters(PageSchema, default_in='query'),
+            'responses': {
+                200: {
+                    'schema': PetSchema,
+                    'description': 'A pet',
+                },
+            },
         },
+        'post': {
+            'parameters': (
+                [{'name': 'category_id', 'in': 'path', 'required': True, 'type': 'string'}] +
+                swagger.schema2parameters(PetSchema, spec=spec, default_in='body')
+            ),
+            'responses': {
+                201: {
+                    'schema': PetSchema,
+                    'description': 'A pet',
+                },
+            },
+        }
     },
 )
 
