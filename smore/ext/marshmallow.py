@@ -40,7 +40,7 @@ def schema_path_helper(spec, view, **kwargs):
 def resolve_schema_dict(spec, schema):
     if isinstance(schema, dict):
         return schema
-    plug = spec.plugins[NAME]
+    plug = spec.plugins[NAME] if spec else {}
     schema_cls = resolve_schema_cls(schema)
     if schema_cls in plug.get('refs', {}):
         return {'$ref': '#/definitions/{0}'.format(plug['refs'][schema_cls])}

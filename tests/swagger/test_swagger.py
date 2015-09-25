@@ -305,14 +305,76 @@ class TestMarshmallowSchemaToModelDefinition:
         assert expected_msg in str(warning.message)
         assert issubclass(warning.category, UserWarning)
 
+class TestMarshmallowSchemaToParameters:
+
+    def test_field_multiple(self):
+        field = fields.List(fields.Str, location='querystring')
+        res = swagger.field2parameter('field', field)
+        assert res['in'] == 'query'
+        assert res['type'] == 'array'
+        assert res['items']['type'] == 'string'
+        assert res['collectionFormat'] == 'multi'
+
+    def test_field_required(self):
+        field = fields.Str(required=True)
+        res = swagger.field2parameter('field', field)
+        assert res['required'] is True
+
+    def test_schema_body(self):
+        class UserSchema(Schema):
+            name = fields.Str()
+            email = fields.Email()
+        res = swagger.schema2parameters(UserSchema, default_in='body')
+        assert len(res) == 1
+        param = res[0]
+        assert param['in'] == 'body'
+        assert param['schema'] == swagger.schema2jsonschema(UserSchema)
+
+    def test_schema_query(self):
+        class UserSchema(Schema):
+            name = fields.Str()
+            email = fields.Email()
+        res = swagger.schema2parameters(UserSchema, default_in='query')
+        assert len(res) == 2
+        res.sort(key=lambda param: param['name'])
+        assert res[0]['name'] == 'email'
+        assert res[0]['in'] == 'query'
+        assert res[1]['name'] == 'name'
+        assert res[1]['in'] == 'query'
+
+    def test_fields_body(self):
+        field_dict = {
+            'name': fields.Str(),
+            'email': fields.Email(),
+        }
+        res = swagger.fields2parameters(field_dict)
+        assert len(res) == 1
+        assert set(res[0]['schema']['properties'].keys()) == {'name', 'email'}
+
+    def test_fields_query(self):
+        field_dict = {
+            'name': fields.Str(),
+            'email': fields.Email(),
+        }
+        res = swagger.fields2parameters(field_dict, default_in='query')
+        assert len(res) == 2
+        res.sort(key=lambda param: param['name'])
+        assert res[0]['name'] == 'email'
+        assert res[0]['in'] == 'query'
+        assert res[1]['name'] == 'name'
+        assert res[1]['in'] == 'query'
 
 class CategorySchema(Schema):
     id = fields.Int()
-    name = fields.Str()
+    name = fields.Str(required=True)
 
+class PageSchema(Schema):
+    offset = fields.Int()
+    limit = fields.Int()
 
 class PetSchema(Schema):
     category = fields.Nested(CategorySchema, many=True, ref='#/definitions/Category')
+    name = fields.Str()
 
 
 class TestNesting:
@@ -353,24 +415,37 @@ spec = APISpec(
 )
 
 spec.definition('Category', schema=CategorySchema)
+spec.definition('Pet', schema=PetSchema)
 
 spec.add_path(
     view=None,
     path='/category/{category_id}',
     operations={
         'get': {
-            'responses': {
-                200: {
-                    'schema': swagger.schema2jsonschema(PetSchema),
-                    'description': 'A pet',
-                },
-            },
             'parameters': [
                 {'name': 'q', 'in': 'query', 'type': 'string'},
                 {'name': 'category_id', 'in': 'path', 'required': True, 'type': 'string'},
                 arg2parameter(Arg(str, multiple=True, location='querystring')),
-            ],
+            ] + swagger.schema2parameters(PageSchema, default_in='query'),
+            'responses': {
+                200: {
+                    'schema': PetSchema,
+                    'description': 'A pet',
+                },
+            },
         },
+        'post': {
+            'parameters': (
+                [{'name': 'category_id', 'in': 'path', 'required': True, 'type': 'string'}] +
+                swagger.schema2parameters(CategorySchema, spec=spec, default_in='body')
+            ),
+            'responses': {
+                201: {
+                    'schema': PetSchema,
+                    'description': 'A pet',
+                },
+            },
+        }
     },
 )
 

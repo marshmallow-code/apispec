@@ -86,7 +86,105 @@ def field2property(field, spec=None, use_refs=True):
     return ret
 
 
+def schema2parameters(schema_cls, **kwargs):
+    """Return an array of Swagger parameters given a given marshmallow
+    :class:`Schema <marshmallow.Schema>`. If `default_in` is "body", then return an array
+    of a single parameter; else return an array of a parameter for each included field in
+    the :class:`Schema <marshmallow.Schema>`.
+
+    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#parameterObject
+    """
+    fields = schema_cls._declared_fields
+    return fields2parameters(fields, schema_cls, **kwargs)
+
+
+def fields2parameters(fields, schema_cls=None, spec=None, use_refs=True, default_in='body',
+                      name='body', required=False):
+    """Return an array of Swagger parameters given a mapping between field names and
+    :class:`Field <marshmallow.Field>` objects. If `default_in` is "body", then return an array
+    of a single parameter; else return an array of a parameter for each included field in
+    the :class:`Schema <marshmallow.Schema>`.
+
+    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#parameterObject
+    """
+    Meta = getattr(schema_cls, 'Meta', None)
+    if default_in == 'body':
+        if schema_cls is not None:
+            from smore.ext.marshmallow import resolve_schema_dict
+            prop = resolve_schema_dict(spec, schema_cls)
+        else:
+            prop = fields2jsonschema(fields, schema_cls=schema_cls, spec=spec, use_refs=use_refs)
+        return [{
+            'in': default_in,
+            'required': required,
+            'name': name,
+            'schema': prop,
+        }]
+    return [
+        field2parameter(field_name, field_obj, spec=spec, use_refs=use_refs, default_in=default_in)
+        for field_name, field_obj in iteritems(fields)
+        if field_name not in getattr(Meta, 'exclude', [])
+    ]
+
+
+def field2parameter(name, field, spec=None, use_refs=True, default_in='body'):
+    location = field.metadata.pop('location', None)
+    prop = field2property(field, spec=spec, use_refs=use_refs)
+    return property2parameter(
+        prop, name=name, required=field.required, multiple=isinstance(field, fields.List),
+        location=location, default_in=default_in,
+    )
+
+
+def arg2parameter(arg, name='body', default_in='body'):
+    prop = arg2property(arg)
+    return property2parameter(
+        prop, name=arg.metadata.get('name', name), required=arg.required, multiple=arg.multiple,
+        location=arg.location, default_in=default_in,
+    )
+
+
+def property2parameter(prop, name='body', required=False, multiple=False, location=None,
+                       default_in='body'):
+    """Return the Parameter Object definition for a JSON Schema property.
+
+    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#parameterObject
+    :param dict prop: JSON Schema property
+    :param str name: Field name
+    :param bool required: Parameter is required
+    :param bool multiple: Parameter is repeated
+    :param str location: Location to look for ``name``
+    :param str default_in: Default location to look for ``name``
+    :raise: TranslationError if arg object cannot be translated to a Parameter Object schema.
+    :rtype: dict, a Parameter Object
+    """
+    swagger_location = __location_map__.get(location, default_in)
+    ret = {
+        'in': swagger_location,
+        'required': required,
+        'name': name,
+    }
+
+    if swagger_location == 'body':
+        ret['name'] = 'body'
+        ret['schema'] = {}
+        schema_props = {}
+        if name:
+            schema_props[name] = prop
+        ret['schema']['properties'] = schema_props
+    else:
+        if multiple:
+            ret['collectionFormat'] = 'multi'
+        ret.update(prop)
+    return ret
+
+
 def schema2jsonschema(schema_cls, spec=None, use_refs=True):
+    fields = schema_cls._declared_fields
+    return fields2jsonschema(fields, schema_cls, spec=spec, use_refs=use_refs)
+
+
+def fields2jsonschema(fields, schema_cls=None, spec=None, use_refs=True):
     """Return the JSON Schema Object for a given marshmallow
     :class:`Schema <marshmallow.Schema>`. Schema may optionally provide the ``title`` and
     ``description`` class Meta options.
@@ -122,27 +220,26 @@ def schema2jsonschema(schema_cls, spec=None, use_refs=True):
         #     }
         # }
 
-
-
     :param type schema_cls: A marshmallow :class:`Schema <marshmallow.Schema>`
     :rtype: dict, a JSON Schema Object
     """
-    if getattr(schema_cls.Meta, 'fields', None) or getattr(schema_cls.Meta, 'additional', None):
+    Meta = getattr(schema_cls, 'Meta', None)
+    if getattr(Meta, 'fields', None) or getattr(Meta, 'additional', None):
         warnings.warn('Only explicitly-declared fields will be included in the Schema Object. '
                 'Fields defined in Meta.fields or Meta.additional are excluded.')
     ret = {'properties': {}}
-    exclude = set(getattr(schema_cls.Meta, 'exclude', []))
-    for field_name, field_obj in iteritems(schema_cls._declared_fields):
+    exclude = set(getattr(Meta, 'exclude', []))
+    for field_name, field_obj in iteritems(fields):
         if field_name in exclude:
             continue
         ret['properties'][field_name] = field2property(field_obj, spec=spec, use_refs=use_refs)
         if field_obj.required:
             ret.setdefault('required', []).append(field_name)
-    if hasattr(schema_cls, 'Meta'):
-        if hasattr(schema_cls.Meta, 'title'):
-            ret['title'] = schema_cls.Meta.title
-        if hasattr(schema_cls.Meta, 'description'):
-            ret['description'] = schema_cls.Meta.description
+    if Meta is not None:
+        if hasattr(Meta, 'title'):
+            ret['title'] = Meta.title
+        if hasattr(Meta, 'description'):
+            ret['description'] = Meta.description
     return ret
 
 ##### webargs #####
@@ -171,38 +268,6 @@ __location_map__ = {
 def _get_json_type(pytype):
     json_type, fmt = __type_map__.get(pytype, ('string', None))
     return json_type, fmt
-
-
-def arg2parameter(arg, name=None, default_in='body'):
-    """Return the Parameter Object definition for a :class:`webargs.Arg <webargs.core.Arg>`.
-
-    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#parameterObject
-    :param webargs.core.Arg arg: Webarg
-    :param str name: Field name
-    :param str default_in: Default location to look for ``name``
-    :raise: TranslationError if arg object cannot be translated to a Parameter Object schema.
-    :rtype: dict, a Parameter Object
-    """
-    swagger_location = __location_map__.get(arg.location, default_in)
-    ret = {
-        'in': swagger_location,
-        'required': arg.required,
-        'name': name or arg.metadata.get('name', 'body'),
-    }
-
-    arg_as_property = arg2property(arg)
-    if swagger_location == 'body':
-        ret['name'] = 'body'
-        ret['schema'] = {}
-        schema_props = {}
-        if name:
-            schema_props[name] = arg_as_property
-        ret['schema']['properties'] = schema_props
-    else:
-        if arg.multiple:
-            ret['collectionFormat'] = 'multi'
-        ret.update(arg_as_property)
-    return ret
 
 
 def arg2property(arg):
