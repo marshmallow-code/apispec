@@ -177,7 +177,6 @@ class TestMarshmallowFieldToSwagger:
         (fields.Integer, 'integer'),
         (fields.Number, 'number'),
         (fields.Float, 'number'),
-        (fields.Fixed, 'number'),
         (fields.String, 'string'),
         (fields.Str, 'string'),
         (fields.Boolean, 'boolean'),
