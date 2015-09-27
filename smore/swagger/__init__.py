@@ -129,6 +129,11 @@ def fields2parameters(fields, schema_cls=None, spec=None, use_refs=True, default
 
 
 def field2parameter(field, name='body', spec=None, use_refs=True, default_in='body'):
+    """Return Swagger parameter as a `dict`, given a marshmallow
+    :class:`Field <marshmallow.Field>`.
+
+    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#parameterObject
+    """
     location = field.metadata.pop('location', None)
     prop = field2property(field, spec=spec, use_refs=use_refs)
     return property2parameter(
@@ -138,6 +143,10 @@ def field2parameter(field, name='body', spec=None, use_refs=True, default_in='bo
 
 
 def arg2parameter(arg, name='body', default_in='body'):
+    """Return Swagger parameter as a `dict`, given a webargs `Arg <webargs.Arg>`.
+
+    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#parameterObject
+    """
     prop = arg2property(arg)
     return property2parameter(
         prop, name=arg.metadata.get('name', name), required=arg.required, multiple=arg.multiple,

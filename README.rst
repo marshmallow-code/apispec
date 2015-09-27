@@ -13,8 +13,7 @@ A collection of utilities for designing and documenting RESTful APIs built with 
 Features
 --------
 
-- Convert ``marshmallow.Schemas`` and ``webarg.Args`` into `Swagger 2.0 <http://swagger.io>`_ API definitions
-- Pagination (in progress)
+- Convert marshmallow ``Schemas`` and ``fields`` into `Swagger 2.0 <http://swagger.io>`_ API definitions
 - Automatic API documentation (in progress)
 
 

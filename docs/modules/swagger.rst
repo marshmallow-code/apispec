@@ -1,5 +1,5 @@
-`smore.swagger`: Generate Swagger definitions from marshmallow `Schemas` and webargs `Args`
-===========================================================================================
+`smore.swagger`: Generate Swagger definitions from marshmallow `Schemas` and `fields`
+=====================================================================================
 
 .. automodule:: smore.swagger
     :inherited-members:
