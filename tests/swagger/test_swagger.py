@@ -308,7 +308,7 @@ class TestMarshmallowSchemaToParameters:
 
     def test_field_multiple(self):
         field = fields.List(fields.Str, location='querystring')
-        res = swagger.field2parameter('field', field)
+        res = swagger.field2parameter(field, name='field')
         assert res['in'] == 'query'
         assert res['type'] == 'array'
         assert res['items']['type'] == 'string'
@@ -316,7 +316,7 @@ class TestMarshmallowSchemaToParameters:
 
     def test_field_required(self):
         field = fields.Str(required=True)
-        res = swagger.field2parameter('field', field)
+        res = swagger.field2parameter(field, name='field')
         assert res['required'] is True
 
     def test_schema_body(self):
@@ -424,7 +424,9 @@ spec.add_path(
             'parameters': [
                 {'name': 'q', 'in': 'query', 'type': 'string'},
                 {'name': 'category_id', 'in': 'path', 'required': True, 'type': 'string'},
-                arg2parameter(Arg(str, multiple=True, location='querystring')),
+                field2parameter(
+                    field=fields.List(fields.Str(), location='querystring'),
+                    name='body', use_refs=False),
             ] + swagger.schema2parameters(PageSchema, default_in='query'),
             'responses': {
                 200: {

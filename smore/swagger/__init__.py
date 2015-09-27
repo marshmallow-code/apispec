@@ -58,8 +58,9 @@ def field2property(field, spec=None, use_refs=True):
     type_, fmt = _get_json_type_for_field(field)
     ret = {
         'type': type_,
-        'description': field.metadata.get('description', '')
     }
+    if field.metadata.get('description'):
+        ret['description'] = field.metadata['description']
     if fmt:
         ret['format'] = fmt
     if field.default:
@@ -120,13 +121,14 @@ def fields2parameters(fields, schema_cls=None, spec=None, use_refs=True, default
             'schema': prop,
         }]
     return [
-        field2parameter(field_name, field_obj, spec=spec, use_refs=use_refs, default_in=default_in)
+        field2parameter(field_obj, name=field_name, spec=spec,
+            use_refs=use_refs, default_in=default_in)
         for field_name, field_obj in iteritems(fields)
         if field_name not in getattr(Meta, 'exclude', [])
     ]
 
 
-def field2parameter(name, field, spec=None, use_refs=True, default_in='body'):
+def field2parameter(field, name='body', spec=None, use_refs=True, default_in='body'):
     location = field.metadata.pop('location', None)
     prop = field2property(field, spec=spec, use_refs=use_refs)
     return property2parameter(
