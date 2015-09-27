@@ -5,8 +5,14 @@ sudo: false
 
 language: python
 
+env:
+  # Lowest supported version
+  - WEBARGS_VERSION="==0.15.0"
+  # Latest release
+  - WEBARGS_VERSION=""
+
 python:
-  - "3.5.0"
+  - "3.5"
   - "3.4"
   - "3.3"
   - "2.7"
@@ -14,9 +20,9 @@ python:
 
 install:
   - pip install -U .
-  - pip install -U marshmallow --pre
   - npm install -g swagger-tools
   - pip install -r dev-requirements.txt
+  - pip install -U webargs"$WEBARGS_VERSION"
 
 before_script:
   - flake8 .

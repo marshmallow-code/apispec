@@ -2,7 +2,13 @@
 
 import pytest
 from pytest import mark
-from webargs import Arg
+try:  # older versions of webargs
+    from webargs import Arg
+except ImportError:
+    HAS_WEBARGS_ARG = False
+else:
+    HAS_WEBARGS_ARG = True
+
 from marshmallow import fields, Schema
 from marshmallow.compat import binary_type
 
@@ -10,165 +16,164 @@ from smore import swagger
 from smore import exceptions
 from smore.apispec import utils
 from smore.apispec import APISpec
-from smore.swagger import arg2parameter, arg2property
+from smore.swagger import arg2parameter, arg2property, field2parameter
 
+if HAS_WEBARGS_ARG:
+    class TestArgToSwagger:
 
-class TestArgToSwagger:
+        @mark.parametrize(('pytype', 'jsontype'), [
+            (int, 'integer'),
+            (float, 'number'),
+            (str, 'string'),
+            (bool, 'boolean'),
+            (list, 'array'),
+            (tuple, 'array'),
+            (set, 'array'),
+        ])
+        def test_type_translation(self, pytype, jsontype):
+            arg = Arg(pytype, location='form')
+            result = arg2parameter(arg)
+            assert result['type'] == jsontype
 
-    @mark.parametrize(('pytype', 'jsontype'), [
-        (int, 'integer'),
-        (float, 'number'),
-        (str, 'string'),
-        (bool, 'boolean'),
-        (list, 'array'),
-        (tuple, 'array'),
-        (set, 'array'),
-    ])
-    def test_type_translation(self, pytype, jsontype):
-        arg = Arg(pytype, location='form')
-        result = arg2parameter(arg)
-        assert result['type'] == jsontype
+        @mark.parametrize(('webargs_location', 'swagger_location'), [
+            ('querystring', 'query'),
+            ('json', 'body'),
+            ('headers', 'header'),
+            ('form', 'formData'),
+            ('files', 'formData')
+        ])
+        def test_location_translation(self, webargs_location, swagger_location):
+            arg = Arg(int, location=webargs_location)
+            result = arg2parameter(arg)
+            assert result['in'] == swagger_location
 
-    @mark.parametrize(('webargs_location', 'swagger_location'), [
-        ('querystring', 'query'),
-        ('json', 'body'),
-        ('headers', 'header'),
-        ('form', 'formData'),
-        ('files', 'formData')
-    ])
-    def test_location_translation(self, webargs_location, swagger_location):
-        arg = Arg(int, location=webargs_location)
-        result = arg2parameter(arg)
-        assert result['in'] == swagger_location
+        def test_location_defaults_to_json_body(self):
+            # No location specified
+            arg = Arg(int)
+            result = arg2parameter(arg)
+            assert result['in'] == 'body'
 
-    def test_location_defaults_to_json_body(self):
-        # No location specified
-        arg = Arg(int)
-        result = arg2parameter(arg)
-        assert result['in'] == 'body'
+        def test_required_translation(self):
+            arg = Arg(int, required=True)
+            arg.location = 'json'
+            result = arg2parameter(arg)
+            assert result['required'] is True
+            arg2 = Arg(int, location='json')
+            result2 = arg2parameter(arg2)
+            assert result2['required'] is False
 
-    def test_required_translation(self):
-        arg = Arg(int, required=True)
-        arg.location = 'json'
-        result = arg2parameter(arg)
-        assert result['required'] is True
-        arg2 = Arg(int, location='json')
-        result2 = arg2parameter(arg2)
-        assert result2['required'] is False
+        def test_collection_translation_multiple(self):
+            arg = Arg(int, multiple=True, location='querystring')
+            result = arg2parameter(arg)
+            assert result['type'] == 'array'
+            assert result['collectionFormat'] == 'multi'
 
-    def test_collection_translation_multiple(self):
-        arg = Arg(int, multiple=True, location='querystring')
-        result = arg2parameter(arg)
-        assert result['type'] == 'array'
-        assert result['collectionFormat'] == 'multi'
+        def test_collection_translation_single(self):
+            arg = Arg(int, location='querystring')
+            result = arg2parameter(arg)
+            assert 'collectionFormat' not in result
 
-    def test_collection_translation_single(self):
-        arg = Arg(int, location='querystring')
-        result = arg2parameter(arg)
-        assert 'collectionFormat' not in result
+        def test_items_multiple_querystring(self):
+            arg = Arg(int, multiple=True, location='querystring')
+            result = arg2parameter(arg)
+            assert result['items'] == {'type': 'integer', 'format': 'int32'}
 
-    def test_items_multiple_querystring(self):
-        arg = Arg(int, multiple=True, location='querystring')
-        result = arg2parameter(arg)
-        assert result['items'] == {'type': 'integer', 'format': 'int32'}
+        def test_arg_with_description(self):
+            arg = Arg(int, location='form', description='a webargs arg')
+            result = arg2parameter(arg)
+            assert result['description'] == arg.metadata['description']
 
-    def test_arg_with_description(self):
-        arg = Arg(int, location='form', description='a webargs arg')
-        result = arg2parameter(arg)
-        assert result['description'] == arg.metadata['description']
+        def test_arg_with_format(self):
+            arg = Arg(int, location='form', format='int32')
+            result = arg2parameter(arg)
+            assert result['format'] == 'int32'
 
-    def test_arg_with_format(self):
-        arg = Arg(int, location='form', format='int32')
-        result = arg2parameter(arg)
-        assert result['format'] == 'int32'
+        def test_arg_with_default(self):
+            arg = Arg(int, location='form', default=42)
+            result = arg2parameter(arg)
+            assert result['default'] == 42
 
-    def test_arg_with_default(self):
-        arg = Arg(int, location='form', default=42)
-        result = arg2parameter(arg)
-        assert result['default'] == 42
+        def test_arg_name_is_body_if_location_is_json(self):
+            arg = Arg(int, location='json')
+            result = arg2parameter(arg)
+            assert result['name'] == 'body'
 
-    def test_arg_name_is_body_if_location_is_json(self):
-        arg = Arg(int, location='json')
-        result = arg2parameter(arg)
-        assert result['name'] == 'body'
+        def test_arg_with_name(self):
+            arg = Arg(int, location='form', name='foo')
+            res = arg2parameter(arg)
+            assert res['name'] == 'foo'
 
-    def test_arg_with_name(self):
-        arg = Arg(int, location='form', name='foo')
-        res = arg2parameter(arg)
-        assert res['name'] == 'foo'
+        def test_schema_if_json_body(self):
+            arg = Arg(int, location='json')
+            res = arg2parameter(arg)
+            assert 'schema' in res
 
-    def test_schema_if_json_body(self):
-        arg = Arg(int, location='json')
-        res = arg2parameter(arg)
-        assert 'schema' in res
+        def test_no_schema_if_form_body(self):
+            arg = Arg(int, location='form')
+            res = arg2parameter(arg)
+            assert 'schema' not in res
 
-    def test_no_schema_if_form_body(self):
-        arg = Arg(int, location='form')
-        res = arg2parameter(arg)
-        assert 'schema' not in res
+        def test_arg2property_with_description(self):
+            arg = Arg(int, location='json', description='status')
+            res = arg2property(arg)
+            assert res['type'] == 'integer'
+            assert res['description'] == arg.metadata['description']
 
-    def test_arg2property_with_description(self):
-        arg = Arg(int, location='json', description='status')
-        res = arg2property(arg)
-        assert res['type'] == 'integer'
-        assert res['description'] == arg.metadata['description']
+        @mark.parametrize(('pytype', 'expected_format'), [
+            (int, 'int32'),
+            (float, 'float'),
+            (binary_type, 'byte'),
+        ])
+        def test_arg2property_formats(self, pytype, expected_format):
+            arg = Arg(pytype, location='json')
+            res = arg2property(arg)
+            assert res['format'] == expected_format
 
-    @mark.parametrize(('pytype', 'expected_format'), [
-        (int, 'int32'),
-        (float, 'float'),
-        (binary_type, 'byte'),
-    ])
-    def test_arg2property_formats(self, pytype, expected_format):
-        arg = Arg(pytype, location='json')
-        res = arg2property(arg)
-        assert res['format'] == expected_format
+        def test_arg_with_no_type_default_to_string(self):
+            arg = Arg()
+            res = arg2property(arg)
+            assert res['type'] == 'string'
 
-    def test_arg_with_no_type_default_to_string(self):
-        arg = Arg()
-        res = arg2property(arg)
-        assert res['type'] == 'string'
+        def test_arg2property_with_additional_metadata(self):
+            arg = Arg(minLength=6, maxLength=100)
+            res = arg2property(arg)
+            assert res['minLength'] == 6
+            assert res['maxLength'] == 100
 
-    def test_arg2property_with_additional_metadata(self):
-        arg = Arg(minLength=6, maxLength=100)
-        res = arg2property(arg)
-        assert res['minLength'] == 6
-        assert res['maxLength'] == 100
+        def test_arg2swagger_puts_json_arguments_in_schema(self):
+            arg = Arg(int, location='json', description='a count', format='int32')
+            res = arg2parameter(arg, 'username')
+            assert res['name'] == 'body'
+            assert 'description' not in res
+            schema_props = res['schema']['properties']
 
-    def test_arg2swagger_puts_json_arguments_in_schema(self):
-        arg = Arg(int, location='json', description='a count', format='int32')
-        res = arg2parameter(arg, 'username')
-        assert res['name'] == 'body'
-        assert 'description' not in res
-        schema_props = res['schema']['properties']
+            # property is defined on schema
+            assert schema_props['username']['type'] == 'integer'
+            assert schema_props['username']['description'] == arg.metadata['description']
+            assert schema_props['username']['format'] == 'int32'
 
-        # property is defined on schema
-        assert schema_props['username']['type'] == 'integer'
-        assert schema_props['username']['description'] == arg.metadata['description']
-        assert schema_props['username']['format'] == 'int32'
+    class TestWebargsSchemaToSwagger:
 
+        def test_args2parameters(self):
+            args = {
+                'username': Arg(str, location='querystring', required=False,
+                                description='The user name for login'),
+            }
+            result = swagger.args2parameters(args)
+            username = result[0]
+            assert username['name'] == 'username'
+            assert username['in'] == 'query'
+            assert username['type'] == 'string'
+            assert username['required'] is False
+            assert username['description'] == args['username'].metadata['description']
 
-class TestWebargsSchemaToSwagger:
-
-    def test_args2parameters(self):
-        args = {
-            'username': Arg(str, location='querystring', required=False,
-                            description='The user name for login'),
-        }
-        result = swagger.args2parameters(args)
-        username = result[0]
-        assert username['name'] == 'username'
-        assert username['in'] == 'query'
-        assert username['type'] == 'string'
-        assert username['required'] is False
-        assert username['description'] == args['username'].metadata['description']
-
-    def test_arg2parameters_with_dest(self):
-        args = {
-            'X-Neat-Header': Arg(str, location='headers', dest='neat_header')
-        }
-        result = swagger.args2parameters(args)
-        header = result[0]
-        assert header['name'] == 'X-Neat-Header'
+        def test_arg2parameters_with_dest(self):
+            args = {
+                'X-Neat-Header': Arg(str, location='headers', dest='neat_header')
+            }
+            result = swagger.args2parameters(args)
+            header = result[0]
+            assert header['name'] == 'X-Neat-Header'
 
 
 class TestMarshmallowFieldToSwagger:
