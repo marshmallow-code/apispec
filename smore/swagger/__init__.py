@@ -10,6 +10,7 @@ Swagger 2.0 spec: https://github.com/wordnik/swagger-spec/blob/master/versions/2
 """
 from __future__ import absolute_import, unicode_literals
 import warnings
+import functools
 
 from marshmallow import fields
 from marshmallow.compat import text_type, binary_type, iteritems
@@ -45,6 +46,24 @@ def _get_json_type_for_field(field):
     return json_type, fmt
 
 
+def field2choices(field):
+    """Return the set of valid choices for a :class:`Field <marshmallow.fields.Field>`,
+    or ``None`` if no choices are specified.
+
+    :param Field field: A marshmallow field.
+    :rtype: set
+    """
+    validators = [
+        validator.choices for validator in field.validators
+        if hasattr(validator, 'choices')
+    ]
+    return (
+        functools.reduce(lambda x, y: set(x).intersection(y), validators)
+        if validators
+        else None
+    )
+
+
 def field2property(field, spec=None, use_refs=True):
     """Return the JSON Schema property definition given a marshmallow
     :class:`Field <marshmallow.fields.Field>`.
@@ -66,6 +85,9 @@ def field2property(field, spec=None, use_refs=True):
     if field.default:
         ret['default'] = field.default
     ret.update(field.metadata)
+    choices = field2choices(field)
+    if choices:
+        ret['enum'] = list(choices)
     # Avoid validation error with "Additional properties not allowed"
     # Property "ref" is not valid in this context
     ret.pop('ref', None)
