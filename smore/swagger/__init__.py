@@ -9,6 +9,7 @@ and marshmallow :class:`Schemas <marshmallow.Schema>`.
 Swagger 2.0 spec: https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md
 """
 from __future__ import absolute_import, unicode_literals
+import operator
 import warnings
 import functools
 
@@ -54,11 +55,11 @@ def field2choices(field):
     :rtype: set
     """
     validators = [
-        validator.choices for validator in field.validators
+        set(validator.choices) for validator in field.validators
         if hasattr(validator, 'choices')
     ]
     return (
-        functools.reduce(lambda x, y: set(x).intersection(y), validators)
+        functools.reduce(operator.and_, validators)
         if validators
         else None
     )
