@@ -9,7 +9,7 @@ except ImportError:
 else:
     HAS_WEBARGS_ARG = True
 
-from marshmallow import fields, Schema
+from marshmallow import fields, Schema, validate
 from marshmallow.compat import binary_type
 
 from smore import swagger
@@ -231,6 +231,19 @@ class TestMarshmallowFieldToSwagger:
         res = swagger.field2property(field)
         assert res['default'] == 'foo'
 
+    def test_field_with_choices(self):
+        field = fields.Str(validate=validate.OneOf(['freddie', 'brian', 'john']))
+        res = swagger.field2property(field)
+        assert set(res['enum']) == {'freddie', 'brian', 'john'}
+
+    def test_field_with_choices_multiple(self):
+        field = fields.Str(validate=[
+            validate.OneOf(['freddie', 'brian', 'john']),
+            validate.OneOf(['brian', 'john', 'roger'])
+        ])
+        res = swagger.field2property(field)
+        assert set(res['enum']) == {'brian', 'john'}
+
     def test_field_with_additional_metadata(self):
         field = fields.Str(minLength=6, maxLength=100)
         res = swagger.field2property(field)
@@ -430,8 +443,14 @@ spec.add_path(
                 {'name': 'q', 'in': 'query', 'type': 'string'},
                 {'name': 'category_id', 'in': 'path', 'required': True, 'type': 'string'},
                 field2parameter(
-                    field=fields.List(fields.Str(), location='querystring'),
-                    name='body', use_refs=False),
+                    field=fields.List(
+                        fields.Str(),
+                        validate=validate.OneOf(['freddie', 'roger']),
+                        location='querystring',
+                    ),
+                    name='body',
+                    use_refs=False,
+                ),
             ] + swagger.schema2parameters(PageSchema, default_in='query'),
             'responses': {
                 200: {
