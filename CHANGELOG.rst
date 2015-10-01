@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+0.3.0 (unreleased)
+++++++++++++++++++
+
+* Support ``enum`` field of JSON Schema based on ``OneOf`` and ``ContainsOnly`` validators.
+
 0.2.0 (2015-09-27)
 ++++++++++++++++++
 
