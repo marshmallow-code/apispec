@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""Flask plugin. Includes a path helper that allows you to pass a view
+function to `add_path`.
+"""
 from __future__ import absolute_import
 import re
 

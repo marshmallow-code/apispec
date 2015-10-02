@@ -1,2 +1,3 @@
+marshmallow
 sphinx
 sphinx-rtd-theme

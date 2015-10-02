@@ -5,12 +5,18 @@ apispec
 .. image:: https://travis-ci.org/marshmallow-code/apispec.svg?branch=dev
     :target: https://travis-ci.org/marshmallow-code/apispec
 
-**WARNING: Somewhat experimental. Caveat emptor.**
-
 A pluggable API documentation generator. Currently supports the `Swagger 2.0 specification <http://swagger.io/specification/>`_.
 
+Features
+========
+
+- Supports Swagger 2.0
+- Framework-agnostic
+- Includes plugins for marshmallow and Flask
+- Utilities for parsing docstrings
+
 Example application
--------------------
+===================
 
 .. code-block:: python
 
@@ -65,7 +71,7 @@ Example application
 
 
 Generated Swagger spec
-----------------------
+======================
 
 .. code-block:: python
 
@@ -124,14 +130,12 @@ Generated Swagger spec
     # }
 
 
+Documentation
+-------------
 
-
-.. Documentation
-.. -------------
-
-.. Documentation is available at http://apispec.readthedocs.org/ .
+Documentation is available at http://apispec.readthedocs.org/ .
 
 License
--------
+=======
 
 MIT licensed. See the bundled `LICENSE <https://github.com/marshmallow-code/apispec/blob/master/LICENSE>`_ file for more details.

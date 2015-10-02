@@ -6,11 +6,16 @@ Release v\ |version| (:ref:`Changelog <changelog>`)
 
 A pluggable API documentation generator. Currently supports the `Swagger 2.0 specification <http://swagger.io/specification/>`_.
 
-- `apispec @ GitHub <https://github.com/marshmallow-code/apispec>`_
-- `Issue Tracker <https://github.com/marshmallow-code/apispec/issues>`_
+Features
+========
+
+- Supports Swagger 2.0
+- Framework-agnostic
+- Includes plugins for marshmallow and Flask
+- Utilities for parsing docstrings
 
 Example application
--------------------
+===================
 
 .. code-block:: python
 
@@ -124,14 +129,18 @@ Generated Swagger spec
     # }
 
 API Reference
--------------
+=============
 
 .. toctree::
     :maxdepth: 2
 
     api_reference
 
+Project Links
+=============
 
+- `apispec @ GitHub <https://github.com/marshmallow-code/apispec>`_
+- `Issue Tracker <https://github.com/marshmallow-code/apispec/issues>`_
 
 Project Info
 ============
