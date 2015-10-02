@@ -3,11 +3,11 @@ from __future__ import absolute_import
 
 import marshmallow
 
-from smore import swagger
-from smore.apispec.core import Path
-from smore.apispec.utils import load_operations_from_docstring
+from apispec import swagger
+from apispec.core import Path
+from apispec.utils import load_operations_from_docstring
 
-NAME = 'smore.ext.marshmallow'
+NAME = 'apispec.ext.marshmallow'
 
 def schema_definition_helper(spec, name, schema, **kwargs):
     """Definition helper that allows using a marshmallow

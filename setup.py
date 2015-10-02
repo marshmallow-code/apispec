@@ -25,7 +25,7 @@ def find_version(fname):
         raise RuntimeError('Cannot find version information')
     return version
 
-__version__ = find_version('smore/__init__.py')
+__version__ = find_version('apispec/__init__.py')
 
 
 def read(fname):
@@ -34,21 +34,21 @@ def read(fname):
     return content
 
 setup(
-    name='smore',
+    name='apispec',
     version=__version__,
     description='A collection of utilities for designing and documenting RESTful APIs. '
                 'Currently experimental.',
     long_description=read('README.rst'),
     author='Steven Loria, Josh Carp',
     author_email='sloria1@gmail.com',
-    url='https://github.com/marshmallow-code/smore',
+    url='https://github.com/marshmallow-code/apispec',
     packages=find_packages(exclude=("test*", )),
-    package_dir={'smore': 'smore'},
+    package_dir={'apispec': 'apispec'},
     include_package_data=True,
     install_requires=REQUIRES,
     license=read("LICENSE"),
     zip_safe=False,
-    keywords='smore marshmallow webargs rest api',
+    keywords='apispec marshmallow webargs rest api',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',

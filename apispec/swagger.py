@@ -72,9 +72,11 @@ def field2property(field, spec=None, use_refs=True):
     https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#schemaObject
 
     :param Field field: A marshmallow field.
+    :param APISpec spec: Optional `APISpec` containing refs
+    :param bool use_refs: Use JSONSchema ``refs``.
     :rtype: dict, a Property Object
     """
-    from smore.ext.marshmallow import resolve_schema_dict
+    from apispec.ext.marshmallow import resolve_schema_dict
     type_, fmt = _get_json_type_for_field(field)
     ret = {
         'type': type_,
@@ -133,7 +135,8 @@ def fields2parameters(fields, schema_cls=None, spec=None, use_refs=True, default
     Meta = getattr(schema_cls, 'Meta', None)
     if default_in == 'body':
         if schema_cls is not None:
-            from smore.ext.marshmallow import resolve_schema_dict
+            # Prevent circular import
+            from apispec.ext.marshmallow import resolve_schema_dict
             prop = resolve_schema_dict(spec, schema_cls)
         else:
             prop = fields2jsonschema(fields, schema_cls=schema_cls, spec=spec, use_refs=use_refs)

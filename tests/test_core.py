@@ -2,8 +2,8 @@
 import pytest
 import mock
 
-from smore.apispec import APISpec, Path
-from smore.apispec.exceptions import PluginError, APISpecError
+from apispec import APISpec, Path
+from apispec.exceptions import PluginError, APISpecError
 
 
 description = 'This is a sample Petstore server.  You can find out more '
@@ -182,7 +182,7 @@ class TestPath:
 
 class TestExtensions:
 
-    DUMMY_PLUGIN = 'tests.apispec.plugins.dummy_plugin'
+    DUMMY_PLUGIN = 'tests.plugins.dummy_plugin'
 
     @mock.patch(DUMMY_PLUGIN + '.setup', autospec=True)
     def test_setup_plugin(self, mock_setup, spec):

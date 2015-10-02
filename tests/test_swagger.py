@@ -12,11 +12,9 @@ else:
 from marshmallow import fields, Schema, validate
 from marshmallow.compat import binary_type
 
-from smore import swagger
-from smore import exceptions
-from smore.apispec import utils
-from smore.apispec import APISpec
-from smore.swagger import arg2parameter, arg2property, field2parameter
+from apispec import swagger
+from apispec import exceptions, utils, APISpec
+from apispec.swagger import arg2parameter, arg2property, field2parameter
 
 if HAS_WEBARGS_ARG:
     class TestArgToSwagger:
@@ -428,7 +426,7 @@ class TestNesting:
 spec = APISpec(
     title='Pets',
     version='0.1',
-    plugins=['smore.ext.marshmallow'],
+    plugins=['apispec.ext.marshmallow'],
 )
 
 spec.definition('Category', schema=CategorySchema)
