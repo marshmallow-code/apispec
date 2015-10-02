@@ -10,7 +10,7 @@ build_dir = os.path.join(docs_dir, '_build')
 
 @task
 def test():
-    # flake()
+    flake()
     import pytest
     errcode = pytest.main(['tests'])
     sys.exit(errcode)
@@ -31,7 +31,7 @@ def watch():
 def clean():
     run("rm -rf build")
     run("rm -rf dist")
-    run("rm -rf smore.egg-info")
+    run("rm -rf apispec.egg-info")
     clean_docs()
     print("Cleaned up.")
 
@@ -65,8 +65,8 @@ def watch_docs():
         print('Install it with:')
         print('    pip install sphinx-autobuild')
         sys.exit(1)
-    docs()
-    run('sphinx-autobuild {} {}'.format(docs_dir, build_dir), pty=True)
+    run('sphinx-autobuild {0} {1} --watch {2}'.format(
+        docs_dir, build_dir, 'apispec'), echo=True, pty=True)
 
 @task
 def readme(browse=False):

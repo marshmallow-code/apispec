@@ -7,7 +7,7 @@ import subprocess
 import yaml
 from marshmallow.compat import iteritems
 
-from smore import exceptions
+from apispec import exceptions
 
 # from django.contrib.admindocs.utils
 def trim_docstring(docstring):

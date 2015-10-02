@@ -208,7 +208,7 @@ class APISpec(object):
 
         - Receive the `APISpec` instance as the first argument.
         - Include ``**kwargs`` in signature.
-        - Return a `smore.apispec.core.Path` object.
+        - Return a `apispec.core.Path` object.
 
         The helper may define any named arguments in its signature.
         """

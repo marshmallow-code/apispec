@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from smore.apispec import utils
+from apispec import utils
 
 def test_load_yaml_from_docstring():
     def f():

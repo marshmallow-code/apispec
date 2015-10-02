@@ -5,9 +5,9 @@ import re
 from flask import current_app
 
 from marshmallow.compat import iteritems
-from smore.apispec import Path
-from smore.apispec.exceptions import APISpecError
-from smore.apispec import utils
+from apispec import Path
+from apispec.exceptions import APISpecError
+from apispec import utils
 
 def _rule_for_view(view):
     view_funcs = current_app.view_functions

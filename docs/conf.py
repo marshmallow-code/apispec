@@ -6,7 +6,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath('..'))
-import smore
+import apispec
 
 extensions = [
     'sphinx.ext.autodoc',
@@ -25,10 +25,10 @@ intersphinx_mapping = {
 
 source_suffix = '.rst'
 master_doc = 'index'
-project = 'smore'
+project = 'apispec'
 copyright = 'Steven Loria {0:%Y}'.format(dt.datetime.utcnow())
 
-version = release = smore.__version__
+version = release = apispec.__version__
 
 exclude_patterns = ['_build']
 

@@ -18,29 +18,29 @@ Questions, Feature Requests, Bug Reports, and Feedback. . .
 
 . . .should all be reported on the `Github Issue Tracker`_ .
 
-.. _`Github Issue Tracker`: https://github.com/marshmallow-code/smore/issues?state=open
+.. _`Github Issue Tracker`: https://github.com/marshmallow-code/apispec/issues?state=open
 
 Setting Up for Local Development
 ++++++++++++++++++++++++++++++++
 
-1. Fork smore_ on Github. ::
+1. Fork apispec_ on Github. ::
 
-    $ git clone https://github.com/marshmallow-code/smore.git
-    $ cd smore
+    $ git clone https://github.com/marshmallow-code/apispec.git
+    $ cd apispec
 
 2. Install development requirements. It is highly recommended that you use a virtualenv. ::
 
     # After activating your virtualenv
     $ pip install -r dev-requirements.txt
 
-3. Install smore in develop mode. ::
+3. Install apispec in develop mode. ::
 
    $ pip install -e .
 
 Git Branch Structure
 ++++++++++++++++++++
 
-smore abides by the following branching model:
+apispec abides by the following branching model:
 
 
 ``dev``
@@ -77,7 +77,7 @@ Pull Requests
 - If the pull request adds functionality, it is tested and the docs are updated.
 - You've added yourself to ``AUTHORS.rst``.
 
-4. Submit a pull request to ``marshmallow-code:dev`` or the appropriate maintenance branch. The `Travis CI <https://travis-ci.org/marshmallow-code/smore>`_ build must be passing before your pull request is merged.
+4. Submit a pull request to ``marshmallow-code:dev`` or the appropriate maintenance branch. The `Travis CI <https://travis-ci.org/marshmallow-code/apispec>`_ build must be passing before your pull request is merged.
 
 Running Tests
 +++++++++++++
@@ -108,4 +108,4 @@ The ``-b`` (for "browse") automatically opens up the docs in your browser after 
 .. _Sphinx: http://sphinx.pocoo.org/
 .. _`reStructured Text`: http://docutils.sourceforge.net/rst.html
 
-.. _`smore`: https://github.com/marshmallow-code/smore
+.. _`apispec`: https://github.com/marshmallow-code/apispec

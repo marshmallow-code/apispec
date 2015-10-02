@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import pytest
 
-from smore.apispec import APISpec
-from smore import swagger
+from apispec import APISpec, swagger
 from .schemas import PetSchema
 
 @pytest.fixture()
@@ -15,7 +14,7 @@ def spec():
         'or on irc.freenode.net, #swagger.  For this sample, you can use the api '
         'key \"special-key\" to test the authorization filters',
         plugins=[
-            'smore.ext.marshmallow'
+            'apispec.ext.marshmallow'
         ]
     )
 
@@ -62,12 +61,12 @@ class TestOperationHelper:
             get:
                 responses:
                     200:
-                        schema: tests.apispec.schemas.PetSchema
+                        schema: tests.schemas.PetSchema
                         description: successful operation
             post:
                 responses:
                     201:
-                        schema: tests.apispec.schemas.PetSchema
+                        schema: tests.schemas.PetSchema
                         description: successful operation
             """
             return '...'
@@ -94,7 +93,7 @@ class TestOperationHelper:
             get:
                 responses:
                     200:
-                        schema: tests.apispec.schemas.PetSchema
+                        schema: tests.schemas.PetSchema
             """
             return '...'
 
