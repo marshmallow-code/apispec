@@ -35,8 +35,8 @@ def read(fname):
 setup(
     name='apispec',
     version=__version__,
-    description='A collection of utilities for designing and documenting RESTful APIs. '
-                'Currently experimental.',
+    description='A pluggable API documentation generator. Currently supports the '
+                'Swagger 2.0 specification',
     long_description=read('README.rst'),
     author='Steven Loria, Josh Carp',
     author_email='sloria1@gmail.com',
