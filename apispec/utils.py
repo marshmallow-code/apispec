@@ -5,8 +5,8 @@ import tempfile
 import subprocess
 
 import yaml
-from marshmallow.compat import iteritems
 
+from apispec.compat import iteritems
 from apispec import exceptions
 
 # from django.contrib.admindocs.utils

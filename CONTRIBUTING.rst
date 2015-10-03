@@ -32,6 +32,7 @@ Setting Up for Local Development
 
     # After activating your virtualenv
     $ pip install -r dev-requirements.txt
+    $ npm install -g swagger-tools
 
 3. Install apispec in develop mode. ::
 
@@ -47,7 +48,7 @@ apispec abides by the following branching model:
     Current development branch. **New features should branch off here**.
 
 ``pypi``
-    Current production release on PyPI.
+    Latest PyPI release.
 
 ``X.Y-line``
     Maintenance branch for release ``X.Y``. **Bug fixes should be sent to the most recent release branch.**. The maintainer will forward-port the fix to ``dev``. Note: exceptions may be made for bug fixes that introduce large code changes.

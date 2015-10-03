@@ -12,9 +12,9 @@ else:
 from marshmallow import fields, Schema, validate
 from marshmallow.compat import binary_type
 
-from apispec import swagger
+from apispec.ext.marshmallow import swagger
 from apispec import exceptions, utils, APISpec
-from apispec.swagger import arg2parameter, arg2property, field2parameter
+from apispec.ext.marshmallow.swagger import arg2parameter, arg2property, field2parameter
 
 if HAS_WEBARGS_ARG:
     class TestArgToSwagger:

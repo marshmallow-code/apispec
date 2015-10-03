@@ -6,6 +6,7 @@ flake8==2.4.1
 # soft dependencies
 webargs>=0.15.0
 Flask
+marshmallow
 
 # testing
 pytest>=2.8.0

@@ -1,11 +1,17 @@
 # -*- coding: utf-8 -*-
+"""Marshmallow plugin for apispec. Allows passing a marshmallow
+`Schema` to `APISpec.definition <apispec.APISpec.definition>`
+and `APISpec.add_path <apispec.APISpec.add_path>` (for responses).
+
+Requires marshmallow>=1.2.
+"""
 from __future__ import absolute_import
 
 import marshmallow
 
-from apispec import swagger
 from apispec.core import Path
 from apispec.utils import load_operations_from_docstring
+from . import swagger
 
 NAME = 'apispec.ext.marshmallow'
 
@@ -24,6 +30,9 @@ def schema_definition_helper(spec, name, schema, **kwargs):
     return swagger.schema2jsonschema(schema, spec=spec)
 
 def schema_path_helper(spec, view, **kwargs):
+    """Path helper that allows passing a Schema as a response. Responses can be
+    defined in a view's docstring.
+    """
     operations = (
         load_operations_from_docstring(view.__doc__) or
         kwargs.get('operations')
@@ -54,5 +63,6 @@ def resolve_schema_cls(schema):
     return marshmallow.class_registry.get_class(schema)
 
 def setup(spec):
+    """Setup for the marshmallow plugin."""
     spec.register_definition_helper(schema_definition_helper)
     spec.register_path_helper(schema_path_helper)

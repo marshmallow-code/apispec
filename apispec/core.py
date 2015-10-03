@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-
+"""Core apispec classes and functions."""
 import re
 
-from marshmallow.compat import iterkeys
+from apispec.compat import iterkeys
 from .exceptions import APISpecError, PluginError
 
 VALID_METHODS = [
@@ -74,7 +74,7 @@ class APISpec(object):
 
     :param str title: API title
     :param str version: API version
-    :param tuple plugins: Paths to plugin modules
+    :param tuple plugins: Import paths to plugins.
     :param dict info: Optional dict to add to `info`
         See https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#infoObject
     :param **dict options: Optional top-level keys

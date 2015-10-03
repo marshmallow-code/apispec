@@ -7,7 +7,7 @@ import re
 
 from flask import current_app
 
-from marshmallow.compat import iteritems
+from apispec.compat import iteritems
 from apispec import Path
 from apispec.exceptions import APISpecError
 from apispec import utils
@@ -29,9 +29,14 @@ def _rule_for_view(view):
 RE_URL = re.compile(r'<(?:[^:<>]+:)?([^<>]+)>')
 
 def flaskpath2swagger(path):
+    """Convert a Flask URL rule to a Swagger-compliant path.
+
+    :param str path: Flask path template.
+    """
     return RE_URL.sub(r'{\1}', path)
 
 def path_from_view(spec, view, operations, **kwargs):
+    """Path helper that allows passing a Flask view function."""
     rule = _rule_for_view(view)
     path = flaskpath2swagger(rule.rule)
     operations = utils.load_operations_from_docstring(view.__doc__)
@@ -39,4 +44,5 @@ def path_from_view(spec, view, operations, **kwargs):
     return path
 
 def setup(spec):
+    """Setup for the plugin."""
     spec.register_path_helper(path_from_view)

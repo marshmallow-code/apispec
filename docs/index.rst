@@ -14,7 +14,7 @@ Features
 - Includes plugins for marshmallow and Flask
 - Utilities for parsing docstrings
 
-Example application
+Example Application
 ===================
 
 .. code-block:: python
@@ -69,7 +69,7 @@ Example application
     spec.add_path(view=random_pet)
 
 
-Generated Swagger spec
+Generated Swagger Spec
 ----------------------
 
 .. code-block:: python
@@ -85,6 +85,7 @@ Generated Swagger spec
     #   "paths": {
     #     "/random": {
     #       "get": {
+    #         "description": "A cute furry animal endpoint."
     #         "responses": {
     #           "200": {
     #             "schema": {
@@ -93,7 +94,6 @@ Generated Swagger spec
     #             "description": "A pet to be returned"
     #           }
     #         },
-    #         "description": "A cute furry animal endpoint."
     #       }
     #     }
     #   },
@@ -134,7 +134,8 @@ API Reference
 .. toctree::
     :maxdepth: 2
 
-    api_reference
+    api_core
+    api_ext
 
 Project Links
 =============

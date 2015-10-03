@@ -4,7 +4,6 @@ from setuptools import setup, find_packages
 
 
 REQUIRES = [
-    'marshmallow>=1.2.0',
     'PyYAML>=3.10'
 ]
 
@@ -48,7 +47,7 @@ setup(
     install_requires=REQUIRES,
     license=read("LICENSE"),
     zip_safe=False,
-    keywords='apispec marshmallow webargs rest api',
+    keywords='apispec swagger spec rest api',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
