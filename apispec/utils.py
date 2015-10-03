@@ -43,7 +43,7 @@ def dedent(content):
     return content.strip()
 
 def load_yaml_from_docstring(docstring):
-    """Loads YAML from docstring"""
+    """Loads YAML from docstring."""
     split_lines = trim_docstring(docstring).split('\n')
 
     # Cut YAML from rest of docstring
@@ -73,6 +73,9 @@ PATH_KEYS = set([
 ])
 
 def load_operations_from_docstring(docstring):
+    """Return a dictionary of Swagger operations parsed from a
+    a docstring.
+    """
     doc_data = load_yaml_from_docstring(docstring)
     if doc_data:
         return {key: val for key, val in iteritems(doc_data)
