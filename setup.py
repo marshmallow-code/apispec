@@ -36,7 +36,7 @@ setup(
     name='apispec',
     version=__version__,
     description='A pluggable API documentation generator. Currently supports the '
-                'Swagger 2.0 specification',
+                'Swagger 2.0 specification.',
     long_description=read('README.rst'),
     author='Steven Loria, Josh Carp',
     author_email='sloria1@gmail.com',

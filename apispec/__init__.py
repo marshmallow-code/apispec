@@ -2,7 +2,7 @@
 """Contains the main `APISpec` class.
 """
 
-__version__ = '0.3.0'
+__version__ = '0.4.0dev0'
 __author__ = 'Steven Loria'
 __license__ = "MIT"
 
