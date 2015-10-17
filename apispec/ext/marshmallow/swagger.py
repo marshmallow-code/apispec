@@ -65,15 +65,16 @@ def field2choices(field):
     )
 
 
-def field2property(field, spec=None, use_refs=True):
+def field2property(field, spec=None, use_refs=True, dump=True):
     """Return the JSON Schema property definition given a marshmallow
     :class:`Field <marshmallow.fields.Field>`.
 
     https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#schemaObject
 
     :param Field field: A marshmallow field.
-    :param APISpec spec: Optional `APISpec` containing refs
+    :param APISpec spec: Optional `APISpec` containing refs.
     :param bool use_refs: Use JSONSchema ``refs``.
+    :param bool dump: Introspect dump logic.
     :rtype: dict, a Property Object
     """
     from apispec.ext.marshmallow import resolve_schema_dict
@@ -85,8 +86,9 @@ def field2property(field, spec=None, use_refs=True):
         ret['description'] = field.metadata['description']
     if fmt:
         ret['format'] = fmt
-    if field.default:
-        ret['default'] = field.default
+    default = field.default if dump else field.missing
+    if default:
+        ret['default'] = default
     ret.update(field.metadata)
     choices = field2choices(field)
     if choices:
@@ -107,7 +109,7 @@ def field2property(field, spec=None, use_refs=True):
         else:
             ret = schema
     elif isinstance(field, fields.List):
-        ret['items'] = field2property(field.container, spec=spec, use_refs=use_refs)
+        ret['items'] = field2property(field.container, spec=spec, use_refs=use_refs, dump=dump)
     return ret
 
 
@@ -123,8 +125,8 @@ def schema2parameters(schema_cls, **kwargs):
     return fields2parameters(fields, schema_cls, **kwargs)
 
 
-def fields2parameters(fields, schema_cls=None, spec=None, use_refs=True, default_in='body',
-                      name='body', required=False):
+def fields2parameters(fields, schema_cls=None, spec=None, use_refs=True, dump=True,
+                      default_in='body', name='body', required=False):
     """Return an array of Swagger parameters given a mapping between field names and
     :class:`Field <marshmallow.Field>` objects. If `default_in` is "body", then return an array
     of a single parameter; else return an array of a parameter for each included field in
@@ -154,14 +156,14 @@ def fields2parameters(fields, schema_cls=None, spec=None, use_refs=True, default
     ]
 
 
-def field2parameter(field, name='body', spec=None, use_refs=True, default_in='body'):
+def field2parameter(field, name='body', spec=None, use_refs=True, dump=True, default_in='body'):
     """Return Swagger parameter as a `dict`, given a marshmallow
     :class:`Field <marshmallow.Field>`.
 
     https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#parameterObject
     """
     location = field.metadata.pop('location', None)
-    prop = field2property(field, spec=spec, use_refs=use_refs)
+    prop = field2property(field, spec=spec, use_refs=use_refs, dump=dump)
     return property2parameter(
         prop, name=name, required=field.required, multiple=isinstance(field, fields.List),
         location=location, default_in=default_in,
@@ -220,7 +222,7 @@ def schema2jsonschema(schema_cls, spec=None, use_refs=True):
     return fields2jsonschema(fields, schema_cls, spec=spec, use_refs=use_refs)
 
 
-def fields2jsonschema(fields, schema_cls=None, spec=None, use_refs=True):
+def fields2jsonschema(fields, schema_cls=None, spec=None, use_refs=True, dump=True):
     """Return the JSON Schema Object for a given marshmallow
     :class:`Schema <marshmallow.Schema>`. Schema may optionally provide the ``title`` and
     ``description`` class Meta options.
@@ -268,7 +270,8 @@ def fields2jsonschema(fields, schema_cls=None, spec=None, use_refs=True):
     for field_name, field_obj in iteritems(fields):
         if field_name in exclude:
             continue
-        ret['properties'][field_name] = field2property(field_obj, spec=spec, use_refs=use_refs)
+        prop = field2property(field_obj, spec=spec, use_refs=use_refs, dump=dump)
+        ret['properties'][field_name] = prop
         if field_obj.required:
             ret.setdefault('required', []).append(field_name)
     if Meta is not None:

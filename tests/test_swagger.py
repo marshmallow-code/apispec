@@ -225,9 +225,14 @@ class TestMarshmallowFieldToSwagger:
         assert res['description'] == 'a username'
 
     def test_field_with_default(self):
-        field = fields.Str(default='foo')
+        field = fields.Str(default='foo', missing='bar')
         res = swagger.field2property(field)
         assert res['default'] == 'foo'
+
+    def test_field_with_default_load(self):
+        field = fields.Str(default='foo', missing='bar')
+        res = swagger.field2property(field, dump=False)
+        assert res['default'] == 'bar'
 
     def test_field_with_choices(self):
         field = fields.Str(validate=validate.OneOf(['freddie', 'brian', 'john']))
