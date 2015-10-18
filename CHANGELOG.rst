@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-0.4.0 (unreleased)
+0.4.0 (2015-10-18)
 ++++++++++++++++++
 
 * Add ``dump`` parameter to ``field2property`` (:issue:`32`).
