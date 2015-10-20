@@ -150,7 +150,7 @@ def fields2parameters(fields, schema_cls=None, spec=None, use_refs=True, dump=Tr
         }]
     return [
         field2parameter(field_obj, name=field_name, spec=spec,
-            use_refs=use_refs, default_in=default_in)
+            use_refs=use_refs, dump=dump, default_in=default_in)
         for field_name, field_obj in iteritems(fields)
         if field_name not in getattr(Meta, 'exclude', [])
     ]
