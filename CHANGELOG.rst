@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+0.4.1 (2015-10-19)
+++++++++++++++++++
+
+* Correctly pass ``dump`` parameter to ``field2parameters``.
+
 0.4.0 (2015-10-18)
 ++++++++++++++++++
 
