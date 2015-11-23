@@ -239,6 +239,11 @@ class TestMarshmallowFieldToSwagger:
         res = swagger.fields2parameters(field_dict, default_in='query', dump=False)
         assert res[0]['default'] == 'bar'
 
+    def test_fields_with_dump_only(self):
+        field_dict = {'field': fields.Str(dump_only=True)}
+        res = swagger.fields2parameters(field_dict, default_in='query', dump=False)
+        assert len(res) == 0
+
     def test_field_with_choices(self):
         field = fields.Str(validate=validate.OneOf(['freddie', 'brian', 'john']))
         res = swagger.field2property(field)
@@ -354,6 +359,25 @@ class TestMarshmallowSchemaToParameters:
         param = res[0]
         assert param['in'] == 'body'
         assert param['schema'] == swagger.schema2jsonschema(UserSchema)
+
+    def test_schema_body_with_dump_only(self):
+        class UserSchema(Schema):
+            name = fields.Str()
+            email = fields.Email(dump_only=True)
+
+        res_dump = swagger.schema2parameters(UserSchema, default_in='body', dump=True)
+        assert len(res_dump) == 1
+        param = res_dump[0]
+        assert param['in'] == 'body'
+        assert param['schema'] == swagger.schema2jsonschema(UserSchema, dump=True)
+        assert set(param['schema']['properties'].keys()) == {'name', 'email'}
+
+        res_nodump = swagger.schema2parameters(UserSchema, default_in='body', dump=False)
+        assert len(res_nodump) == 1
+        param = res_nodump[0]
+        assert param['in'] == 'body'
+        assert param['schema'] == swagger.schema2jsonschema(UserSchema, dump=False)
+        assert set(param['schema']['properties'].keys()) == {'name'}
 
     def test_schema_query(self):
         class UserSchema(Schema):
@@ -485,5 +509,5 @@ spec.add_path(
 def test_swagger_tools_validate():
     try:
         utils.validate_swagger(spec)
-    except exceptions.SwaggerError as error:
+    except exceptions.PluginError as error:
         pytest.fail(str(error))
