@@ -1,6 +1,15 @@
 Changelog
 ---------
 
+0.5.0 (unreleased)
+++++++++++++++++++
+
+* Skip dump-only fields when ``dump=False`` is passed to ``schema2parameters`` and ``fields2parameters``. Thanks :user:`frol`.
+
+Bug fixes:
+
+* Raise ``SwaggerError`` when ``validate_swagger`` fails. Thanks :user:`frol`.
+
 0.4.1 (2015-10-19)
 ++++++++++++++++++
 
