@@ -8,3 +8,7 @@ class APISpecError(Exception):
 class PluginError(APISpecError):
     """Raised when a plugin cannot be found or is invalid."""
     pass
+
+class SwaggerError(APISpecError):
+    """Raised when a swagger validation fails"""
+    pass

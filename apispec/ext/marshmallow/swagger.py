@@ -139,9 +139,11 @@ def fields2parameters(fields, schema_cls=None, spec=None, use_refs=True, dump=Tr
         if schema_cls is not None:
             # Prevent circular import
             from apispec.ext.marshmallow import resolve_schema_dict
-            prop = resolve_schema_dict(spec, schema_cls)
+            prop = resolve_schema_dict(spec, schema_cls, dump=dump)
         else:
-            prop = fields2jsonschema(fields, schema_cls=schema_cls, spec=spec, use_refs=use_refs)
+            prop = fields2jsonschema(
+                fields, schema_cls=schema_cls, spec=spec, use_refs=use_refs, dump=dump
+            )
         return [{
             'in': default_in,
             'required': required,
@@ -152,7 +154,11 @@ def fields2parameters(fields, schema_cls=None, spec=None, use_refs=True, dump=Tr
         field2parameter(field_obj, name=field_name, spec=spec,
             use_refs=use_refs, dump=dump, default_in=default_in)
         for field_name, field_obj in iteritems(fields)
-        if field_name not in getattr(Meta, 'exclude', [])
+        if (
+            (field_name not in getattr(Meta, 'exclude', []))
+            and
+            not (field_obj.dump_only and not dump)
+        )
     ]
 
 
@@ -217,9 +223,9 @@ def property2parameter(prop, name='body', required=False, multiple=False, locati
     return ret
 
 
-def schema2jsonschema(schema_cls, spec=None, use_refs=True):
+def schema2jsonschema(schema_cls, spec=None, use_refs=True, dump=True):
     fields = schema_cls._declared_fields
-    return fields2jsonschema(fields, schema_cls, spec=spec, use_refs=use_refs)
+    return fields2jsonschema(fields, schema_cls, spec=spec, use_refs=use_refs, dump=dump)
 
 
 def fields2jsonschema(fields, schema_cls=None, spec=None, use_refs=True, dump=True):
@@ -268,7 +274,7 @@ def fields2jsonschema(fields, schema_cls=None, spec=None, use_refs=True, dump=Tr
     ret = {'properties': {}}
     exclude = set(getattr(Meta, 'exclude', []))
     for field_name, field_obj in iteritems(fields):
-        if field_name in exclude:
+        if field_name in exclude or (field_obj.dump_only and not dump):
             continue
         prop = field2property(field_obj, spec=spec, use_refs=use_refs, dump=dump)
         ret['properties'][field_name] = prop
