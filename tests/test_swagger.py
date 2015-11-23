@@ -509,5 +509,5 @@ spec.add_path(
 def test_swagger_tools_validate():
     try:
         utils.validate_swagger(spec)
-    except exceptions.PluginError as error:
+    except exceptions.SwaggerError as error:
         pytest.fail(str(error))

@@ -87,7 +87,7 @@ def validate_swagger(spec):
     """Validate the output of an :class:`APISpec` object.
     Note: Requires installing the node package `swagger-tools`.
 
-    :raise: PluginError if validation fails.
+    :raise: SwaggerError if validation fails.
     """
     with tempfile.NamedTemporaryFile(mode='w') as fp:
         json.dump(spec.to_dict(), fp)
@@ -98,4 +98,4 @@ def validate_swagger(spec):
                 stderr=subprocess.STDOUT,
             )
         except subprocess.CalledProcessError as error:
-            raise exceptions.PluginError(error.output.decode('utf-8'))
+            raise exceptions.SwaggerError(error.output.decode('utf-8'))
