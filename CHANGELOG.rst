@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-0.5.0 (unreleased)
+0.4.2 (2015-11-23)
 ++++++++++++++++++
 
 * Skip dump-only fields when ``dump=False`` is passed to ``schema2parameters`` and ``fields2parameters``. Thanks :user:`frol`.
