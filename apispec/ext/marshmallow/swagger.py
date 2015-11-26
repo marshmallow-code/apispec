@@ -102,7 +102,7 @@ def field2property(field, spec=None, use_refs=True, dump=True):
         elif spec:
             schema = resolve_schema_dict(spec, field.schema)
         else:
-            schema = schema2jsonschema(field.schema.__class__)
+            schema = schema2jsonschema(field.schema)
         if field.many:
             ret['type'] = 'array'
             ret['items'] = schema
@@ -113,7 +113,7 @@ def field2property(field, spec=None, use_refs=True, dump=True):
     return ret
 
 
-def schema2parameters(schema_cls, **kwargs):
+def schema2parameters(schema, **kwargs):
     """Return an array of Swagger parameters given a given marshmallow
     :class:`Schema <marshmallow.Schema>`. If `default_in` is "body", then return an array
     of a single parameter; else return an array of a parameter for each included field in
@@ -121,7 +121,17 @@ def schema2parameters(schema_cls, **kwargs):
 
     https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#parameterObject
     """
-    fields = schema_cls._declared_fields
+    if hasattr(schema, 'fields'):
+        fields = schema.fields
+    elif hasattr(schema, '_declared_fields'):
+        fields = schema._declared_fields
+    else:
+        raise ValueError("Schema %r doesn't have either `fields` or `_declared_fields`")
+
+    # Prevent circular import
+    from apispec.ext.marshmallow import resolve_schema_cls
+    schema_cls = resolve_schema_cls(schema)
+
     return fields2parameters(fields, schema_cls, **kwargs)
 
 
@@ -223,8 +233,18 @@ def property2parameter(prop, name='body', required=False, multiple=False, locati
     return ret
 
 
-def schema2jsonschema(schema_cls, spec=None, use_refs=True, dump=True):
-    fields = schema_cls._declared_fields
+def schema2jsonschema(schema, spec=None, use_refs=True, dump=True):
+    if hasattr(schema, 'fields'):
+        fields = schema.fields
+    elif hasattr(schema, '_declared_fields'):
+        fields = schema._declared_fields
+    else:
+        raise ValueError("Schema %r doesn't have either `fields` or `_declared_fields`")
+
+    # Prevent circular import
+    from apispec.ext.marshmallow import resolve_schema_cls
+    schema_cls = resolve_schema_cls(schema)
+
     return fields2jsonschema(fields, schema_cls, spec=spec, use_refs=use_refs, dump=dump)
 
 
