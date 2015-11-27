@@ -456,6 +456,19 @@ class TestNesting:
         props = res['properties']
         assert props['category']['items'] == swagger.schema2jsonschema(CategorySchema)
 
+    def test_schema2jsonschema_with_nested_fields_with_adhoc_changes(self):
+        category_schema = CategorySchema()
+        category_schema.fields['id'].required = True
+
+        class PetSchema(Schema):
+            category = fields.Nested(category_schema, many=True, ref='#/definitions/Category')
+            name = fields.Str()
+
+        res = swagger.schema2jsonschema(PetSchema, use_refs=False)
+        props = res['properties']
+        assert props['category']['items'] == swagger.schema2jsonschema(category_schema)
+        assert set(props['category']['items']['required']) == {'id', 'name'}
+
 
 spec = APISpec(
     title='Pets',
