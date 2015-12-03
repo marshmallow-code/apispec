@@ -122,9 +122,12 @@ class APISpec(object):
         path = Path(path=path, operations=operations)
         # Execute plugins' helpers
         for func in self._path_helpers:
-            ret = func(
-                self, path=path, operations=operations, **kwargs
-            )
+            try:
+                ret = func(
+                    self, path=path, operations=operations, **kwargs
+                )
+            except TypeError:
+                continue
             if isinstance(ret, Path):
                 path.update(ret)
 
@@ -153,7 +156,10 @@ class APISpec(object):
         ret = {}
         # Execute all helpers from plugins
         for func in self._definition_helpers:
-            ret.update(func(self, name, **kwargs))
+            try:
+                ret.update(func(self, name, **kwargs))
+            except TypeError:
+                continue
         if properties:
             ret['properties'] = properties
         if enum:
