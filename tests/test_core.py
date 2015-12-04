@@ -209,6 +209,30 @@ class TestExtensions:
         spec.register_path_helper(my_path_helper)
         assert my_path_helper in spec._path_helpers
 
+    def test_multiple_path_helpers_w_different_signatures(self, spec):
+        def helper1(spec, spam, **kwargs):
+            return Path(path='/foo/bar')
+
+        def helper2(spec, eggs, **kwargs):
+            return Path(path='/foo/bar')
+
+        spec.register_path_helper(helper1)
+        spec.register_path_helper(helper2)
+
+        spec.add_path(eggs=object())
+
+    def test_multiple_definition_helpers_w_different_signatures(self, spec):
+        def helper1(spec, name, spam, **kwargs):
+            return mock.MagicMock()
+
+        def helper2(spec, name, eggs, **kwargs):
+            return mock.MagicMock()
+
+        spec.register_definition_helper(helper1)
+        spec.register_definition_helper(helper2)
+
+        spec.definition('SpammitySpam', eggs=mock.MagicMock())
+
 
 class TestDefinitionHelpers:
 
