@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-0.5.0 (unreleased)
+0.5.0 (2015-12-13)
 ++++++++++++++++++
 
 * ``schema2jsonschema`` and ``schema2parameters`` can introspect a marshmallow ``Schema`` instance as well as a ``Schema`` class (:issue:`37`). Thanks :user:`frol`.
