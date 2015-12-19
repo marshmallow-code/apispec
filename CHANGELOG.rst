@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+0.6.0 (unreleased)
+++++++++++++++++++
+
+* Add ``APISpec#add_parameter`` for adding common Swagger parameter objects. Thanks :user:`jta`.
+
 0.5.0 (2015-12-13)
 ++++++++++++++++++
 
