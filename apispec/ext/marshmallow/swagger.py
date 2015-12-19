@@ -294,6 +294,7 @@ def fields2jsonschema(fields, schema_cls=None, spec=None, use_refs=True, dump=Tr
     ret = {'properties': {}}
     exclude = set(getattr(Meta, 'exclude', []))
     for field_name, field_obj in iteritems(fields):
+        exclude |= set(getattr(field_obj, 'exclude', []))
         if field_name in exclude or (field_obj.dump_only and not dump):
             continue
         prop = field2property(field_obj, spec=spec, use_refs=use_refs, dump=dump)
