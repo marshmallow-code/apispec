@@ -2,6 +2,10 @@
 apispec
 *******
 
+.. image:: https://badge.fury.io/py/apispec.png
+    :target: http://badge.fury.io/py/apispec
+    :alt: Latest version
+
 .. image:: https://travis-ci.org/marshmallow-code/apispec.svg?branch=dev
     :target: https://travis-ci.org/marshmallow-code/apispec
 
