@@ -16,6 +16,7 @@ import functools
 from marshmallow import fields
 from marshmallow.compat import text_type, binary_type, iteritems
 
+from apispec.lazy_dict import LazyDict
 
 SWAGGER_VERSION = '2.0'
 
@@ -305,13 +306,14 @@ def fields2jsonschema(fields, schema_cls=None, spec=None, use_refs=True, dump=Tr
     if getattr(Meta, 'fields', None) or getattr(Meta, 'additional', None):
         warnings.warn('Only explicitly-declared fields will be included in the Schema Object. '
                 'Fields defined in Meta.fields or Meta.additional are excluded.')
-    ret = {'properties': {}}
+    ret = {'properties': LazyDict({})}
     exclude = set(getattr(Meta, 'exclude', []))
     for field_name, field_obj in iteritems(fields):
         if field_name in exclude or (field_obj.dump_only and not dump):
             continue
-        prop = field2property(field_obj, spec=spec, use_refs=use_refs, dump=dump)
-        ret['properties'][_observed_name(field_obj, field_name)] = prop
+        prop_func = lambda field_obj=field_obj:\
+            field2property(field_obj, spec=spec, use_refs=use_refs, dump=dump)
+        ret['properties'][_observed_name(field_obj, field_name)] = prop_func
         if field_obj.required:
             ret.setdefault('required', []).append(field_name)
     if Meta is not None:
