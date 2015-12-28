@@ -42,6 +42,20 @@ FIELD_MAPPING = {
 }
 
 
+def _observed_name(field, name):
+    """Adjust field name to reflect `dump_to` and `load_from` attributes.
+
+    :param Field field: A marshmallow field.
+    :param str name: Field name
+    :rtype: str
+    """
+    # use getattr in case we're running against older versions of marshmallow.
+    dump_to = getattr(field, 'dump_to', None)
+    load_from = getattr(field, 'load_from', None)
+    if load_from != dump_to:
+        return name
+    return dump_to or name
+
 def _get_json_type_for_field(field):
     json_type, fmt = FIELD_MAPPING.get(type(field), ('string', None))
     return json_type, fmt
@@ -161,7 +175,7 @@ def fields2parameters(fields, schema_cls=None, spec=None, use_refs=True, dump=Tr
             'schema': prop,
         }]
     return [
-        field2parameter(field_obj, name=field_name, spec=spec,
+        field2parameter(field_obj, name=_observed_name(field_obj, field_name), spec=spec,
             use_refs=use_refs, dump=dump, default_in=default_in)
         for field_name, field_obj in iteritems(fields)
         if (
@@ -297,7 +311,7 @@ def fields2jsonschema(fields, schema_cls=None, spec=None, use_refs=True, dump=Tr
         if field_name in exclude or (field_obj.dump_only and not dump):
             continue
         prop = field2property(field_obj, spec=spec, use_refs=use_refs, dump=dump)
-        ret['properties'][field_name] = prop
+        ret['properties'][_observed_name(field_obj, field_name)] = prop
         if field_obj.required:
             ret.setdefault('required', []).append(field_name)
     if Meta is not None:

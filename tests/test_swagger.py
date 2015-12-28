@@ -283,6 +283,24 @@ class TestMarshmallowSchemaToModelDefinition:
         assert props['email']['format'] == 'email'
         assert props['email']['description'] == 'email address of the user'
 
+    def test_schema2jsonschema_override_name(self):
+        class ExampleSchema(Schema):
+            _id = fields.Int(load_from='id', dump_to='id')
+            _as = fields.Int(load_from='as', dump_to='other')
+            _global = fields.Int(load_from='global', dump_to='global')
+
+            class Meta:
+                exclude = ('_global', )
+
+        res = swagger.schema2jsonschema(ExampleSchema)
+        props = res['properties']
+        # `_id` renamed to `id`
+        assert '_id' not in props and props['id']['type'] == 'integer'
+        # `load_from` and `dump_to` do not match for `_as`
+        assert 'as' not in props
+        # `_global` excluded correctly
+        assert '_global' not in props and 'global' not in props
+
     def test_required_fields(self):
         class BandSchema(Schema):
             drummer = fields.Str(required=True)
