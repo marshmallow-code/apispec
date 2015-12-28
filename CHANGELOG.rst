@@ -5,6 +5,7 @@ Changelog
 ++++++++++++++++++
 
 * Add ``APISpec#add_parameter`` for adding common Swagger parameter objects. Thanks :user:`jta`.
+* The field name in a spec will be adjusted if a ``Field's`` ``load_from`` and ``dump_to`` attributes are the same. :issue:`43`. Thanks again :user:`jta`.
 
 0.5.0 (2015-12-13)
 ++++++++++++++++++
