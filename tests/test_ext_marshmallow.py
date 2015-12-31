@@ -3,7 +3,8 @@ import pytest
 
 from apispec import APISpec
 from apispec.ext.marshmallow import swagger
-from .schemas import PetSchema
+from .schemas import PetSchema, AnalysisSchema, SampleSchema, RunSchema
+
 
 @pytest.fixture()
 def spec():
@@ -104,3 +105,14 @@ class TestOperationHelper:
         op = p['get']
         assert 'responses' in op
         assert op['responses'][200]['schema']['$ref'] == '#/definitions/Pet'
+
+class TestSelfReference:
+
+    def test_self_referencing_schemas(self, spec):
+
+        spec.definition('Analysis', schema=AnalysisSchema)
+        spec.definition('Sample', schema=SampleSchema)
+        spec.definition('Run', schema=RunSchema)
+
+        assert spec._definitions['Analysis']['properties']['sample']['$ref'] \
+            == '#/definitions/Sample'
