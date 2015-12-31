@@ -15,3 +15,4 @@ Contributors (chronological)
 - Vlad Frolov `@frol <https://github.com/frol>`_
 - Andrew Pashkin `@AndrewPashkin <https://github.com/AndrewPashkin>`_
 - João Taveira Araújo `@jta <https://github.com/jta>`_
+- Giacomo Tagliabue `@itajaja <https://github.com/itajaja>`_

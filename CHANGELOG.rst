@@ -4,8 +4,14 @@ Changelog
 0.6.0 (unreleased)
 ++++++++++++++++++
 
+Features:
+
 * Add ``APISpec#add_parameter`` for adding common Swagger parameter objects. Thanks :user:`jta`.
 * The field name in a spec will be adjusted if a ``Field's`` ``load_from`` and ``dump_to`` attributes are the same. :issue:`43`. Thanks again :user:`jta`.
+
+Bug fixes:
+
+* Fix bug that caused a stack overflow when adding nested Schemas to an ``APISpec`` (:issue:`31`, :issue:`41`). Thanks :user:`alapshin` and :user:`itajaja` for reporting. Thanks :user:`itajaja` for the patch.
 
 0.5.0 (2015-12-13)
 ++++++++++++++++++
