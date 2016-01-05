@@ -12,6 +12,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
+    'sphinx_issues',
 ]
 
 primary_domain = 'py'
@@ -22,6 +23,8 @@ intersphinx_mapping = {
     'webargs': ('http://webargs.readthedocs.org/en/latest/', None),
     'marshmallow': ('http://marshmallow.readthedocs.org/en/latest/', None),
 }
+
+issues_github_path = 'marshmallow-code/apispec'
 
 source_suffix = '.rst'
 master_doc = 'index'
