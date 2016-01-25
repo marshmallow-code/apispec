@@ -32,7 +32,6 @@ Example Application
     spec = APISpec(
         title='Swagger Petstore',
         version='1.0.0',
-        description='A sample Petstore API.',
         plugins=[
             'apispec.ext.flask',
             'apispec.ext.marshmallow',
@@ -86,11 +85,10 @@ Generated Swagger Spec
     #     "version": "1.0.0"
     #   },
     #   "swagger": "2.0",
-    #   "description": "A sample Petstore API."
     #   "paths": {
     #     "/random": {
     #       "get": {
-    #         "description": "A cute furry animal endpoint."
+    #         "description": "A cute furry animal endpoint.",
     #         "responses": {
     #           "200": {
     #             "schema": {
