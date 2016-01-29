@@ -353,6 +353,14 @@ class TestMarshmallowSchemaToModelDefinition:
         assert expected_msg in str(warning.message)
         assert issubclass(warning.category, UserWarning)
 
+    def test_observed_field_name_for_required_field(self):
+        class UserSchema(Schema):
+            user_id = fields.Int(load_from="id", dump_to="id", required=True)
+
+        res = swagger.fields2jsonschema(UserSchema)
+        assert res["required"] == ["id"]
+
+
 class TestMarshmallowSchemaToParameters:
 
     def test_field_multiple(self):
