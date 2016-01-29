@@ -310,11 +310,12 @@ def fields2jsonschema(fields, schema_cls=None, spec=None, use_refs=True, dump=Tr
     for field_name, field_obj in iteritems(fields):
         if field_name in exclude or (field_obj.dump_only and not dump):
             continue
+        observed_field_name = _observed_name(field_obj, field_name)
         prop_func = lambda field_obj=field_obj:\
             field2property(field_obj, spec=spec, use_refs=use_refs, dump=dump)  # flake8: noqa
-        ret['properties'][_observed_name(field_obj, field_name)] = prop_func
+        ret['properties'][observed_field_name] = prop_func
         if field_obj.required:
-            ret.setdefault('required', []).append(field_name)
+            ret.setdefault('required', []).append(observed_field_name)
     if Meta is not None:
         if hasattr(Meta, 'title'):
             ret['title'] = Meta.title
