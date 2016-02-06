@@ -16,3 +16,4 @@ Contributors (chronological)
 - Andrew Pashkin `@AndrewPashkin <https://github.com/AndrewPashkin>`_
 - João Taveira Araújo `@jta <https://github.com/jta>`_
 - Giacomo Tagliabue `@itajaja <https://github.com/itajaja>`_
+- Ben Beadle `@benbeadle <https://github.com/benbeadle>`_

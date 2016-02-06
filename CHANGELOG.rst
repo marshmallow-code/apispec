@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.6.1 (unreleased)
+++++++++++++++++++
+
+Bug fixes:
+
+* Use correct field name in "required" array when ``load_from`` and ``dump_to`` are used (:issue:`48`). Thanks :user:`benbeadle` for the catch and patch.
+
 0.6.0 (2016-01-04)
 ++++++++++++++++++
 
