@@ -179,6 +179,24 @@ class TestPath:
         assert '/pets' in spec._paths
         assert '/v1/pets' not in spec._paths
 
+    def test_add_path_accepts_path(self, spec):
+        route = '/pet/{petId}'
+        route_spec = self.paths[route]
+        path = Path(path=route, operations={'get': route_spec['get']})
+        spec.add_path(path)
+
+        p = spec._paths[path.path]
+        assert path.path == p.path
+        assert 'get' in p
+
+    def test_add_path_strips_path_base_path(self, spec):
+        spec.options['basePath'] = '/v1'
+        path = Path(path='/v1/pets')
+        spec.add_path(path)
+        assert '/pets' in spec._paths
+        assert '/v1/pets' not in spec._paths
+
+
     def test_add_parameters(self, spec):
         route_spec = self.paths['/pet/{petId}']['get']
 
