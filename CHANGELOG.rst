@@ -1,8 +1,12 @@
 Changelog
 ---------
 
-0.6.1 (unreleased)
+0.7.0 (2016-02-11)
 ++++++++++++++++++
+
+Features:
+
+* ``APISpec.add_path`` accepts ``Path`` objects (:issue:`49`). Thanks :user:`Trii` for the suggestion and the implementation.
 
 Bug fixes:
 
