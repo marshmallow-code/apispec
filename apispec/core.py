@@ -136,11 +136,21 @@ class APISpec(object):
         """Add a new path object to the spec.
 
         https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#paths-object-
+
+        :param str|Path|None path: URL Path component or Path instance
+        :param dict|None operations: describes the http methods and options for `path`
+        :param dict kwargs: parameters used by any path helpers see :meth:`register_path_helper`
         """
-        if path and 'basePath' in self.options:
+        p = path
+        if isinstance(path, Path):
+            p = path.path
+        if p and 'basePath' in self.options:
             pattern = '^{0}'.format(re.escape(self.options['basePath']))
-            path = re.sub(pattern, '', path)
-        path = Path(path=path, operations=operations)
+            p = re.sub(pattern, '', p)
+        if isinstance(path, Path):
+            path.path = p
+        else:
+            path = Path(path=p, operations=operations)
         # Execute plugins' helpers
         for func in self._path_helpers:
             try:
