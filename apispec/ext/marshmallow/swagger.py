@@ -141,7 +141,7 @@ def schema2parameters(schema, **kwargs):
     elif hasattr(schema, '_declared_fields'):
         fields = schema._declared_fields
     else:
-        raise ValueError("Schema %r doesn't have either `fields` or `_declared_fields`")
+        raise ValueError("Schema %r doesn't have either `fields` or `_declared_fields`" % schema)
 
     # Prevent circular import
     from apispec.ext.marshmallow import resolve_schema_cls
@@ -253,7 +253,7 @@ def schema2jsonschema(schema, spec=None, use_refs=True, dump=True):
     elif hasattr(schema, '_declared_fields'):
         fields = schema._declared_fields
     else:
-        raise ValueError("Schema %r doesn't have either `fields` or `_declared_fields`")
+        raise ValueError("Schema %r doesn't have either `fields` or `_declared_fields`" % schema)
 
     # Prevent circular import
     from apispec.ext.marshmallow import resolve_schema_cls
