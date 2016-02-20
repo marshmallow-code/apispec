@@ -13,7 +13,7 @@ import operator
 import warnings
 import functools
 
-from marshmallow import fields
+import marshmallow
 from marshmallow.compat import text_type, binary_type, iteritems
 
 from apispec.lazy_dict import LazyDict
@@ -24,22 +24,22 @@ SWAGGER_VERSION = '2.0'
 
 # marshmallow field => (JSON Schema type, format)
 FIELD_MAPPING = {
-    fields.Integer: ('integer', 'int32'),
-    fields.Number: ('number', None),
-    fields.Float: ('number', 'float'),
-    fields.Decimal: ('number', None),
-    fields.String: ('string', None),
-    fields.Boolean: ('boolean', None),
-    fields.UUID: ('string', 'uuid'),
-    fields.DateTime: ('string', 'date-time'),
-    fields.Date: ('string', 'date'),
-    fields.Time: ('string', None),
-    fields.Email: ('string', 'email'),
-    fields.URL: ('string', 'url'),
+    marshmallow.fields.Integer: ('integer', 'int32'),
+    marshmallow.fields.Number: ('number', None),
+    marshmallow.fields.Float: ('number', 'float'),
+    marshmallow.fields.Decimal: ('number', None),
+    marshmallow.fields.String: ('string', None),
+    marshmallow.fields.Boolean: ('boolean', None),
+    marshmallow.fields.UUID: ('string', 'uuid'),
+    marshmallow.fields.DateTime: ('string', 'date-time'),
+    marshmallow.fields.Date: ('string', 'date'),
+    marshmallow.fields.Time: ('string', None),
+    marshmallow.fields.Email: ('string', 'email'),
+    marshmallow.fields.URL: ('string', 'url'),
     # Assume base Field and Raw are strings
-    fields.Field: ('string', None),
-    fields.Raw: ('string', None),
-    fields.List: ('array', None),
+    marshmallow.fields.Field: ('string', None),
+    marshmallow.fields.Raw: ('string', None),
+    marshmallow.fields.List: ('array', None),
 }
 
 
@@ -111,19 +111,19 @@ def field2property(field, spec=None, use_refs=True, dump=True):
     # Avoid validation error with "Additional properties not allowed"
     # Property "ref" is not valid in this context
     ret.pop('ref', None)
-    if isinstance(field, fields.Nested):
+    if isinstance(field, marshmallow.fields.Nested):
         if use_refs and field.metadata.get('ref'):
             schema = {'$ref': field.metadata['ref']}
         elif spec:
             schema = resolve_schema_dict(spec, field.schema)
         else:
             schema = schema2jsonschema(field.schema)
-        if field.many:
+        if field.many and schema.get('type') != 'array':
             ret['type'] = 'array'
             ret['items'] = schema
         else:
             ret = schema
-    elif isinstance(field, fields.List):
+    elif isinstance(field, marshmallow.fields.List):
         ret['items'] = field2property(field.container, spec=spec, use_refs=use_refs, dump=dump)
     return ret
 
@@ -143,14 +143,10 @@ def schema2parameters(schema, **kwargs):
     else:
         raise ValueError("Schema %r doesn't have either `fields` or `_declared_fields`")
 
-    # Prevent circular import
-    from apispec.ext.marshmallow import resolve_schema_cls
-    schema_cls = resolve_schema_cls(schema)
-
-    return fields2parameters(fields, schema_cls, **kwargs)
+    return fields2parameters(fields, schema, **kwargs)
 
 
-def fields2parameters(fields, schema_cls=None, spec=None, use_refs=True, dump=True,
+def fields2parameters(fields, schema=None, spec=None, use_refs=True, dump=True,
                       default_in='body', name='body', required=False):
     """Return an array of Swagger parameters given a mapping between field names and
     :class:`Field <marshmallow.Field>` objects. If `default_in` is "body", then return an array
@@ -159,30 +155,37 @@ def fields2parameters(fields, schema_cls=None, spec=None, use_refs=True, dump=Tr
 
     https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#parameterObject
     """
-    Meta = getattr(schema_cls, 'Meta', None)
     if default_in == 'body':
-        if schema_cls is not None:
+        if schema is not None:
             # Prevent circular import
             from apispec.ext.marshmallow import resolve_schema_dict
-            prop = resolve_schema_dict(spec, schema_cls, dump=dump)
+            prop = resolve_schema_dict(spec, schema, dump=dump)
         else:
-            prop = fields2jsonschema(
-                fields, schema_cls=schema_cls, spec=spec, use_refs=use_refs, dump=dump
-            )
+            prop = fields2jsonschema(fields, spec=spec, use_refs=use_refs, dump=dump)
+
         return [{
             'in': default_in,
             'required': required,
             'name': name,
             'schema': prop,
         }]
+
+    exclude_fields = getattr(getattr(schema, 'Meta', None), 'exclude', [])
+
     return [
-        field2parameter(field_obj, name=_observed_name(field_obj, field_name), spec=spec,
-            use_refs=use_refs, dump=dump, default_in=default_in)
-        for field_name, field_obj in iteritems(fields)
-        if (
-            (field_name not in getattr(Meta, 'exclude', [])) and
-            not (field_obj.dump_only and not dump)
-        )
+        field2parameter(
+            field_obj,
+            name=_observed_name(field_obj, field_name),
+            spec=spec,
+            use_refs=use_refs,
+            dump=dump,
+            default_in=default_in
+        ) \
+            for field_name, field_obj in iteritems(fields) \
+            if (
+                (field_name not in exclude_fields)
+                and not (field_obj.dump_only and not dump)
+            )
     ]
 
 
@@ -195,8 +198,12 @@ def field2parameter(field, name='body', spec=None, use_refs=True, dump=True, def
     location = field.metadata.pop('location', None)
     prop = field2property(field, spec=spec, use_refs=use_refs, dump=dump)
     return property2parameter(
-        prop, name=name, required=field.required, multiple=isinstance(field, fields.List),
-        location=location, default_in=default_in,
+        prop,
+        name=name,
+        required=field.required,
+        multiple=isinstance(field, marshmallow.fields.List),
+        location=location,
+        default_in=default_in,
     )
 
 
@@ -207,8 +214,12 @@ def arg2parameter(arg, name='body', default_in='body'):
     """
     prop = arg2property(arg)
     return property2parameter(
-        prop, name=arg.metadata.get('name', name), required=arg.required, multiple=arg.multiple,
-        location=arg.location, default_in=default_in,
+        prop,
+        name=arg.metadata.get('name', name),
+        required=arg.required,
+        multiple=arg.multiple,
+        location=arg.location,
+        default_in=default_in,
     )
 
 
@@ -255,14 +266,10 @@ def schema2jsonschema(schema, spec=None, use_refs=True, dump=True):
     else:
         raise ValueError("Schema %r doesn't have either `fields` or `_declared_fields`")
 
-    # Prevent circular import
-    from apispec.ext.marshmallow import resolve_schema_cls
-    schema_cls = resolve_schema_cls(schema)
-
-    return fields2jsonschema(fields, schema_cls, spec=spec, use_refs=use_refs, dump=dump)
+    return fields2jsonschema(fields, schema, spec=spec, use_refs=use_refs, dump=dump)
 
 
-def fields2jsonschema(fields, schema_cls=None, spec=None, use_refs=True, dump=True):
+def fields2jsonschema(fields, schema=None, spec=None, use_refs=True, dump=True):
     """Return the JSON Schema Object for a given marshmallow
     :class:`Schema <marshmallow.Schema>`. Schema may optionally provide the ``title`` and
     ``description`` class Meta options.
@@ -298,30 +305,47 @@ def fields2jsonschema(fields, schema_cls=None, spec=None, use_refs=True, dump=Tr
         #     }
         # }
 
-    :param type schema_cls: A marshmallow :class:`Schema <marshmallow.Schema>`
+    :param Schema schema: A marshmallow Schema instance or a class object
     :rtype: dict, a JSON Schema Object
     """
-    Meta = getattr(schema_cls, 'Meta', None)
+    Meta = getattr(schema, 'Meta', None)
     if getattr(Meta, 'fields', None) or getattr(Meta, 'additional', None):
-        warnings.warn('Only explicitly-declared fields will be included in the Schema Object. '
-                'Fields defined in Meta.fields or Meta.additional are excluded.')
-    ret = {'properties': LazyDict({})}
+        warnings.warn(
+            "Only explicitly-declared fields will be included in the Schema Object. "
+            "Fields defined in Meta.fields or Meta.additional are ignored."
+        )
+
+    jsonschema = {
+        'properties': LazyDict({})
+    }
+
     exclude = set(getattr(Meta, 'exclude', []))
+
     for field_name, field_obj in iteritems(fields):
         if field_name in exclude or (field_obj.dump_only and not dump):
             continue
+
         observed_field_name = _observed_name(field_obj, field_name)
-        prop_func = lambda field_obj=field_obj:\
+        prop_func = lambda field_obj=field_obj: \
             field2property(field_obj, spec=spec, use_refs=use_refs, dump=dump)  # flake8: noqa
-        ret['properties'][observed_field_name] = prop_func
+        jsonschema['properties'][observed_field_name] = prop_func
+
         if field_obj.required:
-            ret.setdefault('required', []).append(observed_field_name)
+            jsonschema.setdefault('required', []).append(observed_field_name)
+
     if Meta is not None:
         if hasattr(Meta, 'title'):
-            ret['title'] = Meta.title
+            jsonschema['title'] = Meta.title
         if hasattr(Meta, 'description'):
-            ret['description'] = Meta.description
-    return ret
+            jsonschema['description'] = Meta.description
+
+    if getattr(schema, 'many', False):
+        jsonschema = {
+            'type': 'array',
+            'items': jsonschema,
+        }
+
+    return jsonschema
 
 ##### webargs #####
 
