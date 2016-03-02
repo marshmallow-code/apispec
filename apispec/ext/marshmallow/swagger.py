@@ -316,7 +316,8 @@ def fields2jsonschema(fields, schema=None, spec=None, use_refs=True, dump=True):
         )
 
     jsonschema = {
-        'properties': LazyDict({})
+        'type': 'object',
+        'properties': LazyDict({}),
     }
 
     exclude = set(getattr(Meta, 'exclude', []))
