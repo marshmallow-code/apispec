@@ -113,16 +113,16 @@ def field2property(field, spec=None, use_refs=True, dump=True):
     ret.pop('ref', None)
     if isinstance(field, marshmallow.fields.Nested):
         if use_refs and field.metadata.get('ref'):
-            schema = {'$ref': field.metadata['ref']}
+            ref_schema = {'$ref': field.metadata['ref']}
+            if field.many:
+                ret['type'] = 'array'
+                ret['items'] = ref_schema
+            else:
+                ret = ref_schema
         elif spec:
-            schema = resolve_schema_dict(spec, field.schema)
+            ret = resolve_schema_dict(spec, field.schema)
         else:
-            schema = schema2jsonschema(field.schema)
-        if field.many and schema.get('type') != 'array':
-            ret['type'] = 'array'
-            ret['items'] = schema
-        else:
-            ret = schema
+            ret = schema2jsonschema(field.schema)
     elif isinstance(field, marshmallow.fields.List):
         ret['items'] = field2property(field.container, spec=spec, use_refs=use_refs, dump=dump)
     return ret
@@ -169,6 +169,9 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True, dump=True,
             'name': name,
             'schema': prop,
         }]
+
+    assert not getattr(schema, 'many', False), \
+        "Schemas with many=True are only supported for 'json' location (aka 'in: body')"
 
     exclude_fields = getattr(getattr(schema, 'Meta', None), 'exclude', [])
 
