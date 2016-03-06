@@ -52,8 +52,16 @@ def resolve_schema_dict(spec, schema, dump=True):
     plug = spec.plugins[NAME] if spec else {}
     schema_cls = resolve_schema_cls(schema)
     if schema_cls in plug.get('refs', {}):
-        return {'$ref': '#/definitions/{0}'.format(plug['refs'][schema_cls])}
-    return swagger.schema2jsonschema(schema_cls, spec=spec, dump=dump)
+        ref_schema = {'$ref': '#/definitions/{0}'.format(plug['refs'][schema_cls])}
+        if getattr(schema, 'many', False):
+            return {
+                'type': 'array',
+                'items': ref_schema,
+            }
+        return ref_schema
+    if not isinstance(schema, marshmallow.Schema):
+        schema = schema_cls
+    return swagger.schema2jsonschema(schema, spec=spec, dump=dump)
 
 def resolve_schema_cls(schema):
     if isinstance(schema, type) and issubclass(schema, marshmallow.Schema):

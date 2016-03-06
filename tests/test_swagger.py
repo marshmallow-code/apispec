@@ -266,6 +266,10 @@ class TestMarshmallowFieldToSwagger:
 
 class TestMarshmallowSchemaToModelDefinition:
 
+    def test_invalid_schema(self):
+        with pytest.raises(ValueError):
+            swagger.schema2jsonschema(None)
+
     def test_schema2jsonschema_with_explicit_fields(self):
         class UserSchema(Schema):
             _id = fields.Int()
@@ -277,6 +281,7 @@ class TestMarshmallowSchemaToModelDefinition:
 
         res = swagger.schema2jsonschema(UserSchema)
         assert res['title'] == 'User'
+        assert res['type'] == 'object'
         props = res['properties']
         assert props['_id']['type'] == 'integer'
         assert props['email']['type'] == 'string'
@@ -293,6 +298,7 @@ class TestMarshmallowSchemaToModelDefinition:
                 exclude = ('_global', )
 
         res = swagger.schema2jsonschema(ExampleSchema)
+        assert res['type'] == 'object'
         props = res['properties']
         # `_id` renamed to `id`
         assert '_id' not in props and props['id']['type'] == 'integer'
@@ -345,6 +351,7 @@ class TestMarshmallowSchemaToModelDefinition:
                 fields = ('_id', 'email', )
 
         res = swagger.schema2jsonschema(UserSchema)
+        assert res['type'] == 'object'
         props = res['properties']
         assert '_id' in props
         assert 'email' not in props
@@ -360,6 +367,25 @@ class TestMarshmallowSchemaToModelDefinition:
 
         res = swagger.fields2jsonschema(fields_dict)
         assert res["required"] == ["id"]
+
+    def test_schema_instance_inspection(self):
+        class UserSchema(Schema):
+            _id = fields.Int()
+
+        res = swagger.schema2jsonschema(UserSchema())
+        assert res['type'] == 'object'
+        props = res['properties']
+        assert '_id' in props
+
+    def test_schema_instance_inspection_with_many(self):
+        class UserSchema(Schema):
+            _id = fields.Int()
+
+        res = swagger.schema2jsonschema(UserSchema(many=True))
+        assert res['type'] == 'array'
+        assert 'items' in res
+        props = res['items']['properties']
+        assert '_id' in props
 
 
 class TestMarshmallowSchemaToParameters:
@@ -377,10 +403,15 @@ class TestMarshmallowSchemaToParameters:
         res = swagger.field2parameter(field, name='field')
         assert res['required'] is True
 
+    def test_invalid_schema(self):
+        with pytest.raises(ValueError):
+            swagger.schema2parameters(None)
+
     def test_schema_body(self):
         class UserSchema(Schema):
             name = fields.Str()
             email = fields.Email()
+
         res = swagger.schema2parameters(UserSchema, default_in='body')
         assert len(res) == 1
         param = res[0]
@@ -406,10 +437,24 @@ class TestMarshmallowSchemaToParameters:
         assert param['schema'] == swagger.schema2jsonschema(UserSchema, dump=False)
         assert set(param['schema']['properties'].keys()) == {'name'}
 
+    def test_schema_body_many(self):
+        class UserSchema(Schema):
+            name = fields.Str()
+            email = fields.Email()
+
+        res = swagger.schema2parameters(UserSchema(many=True), default_in='body')
+        assert len(res) == 1
+        param = res[0]
+        assert param['in'] == 'body'
+        assert param['schema']['type'] == 'array'
+        assert param['schema']['items']['type'] == 'object'
+        assert param['schema']['items'] == swagger.schema2jsonschema(UserSchema)
+
     def test_schema_query(self):
         class UserSchema(Schema):
             name = fields.Str()
             email = fields.Email()
+
         res = swagger.schema2parameters(UserSchema, default_in='query')
         assert len(res) == 2
         res.sort(key=lambda param: param['name'])
@@ -417,6 +462,27 @@ class TestMarshmallowSchemaToParameters:
         assert res[0]['in'] == 'query'
         assert res[1]['name'] == 'name'
         assert res[1]['in'] == 'query'
+
+    def test_schema_query_instance(self):
+        class UserSchema(Schema):
+            name = fields.Str()
+            email = fields.Email()
+
+        res = swagger.schema2parameters(UserSchema(), default_in='query')
+        assert len(res) == 2
+        res.sort(key=lambda param: param['name'])
+        assert res[0]['name'] == 'email'
+        assert res[0]['in'] == 'query'
+        assert res[1]['name'] == 'name'
+        assert res[1]['in'] == 'query'
+
+    def test_schema_query_instance_many_should_raise_exception(self):
+        class UserSchema(Schema):
+            name = fields.Str()
+            email = fields.Email()
+
+        with pytest.raises(AssertionError):
+            swagger.schema2parameters(UserSchema(many=True), default_in='query')
 
     def test_fields_body(self):
         field_dict = {
@@ -440,6 +506,7 @@ class TestMarshmallowSchemaToParameters:
         assert res[1]['name'] == 'name'
         assert res[1]['in'] == 'query'
 
+
 class CategorySchema(Schema):
     id = fields.Int()
     name = fields.Str(required=True)
@@ -459,6 +526,13 @@ class TestNesting:
         spec.definition('Category', schema=CategorySchema)
         category = fields.Nested(CategorySchema)
         assert swagger.field2property(category, spec=spec) == {'$ref': '#/definitions/Category'}
+
+    def test_field2property_nested_many_spec(self):
+        spec.definition('Category', schema=CategorySchema)
+        category = fields.Nested(CategorySchema, many=True)
+        ret = swagger.field2property(category, spec=spec)
+        assert ret['type'] == 'array'
+        assert ret['items'] == {'$ref': '#/definitions/Category'}
 
     def test_field2property_nested_ref(self):
         category = fields.Nested(CategorySchema)
@@ -484,17 +558,20 @@ class TestNesting:
         assert props['category']['items'] == swagger.schema2jsonschema(CategorySchema)
 
     def test_schema2jsonschema_with_nested_fields_with_adhoc_changes(self):
-        category_schema = CategorySchema()
+        category_schema = CategorySchema(many=True)
         category_schema.fields['id'].required = True
 
         class PetSchema(Schema):
             category = fields.Nested(category_schema, many=True, ref='#/definitions/Category')
             name = fields.Str()
 
-        res = swagger.schema2jsonschema(PetSchema, use_refs=False)
+        res = swagger.schema2jsonschema(PetSchema(), use_refs=False)
         props = res['properties']
-        assert props['category']['items'] == swagger.schema2jsonschema(category_schema)
+        assert props['category'] == swagger.schema2jsonschema(category_schema)
         assert set(props['category']['items']['required']) == {'id', 'name'}
+
+        props['category']['items']['required'] = ['name']
+        assert props['category']['items'] == swagger.schema2jsonschema(CategorySchema)
 
 
 spec = APISpec(
