@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.8.0 (unreleased)
+++++++++++++++++++
+
+Features:
+
+* ``apispec.ext.marshmallow.swagger.schema2jsonschema`` properly introspects ``Schema`` instances when ``many=True`` (:issue:`53`). Thanks :user:`frol` for the PR.
+
 0.7.0 (2016-02-11)
 ++++++++++++++++++
 
