@@ -141,7 +141,9 @@ def schema2parameters(schema, **kwargs):
     elif hasattr(schema, '_declared_fields'):
         fields = schema._declared_fields
     else:
-        raise ValueError("Schema %r doesn't have either `fields` or `_declared_fields`")
+        raise ValueError(
+            "{0!r} doesn't have either `fields` or `_declared_fields`".format(schema)
+        )
 
     return fields2parameters(fields, schema, **kwargs)
 
@@ -267,7 +269,9 @@ def schema2jsonschema(schema, spec=None, use_refs=True, dump=True):
     elif hasattr(schema, '_declared_fields'):
         fields = schema._declared_fields
     else:
-        raise ValueError("Schema %r doesn't have either `fields` or `_declared_fields`")
+        raise ValueError(
+            "{0!r} doesn't have either `fields` or `_declared_fields`".format(schema)
+        )
 
     return fields2jsonschema(fields, schema, spec=spec, use_refs=use_refs, dump=dump)
 
