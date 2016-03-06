@@ -8,6 +8,10 @@ Features:
 
 * ``apispec.ext.marshmallow.swagger.schema2jsonschema`` properly introspects ``Schema`` instances when ``many=True`` (:issue:`53`). Thanks :user:`frol` for the PR.
 
+Bug fixes:
+
+* Fix error reporting when an invalid object is passed to ``schema2jsonschema`` or ``schema2parameters`` (:issue:`52`). Thanks again :user:`frol`.
+
 0.7.0 (2016-02-11)
 ++++++++++++++++++
 
