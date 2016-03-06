@@ -361,6 +361,16 @@ class TestMarshmallowSchemaToModelDefinition:
         res = swagger.fields2jsonschema(fields_dict)
         assert res["required"] == ["id"]
 
+    def test_raises_error_if_no_declared_fields(self):
+        class NotASchema(object):
+            pass
+
+        with pytest.raises(ValueError) as excinfo:
+            swagger.schema2jsonschema(NotASchema)
+
+        assert excinfo.value.args[0] == ("{0!r} doesn't have either `fields` "
+                                         "or `_declared_fields`".format(NotASchema))
+
 
 class TestMarshmallowSchemaToParameters:
 
@@ -439,6 +449,17 @@ class TestMarshmallowSchemaToParameters:
         assert res[0]['in'] == 'query'
         assert res[1]['name'] == 'name'
         assert res[1]['in'] == 'query'
+
+    def test_raises_error_if_not_a_schema(self):
+        class NotASchema(object):
+            pass
+
+        with pytest.raises(ValueError) as excinfo:
+            swagger.schema2jsonschema(NotASchema)
+
+        assert excinfo.value.args[0] == ("{0!r} doesn't have either `fields` "
+                                         "or `_declared_fields`".format(NotASchema))
+
 
 class CategorySchema(Schema):
     id = fields.Int()
