@@ -134,12 +134,12 @@ class APISpec(object):
         kwargs['in'] = location
         self._parameters[param_id] = kwargs
 
-    def add_tag(self, **kwargs):
+    def add_tag(self, tag):
         """ Store information about a tag.
 
         :param dict kwargs: parameter fields.
         """
-        self._tags.append(kwargs)
+        self._tags.append(tag)
 
     def add_path(self, path=None, operations=None, **kwargs):
         """Add a new path object to the spec.

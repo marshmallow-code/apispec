@@ -35,6 +35,19 @@ class TestMetadata:
         assert metadata['info']['description'] == description
 
 
+class TestTags:
+
+    tag = {
+        'name': 'MyTag',
+        'description': 'This tag gathers all API endpoints which are mine.'
+    }
+
+    def test_tag(self, spec):
+        spec.add_tag(self.tag)
+        tags_json = spec.to_dict()['tags']
+        assert self.tag in tags_json
+
+
 class TestDefinitions:
 
     properties = {
