@@ -137,7 +137,7 @@ class APISpec(object):
     def add_tag(self, tag):
         """ Store information about a tag.
 
-        :param dict kwargs: parameter fields.
+        :param dict tag: the dictionary storing information about the tag.
         """
         self._tags.append(tag)
 
