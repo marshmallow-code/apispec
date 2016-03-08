@@ -1,7 +1,3 @@
-.cache
-.idea
-env
-
 *.py[cod]
 
 # C extensions
