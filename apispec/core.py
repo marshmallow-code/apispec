@@ -182,6 +182,11 @@ class APISpec(object):
     def definition(self, name, properties=None, enum=None, **kwargs):
         """Add a new definition to the spec.
 
+        If you are using the Marshmallow extension, you can pass fields' metadatas in the fields' kwargs.
+        For example, if you want to add an enum to your field Status:
+
+        status = fields.String(required=True, enum=['open', 'closed']
+
         https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#definitionsObject
         """
         ret = {}
