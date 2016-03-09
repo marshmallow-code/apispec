@@ -98,6 +98,7 @@ class APISpec(object):
         # Metadata
         self._definitions = {}
         self._parameters = {}
+        self._tags = []
         self._paths = {}
         # Plugin and helpers
         self.plugins = {}
@@ -116,6 +117,7 @@ class APISpec(object):
             'definitions': self._definitions,
             'parameters': self._parameters,
             'paths': self._paths,
+            'tags': self._tags
         }
         ret.update(self.options)
         return ret
@@ -131,6 +133,13 @@ class APISpec(object):
             kwargs['name'] = param_id
         kwargs['in'] = location
         self._parameters[param_id] = kwargs
+
+    def add_tag(self, tag):
+        """ Store information about a tag.
+
+        :param dict tag: the dictionary storing information about the tag.
+        """
+        self._tags.append(tag)
 
     def add_path(self, path=None, operations=None, **kwargs):
         """Add a new path object to the spec.
