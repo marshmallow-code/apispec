@@ -17,3 +17,4 @@ Contributors (chronological)
 - João Taveira Araújo `@jta <https://github.com/jta>`_
 - Giacomo Tagliabue `@itajaja <https://github.com/itajaja>`_
 - Ben Beadle `@benbeadle <https://github.com/benbeadle>`_
+- Martin Latrille `@martinlatrille <https://github.com/martinlatrille>`_

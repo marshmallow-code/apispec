@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.9.0 (unreleased)
+++++++++++++++++++
+
+Features:
+
+* Add ``APISpec.add_tags`` method for adding Swagger tags. Thanks :user:`martinlatrille`.
+
 0.8.0 (2016-03-06)
 ++++++++++++++++++
 
