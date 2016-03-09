@@ -118,6 +118,7 @@ def field2property(field, spec=None, use_refs=True, dump=True):
                 ret['type'] = 'array'
                 ret['items'] = ref_schema
             else:
+                del ret['type']
                 ret.update(ref_schema)
         elif spec:
             ret = resolve_schema_dict(spec, field.schema)
