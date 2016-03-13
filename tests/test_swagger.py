@@ -561,6 +561,13 @@ class TestNesting:
         cat_with_ref = fields.Nested(CategorySchema, ref='Category')
         assert swagger.field2property(cat_with_ref) == {'$ref': 'Category'}
 
+    def test_field2property_nested_ref_with_meta(self):
+        category = fields.Nested(CategorySchema)
+        assert swagger.field2property(category) == swagger.schema2jsonschema(CategorySchema)
+
+        cat_with_ref = fields.Nested(CategorySchema, ref='Category', description="A category")
+        assert swagger.field2property(cat_with_ref) == {'$ref': 'Category', 'description': "A category"}
+
     def test_field2property_nested_many(self):
         categories = fields.Nested(CategorySchema, many=True)
         res = swagger.field2property(categories)
