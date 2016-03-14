@@ -29,7 +29,7 @@ def _rule_for_view(view):
 RE_URL = re.compile(r'<(?:[^:<>]+:)?([^<>]+)>')
 
 def flaskpath2swagger(path):
-    """Convert a Flask URL rule to a Swagger-compliant path.
+    """Convert a Flask URL rule to an OpenAPI-compliant path.
 
     :param str path: Flask path template.
     """

@@ -12,6 +12,15 @@ Bug fixes:
 
 * Fix bug in marshmallow extension where metadata was being lost when converting marshmallow ``Schemas`` when ``many=False``. Thanks again :user:`martinlatrille`.
 
+Other changes:
+
+* Remove duplicate ``SWAGGER_VERSION`` from ``api.ext.marshmallow.swagger``.
+
+Support:
+
+* Update docs to reflect rename of Swagger to OpenAPI.
+
+
 0.8.0 (2016-03-06)
 ++++++++++++++++++
 

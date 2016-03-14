@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-"""Utilities for generating Swagger spec entities from webargs :class:`Args <webargs.core.Arg>`
+"""Utilities for generating OpenAPI spec (fka Swagger) entities from webargs :class:`Args <webargs.core.Arg>`
 and marshmallow :class:`Schemas <marshmallow.Schema>`.
 
 .. note::
 
     Even though this module supports webargs, webargs is an optional dependency.
 
-Swagger 2.0 spec: https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md
+OpenAPI 2.0 spec: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md
 """
 from __future__ import absolute_import, unicode_literals
 import operator
@@ -17,8 +17,6 @@ import marshmallow
 from marshmallow.compat import text_type, binary_type, iteritems
 
 from apispec.lazy_dict import LazyDict
-
-SWAGGER_VERSION = '2.0'
 
 ##### marshmallow #####
 
@@ -84,7 +82,7 @@ def field2property(field, spec=None, use_refs=True, dump=True):
     """Return the JSON Schema property definition given a marshmallow
     :class:`Field <marshmallow.fields.Field>`.
 
-    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#schemaObject
+    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
 
     :param Field field: A marshmallow field.
     :param APISpec spec: Optional `APISpec` containing refs.
@@ -130,12 +128,12 @@ def field2property(field, spec=None, use_refs=True, dump=True):
 
 
 def schema2parameters(schema, **kwargs):
-    """Return an array of Swagger parameters given a given marshmallow
+    """Return an array of OpenAPI parameters given a given marshmallow
     :class:`Schema <marshmallow.Schema>`. If `default_in` is "body", then return an array
     of a single parameter; else return an array of a parameter for each included field in
     the :class:`Schema <marshmallow.Schema>`.
 
-    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#parameterObject
+    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
     """
     if hasattr(schema, 'fields'):
         fields = schema.fields
@@ -151,12 +149,12 @@ def schema2parameters(schema, **kwargs):
 
 def fields2parameters(fields, schema=None, spec=None, use_refs=True, dump=True,
                       default_in='body', name='body', required=False):
-    """Return an array of Swagger parameters given a mapping between field names and
+    """Return an array of OpenAPI parameters given a mapping between field names and
     :class:`Field <marshmallow.Field>` objects. If `default_in` is "body", then return an array
     of a single parameter; else return an array of a parameter for each included field in
     the :class:`Schema <marshmallow.Schema>`.
 
-    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#parameterObject
+    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
     """
     if default_in == 'body':
         if schema is not None:
@@ -196,10 +194,10 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True, dump=True,
 
 
 def field2parameter(field, name='body', spec=None, use_refs=True, dump=True, default_in='body'):
-    """Return Swagger parameter as a `dict`, given a marshmallow
+    """Return an OpenAPI parameter as a `dict`, given a marshmallow
     :class:`Field <marshmallow.Field>`.
 
-    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#parameterObject
+    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
     """
     location = field.metadata.pop('location', None)
     prop = field2property(field, spec=spec, use_refs=use_refs, dump=dump)
@@ -214,9 +212,9 @@ def field2parameter(field, name='body', spec=None, use_refs=True, dump=True, def
 
 
 def arg2parameter(arg, name='body', default_in='body'):
-    """Return Swagger parameter as a `dict`, given a webargs `Arg <webargs.Arg>`.
+    """Return an OpenAPI parameter as a `dict`, given a webargs `Arg <webargs.Arg>`.
 
-    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#parameterObject
+    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
     """
     prop = arg2property(arg)
     return property2parameter(
@@ -233,7 +231,8 @@ def property2parameter(prop, name='body', required=False, multiple=False, locati
                        default_in='body'):
     """Return the Parameter Object definition for a JSON Schema property.
 
-    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#parameterObject
+    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
+
     :param dict prop: JSON Schema property
     :param str name: Field name
     :param bool required: Parameter is required
@@ -282,7 +281,7 @@ def fields2jsonschema(fields, schema=None, spec=None, use_refs=True, dump=True):
     :class:`Schema <marshmallow.Schema>`. Schema may optionally provide the ``title`` and
     ``description`` class Meta options.
 
-    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#schemaObject
+    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
 
     Example: ::
 
@@ -356,7 +355,7 @@ def fields2jsonschema(fields, schema=None, spec=None, use_refs=True, dump=True):
 
     return jsonschema
 
-##### webargs #####
+##### webargs (older versions) #####
 
 # Python type => (JSON Schema type, format)
 __type_map__ = {
@@ -387,7 +386,7 @@ def _get_json_type(pytype):
 def arg2property(arg):
     """Return the JSON Schema property definition given a webargs :class:`Arg <webargs.core.Arg>`.
 
-    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#schemaObject
+    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
 
     Example: ::
 
@@ -418,7 +417,7 @@ def arg2property(arg):
 def type2items(type):
     """Return the JSON Schema property definition given a webargs :class:`Arg <webargs.core.Arg>`.
 
-    https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#itemsObject
+    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#itemsObject
 
     Example: ::
 
@@ -435,10 +434,10 @@ def type2items(type):
 
 
 def args2parameters(args, default_in='body'):
-    """Return an array of Swagger properties given a dictionary of webargs
+    """Return an array of OpenAPI properties given a dictionary of webargs
     :class:`Args <webargs.core.Arg>`.
 
-    https://github.com/wordnik/swagger-spec/blob/master/versions/2.0.md#parameterObject
+    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
 
     Example: ::
 

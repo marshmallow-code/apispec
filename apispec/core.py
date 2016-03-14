@@ -14,15 +14,15 @@ VALID_METHODS = [
     'head',
 ]
 
-SWAGGER_VERSION = '2.0'
+OPENAPI_VERSION = SWAGGER_VERSION = '2.0'
 
 
 def clean_operations(operations):
     """Ensure that all parameters with "in" equal to "path" are also required
-    as required by the Swagger specification, as well as normalizing any
+    as required by the OpenAPI specification, as well as normalizing any
     references to global parameters.
 
-    See https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#parameterObject.
+    See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject.
 
     :param dict operations: Dict mapping status codes to operations
     """
@@ -39,14 +39,14 @@ def clean_operations(operations):
 
 
 class Path(dict):
-    """Represents a Swagger Path object.
+    """Represents an OpenAPI Path object.
 
-    https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#pathsObject
+    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathsObject
 
     :param str path: The path template, e.g. ``"/pet/{petId}"``
     :param str method: The HTTP method.
     :param dict operation: The operation object, as a `dict`. See
-        https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operationObject
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject
     """
 
     def __init__(self, path=None, operations=None, **kwargs):
@@ -77,15 +77,15 @@ class Path(dict):
 
 
 class APISpec(object):
-    """Stores metadata that describes a RESTful API using the Swagger 2.0 specification.
+    """Stores metadata that describes a RESTful API using the OpenAPI specification.
 
     :param str title: API title
     :param str version: API version
     :param tuple plugins: Import paths to plugins.
     :param dict info: Optional dict to add to `info`
-        See https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#infoObject
+        See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#infoObject
     :param **dict options: Optional top-level keys
-        See https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#swagger-object
+        See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
     """
 
     def __init__(self, title, version, plugins=(), info=None, **options):
@@ -144,7 +144,7 @@ class APISpec(object):
     def add_path(self, path=None, operations=None, **kwargs):
         """Add a new path object to the spec.
 
-        https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#paths-object-
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathsObject
 
         :param str|Path|None path: URL Path component or Path instance
         :param dict|None operations: describes the http methods and options for `path`
@@ -191,14 +191,14 @@ class APISpec(object):
     def definition(self, name, properties=None, enum=None, **kwargs):
         """Add a new definition to the spec.
 
-        If you are using the Marshmallow extension, you can pass fields'metadatas in the
-        fields' kwargs.
+        If you are using the marshmallow extension, you can pass fields' metadata as
+        additional keyword arguments.
 
-        For example, if you want to add an enum to your field Status:
+        For example, to add ``enum`` to your field: ::
 
-        status = fields.String(required=True, enum=['open', 'closed']
+            status = fields.String(required=True, enum=['open', 'closed'])
 
-        https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#definitionsObject
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#definitionsObject
         """
         ret = {}
         # Execute all helpers from plugins
@@ -250,7 +250,7 @@ class APISpec(object):
 
         The helper may define any named arguments after the `name` argument.
 
-        https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#definitionsObject
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#definitionsObject
 
         :param callable func: The definition helper function.
         """

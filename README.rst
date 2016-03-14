@@ -9,12 +9,12 @@ apispec
 .. image:: https://travis-ci.org/marshmallow-code/apispec.svg?branch=dev
     :target: https://travis-ci.org/marshmallow-code/apispec
 
-A pluggable API documentation generator. Currently supports the `Swagger 2.0 specification <http://swagger.io/specification/>`_.
+A pluggable API documentation generator. Currently supports the `OpenAPI specification <http://swagger.io/specification/>`_ (f.k.a. Swagger 2.0).
 
 Features
 ========
 
-- Supports Swagger 2.0
+- Supports OpenAPI 2.0 specification (f.k.a. Swagger)
 - Framework-agnostic
 - Includes plugins for marshmallow and Flask
 - Utilities for parsing docstrings
