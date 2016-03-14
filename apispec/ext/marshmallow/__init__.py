@@ -3,7 +3,7 @@
 `Schema` to `APISpec.definition <apispec.APISpec.definition>`
 and `APISpec.add_path <apispec.APISpec.add_path>` (for responses).
 
-Requires marshmallow>=1.2.
+Requires marshmallow>=2.0.
 """
 from __future__ import absolute_import
 
