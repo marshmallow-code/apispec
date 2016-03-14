@@ -140,4 +140,4 @@ Documentation is available at http://apispec.readthedocs.org/ .
 License
 =======
 
-MIT licensed. See the bundled `LICENSE <https://github.com/marshmallow-code/apispec/blob/master/LICENSE>`_ file for more details.
+MIT licensed. See the bundled `LICENSE <https://github.com/marshmallow-code/apispec/blob/dev/LICENSE>`_ file for more details.
