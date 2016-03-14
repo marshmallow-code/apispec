@@ -1,7 +1,7 @@
 invoke
 
 # Syntax checking
-flake8==2.4.1
+flake8==2.5.4
 
 # soft dependencies
 webargs>=0.15.0
