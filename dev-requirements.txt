@@ -1,4 +1,5 @@
 invoke
+pyyaml
 
 # Syntax checking
 flake8==2.5.4
