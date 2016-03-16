@@ -15,6 +15,7 @@ from . import swagger
 
 NAME = 'apispec.ext.marshmallow'
 
+
 def schema_definition_helper(spec, name, schema, **kwargs):
     """Definition helper that allows using a marshmallow
     :class:`Schema <marshmallow.Schema>` to provide OpenAPI
@@ -28,6 +29,7 @@ def schema_definition_helper(spec, name, schema, **kwargs):
         plug['refs'] = {}
     plug['refs'][schema] = name
     return swagger.schema2jsonschema(schema, spec=spec)
+
 
 def schema_path_helper(spec, view, **kwargs):
     """Path helper that allows passing a Schema as a response. Responses can be
@@ -46,6 +48,7 @@ def schema_path_helper(spec, view, **kwargs):
                 response['schema'] = resolve_schema_dict(spec, response['schema'])
     return Path(operations=operations)
 
+
 def resolve_schema_dict(spec, schema, dump=True):
     if isinstance(schema, dict):
         return schema
@@ -63,12 +66,14 @@ def resolve_schema_dict(spec, schema, dump=True):
         schema = schema_cls
     return swagger.schema2jsonschema(schema, spec=spec, dump=dump)
 
+
 def resolve_schema_cls(schema):
     if isinstance(schema, type) and issubclass(schema, marshmallow.Schema):
         return schema
     if isinstance(schema, marshmallow.Schema):
         return type(schema)
     return marshmallow.class_registry.get_class(schema)
+
 
 def setup(spec):
     """Setup for the marshmallow plugin."""
