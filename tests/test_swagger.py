@@ -541,6 +541,11 @@ class PetSchema(Schema):
 
 
 class TestNesting:
+    def test_field2property_nested_spec_metadatas(self):
+        spec.definition('Category', schema=CategorySchema)
+        category = fields.Nested(CategorySchema, description="A category")
+        assert swagger.field2property(category, spec=spec) == {'$ref': '#/definitions/Category', 'description': 'A category'}
+
 
     def test_field2property_nested_spec(self):
         spec.definition('Category', schema=CategorySchema)
