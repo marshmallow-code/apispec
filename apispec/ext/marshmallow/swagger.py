@@ -55,6 +55,7 @@ def _observed_name(field, name):
         return name
     return dump_to or name
 
+
 def _get_json_type_for_field(field):
     json_type, fmt = FIELD_MAPPING.get(type(field), ('string', None))
     return json_type, fmt
@@ -92,38 +93,43 @@ def field2property(field, spec=None, use_refs=True, dump=True):
     """
     from apispec.ext.marshmallow import resolve_schema_dict
     type_, fmt = _get_json_type_for_field(field)
+
     ret = {
         'type': type_,
     }
-    if field.metadata.get('description'):
-        ret['description'] = field.metadata['description']
+
     if fmt:
         ret['format'] = fmt
+
     default = field.default if dump else field.missing
     if default:
         ret['default'] = default
-    ret.update(field.metadata)
+
     choices = field2choices(field)
     if choices:
         ret['enum'] = list(choices)
-    # Avoid validation error with "Additional properties not allowed"
-    # Property "ref" is not valid in this context
-    ret.pop('ref', None)
+
     if isinstance(field, marshmallow.fields.Nested):
+        del ret['type']
         if use_refs and field.metadata.get('ref'):
             ref_schema = {'$ref': field.metadata['ref']}
             if field.many:
                 ret['type'] = 'array'
                 ret['items'] = ref_schema
             else:
-                del ret['type']
                 ret.update(ref_schema)
         elif spec:
-            ret = resolve_schema_dict(spec, field.schema)
+            ret.update(resolve_schema_dict(spec, field.schema))
         else:
-            ret = schema2jsonschema(field.schema)
+            ret.update(schema2jsonschema(field.schema))
     elif isinstance(field, marshmallow.fields.List):
         ret['items'] = field2property(field.container, spec=spec, use_refs=use_refs, dump=dump)
+
+    ret.update(field.metadata)
+    # Avoid validation error with "Additional properties not allowed"
+    # Property "ref" is not valid in this context
+    ret.pop('ref', None)
+
     return ret
 
 
