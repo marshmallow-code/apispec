@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.9.1 (2016-03-17)
+++++++++++++++++++
+
+Bug fixes:
+
+* Fix generation of metadata for ``Nested`` fields (:issue:`61`). Thanks :user:`martinlatrille`.
+
 0.9.0 (2016-03-13)
 ++++++++++++++++++
 
