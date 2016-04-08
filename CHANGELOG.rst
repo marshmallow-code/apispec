@@ -1,6 +1,20 @@
 Changelog
 ---------
 
+0.10.0 (2016-04-08)
++++++++++++++++++++
+
+Features:
+
+* Add Tornado extension (:issue:`62`).
+
+Bug fixes:
+
+* Compatibility fix with marshmallow>=2.7.0 (:issue:`64`).
+* Fix bug that raised error for Swagger parameters that didn't include the ``in`` key (:issue:`63`).
+
+Big thanks :user:`lucascosta` for all these changes.
+
 0.9.1 (2016-03-17)
 ++++++++++++++++++
 
