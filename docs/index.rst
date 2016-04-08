@@ -11,7 +11,7 @@ Features
 
 - Supports OpenAPI 2.0 specification (f.k.a. Swagger)
 - Framework-agnostic
-- Includes plugins for marshmallow and Flask
+- Includes plugins marshmallow, Flask, and Tornado
 - Utilities for parsing docstrings
 
 Example Application
