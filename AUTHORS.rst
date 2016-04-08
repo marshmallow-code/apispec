@@ -18,3 +18,4 @@ Contributors (chronological)
 - Giacomo Tagliabue `@itajaja <https://github.com/itajaja>`_
 - Ben Beadle `@benbeadle <https://github.com/benbeadle>`_
 - Martin Latrille `@martinlatrille <https://github.com/martinlatrille>`_
+- Lucas Costa `@lucascosta <https://github.com/lucascosta>`_

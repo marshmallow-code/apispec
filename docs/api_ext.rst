@@ -18,3 +18,9 @@ apispec.ext.flask
 
 .. automodule:: apispec.ext.flask
     :members:
+
+apispec.ext.tornado
+-------------------
+
+.. automodule:: apispec.ext.tornado
+    :members:
