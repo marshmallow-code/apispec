@@ -111,6 +111,7 @@ def field2property(field, spec=None, use_refs=True, dump=True):
 
     if isinstance(field, marshmallow.fields.Nested):
         del ret['type']
+        field.metadata.pop('many', None)
         if use_refs and field.metadata.get('ref'):
             ref_schema = {'$ref': field.metadata['ref']}
             if field.many:
