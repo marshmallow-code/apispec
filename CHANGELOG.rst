@@ -1,8 +1,10 @@
 Changelog
 ---------
 
-0.10.0 (2016-04-08)
+0.10.1 (2016-04-09)
 +++++++++++++++++++
+
+Note: This version is a re-upload of 0.10.0. There is no 0.10.0 on PyPI.
 
 Features:
 
