@@ -28,7 +28,7 @@ def schema_definition_helper(spec, name, schema, **kwargs):
     if 'refs' not in plug:
         plug['refs'] = {}
     plug['refs'][schema] = name
-    return swagger.schema2jsonschema(schema, spec=spec)
+    return swagger.schema2jsonschema(schema, spec=spec, name=name)
 
 
 def schema_path_helper(spec, view, **kwargs):

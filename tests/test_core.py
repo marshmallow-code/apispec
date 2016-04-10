@@ -209,7 +209,6 @@ class TestPath:
         assert '/pets' in spec._paths
         assert '/v1/pets' not in spec._paths
 
-
     def test_add_parameters(self, spec):
         route_spec = self.paths['/pet/{petId}']['get']
 

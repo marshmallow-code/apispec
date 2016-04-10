@@ -1,10 +1,18 @@
 Changelog
 ---------
 
+0.10.2 (unreleased)
++++++++++++++++++++
+
+Bug fixes:
+
+* Fix bug in introspecting self-referencing marshmallow fields, i.e. ``fields.Nested('self')`` (:issue:`55`). Thanks :user:`whoiswes` for reporting.
+* Fix error message when plugin does not have a ``setup()`` function.
+
 0.10.1 (2016-04-09)
 +++++++++++++++++++
 
-Note: This version is a re-upload of 0.10.0. There is no 0.10.0 on PyPI.
+Note: This version is a re-upload of 0.10.0. There is no 0.10.0 release on PyPI.
 
 Features:
 

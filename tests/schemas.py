@@ -17,3 +17,11 @@ class RunSchema(Schema):
 
 class AnalysisSchema(Schema):
     sample = fields.Nested(SampleSchema)
+
+
+class SelfReferencingSchema(Schema):
+    id = fields.Int()
+    single = fields.Nested('self')
+    single_with_ref = fields.Nested('self', ref='#/definitions/Self')
+    many = fields.Nested('self', many=True)
+    many_with_ref = fields.Nested('self', many=True, ref='#/definitions/Selves')

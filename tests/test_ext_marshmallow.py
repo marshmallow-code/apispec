@@ -3,7 +3,7 @@ import pytest
 
 from apispec import APISpec
 from apispec.ext.marshmallow import swagger
-from .schemas import PetSchema, AnalysisSchema, SampleSchema, RunSchema
+from .schemas import PetSchema, AnalysisSchema, SampleSchema, RunSchema, SelfReferencingSchema
 
 
 @pytest.fixture()
@@ -33,7 +33,6 @@ class TestDefinitionHelper:
 class TestOperationHelper:
 
     def test_schema(self, spec):
-
         def pet_view():
             return '...'
 
@@ -106,13 +105,35 @@ class TestOperationHelper:
         assert 'responses' in op
         assert op['responses'][200]['schema']['$ref'] == '#/definitions/Pet'
 
-class TestSelfReference:
+class TestCircularReference:
 
-    def test_self_referencing_schemas(self, spec):
-
+    def test_circular_referencing_schemas(self, spec):
         spec.definition('Analysis', schema=AnalysisSchema)
         spec.definition('Sample', schema=SampleSchema)
         spec.definition('Run', schema=RunSchema)
+        ref = spec._definitions['Analysis']['properties']['sample']['$ref']
+        assert ref == '#/definitions/Sample'
 
-        assert spec._definitions['Analysis']['properties']['sample']['$ref'] \
-            == '#/definitions/Sample'
+# Regression tests for issue #55
+class TestSelfReference:
+
+    def test_self_referencing_field_single(self, spec):
+        spec.definition('SelfReference', schema=SelfReferencingSchema)
+        ref = spec._definitions['SelfReference']['properties']['single']['$ref']
+        assert ref == '#/definitions/SelfReference'
+
+    def test_self_referencing_field_many(self, spec):
+        spec.definition('SelfReference', schema=SelfReferencingSchema)
+        result = spec._definitions['SelfReference']['properties']['many']
+        assert result == {
+            'type': 'array',
+            'items': {'$ref': '#/definitions/SelfReference'}
+        }
+
+    def test_self_referencing_with_ref(self, spec):
+        spec.definition('SelfReference', schema=SelfReferencingSchema)
+        result = spec._definitions['SelfReference']['properties']['single_with_ref']
+        assert result == {'$ref': '#/definitions/Self'}
+
+        result = spec._definitions['SelfReference']['properties']['many_with_ref']
+        assert result == {'type': 'array', 'items': {'$ref': '#/definitions/Selves'}}

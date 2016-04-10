@@ -79,7 +79,7 @@ def field2choices(field):
     )
 
 
-def field2property(field, spec=None, use_refs=True, dump=True):
+def field2property(field, spec=None, use_refs=True, dump=True, name=None):
     """Return the JSON Schema property definition given a marshmallow
     :class:`Field <marshmallow.fields.Field>`.
 
@@ -89,6 +89,7 @@ def field2property(field, spec=None, use_refs=True, dump=True):
     :param APISpec spec: Optional `APISpec` containing refs.
     :param bool use_refs: Use JSONSchema ``refs``.
     :param bool dump: Introspect dump logic.
+    :param str name: The definition name, if applicable, used to construct the $ref value.
     :rtype: dict, a Property Object
     """
     from apispec.ext.marshmallow import resolve_schema_dict
@@ -112,8 +113,18 @@ def field2property(field, spec=None, use_refs=True, dump=True):
     if isinstance(field, marshmallow.fields.Nested):
         del ret['type']
         field.metadata.pop('many', None)
-        if use_refs and field.metadata.get('ref'):
-            ref_schema = {'$ref': field.metadata['ref']}
+
+        is_unbound_self_referencing = not getattr(field, 'parent', None) and field.nested == 'self'
+        if (use_refs and 'ref' in field.metadata) or is_unbound_self_referencing:
+            if 'ref' in field.metadata:
+                ref_name = field.metadata['ref']
+            else:
+                if not name:
+                    raise ValueError('Must pass `name` argument for self-referencing Nested fields.')
+                # We need to use the `name` argument when the field is self-referencing and
+                # unbound (doesn't have `parent` set) because we can't access field.schema
+                ref_name =  '#/definitions/{name}'.format(name=name)
+            ref_schema = {'$ref': ref_name}
             if field.many:
                 ret['type'] = 'array'
                 ret['items'] = ref_schema
@@ -270,7 +281,7 @@ def property2parameter(prop, name='body', required=False, multiple=False, locati
     return ret
 
 
-def schema2jsonschema(schema, spec=None, use_refs=True, dump=True):
+def schema2jsonschema(schema, spec=None, use_refs=True, dump=True, name=None):
     if hasattr(schema, 'fields'):
         fields = schema.fields
     elif hasattr(schema, '_declared_fields'):
@@ -280,10 +291,10 @@ def schema2jsonschema(schema, spec=None, use_refs=True, dump=True):
             "{0!r} doesn't have either `fields` or `_declared_fields`".format(schema)
         )
 
-    return fields2jsonschema(fields, schema, spec=spec, use_refs=use_refs, dump=dump)
+    return fields2jsonschema(fields, schema, spec=spec, use_refs=use_refs, dump=dump, name=name)
 
 
-def fields2jsonschema(fields, schema=None, spec=None, use_refs=True, dump=True):
+def fields2jsonschema(fields, schema=None, spec=None, use_refs=True, dump=True, name=None):
     """Return the JSON Schema Object for a given marshmallow
     :class:`Schema <marshmallow.Schema>`. Schema may optionally provide the ``title`` and
     ``description`` class Meta options.
@@ -342,7 +353,7 @@ def fields2jsonschema(fields, schema=None, spec=None, use_refs=True, dump=True):
 
         observed_field_name = _observed_name(field_obj, field_name)
         prop_func = lambda field_obj=field_obj: \
-            field2property(field_obj, spec=spec, use_refs=use_refs, dump=dump)  # flake8: noqa
+            field2property(field_obj, spec=spec, use_refs=use_refs, dump=dump, name=name)  # flake8: noqa
         jsonschema['properties'][observed_field_name] = prop_func
 
         if field_obj.required:

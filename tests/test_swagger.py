@@ -544,8 +544,8 @@ class TestNesting:
     def test_field2property_nested_spec_metadatas(self):
         spec.definition('Category', schema=CategorySchema)
         category = fields.Nested(CategorySchema, description="A category")
-        assert swagger.field2property(category, spec=spec) == {'$ref': '#/definitions/Category', 'description': 'A category'}
-
+        result = swagger.field2property(category, spec=spec)
+        assert result == {'$ref': '#/definitions/Category', 'description': 'A category'}
 
     def test_field2property_nested_spec(self):
         spec.definition('Category', schema=CategorySchema)
@@ -571,7 +571,8 @@ class TestNesting:
         assert swagger.field2property(category) == swagger.schema2jsonschema(CategorySchema)
 
         cat_with_ref = fields.Nested(CategorySchema, ref='Category', description="A category")
-        assert swagger.field2property(cat_with_ref) == {'$ref': 'Category', 'description': "A category"}
+        result = swagger.field2property(cat_with_ref)
+        assert result == {'$ref': 'Category', 'description': "A category"}
 
     def test_field2property_nested_many(self):
         categories = fields.Nested(CategorySchema, many=True)
@@ -583,6 +584,31 @@ class TestNesting:
         res = swagger.field2property(cats_with_ref)
         assert res['type'] == 'array'
         assert res['items'] == {'$ref': 'Category'}
+
+    def test_field2property_nested_self_without_name_raises_error(self):
+        self_nesting = fields.Nested('self')
+        with pytest.raises(ValueError):
+            swagger.field2property(self_nesting)
+
+    def test_field2property_nested_self(self):
+        self_nesting = fields.Nested('self')
+        res = swagger.field2property(self_nesting, name='Foo')
+        assert res == {'$ref': '#/definitions/Foo'}
+
+    def test_field2property_nested_self_many(self):
+        self_nesting = fields.Nested('self', many=True)
+        res = swagger.field2property(self_nesting, name='Foo')
+        assert res == {'type': 'array', 'items': {'$ref': '#/definitions/Foo'}}
+
+    def test_field2property_nested_self_ref_with_meta(self):
+        self_nesting = fields.Nested('self', ref='#/definitions/Bar')
+        res = swagger.field2property(self_nesting)
+        assert res == {'$ref': '#/definitions/Bar'}
+
+        self_nesting2 = fields.Nested('self', ref='#/definitions/Bar')
+        # name is passed
+        res = swagger.field2property(self_nesting2, name='Foo')
+        assert res == {'$ref': '#/definitions/Bar'}
 
     def test_schema2jsonschema_with_nested_fields(self):
         res = swagger.schema2jsonschema(PetSchema, use_refs=False)
