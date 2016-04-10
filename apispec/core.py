@@ -221,7 +221,7 @@ class APISpec(object):
         """Import and setup a plugin. No-op if called twice
         for the same plugin.
 
-        :param str name: Import path to the plugin.
+        :param str path: Import path to the plugin.
         :raise: PluginError if the given plugin is invalid.
         """
         if path in self.plugins:
@@ -235,9 +235,10 @@ class APISpec(object):
                 'Could not import plugin "{0}"\n\n{1}'.format(path, err)
             )
         if not hasattr(mod, 'setup'):
-            raise PluginError('Plugin "{0}" has no setup() function.')
+            raise PluginError('Plugin "{0}" has no setup() function.'.format(path))
         else:
             mod.setup(self)
+        # Each plugin gets a dict to store arbitrary data
         self.plugins[path] = {}
         return None
 
