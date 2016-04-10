@@ -42,6 +42,7 @@ class TestPathHelpers:
         class HelloHandler(RequestHandler):
             def get(self):
                 self.write("hello")
+
             def post(self):
                 self.write("hello")
 
@@ -76,6 +77,7 @@ class TestPathHelpers:
                             $ref: #/definitions/Pet
                 """
                 self.write("hello")
+
             def post(self):
                 """Post a greeting endpoint.
                 ---

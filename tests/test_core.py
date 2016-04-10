@@ -250,7 +250,8 @@ class TestExtensions:
         plugin_path = 'tests.plugins.dummy_plugin_no_setup'
         with pytest.raises(PluginError) as excinfo:
             spec.setup_plugin(plugin_path)
-        assert excinfo.value.args[0] == 'Plugin "{0}" has no setup() function'.format(plugin_path)
+        msg = excinfo.value.args[0]
+        assert msg == 'Plugin "{0}" has no setup(spec) function'.format(plugin_path)
 
     def test_register_definition_helper(self, spec):
         def my_definition_helper(name, schema, **kwargs):
