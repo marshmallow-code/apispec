@@ -37,7 +37,7 @@ def clean():
 
 @task
 def clean_docs():
-    run("rm -rf %s" % build_dir)
+    run("rm -rf %s" % build_dir, echo=True)
 
 @task
 def browse_docs():

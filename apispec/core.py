@@ -113,7 +113,7 @@ class APISpec(object):
 
     def to_dict(self):
         ret = {
-            'swagger': SWAGGER_VERSION,
+            'swagger': OPENAPI_VERSION,
             'info': self.info,
             'definitions': self._definitions,
             'parameters': self._parameters,
@@ -192,12 +192,14 @@ class APISpec(object):
     def definition(self, name, properties=None, enum=None, **kwargs):
         """Add a new definition to the spec.
 
-        If you are using the marshmallow extension, you can pass fields' metadata as
-        additional keyword arguments.
+        .. note::
 
-        For example, to add ``enum`` to your field: ::
+            If you are using `apispec.ext.marshmallow`, you can pass fields' metadata as
+            additional keyword arguments.
 
-            status = fields.String(required=True, enum=['open', 'closed'])
+            For example, to add ``enum`` to your field: ::
+
+                status = fields.String(required=True, enum=['open', 'closed'])
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#definitionsObject
         """

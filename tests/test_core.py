@@ -230,7 +230,7 @@ class TestPath:
         assert route_spec['parameters'][0] == metadata['parameters']['test_parameter']
 
 
-class TestExtensions:
+class TestPlugins:
 
     DUMMY_PLUGIN = 'tests.plugins.dummy_plugin'
 
