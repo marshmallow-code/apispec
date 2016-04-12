@@ -1,8 +1,12 @@
 Changelog
 ---------
 
-0.10.2 (unreleased)
+0.11.0 (unreleased)
 +++++++++++++++++++
+
+Features:
+
+* Support vendor extensions on paths (:issue:`65`). Thanks :user:`lucascosta` for the PR.
 
 Bug fixes:
 
