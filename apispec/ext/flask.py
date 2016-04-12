@@ -35,7 +35,7 @@ def flaskpath2swagger(path):
     """
     return RE_URL.sub(r'{\1}', path)
 
-def path_from_view(spec, view, operations, **kwargs):
+def path_from_view(spec, view, **kwargs):
     """Path helper that allows passing a Flask view function."""
     rule = _rule_for_view(view)
     path = flaskpath2swagger(rule.rule)
