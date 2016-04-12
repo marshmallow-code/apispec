@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""Various utilities for parsing OpenAPI operations from docstrings and validating against
+the OpenAPI spec.
+"""
 import re
 import json
 import tempfile

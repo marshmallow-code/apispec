@@ -4,14 +4,14 @@ apispec
 
 Release v\ |version| (:ref:`Changelog <changelog>`)
 
-A pluggable API documentation generator. Currently supports the `OpenAPI specification <http://swagger.io/specification/>`_ (f.k.a. Swagger 2.0).
+A pluggable API specification generator. Currently supports the `OpenAPI specification <http://swagger.io/specification/>`_ (f.k.a. Swagger 2.0).
 
 Features
 ========
 
 - Supports OpenAPI 2.0 specification (f.k.a. Swagger)
 - Framework-agnostic
-- Includes plugins marshmallow, Flask, and Tornado
+- Includes plugins for `marshmallow <https://marshmallow.readthedocs.org/>`_, `Flask <http://flask.pocoo.org/>`_, and `Tornado <http://www.tornadoweb.org/>`_
 - Utilities for parsing docstrings
 
 Example Application
@@ -27,7 +27,6 @@ Example Application
     spec = APISpec(
         title='Swagger Petstore',
         version='1.0.0',
-        description='A sample Petstore API.',
         plugins=[
             'apispec.ext.flask',
             'apispec.ext.marshmallow',
@@ -126,6 +125,17 @@ Generated OpenAPI Spec
     #     }
     #   },
     # }
+
+User Guide
+==========
+
+.. toctree::
+    :maxdepth: 3
+
+    install
+    quickstart
+    using_plugins
+    writing_plugins
 
 API Reference
 =============

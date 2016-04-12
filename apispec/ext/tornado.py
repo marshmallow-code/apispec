@@ -1,6 +1,33 @@
 # -*- coding: utf-8 -*-
-"""Tornado plugin. Includes a path helper that allows you to pass a handler
+"""Tornado plugin. Includes a path helper that allows you to pass an urlspec (path-handler pair)
 object to `add_path`.
+::
+
+    from pprint import pprint
+
+    from tornado.web import RequestHandler
+
+    class HelloHandler(RequestHandler):
+        def get(self):
+            '''Get a greeting endpoint.
+            ---
+            description: Get a greeting
+            responses:
+                200:
+                    description: A greeting to the client
+                    schema:
+                        $ref: '#/definitions/Greeting'
+            '''
+            self.write("hello")
+
+    urlspec = (r'/hello', HelloHandler)
+    spec.add_path(urlspec=urlspec)
+    pprint(spec.to_dict()['paths'])
+    # {'/hello': {'get': {'description': 'Get a greeting',
+    #                     'responses': {200: {'description': 'A greeting to the '
+    #                                                     'client',
+    #                                         'schema': {'$ref': '#/definitions/Greeting'}}}}}}
+
 """
 from __future__ import absolute_import
 import inspect

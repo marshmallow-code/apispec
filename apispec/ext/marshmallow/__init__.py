@@ -4,6 +4,24 @@
 and `APISpec.add_path <apispec.APISpec.add_path>` (for responses).
 
 Requires marshmallow>=2.0.
+
+::
+
+    from pprint import pprint
+
+    from marshmallow import Schema, fields
+
+    class UserSchema(Schema):
+        id = fields.Int(dump_only=True)
+        name = fields.Str(description="The user's name")
+
+    spec.definition('User', schema=UserSchema)
+    pprint(spec.to_dict()['definitions'])
+    # {'User': {'properties': {'id': {'format': 'int32', 'type': 'integer'},
+    #                         'name': {'description': "The user's name",
+    #                                 'type': 'string'}},
+    #         'type': 'object'}}
+
 """
 from __future__ import absolute_import
 

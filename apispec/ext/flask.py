@@ -1,6 +1,28 @@
 # -*- coding: utf-8 -*-
 """Flask plugin. Includes a path helper that allows you to pass a view
-function to `add_path`.
+function to `add_path`. Inspects URL rules and view docstrings.
+::
+
+    from flask import Flask
+
+    app = Flask(__name__)
+
+    @app.route('/gists/<gist_id>')
+    def gist_detail(gist_id):
+        '''Gist detail view.
+        ---
+        get:
+            responses:
+                200:
+                    schema:
+                        $ref: '#/definitions/Gist'
+        '''
+        return 'detail for gist {}'.format(gist_id)
+
+    app.test_request_context().push()
+    spec.add_path(view=gist_detail)
+    print(spec.to_dict()['paths'])
+    # {'/gists/{gist_id}': {'get': {'responses': {200: {'schema': {'$ref': '#/definitions/Gist'}}}}}}
 """
 from __future__ import absolute_import
 import re
