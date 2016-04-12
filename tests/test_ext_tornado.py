@@ -66,6 +66,10 @@ class TestPathHelpers:
     def test_integration_with_docstring_introspection(self, spec):
 
         class HelloHandler(RequestHandler):
+            """
+            ---
+            x-extension: value
+            """
             def get(self):
                 """Get a greeting endpoint.
                 ---
@@ -92,8 +96,10 @@ class TestPathHelpers:
         spec.add_path(urlspec=urlspec)
         get_op = spec._paths['/hello']['get']
         post_op = spec._paths['/hello']['post']
+        extension = spec._paths['/hello']['x-extension']
         assert get_op['description'] == 'get a greeting'
         assert post_op['description'] == 'post a greeting'
+        assert extension == 'value'
 
     def test_path_removing_trailing_or_optional_slash(self, spec):
 

@@ -82,7 +82,7 @@ def load_operations_from_docstring(docstring):
     doc_data = load_yaml_from_docstring(docstring)
     if doc_data:
         return {key: val for key, val in iteritems(doc_data)
-                        if key in PATH_KEYS}
+                        if key in PATH_KEYS or key.startswith('x-')}
     else:
         return None
 

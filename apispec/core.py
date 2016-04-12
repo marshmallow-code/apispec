@@ -54,7 +54,9 @@ class Path(dict):
         self.path = path
         operations = operations or {}
         clean_operations(operations)
-        invalid = set(iterkeys(operations)) - set(VALID_METHODS)
+        invalid = {key for key in
+                   set(iterkeys(operations)) - set(VALID_METHODS)
+                   if not key.startswith('x-')}
         if invalid:
             raise APISpecError(
                 'One or more HTTP methods are invalid: {0}'.format(", ".join(invalid))

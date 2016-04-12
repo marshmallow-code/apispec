@@ -64,6 +64,7 @@ class TestPathHelpers:
             """A greeting endpoint.
 
             ---
+            x-extension: value
             get:
                 description: get a greeting
                 responses:
@@ -90,9 +91,11 @@ class TestPathHelpers:
         spec.add_path(view=hello)
         get_op = spec._paths['/hello']['get']
         post_op = spec._paths['/hello']['post']
+        extension = spec._paths['/hello']['x-extension']
         assert get_op['description'] == 'get a greeting'
         assert post_op['description'] == 'post a greeting'
         assert 'foo' not in spec._paths['/hello']
+        assert extension == 'value'
 
     def test_path_is_translated_to_swagger_template(self, app, spec):
 
