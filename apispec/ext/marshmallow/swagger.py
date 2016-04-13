@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Utilities for generating OpenAPI spec (fka Swagger) entities from webargs :class:`Args <webargs.core.Arg>`
-and marshmallow :class:`Schemas <marshmallow.Schema>`.
-
-.. note::
-
-    Even though this module supports webargs, webargs is an optional dependency.
+"""Utilities for generating OpenAPI spec (fka Swagger) entities from
+marshmallow :class:`Schemas <marshmallow.Schema>` and :class:`Fields <marshmallow.fields.Field>`.
 
 OpenAPI 2.0 spec: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md
 """
@@ -202,8 +198,8 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True, dump=True,
             use_refs=use_refs,
             dump=dump,
             default_in=default_in
-        ) \
-            for field_name, field_obj in iteritems(fields) \
+        )
+            for field_name, field_obj in iteritems(fields)
             if (
                 (field_name not in exclude_fields)
                 and not (field_obj.dump_only and not dump)
@@ -225,22 +221,6 @@ def field2parameter(field, name='body', spec=None, use_refs=True, dump=True, def
         required=field.required,
         multiple=isinstance(field, marshmallow.fields.List),
         location=location,
-        default_in=default_in,
-    )
-
-
-def arg2parameter(arg, name='body', default_in='body'):
-    """Return an OpenAPI parameter as a `dict`, given a webargs `Arg <webargs.Arg>`.
-
-    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
-    """
-    prop = arg2property(arg)
-    return property2parameter(
-        prop,
-        name=arg.metadata.get('name', name),
-        required=arg.required,
-        multiple=arg.multiple,
-        location=arg.location,
         default_in=default_in,
     )
 
@@ -373,20 +353,6 @@ def fields2jsonschema(fields, schema=None, spec=None, use_refs=True, dump=True, 
 
     return jsonschema
 
-##### webargs (older versions) #####
-
-# Python type => (JSON Schema type, format)
-__type_map__ = {
-    text_type: ('string', None),
-    binary_type: ('string', 'byte'),
-    int: ('integer', 'int32'),
-    float: ('number', 'float'),
-    bool: ('boolean', None),
-    list: ('array', None),
-    tuple: ('array', None),
-    set: ('array', None),
-}
-
 __location_map__ = {
     'querystring': 'query',
     'json': 'body',
@@ -394,84 +360,3 @@ __location_map__ = {
     'form': 'formData',
     'files': 'formData',
 }
-
-
-def _get_json_type(pytype):
-    json_type, fmt = __type_map__.get(pytype, ('string', None))
-    return json_type, fmt
-
-
-def arg2property(arg):
-    """Return the JSON Schema property definition given a webargs :class:`Arg <webargs.core.Arg>`.
-
-    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
-
-    Example: ::
-
-        arg = Arg(int, description='A count of blog posts')
-        arg2property(arg)
-        # {'type': 'integer', 'format': 'int32', 'description': 'A count of blog posts'}
-
-    :rtype: dict, a Property Object
-    """
-    if arg.multiple:
-        json_type, fmt = 'array', None
-    else:
-        json_type, fmt = _get_json_type(arg.type)
-    ret = {
-        'type': json_type,
-        'description': arg.metadata.get('description', ''),
-    }
-    if fmt:
-        ret['format'] = fmt
-    if arg.multiple:
-        ret['items'] = type2items(arg.type)
-    if arg.default:
-        ret['default'] = arg.default
-    ret.update(arg.metadata)
-    return ret
-
-
-def type2items(type):
-    """Return the JSON Schema property definition given a webargs :class:`Arg <webargs.core.Arg>`.
-
-    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#itemsObject
-
-    Example: ::
-
-        type2items(int)
-        # {'type': 'integer', 'format': 'int32'}
-
-    :rtype: dict, an Items Object
-    """
-    json_type, fmt = _get_json_type(type)
-    ret = {'type': json_type}
-    if fmt:
-        ret['format'] = fmt
-    return ret
-
-
-def args2parameters(args, default_in='body'):
-    """Return an array of OpenAPI properties given a dictionary of webargs
-    :class:`Args <webargs.core.Arg>`.
-
-    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
-
-    Example: ::
-
-        args = {
-            'username': Arg(str, location='querystring', description='Username to log in'),
-            'password': Arg(str, location='querystring', description='Password in plain text'),
-        }
-        args2parameters(args)
-        # [{'required': False, 'type': 'string', 'in': 'query',
-        #     'description': 'Username to log in', 'name': 'username'},
-        # {'required': False, 'type': 'string', 'in': 'query',
-        # 'description': 'Password in plain text', 'name': 'password'}]
-
-    :param dict args: Mapping of parameter names -> `Arg` objects.
-    """
-    return [
-        arg2parameter(arg, name=name, default_in=default_in)
-        for name, arg in iteritems(args)
-    ]

@@ -2,176 +2,12 @@
 
 import pytest
 from pytest import mark
-try:  # older versions of webargs
-    from webargs import Arg
-except ImportError:
-    HAS_WEBARGS_ARG = False
-else:
-    HAS_WEBARGS_ARG = True
 
 from marshmallow import fields, Schema, validate
-from marshmallow.compat import binary_type
 
 from apispec.ext.marshmallow import swagger
 from apispec import exceptions, utils, APISpec
-from apispec.ext.marshmallow.swagger import arg2parameter, arg2property, field2parameter
-
-if HAS_WEBARGS_ARG:
-    class TestArgToSwagger:
-
-        @mark.parametrize(('pytype', 'jsontype'), [
-            (int, 'integer'),
-            (float, 'number'),
-            (str, 'string'),
-            (bool, 'boolean'),
-            (list, 'array'),
-            (tuple, 'array'),
-            (set, 'array'),
-        ])
-        def test_type_translation(self, pytype, jsontype):
-            arg = Arg(pytype, location='form')
-            result = arg2parameter(arg)
-            assert result['type'] == jsontype
-
-        @mark.parametrize(('webargs_location', 'swagger_location'), [
-            ('querystring', 'query'),
-            ('json', 'body'),
-            ('headers', 'header'),
-            ('form', 'formData'),
-            ('files', 'formData')
-        ])
-        def test_location_translation(self, webargs_location, swagger_location):
-            arg = Arg(int, location=webargs_location)
-            result = arg2parameter(arg)
-            assert result['in'] == swagger_location
-
-        def test_location_defaults_to_json_body(self):
-            # No location specified
-            arg = Arg(int)
-            result = arg2parameter(arg)
-            assert result['in'] == 'body'
-
-        def test_required_translation(self):
-            arg = Arg(int, required=True)
-            arg.location = 'json'
-            result = arg2parameter(arg)
-            assert result['required'] is True
-            arg2 = Arg(int, location='json')
-            result2 = arg2parameter(arg2)
-            assert result2['required'] is False
-
-        def test_collection_translation_multiple(self):
-            arg = Arg(int, multiple=True, location='querystring')
-            result = arg2parameter(arg)
-            assert result['type'] == 'array'
-            assert result['collectionFormat'] == 'multi'
-
-        def test_collection_translation_single(self):
-            arg = Arg(int, location='querystring')
-            result = arg2parameter(arg)
-            assert 'collectionFormat' not in result
-
-        def test_items_multiple_querystring(self):
-            arg = Arg(int, multiple=True, location='querystring')
-            result = arg2parameter(arg)
-            assert result['items'] == {'type': 'integer', 'format': 'int32'}
-
-        def test_arg_with_description(self):
-            arg = Arg(int, location='form', description='a webargs arg')
-            result = arg2parameter(arg)
-            assert result['description'] == arg.metadata['description']
-
-        def test_arg_with_format(self):
-            arg = Arg(int, location='form', format='int32')
-            result = arg2parameter(arg)
-            assert result['format'] == 'int32'
-
-        def test_arg_with_default(self):
-            arg = Arg(int, location='form', default=42)
-            result = arg2parameter(arg)
-            assert result['default'] == 42
-
-        def test_arg_name_is_body_if_location_is_json(self):
-            arg = Arg(int, location='json')
-            result = arg2parameter(arg)
-            assert result['name'] == 'body'
-
-        def test_arg_with_name(self):
-            arg = Arg(int, location='form', name='foo')
-            res = arg2parameter(arg)
-            assert res['name'] == 'foo'
-
-        def test_schema_if_json_body(self):
-            arg = Arg(int, location='json')
-            res = arg2parameter(arg)
-            assert 'schema' in res
-
-        def test_no_schema_if_form_body(self):
-            arg = Arg(int, location='form')
-            res = arg2parameter(arg)
-            assert 'schema' not in res
-
-        def test_arg2property_with_description(self):
-            arg = Arg(int, location='json', description='status')
-            res = arg2property(arg)
-            assert res['type'] == 'integer'
-            assert res['description'] == arg.metadata['description']
-
-        @mark.parametrize(('pytype', 'expected_format'), [
-            (int, 'int32'),
-            (float, 'float'),
-            (binary_type, 'byte'),
-        ])
-        def test_arg2property_formats(self, pytype, expected_format):
-            arg = Arg(pytype, location='json')
-            res = arg2property(arg)
-            assert res['format'] == expected_format
-
-        def test_arg_with_no_type_default_to_string(self):
-            arg = Arg()
-            res = arg2property(arg)
-            assert res['type'] == 'string'
-
-        def test_arg2property_with_additional_metadata(self):
-            arg = Arg(minLength=6, maxLength=100)
-            res = arg2property(arg)
-            assert res['minLength'] == 6
-            assert res['maxLength'] == 100
-
-        def test_arg2swagger_puts_json_arguments_in_schema(self):
-            arg = Arg(int, location='json', description='a count', format='int32')
-            res = arg2parameter(arg, 'username')
-            assert res['name'] == 'body'
-            assert 'description' not in res
-            schema_props = res['schema']['properties']
-
-            # property is defined on schema
-            assert schema_props['username']['type'] == 'integer'
-            assert schema_props['username']['description'] == arg.metadata['description']
-            assert schema_props['username']['format'] == 'int32'
-
-    class TestWebargsSchemaToSwagger:
-
-        def test_args2parameters(self):
-            args = {
-                'username': Arg(str, location='querystring', required=False,
-                                description='The user name for login'),
-            }
-            result = swagger.args2parameters(args)
-            username = result[0]
-            assert username['name'] == 'username'
-            assert username['in'] == 'query'
-            assert username['type'] == 'string'
-            assert username['required'] is False
-            assert username['description'] == args['username'].metadata['description']
-
-        def test_arg2parameters_with_dest(self):
-            args = {
-                'X-Neat-Header': Arg(str, location='headers', dest='neat_header')
-            }
-            result = swagger.args2parameters(args)
-            header = result[0]
-            assert header['name'] == 'X-Neat-Header'
+from apispec.ext.marshmallow.swagger import field2parameter
 
 
 class TestMarshmallowFieldToSwagger:
@@ -238,6 +74,11 @@ class TestMarshmallowFieldToSwagger:
         field_dict = {'field': fields.Str(default='foo', missing='bar')}
         res = swagger.fields2parameters(field_dict, default_in='query', dump=False)
         assert res[0]['default'] == 'bar'
+
+    def test_fields_with_location(self):
+        field_dict = {'field': fields.Str(location='querystring')}
+        res = swagger.fields2parameters(field_dict, default_in='headers')
+        assert res[0]['in'] == 'query'
 
     def test_fields_with_dump_only(self):
         field_dict = {'field': fields.Str(dump_only=True)}
@@ -494,7 +335,7 @@ class TestMarshmallowSchemaToParameters:
         with pytest.raises(AssertionError):
             swagger.schema2parameters(UserSchema(many=True), default_in='query')
 
-    def test_fields_body(self):
+    def test_fields_default_in_body(self):
         field_dict = {
             'name': fields.Str(),
             'email': fields.Email(),
@@ -541,32 +382,41 @@ class PetSchema(Schema):
 
 
 class TestNesting:
-    def test_field2property_nested_spec_metadatas(self):
+
+    @pytest.fixture()
+    def spec(self):
+        return APISpec(
+            title='Pets',
+            version='0.1',
+            plugins=['apispec.ext.marshmallow'],
+        )
+
+    def test_field2property_nested_spec_metadatas(self, spec):
         spec.definition('Category', schema=CategorySchema)
         category = fields.Nested(CategorySchema, description="A category")
         result = swagger.field2property(category, spec=spec)
         assert result == {'$ref': '#/definitions/Category', 'description': 'A category'}
 
-    def test_field2property_nested_spec(self):
+    def test_field2property_nested_spec(self, spec):
         spec.definition('Category', schema=CategorySchema)
         category = fields.Nested(CategorySchema)
         assert swagger.field2property(category, spec=spec) == {'$ref': '#/definitions/Category'}
 
-    def test_field2property_nested_many_spec(self):
+    def test_field2property_nested_many_spec(self, spec):
         spec.definition('Category', schema=CategorySchema)
         category = fields.Nested(CategorySchema, many=True)
         ret = swagger.field2property(category, spec=spec)
         assert ret['type'] == 'array'
         assert ret['items'] == {'$ref': '#/definitions/Category'}
 
-    def test_field2property_nested_ref(self):
+    def test_field2property_nested_ref(self, spec):
         category = fields.Nested(CategorySchema)
         assert swagger.field2property(category) == swagger.schema2jsonschema(CategorySchema)
 
         cat_with_ref = fields.Nested(CategorySchema, ref='Category')
         assert swagger.field2property(cat_with_ref) == {'$ref': 'Category'}
 
-    def test_field2property_nested_ref_with_meta(self):
+    def test_field2property_nested_ref_with_meta(self, spec):
         category = fields.Nested(CategorySchema)
         assert swagger.field2property(category) == swagger.schema2jsonschema(CategorySchema)
 
@@ -574,7 +424,7 @@ class TestNesting:
         result = swagger.field2property(cat_with_ref)
         assert result == {'$ref': 'Category', 'description': "A category"}
 
-    def test_field2property_nested_many(self):
+    def test_field2property_nested_many(self, spec):
         categories = fields.Nested(CategorySchema, many=True)
         res = swagger.field2property(categories)
         assert res['type'] == 'array'
@@ -585,22 +435,22 @@ class TestNesting:
         assert res['type'] == 'array'
         assert res['items'] == {'$ref': 'Category'}
 
-    def test_field2property_nested_self_without_name_raises_error(self):
+    def test_field2property_nested_self_without_name_raises_error(self, spec):
         self_nesting = fields.Nested('self')
         with pytest.raises(ValueError):
             swagger.field2property(self_nesting)
 
-    def test_field2property_nested_self(self):
+    def test_field2property_nested_self(self, spec):
         self_nesting = fields.Nested('self')
         res = swagger.field2property(self_nesting, name='Foo')
         assert res == {'$ref': '#/definitions/Foo'}
 
-    def test_field2property_nested_self_many(self):
+    def test_field2property_nested_self_many(self, spec):
         self_nesting = fields.Nested('self', many=True)
         res = swagger.field2property(self_nesting, name='Foo')
         assert res == {'type': 'array', 'items': {'$ref': '#/definitions/Foo'}}
 
-    def test_field2property_nested_self_ref_with_meta(self):
+    def test_field2property_nested_self_ref_with_meta(self, spec):
         self_nesting = fields.Nested('self', ref='#/definitions/Bar')
         res = swagger.field2property(self_nesting)
         assert res == {'$ref': '#/definitions/Bar'}
@@ -615,7 +465,7 @@ class TestNesting:
         props = res['properties']
         assert props['category']['items'] == swagger.schema2jsonschema(CategorySchema)
 
-    def test_schema2jsonschema_with_nested_fields_with_adhoc_changes(self):
+    def test_schema2jsonschema_with_nested_fields_with_adhoc_changes(self, spec):
         category_schema = CategorySchema(many=True)
         category_schema.fields['id'].required = True
 
@@ -632,56 +482,55 @@ class TestNesting:
         assert props['category']['items'] == swagger.schema2jsonschema(CategorySchema)
 
 
-spec = APISpec(
-    title='Pets',
-    version='0.1',
-    plugins=['apispec.ext.marshmallow'],
-)
-
-spec.definition('Category', schema=CategorySchema)
-spec.definition('Pet', schema=PetSchema)
-
-spec.add_path(
-    view=None,
-    path='/category/{category_id}',
-    operations={
-        'get': {
-            'parameters': [
-                {'name': 'q', 'in': 'query', 'type': 'string'},
-                {'name': 'category_id', 'in': 'path', 'required': True, 'type': 'string'},
-                field2parameter(
-                    field=fields.List(
-                        fields.Str(),
-                        validate=validate.OneOf(['freddie', 'roger']),
-                        location='querystring',
-                    ),
-                    name='body',
-                    use_refs=False,
-                ),
-            ] + swagger.schema2parameters(PageSchema, default_in='query'),
-            'responses': {
-                200: {
-                    'schema': PetSchema,
-                    'description': 'A pet',
-                },
-            },
-        },
-        'post': {
-            'parameters': (
-                [{'name': 'category_id', 'in': 'path', 'required': True, 'type': 'string'}] +
-                swagger.schema2parameters(CategorySchema, spec=spec, default_in='body')
-            ),
-            'responses': {
-                201: {
-                    'schema': PetSchema,
-                    'description': 'A pet',
-                },
-            },
-        }
-    },
-)
-
 def test_swagger_tools_validate():
+    spec = APISpec(
+        title='Pets',
+        version='0.1',
+        plugins=['apispec.ext.marshmallow'],
+    )
+
+    spec.definition('Category', schema=CategorySchema)
+    spec.definition('Pet', schema=PetSchema)
+
+    spec.add_path(
+        view=None,
+        path='/category/{category_id}',
+        operations={
+            'get': {
+                'parameters': [
+                    {'name': 'q', 'in': 'query', 'type': 'string'},
+                    {'name': 'category_id', 'in': 'path', 'required': True, 'type': 'string'},
+                    field2parameter(
+                        field=fields.List(
+                            fields.Str(),
+                            validate=validate.OneOf(['freddie', 'roger']),
+                            location='querystring',
+                        ),
+                        name='body',
+                        use_refs=False,
+                    ),
+                ] + swagger.schema2parameters(PageSchema, default_in='query'),
+                'responses': {
+                    200: {
+                        'schema': PetSchema,
+                        'description': 'A pet',
+                    },
+                },
+            },
+            'post': {
+                'parameters': (
+                    [{'name': 'category_id', 'in': 'path', 'required': True, 'type': 'string'}] +
+                    swagger.schema2parameters(CategorySchema, spec=spec, default_in='body')
+                ),
+                'responses': {
+                    201: {
+                        'schema': PetSchema,
+                        'description': 'A pet',
+                    },
+                },
+            }
+        },
+    )
     try:
         utils.validate_swagger(spec)
     except exceptions.SwaggerError as error:

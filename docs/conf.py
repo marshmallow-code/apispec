@@ -21,7 +21,6 @@ default_role = 'py:obj'
 
 intersphinx_mapping = {
     'python': ('http://python.readthedocs.org/en/latest/', None),
-    'webargs': ('http://webargs.readthedocs.org/en/latest/', None),
     'marshmallow': ('http://marshmallow.readthedocs.org/en/latest/', None),
 }
 
