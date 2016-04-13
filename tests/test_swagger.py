@@ -80,6 +80,14 @@ class TestMarshmallowFieldToSwagger:
         res = swagger.fields2parameters(field_dict, default_in='headers')
         assert res[0]['in'] == 'query'
 
+    def test_fields2parameters_does_not_modify_metadata(self):
+        field_dict = {'field': fields.Str(location='querystring')}
+        res = swagger.fields2parameters(field_dict, default_in='headers')
+        assert res[0]['in'] == 'query'
+
+        res = swagger.fields2parameters(field_dict, default_in='headers')
+        assert res[0]['in'] == 'query'
+
     def test_fields_with_dump_only(self):
         field_dict = {'field': fields.Str(dump_only=True)}
         res = swagger.fields2parameters(field_dict, default_in='query', dump=False)
@@ -89,6 +97,22 @@ class TestMarshmallowFieldToSwagger:
         field = fields.Str(validate=validate.OneOf(['freddie', 'brian', 'john']))
         res = swagger.field2property(field)
         assert set(res['enum']) == {'freddie', 'brian', 'john'}
+
+    def test_only_allows_valid_properties_in_metadata(self):
+        field = fields.Str(
+            default='foo',
+            description='foo',
+            enum=['red', 'blue'],
+            allOf=['bar'],
+            not_valid='lol'
+        )
+        res = swagger.field2property(field)
+        assert 'default' in res
+        assert res['default'] == field.default
+        assert 'description' in res
+        assert 'enum' in res
+        assert 'allOf' in res
+        assert 'not_valid' not in res
 
     def test_field_with_choices_multiple(self):
         field = fields.Str(validate=[
