@@ -11,8 +11,9 @@ Features:
 
 Bug fixes:
 
-* Fix bug in introspecting self-referencing marshmallow fields, i.e. ``fields.Nested('self')`` (:issue:`55`). Thanks :user:`whoiswes` for reporting.
 * Fix error message when plugin does not have a ``setup()`` function.
+* [apispec.ext.marshmallow] Fix bug in introspecting self-referencing marshmallow fields, i.e. ``fields.Nested('self')`` (:issue:`55`). Thanks :user:`whoiswes` for reporting.
+* [apispec.ext.marshmallow] ``field2property`` no longer pops off ``location`` from a field's metadata (:issue:`67`).
 
 0.10.1 (2016-04-09)
 +++++++++++++++++++

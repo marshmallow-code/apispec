@@ -75,9 +75,47 @@ def field2choices(field):
     )
 
 
+# Properties that may be defined in a field's metadata that will be added to the output
+# of field2property
+# https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
+_VALID_PROPERTIES = {
+    'format',
+    'title',
+    'description',
+    'default',
+    'multipleOf',
+    'maximum',
+    'exclusiveMaximum',
+    'minimum',
+    'exclusiveMinimum',
+    'maxLength',
+    'minLength',
+    'pattern',
+    'maxItems',
+    'minItems',
+    'uniqueItems',
+    'maxProperties',
+    'minProperties',
+    'required',
+    'enum',
+    'type',
+    'items',
+    'allOf',
+    'properties',
+    'additionalProperties',
+    'discriminator',
+    'readOnly',
+    'xml',
+    'externalDocs',
+    'example',
+}
+
 def field2property(field, spec=None, use_refs=True, dump=True, name=None):
     """Return the JSON Schema property definition given a marshmallow
     :class:`Field <marshmallow.fields.Field>`.
+
+    Will include field metadata that are valid properties of OpenAPI schema objects
+    (e.g. "description", "enum", "example").
 
     https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
 
@@ -108,6 +146,7 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
 
     if isinstance(field, marshmallow.fields.Nested):
         del ret['type']
+        # marshmallow>=2.7.0 compat
         field.metadata.pop('many', None)
 
         is_unbound_self_referencing = not getattr(field, 'parent', None) and field.nested == 'self'
@@ -133,7 +172,9 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
     elif isinstance(field, marshmallow.fields.List):
         ret['items'] = field2property(field.container, spec=spec, use_refs=use_refs, dump=dump)
 
-    ret.update(field.metadata)
+    for key, value in iteritems(field.metadata):
+        if key in _VALID_PROPERTIES:
+            ret[key] = value
     # Avoid validation error with "Additional properties not allowed"
     # Property "ref" is not valid in this context
     ret.pop('ref', None)
@@ -213,7 +254,7 @@ def field2parameter(field, name='body', spec=None, use_refs=True, dump=True, def
 
     https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
     """
-    location = field.metadata.pop('location', None)
+    location = field.metadata.get('location', None)
     prop = field2property(field, spec=spec, use_refs=use_refs, dump=dump)
     return property2parameter(
         prop,
