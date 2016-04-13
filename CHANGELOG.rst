@@ -7,6 +7,7 @@ Changelog
 Features:
 
 * Support vendor extensions on paths (:issue:`65`). Thanks :user:`lucascosta` for the PR.
+* *Backwards-incompatible*: Remove support for old versions (<=0.15.0) of webargs.
 
 Bug fixes:
 
