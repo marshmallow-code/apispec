@@ -35,8 +35,8 @@ def read(fname):
 setup(
     name='apispec',
     version=__version__,
-    description='A pluggable API documentation generator. Currently supports the '
-                'Swagger 2.0 specification.',
+    description='A pluggable API specification generator. Currently supports the '
+                'OpenAPI specification (f.k.a. Swagger 2.0).',
     long_description=read('README.rst'),
     author='Steven Loria, Josh Carp',
     author_email='sloria1@gmail.com',
@@ -47,7 +47,7 @@ setup(
     install_requires=REQUIRES,
     license=read("LICENSE"),
     zip_safe=False,
-    keywords='apispec swagger spec rest api',
+    keywords='apispec swagger openapi specification documentation spec rest api',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

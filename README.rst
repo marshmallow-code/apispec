@@ -9,6 +9,8 @@ apispec
 .. image:: https://travis-ci.org/marshmallow-code/apispec.svg?branch=dev
     :target: https://travis-ci.org/marshmallow-code/apispec
 
+A pluggable API specification generator. Currently supports the `OpenAPI specification <http://swagger.io/specification/>`_ (f.k.a. Swagger 2.0).
+
 Features
 ========
 

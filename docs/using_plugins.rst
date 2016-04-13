@@ -151,3 +151,8 @@ Our OpenAPI spec now looks like this:
     # 'paths': {'/gists/{gist_id}': {'get': {'responses': {200: {'schema': {'$ref': '#/definitions/Gist'}}}}}},
     # 'swagger': '2.0',
     # 'tags': []}
+
+Next Steps
+----------
+
+You now know how to use plugins. The next section will show you how to write plugins: :ref:`Writing Plugins <writing_plugins>`

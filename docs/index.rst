@@ -159,6 +159,7 @@ Project Info
    :maxdepth: 1
 
    changelog
+   ecosystem
    authors
    contributing
    license

@@ -8,6 +8,14 @@ Helper Functions
 
 Plugins are comprised of "helper" functions that augment the behavior of `apispec.APISpec` methods.
 
+There are three types of helper functions:
+
+* Definition helpers
+* Path helpers
+* Response helpers
+
+Each helper function type modifies a different `apispec.APISpec` method. For example, path helpers modify `apispec.APISpec.add_path`.
+
 A helper function may look something like this:
 
 .. code-block:: python
@@ -23,18 +31,8 @@ A helper function may look something like this:
         return Path(path=path, operations=operations)
 
 
-.. seealso::
-
-    Consult the :ref:`Core API docs <core_api>` for
-
-    * `register_definition_helper <apispec.APISpec.register_definition_helper>`,
-    * `register_path_helper <apispec.APISpec.register_path_helper>`, and
-    * `register_response_helper <apispec.APISpec.register_response_helper>`
-
-    to learn more about how to write helper functions.
-
-The ``setup(spec)`` Function
-----------------------------
+The ``setup`` Function
+----------------------
 
 All plugins **must** define a ``setup`` function that receives an `apispec.APISpec` instance as its only argument. The ``setup`` function registers your plugin's helper functions with the ``spec``.
 
@@ -94,3 +92,11 @@ To use the plugin:
     spec.add_path(path='/gists/{gist_id}', func=gist_detail)
     print(spec.to_dict()['paths'])
     # {'/gists/{gist_id}': {'get': {'responses': {200: {'schema': '#/definitions/Gist'}}}}}
+
+
+Next Steps
+----------
+
+* To learn more about how to write helper functions, consult the :ref:`Core API docs <core_api>` for `register_definition_helper <apispec.APISpec.register_definition_helper>`, `register_path_helper <apispec.APISpec.register_path_helper>`, and `register_response_helper <apispec.APISpec.register_response_helper>`
+* View the source for apispec's bundled plugins, e.g. `apispec.ext.flask </_modules/apispec/ext/flask.html>`_
+* Check out some projects using apispec: https://github.com/marshmallow-code/apispec/wiki/Ecosystem

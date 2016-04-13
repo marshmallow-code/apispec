@@ -15,6 +15,10 @@ Bug fixes:
 * [apispec.ext.marshmallow] Fix bug in introspecting self-referencing marshmallow fields, i.e. ``fields.Nested('self')`` (:issue:`55`). Thanks :user:`whoiswes` for reporting.
 * [apispec.ext.marshmallow] ``field2property`` no longer pops off ``location`` from a field's metadata (:issue:`67`).
 
+Support:
+
+* Lots of new docs, including a User Guide and improved extension docs.
+
 0.10.1 (2016-04-09)
 +++++++++++++++++++
 
