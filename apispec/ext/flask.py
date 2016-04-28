@@ -27,6 +27,11 @@ function to `add_path`. Inspects URL rules and view docstrings.
 from __future__ import absolute_import
 import re
 
+try:
+    from urllib.parse import urljoin
+except ImportError:
+    from urlparse import urljoin
+
 from flask import current_app
 
 from apispec.compat import iteritems
@@ -61,6 +66,8 @@ def path_from_view(spec, view, **kwargs):
     """Path helper that allows passing a Flask view function."""
     rule = _rule_for_view(view)
     path = flaskpath2swagger(rule.rule)
+    app_root = current_app.config['APPLICATION_ROOT'] or '/'
+    path = urljoin(app_root.rstrip('/') + '/', path.lstrip('/'))
     operations = utils.load_operations_from_docstring(view.__doc__)
     path = Path(path=path, operations=operations)
     return path
