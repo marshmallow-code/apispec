@@ -105,3 +105,36 @@ class TestPathHelpers:
 
         spec.add_path(view=get_pet)
         assert '/pet/{pet_id}' in spec._paths
+
+    def test_path_includes_app_root(self, app, spec):
+
+        app.config['APPLICATION_ROOT'] = '/app/root'
+
+        @app.route('/partial/path/pet')
+        def get_pet():
+            return 'pet'
+
+        spec.add_path(view=get_pet)
+        assert '/app/root/partial/path/pet' in spec._paths
+
+    def test_path_with_args_includes_app_root(self, app, spec):
+
+        app.config['APPLICATION_ROOT'] = '/app/root'
+
+        @app.route('/partial/path/pet/{pet_id}')
+        def get_pet(pet_id):
+            return 'representation of pet {pet_id}'.format(pet_id=pet_id)
+
+        spec.add_path(view=get_pet)
+        assert '/app/root/partial/path/pet/{pet_id}' in spec._paths
+
+    def test_path_includes_app_root_with_right_slash(self, app, spec):
+
+        app.config['APPLICATION_ROOT'] = '/app/root/'
+
+        @app.route('/partial/path/pet')
+        def get_pet():
+            return 'pet'
+
+        spec.add_path(view=get_pet)
+        assert '/app/root/partial/path/pet' in spec._paths
