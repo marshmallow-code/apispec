@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.11.1 (unreleased)
++++++++++++++++++++
+
+Bug fixes:
+
+* [apispec.ext.flask]: Flask plugin respects ``APPLICATION_ROOT`` from app's config (:issue:`69`). Thanks :user:`deckar01` for the catch and patch.
+
 0.11.0 (2016-04-12)
 +++++++++++++++++++
 

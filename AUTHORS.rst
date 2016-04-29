@@ -19,3 +19,4 @@ Contributors (chronological)
 - Ben Beadle `@benbeadle <https://github.com/benbeadle>`_
 - Martin Latrille `@martinlatrille <https://github.com/martinlatrille>`_
 - Lucas Costa `@lucascosta <https://github.com/lucascosta>`_
+- Jared Deckard `@deckar01 <https://github.com/deckar01>`_
