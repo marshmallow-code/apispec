@@ -69,6 +69,8 @@ def schema_path_helper(spec, view, **kwargs):
 
 def resolve_schema_dict(spec, schema, dump=True):
     if isinstance(schema, dict):
+        if (schema.get('type') == 'array' and 'items' in schema):
+            schema['items'] = resolve_schema_dict(spec, schema['items'])
         return schema
     plug = spec.plugins[NAME] if spec else {}
     schema_cls = resolve_schema_cls(schema)
