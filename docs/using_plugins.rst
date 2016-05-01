@@ -39,7 +39,7 @@ Alternatively, you can use `setup_plugin <apispec.APISpec.setup_plugin>`.
 Example: Flask and Marshmallow Plugins
 --------------------------------------
 
-The bundled marshmallow plugin (`apispec.ext.marshmallow`) provides helpers for generating OpenAPI schema and parameter objects from `marshmallow <https://marshmallow.readthedocs.org/en/latest/>`_ schemas and fields.
+The bundled marshmallow plugin (`apispec.ext.marshmallow`) provides helpers for generating OpenAPI schema and parameter objects from `marshmallow <https://marshmallow.readthedocs.io/en/latest/>`_ schemas and fields.
 
 The bundled Flask plugin (`apispec.ext.flask`) provides helpers for generating path objects from view functions.
 

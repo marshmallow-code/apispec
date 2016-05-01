@@ -2,12 +2,16 @@
 apispec
 *******
 
-.. image:: https://badge.fury.io/py/apispec.png
+.. image:: https://badge.fury.io/py/apispec.svg
     :target: http://badge.fury.io/py/apispec
     :alt: Latest version
 
 .. image:: https://travis-ci.org/marshmallow-code/apispec.svg?branch=dev
     :target: https://travis-ci.org/marshmallow-code/apispec
+
+.. image:: https://readthedocs.org/projects/apispec/badge/
+   :target: http://marshmallow.readthedocs.io/
+   :alt: Documentation
 
 A pluggable API specification generator. Currently supports the `OpenAPI specification <http://swagger.io/specification/>`_ (f.k.a. Swagger 2.0).
 
@@ -16,7 +20,7 @@ Features
 
 - Supports OpenAPI 2.0 specification (f.k.a. Swagger)
 - Framework-agnostic
-- Includes plugins for `marshmallow <https://marshmallow.readthedocs.org/>`_, `Flask <http://flask.pocoo.org/>`_, and `Tornado <http://www.tornadoweb.org/>`_
+- Includes plugins for `marshmallow <https://marshmallow.readthedocs.io/>`_, `Flask <http://flask.pocoo.org/>`_, and `Tornado <http://www.tornadoweb.org/>`_
 - Utilities for parsing docstrings
 
 Example Application
@@ -135,7 +139,7 @@ Generated OpenAPI Spec
 Documentation
 -------------
 
-Documentation is available at http://apispec.readthedocs.org/ .
+Documentation is available at http://apispec.readthedocs.io/ .
 
 License
 =======
