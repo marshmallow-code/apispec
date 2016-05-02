@@ -7,6 +7,7 @@ Changelog
 Bug fixes:
 
 * [apispec.ext.flask]: Flask plugin respects ``APPLICATION_ROOT`` from app's config (:issue:`69`). Thanks :user:`deckar01` for the catch and patch.
+* [apispec.ext.marshmallow]: Fix support for plural schema instances (:issue:`71`). Thanks again :user:`deckar01`.
 
 0.11.0 (2016-04-12)
 +++++++++++++++++++
