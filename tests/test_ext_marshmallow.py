@@ -105,6 +105,32 @@ class TestOperationHelper:
         assert 'responses' in op
         assert op['responses'][200]['schema']['$ref'] == '#/definitions/Pet'
 
+    def test_schema_array_in_docstring_uses_ref_if_available(self, spec):
+        spec.definition('Pet', schema=PetSchema)
+
+        def pet_view():
+            """Not much to see here.
+
+            ---
+            get:
+                responses:
+                    200:
+                        schema:
+                            type: array
+                            items: tests.schemas.PetSchema
+            """
+            return '...'
+
+        spec.add_path(path='/pet', view=pet_view)
+        p = spec._paths['/pet']
+        assert 'get' in p
+        op = p['get']
+        assert 'responses' in op
+        assert op['responses'][200]['schema'] == {
+            'type': 'array',
+            'items': {'$ref': '#/definitions/Pet'}
+        }
+
 class TestCircularReference:
 
     def test_circular_referencing_schemas(self, spec):
