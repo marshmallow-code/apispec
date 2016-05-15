@@ -10,6 +10,7 @@ import warnings
 import functools
 
 import marshmallow
+from marshmallow.utils import is_collection
 from marshmallow.compat import text_type, binary_type, iteritems
 
 from apispec.lazy_dict import LazyDict
@@ -377,8 +378,10 @@ def fields2jsonschema(fields, schema=None, spec=None, use_refs=True, dump=True, 
             field2property(field_obj, spec=spec, use_refs=use_refs, dump=dump, name=name)  # flake8: noqa
         jsonschema['properties'][observed_field_name] = prop_func
 
+        partial = getattr(schema, 'partial', None)
         if field_obj.required:
-            jsonschema.setdefault('required', []).append(observed_field_name)
+            if not partial or (is_collection(partial) and field_name not in partial):
+                jsonschema.setdefault('required', []).append(observed_field_name)
 
     if Meta is not None:
         if hasattr(Meta, 'title'):

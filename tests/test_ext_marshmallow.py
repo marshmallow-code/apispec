@@ -22,8 +22,9 @@ def spec():
 
 class TestDefinitionHelper:
 
-    def test_can_use_schema_as_definition(self, spec):
-        spec.definition('Pet', schema=PetSchema)
+    @pytest.mark.parametrize('schema', [PetSchema, PetSchema()])
+    def test_can_use_schema_as_as_definition(self, spec, schema):
+        spec.definition('Pet', schema=schema)
         assert 'Pet' in spec._definitions
         props = spec._definitions['Pet']['properties']
 

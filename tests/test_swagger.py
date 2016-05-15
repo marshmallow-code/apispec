@@ -179,6 +179,17 @@ class TestMarshmallowSchemaToModelDefinition:
         res = swagger.schema2jsonschema(BandSchema)
         assert res['required'] == ['drummer']
 
+    def test_partial(self):
+        class BandSchema(Schema):
+            drummer = fields.Str(required=True)
+            bassist = fields.Str(required=True)
+
+        res = swagger.schema2jsonschema(BandSchema(partial=True))
+        assert 'required' not in res
+
+        res = swagger.schema2jsonschema(BandSchema(partial=('drummer', )))
+        assert res['required'] == ['bassist']
+
     def test_no_required_fields(self):
         class BandSchema(Schema):
             drummer = fields.Str()
