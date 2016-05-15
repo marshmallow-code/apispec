@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.11.2 (unreleased)
++++++++++++++++++++
+
+Bug fixes:
+
+* [apispec.ext.marshmallow]: Respect ``partial`` parameters on ``Schemas`` (:issue:`74`). Thanks :user:`incognick` for reporting.
+
 0.11.1 (2016-05-02)
 +++++++++++++++++++
 
