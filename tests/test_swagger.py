@@ -569,6 +569,18 @@ class ValidationSchema(Schema):
         validate.Range(max=10),
         validate.Range(max=7)
     ])
+    list_length = fields.List(fields.Str, validate=validate.Length(min=1, max=10))
+    string_length = fields.Str(validate=validate.Length(min=1, max=10))
+    multiple_lengths = fields.Str(validate=[
+        validate.Length(min=1),
+        validate.Length(min=3),
+        validate.Length(max=10),
+        validate.Length(max=7)
+    ])
+    equal_length = fields.Str(validate=[
+        validate.Length(equal=5),
+        validate.Length(min=1, max=10)
+    ])
 
 class TestFieldValidation:
 
@@ -598,3 +610,38 @@ class TestFieldValidation:
         assert 'maximum' in result
         assert result['maximum'] == 7
 
+    def test_list_length(self, spec):
+        spec.definition('Validation', schema=ValidationSchema)
+        result = spec._definitions['Validation']['properties']['list_length']
+
+        assert 'minLength' in result
+        assert result['minLength'] == 1
+        assert 'maxLength' in result
+        assert result['maxLength'] == 10
+
+    def test_string_length(self, spec):
+        spec.definition('Validation', schema=ValidationSchema)
+        result = spec._definitions['Validation']['properties']['string_length']
+
+        assert 'minLength' in result
+        assert result['minLength'] == 1
+        assert 'maxLength' in result
+        assert result['maxLength'] == 10
+
+    def test_multiple_lengths(self, spec):
+        spec.definition('Validation', schema=ValidationSchema)
+        result = spec._definitions['Validation']['properties']['multiple_lengths']
+
+        assert 'minLength' in result
+        assert result['minLength'] == 3
+        assert 'maxLength' in result
+        assert result['maxLength'] == 7
+
+    def test_equal_length(self, spec):
+        spec.definition('Validation', schema=ValidationSchema)
+        result = spec._definitions['Validation']['properties']['equal_length']
+
+        assert 'minLength' in result
+        assert result['minLength'] == 5
+        assert 'maxLength' in result
+        assert result['maxLength'] == 5
