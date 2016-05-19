@@ -559,3 +559,42 @@ def test_swagger_tools_validate():
         utils.validate_swagger(spec)
     except exceptions.SwaggerError as error:
         pytest.fail(str(error))
+
+class ValidationSchema(Schema):
+    id = fields.Int(dump_only=True)
+    range = fields.Int(validate=validate.Range(min=1, max=10))
+    multiple_ranges = fields.Int(validate=[
+        validate.Range(min=1),
+        validate.Range(min=3),
+        validate.Range(max=10),
+        validate.Range(max=7)
+    ])
+
+class TestFieldValidation:
+
+    @pytest.fixture()
+    def spec(self):
+        return APISpec(
+            title='Validation',
+            version='0.1',
+            plugins=['apispec.ext.marshmallow'],
+        )
+
+    def test_range(self, spec):
+        spec.definition('Validation', schema=ValidationSchema)
+        result = spec._definitions['Validation']['properties']['range']
+
+        assert 'minimum' in result
+        assert result['minimum'] == 1
+        assert 'maximum' in result
+        assert result['maximum'] == 10
+
+    def test_multiple_ranges(self, spec):
+        spec.definition('Validation', schema=ValidationSchema)
+        result = spec._definitions['Validation']['properties']['multiple_ranges']
+
+        assert 'minimum' in result
+        assert result['minimum'] == 3
+        assert 'maximum' in result
+        assert result['maximum'] == 7
+
