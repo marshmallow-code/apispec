@@ -1,8 +1,12 @@
 Changelog
 ---------
 
-0.11.2 (unreleased)
+0.12.0 (unreleased)
 +++++++++++++++++++
+
+Features:
+
+* [apispec.ext.marshmallow]: Inspect validators to set additional attributes (:issue:`66`). Thanks :user:`deckar01` for the PR.
 
 Bug fixes:
 
