@@ -570,3 +570,89 @@ def test_swagger_tools_validate():
         utils.validate_swagger(spec)
     except exceptions.SwaggerError as error:
         pytest.fail(str(error))
+
+class ValidationSchema(Schema):
+    id = fields.Int(dump_only=True)
+    range = fields.Int(validate=validate.Range(min=1, max=10))
+    multiple_ranges = fields.Int(validate=[
+        validate.Range(min=1),
+        validate.Range(min=3),
+        validate.Range(max=10),
+        validate.Range(max=7)
+    ])
+    list_length = fields.List(fields.Str, validate=validate.Length(min=1, max=10))
+    string_length = fields.Str(validate=validate.Length(min=1, max=10))
+    multiple_lengths = fields.Str(validate=[
+        validate.Length(min=1),
+        validate.Length(min=3),
+        validate.Length(max=10),
+        validate.Length(max=7)
+    ])
+    equal_length = fields.Str(validate=[
+        validate.Length(equal=5),
+        validate.Length(min=1, max=10)
+    ])
+
+class TestFieldValidation:
+
+    @pytest.fixture()
+    def spec(self):
+        return APISpec(
+            title='Validation',
+            version='0.1',
+            plugins=['apispec.ext.marshmallow'],
+        )
+
+    def test_range(self, spec):
+        spec.definition('Validation', schema=ValidationSchema)
+        result = spec._definitions['Validation']['properties']['range']
+
+        assert 'minimum' in result
+        assert result['minimum'] == 1
+        assert 'maximum' in result
+        assert result['maximum'] == 10
+
+    def test_multiple_ranges(self, spec):
+        spec.definition('Validation', schema=ValidationSchema)
+        result = spec._definitions['Validation']['properties']['multiple_ranges']
+
+        assert 'minimum' in result
+        assert result['minimum'] == 3
+        assert 'maximum' in result
+        assert result['maximum'] == 7
+
+    def test_list_length(self, spec):
+        spec.definition('Validation', schema=ValidationSchema)
+        result = spec._definitions['Validation']['properties']['list_length']
+
+        assert 'minLength' in result
+        assert result['minLength'] == 1
+        assert 'maxLength' in result
+        assert result['maxLength'] == 10
+
+    def test_string_length(self, spec):
+        spec.definition('Validation', schema=ValidationSchema)
+        result = spec._definitions['Validation']['properties']['string_length']
+
+        assert 'minLength' in result
+        assert result['minLength'] == 1
+        assert 'maxLength' in result
+        assert result['maxLength'] == 10
+
+    def test_multiple_lengths(self, spec):
+        spec.definition('Validation', schema=ValidationSchema)
+        result = spec._definitions['Validation']['properties']['multiple_lengths']
+
+        assert 'minLength' in result
+        assert result['minLength'] == 3
+        assert 'maxLength' in result
+        assert result['maxLength'] == 7
+
+    def test_equal_length(self, spec):
+        spec.definition('Validation', schema=ValidationSchema)
+        result = spec._definitions['Validation']['properties']['equal_length']
+
+        assert 'minLength' in result
+        assert result['minLength'] == 5
+        assert 'maxLength' in result
+        assert result['maxLength'] == 5

@@ -75,6 +75,83 @@ def field2choices(field):
         else None
     )
 
+def field2range(field):
+    """Return the dictionary of swagger field attributes for a set of
+    :class:`Range <marshmallow.validators.Range>` validators.
+
+    :param Field field: A marshmallow field.
+    :rtype: dict
+    """
+    validators = [
+        validator for validator in field.validators
+        if (
+            hasattr(validator, 'min') and
+            hasattr(validator, 'max') and
+            not hasattr(validator, 'equal')
+        )
+    ]
+
+    attributes = {}
+    for validator in validators:
+        if not validator.min is None:
+            if hasattr(attributes, 'minimum'):
+                attributes['minimum'] = max(
+                    attributes['minimum'],
+                    validator.min
+                )
+            else:
+                attributes['minimum'] = validator.min
+        if not validator.max is None:
+            if hasattr(attributes, 'maximum'):
+                attributes['maximum'] = min(
+                    attributes['maximum'],
+                    validator.max
+                )
+            else:
+                attributes['maximum'] = validator.max
+    return attributes
+
+def field2length(field):
+    """Return the dictionary of swagger field attributes for a set of
+    :class:`Length <marshmallow.validators.Length>` validators.
+
+    :param Field field: A marshmallow field.
+    :rtype: dict
+    """
+    validators = [
+        validator for validator in field.validators
+        if (
+            hasattr(validator, 'min') and
+            hasattr(validator, 'max') and
+            hasattr(validator, 'equal')
+        )
+    ]
+
+    attributes = {}
+    for validator in validators:
+        if not validator.min is None:
+            if hasattr(attributes, 'minLength'):
+                attributes['minLength'] = max(
+                    attributes['minLength'],
+                    validator.min
+                )
+            else:
+                attributes['minLength'] = validator.min
+        if not validator.max is None:
+            if hasattr(attributes, 'maxLength'):
+                attributes['maxLength'] = min(
+                    attributes['maxLength'],
+                    validator.max
+                )
+            else:
+                attributes['maxLength'] = validator.max
+
+    for validator in validators:
+        if not validator.equal is None:
+            attributes['minLength'] = validator.equal
+            attributes['maxLength'] = validator.equal
+    return attributes
+
 
 # Properties that may be defined in a field's metadata that will be added to the output
 # of field2property
@@ -144,6 +221,9 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
     choices = field2choices(field)
     if choices:
         ret['enum'] = list(choices)
+
+    ret.update(field2range(field))
+    ret.update(field2length(field))
 
     if isinstance(field, marshmallow.fields.Nested):
         del ret['type']
