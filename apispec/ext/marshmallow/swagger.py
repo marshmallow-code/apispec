@@ -31,6 +31,7 @@ FIELD_MAPPING = {
     marshmallow.fields.Time: ('string', None),
     marshmallow.fields.Email: ('string', 'email'),
     marshmallow.fields.URL: ('string', 'url'),
+    marshmallow.fields.Dict: ('object', None),
     # Assume base Field and Raw are strings
     marshmallow.fields.Field: ('string', None),
     marshmallow.fields.Raw: ('string', None),
