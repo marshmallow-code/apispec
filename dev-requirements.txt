@@ -1,4 +1,4 @@
-invoke
+invoke>=0.13.0
 pyyaml
 
 # Syntax checking
