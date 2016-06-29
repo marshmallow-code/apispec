@@ -223,6 +223,9 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
     if choices:
         ret['enum'] = list(choices)
 
+    if field.dump_only:
+        ret['readOnly'] = True
+
     ret.update(field2range(field))
     ret.update(field2length(field))
 

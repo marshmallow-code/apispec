@@ -315,6 +315,7 @@ class TestMarshmallowSchemaToParameters:
         assert param['in'] == 'body'
         assert param['schema'] == swagger.schema2jsonschema(UserSchema, dump=True)
         assert set(param['schema']['properties'].keys()) == {'name', 'email'}
+        assert param['schema']['properties']['email']['readOnly'] is True
 
         res_nodump = swagger.schema2parameters(UserSchema, default_in='body', dump=False)
         assert len(res_nodump) == 1
