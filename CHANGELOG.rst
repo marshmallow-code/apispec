@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.13.0 (unreleased)
++++++++++++++++++++
+
+Features:
+
+* [apispec.ext.marshmallow]: Add support for ``Dict`` field (:issue:`80`). Thanks :user:`ericb` for the PR.
+
 0.12.0 (2016-05-22)
 +++++++++++++++++++
 
