@@ -21,3 +21,4 @@ Contributors (chronological)
 - Lucas Costa `@lucascosta <https://github.com/lucascosta>`_
 - Jared Deckard `@deckar01 <https://github.com/deckar01>`_
 - Eric Bobbitt `@ericb <https://github.com/ericb>`_
+- `@incognick <https://github.com/incognick>`_

@@ -7,6 +7,15 @@ Changelog
 Features:
 
 * [apispec.ext.marshmallow]: Add support for ``Dict`` field (:issue:`80`). Thanks :user:`ericb` for the PR.
+* [apispec.ext.marshmallow]: ``dump_only`` fields adds ``readOnly`` flag in OpenAPI spec (:issue:`79`). Thanks :user:`itajaja` for the suggestion and PR.
+
+Bug fixes:
+
+* [apispec.ext.marshmallow]: Properly exclude nested dump-only fields from parameters (:issue:`82`). Thanks :user:`incognick` for the catch and patch.
+
+Support:
+
+* Update tasks.py for compatibility with invoke>=0.13.0.
 
 0.12.0 (2016-05-22)
 +++++++++++++++++++
