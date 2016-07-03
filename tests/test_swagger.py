@@ -524,6 +524,16 @@ class TestNesting:
         props['category']['items']['required'] = ['name']
         assert props['category']['items'] == swagger.schema2jsonschema(CategorySchema)
 
+    def test_schema2jsonschema_with_nested_excluded_fields(self, spec):
+        category_schema = CategorySchema(exclude=('breed', ))
+
+        class PetSchema(Schema):
+            category = fields.Nested(category_schema)
+
+        res = swagger.schema2jsonschema(PetSchema(), use_refs=False)
+        category_props = res['properties']['category']['properties']
+        assert 'breed' not in category_props
+
 
 def test_swagger_tools_validate():
     spec = APISpec(
