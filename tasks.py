@@ -32,7 +32,7 @@ def clean(ctx):
     ctx.run("rm -rf build")
     ctx.run("rm -rf dist")
     ctx.run("rm -rf apispec.egg-info")
-    clean_docs()
+    clean_docs(ctx)
     print("Cleaned up.")
 
 @task
@@ -77,7 +77,7 @@ def readme(ctx, browse=False):
 @task
 def publish(ctx, test=False):
     """Publish to the cheeseshop."""
-    clean()
+    clean(ctx)
     if test:
         ctx.run('python setup.py register -r test sdist bdist_wheel', echo=True)
         ctx.run('twine upload dist/* -r test', echo=True)
