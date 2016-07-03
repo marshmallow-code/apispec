@@ -503,6 +503,12 @@ class TestNesting:
         props = res['properties']
         assert 'breed' not in props
 
+    def test_field2property_nested_dump_only_with_spec(self, spec):
+        category = fields.Nested(CategorySchema)
+        res = swagger.field2property(category, spec=spec, name='Foo', dump=False)
+        props = res['properties']
+        assert 'breed' not in props
+
     def test_schema2jsonschema_with_nested_fields(self):
         res = swagger.schema2jsonschema(PetSchema, use_refs=False)
         props = res['properties']

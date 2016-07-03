@@ -251,7 +251,7 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
             else:
                 ret.update(ref_schema)
         elif spec:
-            ret.update(resolve_schema_dict(spec, field.schema))
+            ret.update(resolve_schema_dict(spec, field.schema, dump=dump))
         else:
             ret.update(schema2jsonschema(field.schema, dump=dump))
     elif isinstance(field, marshmallow.fields.List):
