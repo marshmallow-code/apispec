@@ -7,7 +7,7 @@ Changelog
 Features:
 
 * [apispec.ext.marshmallow]: Add support for ``Dict`` field (:issue:`80`). Thanks :user:`ericb` for the PR.
-* [apispec.ext.marshmallow]: ``dump_only`` fields adds ``readOnly`` flag in OpenAPI spec (:issue:`79`). Thanks :user:`itajaja` for the suggestion and PR.
+* [apispec.ext.marshmallow]: ``dump_only`` fields add ``readOnly`` flag in OpenAPI spec (:issue:`79`). Thanks :user:`itajaja` for the suggestion and PR.
 
 Bug fixes:
 
