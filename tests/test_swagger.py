@@ -407,6 +407,7 @@ class TestMarshmallowSchemaToParameters:
 class CategorySchema(Schema):
     id = fields.Int()
     name = fields.Str(required=True)
+    breed = fields.Str(dump_only=True)
 
 class PageSchema(Schema):
     offset = fields.Int()
@@ -495,6 +496,12 @@ class TestNesting:
         # name is passed
         res = swagger.field2property(self_nesting2, name='Foo')
         assert res == {'$ref': '#/definitions/Bar'}
+
+    def test_field2property_nested_dump_only(self, spec):
+        category = fields.Nested(CategorySchema)
+        res = swagger.field2property(category, name='Foo', dump=False)
+        props = res['properties']
+        assert 'breed' not in props
 
     def test_schema2jsonschema_with_nested_fields(self):
         res = swagger.schema2jsonschema(PetSchema, use_refs=False)
