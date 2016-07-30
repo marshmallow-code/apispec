@@ -25,3 +25,14 @@ class SelfReferencingSchema(Schema):
     single_with_ref = fields.Nested('self', ref='#/definitions/Self')
     many = fields.Nested('self', many=True)
     many_with_ref = fields.Nested('self', many=True, ref='#/definitions/Selves')
+
+
+class OrderedSchema(Schema):
+    field1 = fields.Int()
+    field2 = fields.Int()
+    field3 = fields.Int()
+    field4 = fields.Int()
+    field5 = fields.Int()
+
+    class Meta:
+        ordered = True
