@@ -171,4 +171,4 @@ class TestOrderedSchema:
     def test_ordered_schema(self, spec):
         spec.definition('Ordered', schema=OrderedSchema)
         result = spec._definitions['Ordered']['properties']
-        assert list(result.keys()) == ['field1', 'field2','field3','field4','field5']
+        assert list(result.keys()) == ['field1', 'field2', 'field3', 'field4', 'field5']
