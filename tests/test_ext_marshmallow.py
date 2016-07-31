@@ -3,7 +3,7 @@ import pytest
 
 from apispec import APISpec
 from apispec.ext.marshmallow import swagger
-from .schemas import PetSchema, AnalysisSchema, SampleSchema, RunSchema, SelfReferencingSchema
+from .schemas import PetSchema, AnalysisSchema, SampleSchema, RunSchema, SelfReferencingSchema, OrderedSchema
 
 
 @pytest.fixture()
@@ -164,3 +164,11 @@ class TestSelfReference:
 
         result = spec._definitions['SelfReference']['properties']['many_with_ref']
         assert result == {'type': 'array', 'items': {'$ref': '#/definitions/Selves'}}
+
+
+class TestOrderedSchema:
+
+    def test_ordered_schema(self, spec):
+        spec.definition('Ordered', schema=OrderedSchema)
+        result = spec._definitions['Ordered']['properties']
+        assert list(result.keys()) == ['field1', 'field2', 'field3', 'field4', 'field5']

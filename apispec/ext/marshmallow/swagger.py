@@ -8,6 +8,7 @@ from __future__ import absolute_import, unicode_literals
 import operator
 import warnings
 import functools
+from collections import OrderedDict
 
 import marshmallow
 from marshmallow.utils import is_collection
@@ -37,6 +38,10 @@ FIELD_MAPPING = {
     marshmallow.fields.Raw: ('string', None),
     marshmallow.fields.List: ('array', None),
 }
+
+
+class OrderedLazyDict(LazyDict, OrderedDict):
+    pass
 
 
 def _observed_name(field, name):
@@ -448,7 +453,7 @@ def fields2jsonschema(fields, schema=None, spec=None, use_refs=True, dump=True, 
 
     jsonschema = {
         'type': 'object',
-        'properties': LazyDict({}),
+        'properties': OrderedLazyDict() if getattr(Meta, 'ordered', None) else LazyDict(),
     }
 
     exclude = set(getattr(Meta, 'exclude', []))
