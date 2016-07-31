@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.14.0 (unreleased)
++++++++++++++++++++
+
+Features:
+
+* [apispec.ext.marshmallow]: Maintain order of fields when ``ordered=True`` on Schema. Thanks :user:`ranjanashish` for the PR.
+
 0.13.0 (2016-07-03)
 +++++++++++++++++++
 

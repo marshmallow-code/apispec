@@ -22,3 +22,4 @@ Contributors (chronological)
 - Jared Deckard `@deckar01 <https://github.com/deckar01>`_
 - Eric Bobbitt `@ericb <https://github.com/ericb>`_
 - Nick Phillips `@incognick <https://github.com/incognick>`_
+- Ashish Ranjan `@ranjanashish <https://github.com/ranjanashish>`_
