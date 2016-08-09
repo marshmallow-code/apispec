@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Core apispec classes and functions."""
 import re
+from collections import OrderedDict
 
 from apispec.compat import iterkeys
 from .exceptions import APISpecError, PluginError
@@ -102,7 +103,7 @@ class APISpec(object):
         self._definitions = {}
         self._parameters = {}
         self._tags = []
-        self._paths = {}
+        self._paths = OrderedDict()
         # Plugin and helpers
         self.plugins = {}
         self._definition_helpers = []
