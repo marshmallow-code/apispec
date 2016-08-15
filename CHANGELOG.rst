@@ -1,12 +1,13 @@
 Changelog
 ---------
 
-0.14.0 (unreleased)
+0.14.0 (2016-08-14)
 +++++++++++++++++++
 
 Features:
 
-* [apispec.ext.marshmallow]: Maintain order of fields when ``ordered=True`` on Schema. Thanks :user:`ranjanashish` for the PR.
+* [apispec.core]: Maintain order in which paths are added to a spec (:issue:`87`). Thanks :user:`ranjanashish` for the PR.
+* [apispec.ext.marshmallow]: Maintain order of fields when ``ordered=True`` on Schema. Thanks again :user:`ranjanashish`.
 
 0.13.0 (2016-07-03)
 +++++++++++++++++++
