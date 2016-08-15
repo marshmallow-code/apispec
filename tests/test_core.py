@@ -136,6 +136,13 @@ class TestPath:
         assert p['description'] == route_spec['description']
         assert p['tags'] == route_spec['tags']
 
+    def test_paths_maintain_order(self, spec):
+        spec.add_path(path='/path1')
+        spec.add_path(path='/path2')
+        spec.add_path(path='/path3')
+        spec.add_path(path='/path4')
+        assert list(spec.to_dict()['paths'].keys()) == ['/path1', '/path2', '/path3', '/path4']
+
     def test_add_path_merges_paths(self, spec):
         """Test that adding a second HTTP method to an existing path performs
         a merge operation instead of an overwrite"""
