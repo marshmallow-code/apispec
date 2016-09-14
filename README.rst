@@ -10,7 +10,7 @@ apispec
     :target: https://travis-ci.org/marshmallow-code/apispec
 
 .. image:: https://readthedocs.org/projects/apispec/badge/
-   :target: http://marshmallow.readthedocs.io/
+   :target: https://apispec.readthedocs.io/
    :alt: Documentation
 
 A pluggable API specification generator. Currently supports the `OpenAPI specification <http://swagger.io/specification/>`_ (f.k.a. Swagger 2.0).
