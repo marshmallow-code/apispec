@@ -23,3 +23,4 @@ Contributors (chronological)
 - Eric Bobbitt `@ericb <https://github.com/ericb>`_
 - Nick Phillips `@incognick <https://github.com/incognick>`_
 - Ashish Ranjan `@ranjanashish <https://github.com/ranjanashish>`_
+- Jérôme Lafréchoux `@lafrech <https://github.com/lafrech>`_

@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.15.0 (unreleased)
++++++++++++++++++++
+
+Features:
+
+- [apispec.ext.marshmallow]: Allow ``'query'`` to be passed as a field location (:issue:`89`). Thanks :user:`lafrech`.
+
 0.14.0 (2016-08-14)
 +++++++++++++++++++
 
