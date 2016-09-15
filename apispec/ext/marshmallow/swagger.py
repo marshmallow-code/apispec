@@ -487,6 +487,7 @@ def fields2jsonschema(fields, schema=None, spec=None, use_refs=True, dump=True, 
     return jsonschema
 
 __location_map__ = {
+    'query': 'query',
     'querystring': 'query',
     'json': 'body',
     'headers': 'header',
