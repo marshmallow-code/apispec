@@ -154,12 +154,19 @@ class APISpec(object):
         :param dict|None operations: describes the http methods and options for `path`
         :param dict kwargs: parameters used by any path helpers see :meth:`register_path_helper`
         """
+        def normalize_path(path):
+            if path and 'basePath' in self.options:
+                pattern = '^{0}'.format(re.escape(self.options['basePath']))
+                path = re.sub(pattern, '', path)
+
+            return path
+
         p = path
         if isinstance(path, Path):
             p = path.path
-        if p and 'basePath' in self.options:
-            pattern = '^{0}'.format(re.escape(self.options['basePath']))
-            p = re.sub(pattern, '', p)
+
+        p = normalize_path(p)
+
         if isinstance(path, Path):
             path.path = p
         else:
@@ -173,6 +180,7 @@ class APISpec(object):
             except TypeError:
                 continue
             if isinstance(ret, Path):
+                ret.path = normalize_path(ret.path)
                 path.update(ret)
 
         if not path.path:

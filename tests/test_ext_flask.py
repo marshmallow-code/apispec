@@ -108,7 +108,8 @@ class TestPathHelpers:
 
     def test_path_includes_app_root(self, app, spec):
 
-        app.config['APPLICATION_ROOT'] = '/app/root'
+        spec.options['basePath'] = '/v1'
+        app.config['APPLICATION_ROOT'] = '/v1/app/root'
 
         @app.route('/partial/path/pet')
         def get_pet():
@@ -119,7 +120,8 @@ class TestPathHelpers:
 
     def test_path_with_args_includes_app_root(self, app, spec):
 
-        app.config['APPLICATION_ROOT'] = '/app/root'
+        spec.options['basePath'] = '/v1'
+        app.config['APPLICATION_ROOT'] = '/v1/app/root'
 
         @app.route('/partial/path/pet/{pet_id}')
         def get_pet(pet_id):
@@ -130,7 +132,8 @@ class TestPathHelpers:
 
     def test_path_includes_app_root_with_right_slash(self, app, spec):
 
-        app.config['APPLICATION_ROOT'] = '/app/root/'
+        spec.options['basePath'] = '/v1'
+        app.config['APPLICATION_ROOT'] = '/v1/app/root/'
 
         @app.route('/partial/path/pet')
         def get_pet():
