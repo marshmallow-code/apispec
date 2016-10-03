@@ -1,12 +1,16 @@
 Changelog
 ---------
 
-0.15.0 (unreleased)
+0.15.0 (2016-10-02)
 +++++++++++++++++++
 
 Features:
 
-- [apispec.ext.marshmallow]: Allow ``'query'`` to be passed as a field location (:issue:`89`). Thanks :user:`lafrech`.
+* [apispec.ext.marshmallow]: Allow ``'query'`` to be passed as a field location (:issue:`89`). Thanks :user:`lafrech`.
+
+Bug fixes:
+
+* [apispec.ext.flask]: Properly strip off ``basePath`` when ``APPLICATION_ROOT`` is set on a Flask app's config (:issue:`78`). Thanks :user:`deckar01` for reporting and :user:`asteinlein` for the PR.
 
 0.14.0 (2016-08-14)
 +++++++++++++++++++

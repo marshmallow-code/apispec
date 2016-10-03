@@ -24,3 +24,4 @@ Contributors (chronological)
 - Nick Phillips `@incognick <https://github.com/incognick>`_
 - Ashish Ranjan `@ranjanashish <https://github.com/ranjanashish>`_
 - Jérôme Lafréchoux `@lafrech <https://github.com/lafrech>`_
+- Anders Steinlein `@asteinlein <https://github.com/asteinlein>`_
