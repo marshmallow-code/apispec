@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.16.0 (2016-10-12)
++++++++++++++++++++
+
+Features:
+
+* [apispec.core]: Allow ``description`` to be passed to ``APISpec.definition`` (:issue:`93`). Thanks :user:`martinlatrille`.
+
 0.15.0 (2016-10-02)
 +++++++++++++++++++
 
