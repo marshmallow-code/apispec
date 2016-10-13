@@ -61,6 +61,12 @@ class TestDefinitions:
         assert 'Pet' in defs_json
         assert defs_json['Pet']['properties'] == self.properties
 
+    def test_definition_description(self, spec):
+        model_description = 'An animal which lives with humans.'
+        spec.definition('Pet', properties=self.properties, description=model_description)
+        defs_json = spec.to_dict()['definitions']
+        assert defs_json['Pet']['description'] == model_description
+
     def test_definition_stores_enum(self, spec):
         enum = ['name', 'photoUrls']
         spec.definition(
