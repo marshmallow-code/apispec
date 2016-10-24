@@ -1,5 +1,6 @@
 from marshmallow import Schema, fields
 
+
 class PetSchema(Schema):
     id = fields.Int(dump_only=True)
     name = fields.Str()
@@ -17,6 +18,10 @@ class RunSchema(Schema):
 
 class AnalysisSchema(Schema):
     sample = fields.Nested(SampleSchema)
+
+
+class PatternedObjectSchema(Schema):
+    count = fields.Int(dump_only=True, **{'x-meta': 1})
 
 
 class SelfReferencingSchema(Schema):
