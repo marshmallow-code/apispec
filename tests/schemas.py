@@ -21,7 +21,8 @@ class AnalysisSchema(Schema):
 
 
 class PatternedObjectSchema(Schema):
-    count = fields.Int(dump_only=True, **{'x-meta': 1})
+    count = fields.Int(dump_only=True, **{'x-count': 1})
+    count2 = fields.Int(dump_only=True, x_count2=2)
 
 
 class SelfReferencingSchema(Schema):

@@ -179,4 +179,11 @@ class TestFieldWithCustomProps:
     def test_field_with_custom_props(self, spec):
         spec.definition('PatternedObject', schema=PatternedObjectSchema)
         result = spec._definitions['PatternedObject']['properties']['count']
-        assert 'x-meta' in result
+        assert 'x-count' in result
+        assert result['x-count'] == 1
+
+    def test_field_with_custom_props_passed_as_snake_case(self, spec):
+        spec.definition('PatternedObject', schema=PatternedObjectSchema)
+        result = spec._definitions['PatternedObject']['properties']['count2']
+        assert 'x-count2' in result
+        assert result['x-count2'] == 2

@@ -265,7 +265,12 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
     elif isinstance(field, marshmallow.fields.List):
         ret['items'] = field2property(field.container, spec=spec, use_refs=use_refs, dump=dump)
 
-    for key, value in iteritems(field.metadata):
+    # Dasherize metadata that starts with x_
+    metadata = {
+        key.replace('_', '-') if key.startswith('x_') else key: value
+        for key, value in iteritems(field.metadata)
+    }
+    for key, value in iteritems(metadata):
         if key in _VALID_PROPERTIES or key.startswith(_VALID_PREFIX):
             ret[key] = value
     # Avoid validation error with "Additional properties not allowed"
