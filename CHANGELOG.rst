@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.17.0 (2016-10-30)
++++++++++++++++++++
+
+Features:
+
+* [apispec.ext.marshmallow]: Add support for properties that start with `x-`. Thanks :user:`martinlatrille` for the PR.
+
 0.16.0 (2016-10-12)
 +++++++++++++++++++
 
