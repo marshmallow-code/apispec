@@ -194,6 +194,9 @@ _VALID_PROPERTIES = {
     'example',
 }
 
+_VALID_PREFIX = 'x-'
+
+
 def field2property(field, spec=None, use_refs=True, dump=True, name=None):
     """Return the JSON Schema property definition given a marshmallow
     :class:`Field <marshmallow.fields.Field>`.
@@ -263,7 +266,7 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
         ret['items'] = field2property(field.container, spec=spec, use_refs=use_refs, dump=dump)
 
     for key, value in iteritems(field.metadata):
-        if key in _VALID_PROPERTIES:
+        if key in _VALID_PROPERTIES or key.startswith(_VALID_PREFIX):
             ret[key] = value
     # Avoid validation error with "Additional properties not allowed"
     # Property "ref" is not valid in this context

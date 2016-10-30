@@ -3,7 +3,8 @@ import pytest
 
 from apispec import APISpec
 from apispec.ext.marshmallow import swagger
-from .schemas import PetSchema, AnalysisSchema, SampleSchema, RunSchema, SelfReferencingSchema, OrderedSchema
+from .schemas import PetSchema, AnalysisSchema, SampleSchema, RunSchema, SelfReferencingSchema,\
+    OrderedSchema, PatternedObjectSchema
 
 
 @pytest.fixture()
@@ -172,3 +173,10 @@ class TestOrderedSchema:
         spec.definition('Ordered', schema=OrderedSchema)
         result = spec._definitions['Ordered']['properties']
         assert list(result.keys()) == ['field1', 'field2', 'field3', 'field4', 'field5']
+
+
+class TestFieldWithCustomProps:
+    def test_field_with_custom_props(self, spec):
+        spec.definition('PatternedObject', schema=PatternedObjectSchema)
+        result = spec._definitions['PatternedObject']['properties']['count']
+        assert 'x-meta' in result
