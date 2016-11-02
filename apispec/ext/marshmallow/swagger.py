@@ -454,10 +454,14 @@ def fields2jsonschema(fields, schema=None, spec=None, use_refs=True, dump=True, 
     """
     Meta = getattr(schema, 'Meta', None)
     if getattr(Meta, 'fields', None) or getattr(Meta, 'additional', None):
-        warnings.warn(
-            "Only explicitly-declared fields will be included in the Schema Object. "
-            "Fields defined in Meta.fields or Meta.additional are ignored."
-        )
+        declared_fields = set(schema._declared_fields.keys())
+        if (set(getattr(Meta, 'fields', set())) > declared_fields
+            or
+            set(getattr(Meta, 'additional', set())) > declared_fields):
+            warnings.warn(
+                "Only explicitly-declared fields will be included in the Schema Object. "
+                "Fields defined in Meta.fields or Meta.additional are ignored."
+            )
 
     jsonschema = {
         'type': 'object',
