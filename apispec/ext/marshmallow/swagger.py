@@ -124,6 +124,8 @@ def field2length(field):
     :param Field field: A marshmallow field.
     :rtype: dict
     """
+    attributes = {}
+
     validators = [
         validator for validator in field.validators
         if (
@@ -133,29 +135,33 @@ def field2length(field):
         )
     ]
 
-    attributes = {}
+    is_array = isinstance(field, (marshmallow.fields.Nested,
+                                  marshmallow.fields.List))
+    min_attr = 'minItems' if is_array else 'minLength'
+    max_attr = 'maxItems' if is_array else 'maxLength'
+
     for validator in validators:
         if not validator.min is None:
-            if hasattr(attributes, 'minLength'):
-                attributes['minLength'] = max(
-                    attributes['minLength'],
+            if hasattr(attributes, min_attr):
+                attributes[min_attr] = max(
+                    attributes[min_attr],
                     validator.min
                 )
             else:
-                attributes['minLength'] = validator.min
+                attributes[min_attr] = validator.min
         if not validator.max is None:
-            if hasattr(attributes, 'maxLength'):
-                attributes['maxLength'] = min(
-                    attributes['maxLength'],
+            if hasattr(attributes, max_attr):
+                attributes[max_attr] = min(
+                    attributes[max_attr],
                     validator.max
                 )
             else:
-                attributes['maxLength'] = validator.max
+                attributes[max_attr] = validator.max
 
     for validator in validators:
         if not validator.equal is None:
-            attributes['minLength'] = validator.equal
-            attributes['maxLength'] = validator.equal
+            attributes[min_attr] = validator.equal
+            attributes[max_attr] = validator.equal
     return attributes
 
 
