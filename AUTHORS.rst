@@ -25,3 +25,4 @@ Contributors (chronological)
 - Ashish Ranjan `@ranjanashish <https://github.com/ranjanashish>`_
 - Jérôme Lafréchoux `@lafrech <https://github.com/lafrech>`_
 - Anders Steinlein `@asteinlein <https://github.com/asteinlein>`_
+- Yuri Heupa `@YuriHeupa <https://github.com/YuriHeupa>`_
