@@ -649,10 +649,10 @@ class TestFieldValidation:
         spec.definition('Validation', schema=ValidationSchema)
         result = spec._definitions['Validation']['properties']['list_length']
 
-        assert 'minLength' in result
-        assert result['minLength'] == 1
-        assert 'maxLength' in result
-        assert result['maxLength'] == 10
+        assert 'minItems' in result
+        assert result['minItems'] == 1
+        assert 'maxItems' in result
+        assert result['maxItems'] == 10
 
     def test_string_length(self, spec):
         spec.definition('Validation', schema=ValidationSchema)
