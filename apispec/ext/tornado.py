@@ -31,6 +31,7 @@ object to `add_path`.
 """
 from __future__ import absolute_import
 import inspect
+import sys
 from tornado.web import URLSpec
 
 from apispec import Path
@@ -80,7 +81,10 @@ def tornadopath2swagger(urlspec, method):
     :param method: Handler http method
     :type method: function
     """
-    args = inspect.getargspec(method).args[1:]
+    if sys.version_info >= (3, 3):
+        args = [i for i in inspect.signature(method).parameters.keys()][1:]
+    else:
+        args = inspect.getargspec(method).args[1:]
     params = tuple('{{{}}}'.format(arg) for arg in args)
     path = (urlspec._path % params)
     if path.count('/') > 1:
