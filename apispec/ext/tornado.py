@@ -82,7 +82,7 @@ def tornadopath2swagger(urlspec, method):
     :type method: function
     """
     if sys.version_info >= (3, 3):
-        args = [i for i in inspect.signature(method).parameters.keys()][1:]
+        args = list(inspect.signature(method).parameters.keys())[1:]
     else:
         args = inspect.getargspec(method).args[1:]
     params = tuple('{{{}}}'.format(arg) for arg in args)

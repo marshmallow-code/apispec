@@ -26,3 +26,4 @@ Contributors (chronological)
 - Jérôme Lafréchoux `@lafrech <https://github.com/lafrech>`_
 - Anders Steinlein `@asteinlein <https://github.com/asteinlein>`_
 - Yuri Heupa `@YuriHeupa <https://github.com/YuriHeupa>`_
+- Matija Besednik `@matijabesednik <https://github.com/matijabesednik>`_
