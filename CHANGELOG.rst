@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.17.2 (2017-01-03)
++++++++++++++++++++
+
+Bug fixes:
+
+* [apispec.ext.tornado]: Remove usage of ``inspect.getargspec`` for Python >= 3.3 (:issue:`102`). Thanks :user:`matijabesednik`.
+
 0.17.1 (2016-11-19)
 +++++++++++++++++++
 
