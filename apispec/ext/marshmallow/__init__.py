@@ -46,7 +46,9 @@ def schema_definition_helper(spec, name, schema, **kwargs):
     if 'refs' not in plug:
         plug['refs'] = {}
     plug['refs'][schema] = name
-    return swagger.schema2jsonschema(schema, spec=spec, name=name)
+    # Pass a Schema instance, not a Schema class
+    # Workaround for https://github.com/marshmallow-code/apispec/issues/84
+    return swagger.schema2jsonschema(schema(), spec=spec, name=name)
 
 
 def schema_path_helper(spec, view, **kwargs):
