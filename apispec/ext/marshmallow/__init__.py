@@ -39,7 +39,7 @@ def schema_definition_helper(spec, name, schema, **kwargs):
     :class:`Schema <marshmallow.Schema>` to provide OpenAPI
     metadata.
 
-    :param type schema: A marshmallow Schema class.
+    :param type|Schema schema: A marshmallow Schema class or instance.
     """
     # Store registered refs, keyed by Schema class
     plug = spec.plugins[NAME]
