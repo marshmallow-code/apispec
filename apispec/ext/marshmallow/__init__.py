@@ -41,12 +41,20 @@ def schema_definition_helper(spec, name, schema, **kwargs):
 
     :param type|Schema schema: A marshmallow Schema class or instance.
     """
+
+    if isinstance(schema, type):
+        schema_cls = schema
+        schema_instance = schema()
+    else:
+        schema_cls = type(schema)
+        schema_instance = schema
+
     # Store registered refs, keyed by Schema class
     plug = spec.plugins[NAME]
     if 'refs' not in plug:
         plug['refs'] = {}
-    plug['refs'][schema] = name
-    return swagger.schema2jsonschema(schema, spec=spec, name=name)
+    plug['refs'][schema_cls] = name
+    return swagger.schema2jsonschema(schema_instance, spec=spec, name=name)
 
 
 def schema_path_helper(spec, view, **kwargs):
