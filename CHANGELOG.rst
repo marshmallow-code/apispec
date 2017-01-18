@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.17.3 (unreleased)
++++++++++++++++++++
+
+Bug fixes:
+
+* [apispec.ext.marshmallow]: Fix behavior when passing `Schema` instances to `Spec.definition`. The `Schema's` class will correctly be registered as a an available `ref` (:issue:`84`). Thanks :user:`lafrech` for reporting and for the PR.
+
 0.17.2 (2017-01-03)
 +++++++++++++++++++
 
