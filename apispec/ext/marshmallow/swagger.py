@@ -9,6 +9,7 @@ import operator
 import warnings
 import functools
 from collections import OrderedDict
+import copy
 
 import marshmallow
 from marshmallow.utils import is_collection
@@ -297,7 +298,7 @@ def schema2parameters(schema, **kwargs):
     if hasattr(schema, 'fields'):
         fields = schema.fields
     elif hasattr(schema, '_declared_fields'):
-        fields = schema._declared_fields
+        fields = copy.deepcopy(schema._declared_fields)
     else:
         raise ValueError(
             "{0!r} doesn't have either `fields` or `_declared_fields`".format(schema)
@@ -410,7 +411,7 @@ def schema2jsonschema(schema, spec=None, use_refs=True, dump=True, name=None):
     if hasattr(schema, 'fields'):
         fields = schema.fields
     elif hasattr(schema, '_declared_fields'):
-        fields = schema._declared_fields
+        fields = copy.deepcopy(schema._declared_fields)
     else:
         raise ValueError(
             "{0!r} doesn't have either `fields` or `_declared_fields`".format(schema)
