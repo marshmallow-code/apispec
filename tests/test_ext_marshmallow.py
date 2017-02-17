@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
+import json
 
 from apispec import APISpec
 from apispec.ext.marshmallow import swagger
@@ -132,6 +133,18 @@ class TestOperationHelper:
             'type': 'array',
             'items': {'$ref': '#/definitions/Pet'}
         }
+
+    def test_schema_global_state_untouched_2json(self):
+        assert RunSchema._declared_fields['sample']._Nested__schema is None
+        data = swagger.schema2jsonschema(RunSchema)
+        json.dumps(data)
+        assert RunSchema._declared_fields['sample']._Nested__schema is None
+
+    def test_schema_global_state_untouched_2parameters(self):
+        assert RunSchema._declared_fields['sample']._Nested__schema is None
+        data = swagger.schema2parameters(RunSchema)
+        json.dumps(data)
+        assert RunSchema._declared_fields['sample']._Nested__schema is None
 
 class TestCircularReference:
 
