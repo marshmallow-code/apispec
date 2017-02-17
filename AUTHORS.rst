@@ -27,3 +27,4 @@ Contributors (chronological)
 - Anders Steinlein `@asteinlein <https://github.com/asteinlein>`_
 - Yuri Heupa `@YuriHeupa <https://github.com/YuriHeupa>`_
 - Matija Besednik `@matijabesednik <https://github.com/matijabesednik>`_
+- Boris Serebrov `@serebrov <https://github.com/serebrov>`_

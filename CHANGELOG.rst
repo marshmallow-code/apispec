@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.17.4 (2017-02-16)
++++++++++++++++++++
+
+Bug fixes:
+
+* [apispec.ext.marshmallow]: Fix corruption of ``Schema._declared_fields`` when serializing an APISpec (:issue:`107`). Thanks :user:`serebrov` for the catch and patch.
+
 0.17.3 (2017-01-21)
 +++++++++++++++++++
 

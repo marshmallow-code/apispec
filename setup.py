@@ -45,7 +45,7 @@ setup(
     package_dir={'apispec': 'apispec'},
     include_package_data=True,
     install_requires=REQUIRES,
-    license=read("LICENSE"),
+    license='MIT',
     zip_safe=False,
     keywords='apispec swagger openapi specification documentation spec rest api',
     classifiers=[
