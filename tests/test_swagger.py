@@ -128,6 +128,10 @@ class TestMarshmallowFieldToSwagger:
         assert res['maxLength'] == 100
         assert res['minLength'] == 6
 
+    def test_field_with_allow_none(self):
+        field = fields.Str(allow_none=True)
+        res = swagger.field2property(field)
+        assert res['x-nullable'] is True
 
 class TestMarshmallowSchemaToModelDefinition:
 
