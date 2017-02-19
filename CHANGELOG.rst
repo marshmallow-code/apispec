@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.18.0 (2017-02-19)
++++++++++++++++++++
+
+Features:
+
+* [apispec.ext.marshmallow]: Translate ``allow_none`` on ``Fields`` to ``x-nullable`` (:issue:`66`). Thanks :user:`lafrech`.
+
 0.17.4 (2017-02-16)
 +++++++++++++++++++
 
