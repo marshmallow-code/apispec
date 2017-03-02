@@ -200,7 +200,8 @@ class APISpec(object):
 
         self._paths.setdefault(path.path, path).update(path)
 
-    def definition(self, name, properties=None, enum=None, description=None, **kwargs):
+    def definition(self, name, properties=None, enum=None, description=None, extra_fields=None,
+                   **kwargs):
         """Add a new definition to the spec.
 
         .. note::
@@ -227,6 +228,8 @@ class APISpec(object):
             ret['enum'] = enum
         if description:
             ret['description'] = description
+        if extra_fields:
+            ret.update(extra_fields)
         self._definitions[name] = ret
 
     # PLUGIN INTERFACE

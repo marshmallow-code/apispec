@@ -34,13 +34,12 @@ from . import swagger
 NAME = 'apispec.ext.marshmallow'
 
 
-def schema_definition_helper(spec, name, schema, extra_fields=None, **kwargs):
+def schema_definition_helper(spec, name, schema, **kwargs):
     """Definition helper that allows using a marshmallow
     :class:`Schema <marshmallow.Schema>` to provide OpenAPI
     metadata.
 
     :param type|Schema schema: A marshmallow Schema class or instance.
-    :param type|dict extra_fields: Extra fields to add to the definition.
     """
 
     if isinstance(schema, type):
@@ -55,10 +54,7 @@ def schema_definition_helper(spec, name, schema, extra_fields=None, **kwargs):
     if 'refs' not in plug:
         plug['refs'] = {}
     plug['refs'][schema_cls] = name
-    ret = swagger.schema2jsonschema(schema_instance, spec=spec, name=name)
-    if extra_fields:
-        ret.update(extra_fields)
-    return ret
+    return swagger.schema2jsonschema(schema_instance, spec=spec, name=name)
 
 
 def schema_path_helper(spec, view, **kwargs):
