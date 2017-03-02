@@ -33,6 +33,11 @@ class TestDefinitionHelper:
         assert props['id']['type'] == 'integer'
         assert props['name']['type'] == 'string'
 
+    def test_extra_fields(self, spec):
+        spec.definition('Pet', schema=PetSchema, extra_fields={'discriminator': 'name'})
+        assert 'Pet' in spec._definitions
+        assert spec._definitions['Pet']['discriminator'] == 'name'
+
 class TestOperationHelper:
 
     def test_schema(self, spec):
