@@ -194,7 +194,6 @@ _VALID_PROPERTIES = {
     'allOf',
     'properties',
     'additionalProperties',
-    'discriminator',
     'readOnly',
     'xml',
     'externalDocs',
