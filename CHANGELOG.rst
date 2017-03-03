@@ -1,6 +1,18 @@
 Changelog
 ---------
 
+0.19.0 (unreleased)
++++++++++++++++++++
+
+Features:
+
+* [apispec.core]: Add ``extra_fields`` parameter to `APISpec.definition` (:issue:`110`). Thanks :user:`lafrech` for the PR.
+
+Bug fixes:
+
+* [apispec.ext.marshmallow]: 'discrimiminator' is no longer valid as field metadata. It should be defined by passing ``extra_fields={'dicriminator': '...'}``  to `APISpec.definition`. Thanks for reporting :user:`lafrech`.
+
+
 0.18.0 (2017-02-19)
 +++++++++++++++++++
 
@@ -20,7 +32,7 @@ Bug fixes:
 
 Bug fixes:
 
-* [apispec.ext.marshmallow]: Fix behavior when passing `Schema` instances to `Spec.definition`. The `Schema's` class will correctly be registered as a an available `ref` (:issue:`84`). Thanks :user:`lafrech` for reporting and for the PR.
+* [apispec.ext.marshmallow]: Fix behavior when passing `Schema` instances to `APISpec.definition`. The `Schema's` class will correctly be registered as a an available `ref` (:issue:`84`). Thanks :user:`lafrech` for reporting and for the PR.
 
 0.17.2 (2017-01-03)
 +++++++++++++++++++
