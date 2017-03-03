@@ -350,7 +350,7 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True, dump=True,
             for field_name, field_obj in iteritems(fields)
             if (
                 (field_name not in exclude_fields)
-                and not (field_obj.dump_only and not dump)
+                and not (field_obj.dump_only and (not dump or field_obj.load_only))
             )
     ]
 
