@@ -12,6 +12,10 @@ Bug fixes:
 
 * [apispec.ext.marshmallow]: 'discrimiminator' is no longer valid as field metadata. It should be defined by passing ``extra_fields={'dicriminator': '...'}``  to `APISpec.definition`. Thanks for reporting :user:`lafrech`.
 
+Other changes:
+
+* Drop support for Python 3.3.
+
 
 0.18.0 (2017-02-19)
 +++++++++++++++++++
