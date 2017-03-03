@@ -77,6 +77,12 @@ class TestDefinitions:
         defs_json = spec.to_dict()['definitions']
         assert defs_json['Pet']['enum'] == enum
 
+    def test_definition_extra_fields(self, spec):
+        extra_fields = {'discriminator': 'name'}
+        spec.definition('Pet', properties=self.properties, extra_fields=extra_fields)
+        defs_json = spec.to_dict()['definitions']
+        assert defs_json['Pet']['discriminator'] == 'name'
+
 
 class TestPath:
     paths = {

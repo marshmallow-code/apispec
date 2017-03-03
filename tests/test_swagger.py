@@ -553,7 +553,7 @@ def test_swagger_tools_validate():
     )
 
     spec.definition('Category', schema=CategorySchema)
-    spec.definition('Pet', schema=PetSchema)
+    spec.definition('Pet', schema=PetSchema, extra_fields={'discriminator': 'name'})
 
     spec.add_path(
         view=None,
