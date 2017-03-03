@@ -266,9 +266,16 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
                 ret['type'] = 'array'
                 ret['items'] = ref_schema
             else:
-                ret.update({'allOf': [ref_schema]})
+                if ret:
+                    ret.update({'allOf': [ref_schema]})
+                else:
+                    ret.update(ref_schema)
         elif spec:
-            ret.update(resolve_schema_dict(spec, field.schema, dump=dump))
+            schema_dict = resolve_schema_dict(spec, field.schema, dump=dump)
+            if ret and '$ref' in schema_dict:
+                ret.update({'allOf': [schema_dict]})
+            else:
+                ret.update(schema_dict)
         else:
             ret.update(schema2jsonschema(field.schema, dump=dump))
     elif isinstance(field, marshmallow.fields.List):
