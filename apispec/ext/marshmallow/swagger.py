@@ -266,7 +266,7 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
                 ret['type'] = 'array'
                 ret['items'] = ref_schema
             else:
-                ret.update(ref_schema)
+                ret.update({'allOf': [ref_schema]})
         elif spec:
             ret.update(resolve_schema_dict(spec, field.schema, dump=dump))
         else:

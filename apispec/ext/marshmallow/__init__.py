@@ -146,7 +146,9 @@ def resolve_schema_dict(spec, schema, dump=True):
                 'type': 'array',
                 'items': ref_schema,
             }
-        return ref_schema
+        return {
+            'allOf': [ref_schema]
+        }
     if not isinstance(schema, marshmallow.Schema):
         schema = schema_cls
     return swagger.schema2jsonschema(schema, spec=spec, dump=dump)
