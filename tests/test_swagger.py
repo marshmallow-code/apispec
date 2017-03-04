@@ -89,8 +89,47 @@ class TestMarshmallowFieldToSwagger:
         assert res[0]['in'] == 'query'
 
     def test_fields_with_dump_only(self):
-        field_dict = {'field': fields.Str(dump_only=True)}
-        res = swagger.fields2parameters(field_dict, default_in='query', dump=False)
+        class UserSchema(Schema):
+            name = fields.Str(dump_only=True)
+        res = swagger.fields2parameters(
+            UserSchema._declared_fields, default_in='query', dump=False)
+        assert len(res) == 0
+        res = swagger.fields2parameters(
+            UserSchema().fields, default_in='query', dump=False)
+        assert len(res) == 0
+
+        class UserSchema(Schema):
+            name = fields.Str()
+
+            class Meta:
+                dump_only = ('name',)
+        res = swagger.fields2parameters(
+            UserSchema._declared_fields, schema=UserSchema, default_in='query', dump=False)
+        assert len(res) == 0
+        res = swagger.fields2parameters(
+            UserSchema().fields, schema=UserSchema, default_in='query', dump=False)
+        assert len(res) == 0
+
+    def test_fields_with_load_only(self):
+        class UserSchema(Schema):
+            name = fields.Str(load_only=True)
+        res = swagger.fields2parameters(
+            UserSchema._declared_fields, default_in='query', dump=True)
+        assert len(res) == 0
+        res = swagger.fields2parameters(
+            UserSchema().fields, default_in='query', dump=True)
+        assert len(res) == 0
+
+        class UserSchema(Schema):
+            name = fields.Str()
+
+            class Meta:
+                load_only = ('name',)
+        res = swagger.fields2parameters(
+            UserSchema._declared_fields, schema=UserSchema, default_in='query', dump=True)
+        assert len(res) == 0
+        res = swagger.fields2parameters(
+            UserSchema().fields, schema=UserSchema, default_in='query', dump=True)
         assert len(res) == 0
 
     def test_field_with_choices(self):
