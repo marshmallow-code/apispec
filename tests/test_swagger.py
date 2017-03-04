@@ -176,6 +176,11 @@ if HAS_WEBARGS_ARG:
 
 class TestMarshmallowFieldToSwagger:
 
+    def test_field2choices_preserving_order(self):
+        choices = ['a', 'b', 'c', 'aa', '0', 'cc']
+        field = fields.String(validate=validate.OneOf(choices))
+        assert swagger.field2choices(field) == choices
+
     @mark.parametrize(('FieldClass', 'jsontype'), [
         (fields.Integer, 'integer'),
         (fields.Number, 'number'),
