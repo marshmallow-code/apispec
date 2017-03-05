@@ -544,6 +544,31 @@ class TestNesting:
         category_props = res['properties']['category']['properties']
         assert 'breed' not in category_props
 
+    def test_nested_field_with_property(self, spec):
+        category_1 = fields.Nested(CategorySchema)
+        category_2 = fields.Nested(CategorySchema, ref='#/definitions/Category')
+        category_3 = fields.Nested(CategorySchema, dump_only=True)
+        category_4 = fields.Nested(CategorySchema, dump_only=True, ref='#/definitions/Category')
+        category_5 = fields.Nested(CategorySchema, many=True)
+        category_6 = fields.Nested(CategorySchema, many=True, ref='#/definitions/Category')
+        category_7 = fields.Nested(CategorySchema, many=True, dump_only=True)
+        category_8 = fields.Nested(CategorySchema, many=True, dump_only=True, ref='#/definitions/Category')
+        spec.definition('Category', schema=CategorySchema)
+
+        assert swagger.field2property(category_1, spec=spec) == {'$ref': '#/definitions/Category'}
+        assert swagger.field2property(category_2, spec=spec) == {'$ref': '#/definitions/Category'}
+        assert swagger.field2property(category_3, spec=spec) == {
+            'allOf': [{'$ref': '#/definitions/Category'}], 'readOnly': True}
+        assert swagger.field2property(category_4, spec=spec) == {
+            'allOf': [{'$ref': '#/definitions/Category'}], 'readOnly': True}
+        assert swagger.field2property(category_5, spec=spec) == {
+            'items': {'$ref': '#/definitions/Category'}, 'type': 'array'}
+        assert swagger.field2property(category_6, spec=spec) == {
+            'items': {'$ref': '#/definitions/Category'}, 'type': 'array'}
+        assert swagger.field2property(category_7, spec=spec) == {
+            'items': {'$ref': '#/definitions/Category'}, 'readOnly': True, 'type': 'array'}
+        assert swagger.field2property(category_8, spec=spec) == {
+            'items': {'$ref': '#/definitions/Category'}, 'readOnly': True, 'type': 'array'}
 
 def test_swagger_tools_validate():
     spec = APISpec(
