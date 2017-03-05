@@ -14,6 +14,7 @@ import copy
 import marshmallow
 from marshmallow.utils import is_collection
 from marshmallow.compat import text_type, binary_type, iteritems
+from marshmallow.orderedset import OrderedSet
 
 from apispec.lazy_dict import LazyDict
 
@@ -73,7 +74,7 @@ def field2choices(field):
     :rtype: set
     """
     validators = [
-        set(validator.choices) for validator in field.validators
+        OrderedSet(validator.choices) for validator in field.validators
         if hasattr(validator, 'choices')
     ]
     return (
