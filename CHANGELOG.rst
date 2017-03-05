@@ -11,7 +11,7 @@ Features:
 
 Bug fixes:
 
-* [apispec.ext.marshmallow]: 'discrimiminator' is no longer valid as field metadata. It should be defined by passing ``extra_fields={'dicriminator': '...'}``  to `APISpec.definition`. Thanks for reporting, :user:`lafrech`.
+* [apispec.ext.marshmallow]: 'discriminator' is no longer valid as field metadata. It should be defined by passing ``extra_fields={'discriminator': '...'}`` to `APISpec.definition`. Thanks for reporting, :user:`lafrech`.
 * [apispec.ext.marshmallow]: Allow additional properties when translating ``Nested`` fields using ``allOf`` (:issue:`108`). Thanks :user:`lafrech` for the suggestion and the PR.
 * [apispec.ext.marshmallow]: Respect ``dump_only`` and ``load_only`` specified in ``class Meta`` (:issue:`84`). Thanks :user:`lafrech` for the fix.
 
