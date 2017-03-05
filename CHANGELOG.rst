@@ -1,16 +1,19 @@
 Changelog
 ---------
 
-0.19.0 (unreleased)
+0.19.0 (2017-03-05)
 +++++++++++++++++++
 
 Features:
 
 * [apispec.core]: Add ``extra_fields`` parameter to `APISpec.definition` (:issue:`110`). Thanks :user:`lafrech` for the PR.
+* [apispec.ext.marshmallow]: Preserve the order of ``choices`` (:issue:`113`). Thanks :user:`frol` for the PR.
 
 Bug fixes:
 
-* [apispec.ext.marshmallow]: 'discrimiminator' is no longer valid as field metadata. It should be defined by passing ``extra_fields={'dicriminator': '...'}``  to `APISpec.definition`. Thanks for reporting :user:`lafrech`.
+* [apispec.ext.marshmallow]: 'discrimiminator' is no longer valid as field metadata. It should be defined by passing ``extra_fields={'dicriminator': '...'}``  to `APISpec.definition`. Thanks for reporting, :user:`lafrech`.
+* [apispec.ext.marshmallow]: Allow additional properties when translating ``Nested`` fields using ``allOf`` (:issue:`108`). Thanks :user:`lafrech` for the suggestion and the PR.
+* [apispec.ext.marshmallow]: Respect ``dump_only`` and ``load_only`` specified in ``class Meta`` (:issue:`84`). Thanks :user:`lafrech` for the fix.
 
 Other changes:
 
