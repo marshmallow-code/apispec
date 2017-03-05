@@ -345,6 +345,8 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True, dump=True,
         "Schemas with many=True are only supported for 'json' location (aka 'in: body')"
 
     exclude_fields = getattr(getattr(schema, 'Meta', None), 'exclude', [])
+    dump_only_fields = getattr(getattr(schema, 'Meta', None), 'dump_only', [])
+    load_only_fields = getattr(getattr(schema, 'Meta', None), 'load_only', [])
 
     return [
         field2parameter(
@@ -356,9 +358,10 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True, dump=True,
             default_in=default_in
         )
             for field_name, field_obj in iteritems(fields)
-            if (
-                (field_name not in exclude_fields)
-                and not (field_obj.dump_only and not dump)
+            if not (
+                field_name in exclude_fields or
+                (not dump and (field_obj.dump_only or field_name in dump_only_fields)) or 
+                (dump and (field_obj.load_only or field_name in load_only_fields))
             )
     ]
 
