@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+0.20.0 (unreleased)
++++++++++++++++++++
+
+* [apispec.ext.marshmallow] *Backwards-incompatible*: Remove ``dump`` parameter from ``schema2parameters``, ``fields2parameters``, and ``field2parameter`` (:issue:`114`). Thanks :user:`lafrech` and :user:`frol` for the feedback and :user:`lafrech` for the PR.
+
 0.19.0 (2017-03-05)
 +++++++++++++++++++
 
