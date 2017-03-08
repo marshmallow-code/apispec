@@ -317,7 +317,7 @@ def schema2parameters(schema, **kwargs):
     return fields2parameters(fields, schema, **kwargs)
 
 
-def fields2parameters(fields, schema=None, spec=None, use_refs=True, dump=True,
+def fields2parameters(fields, schema=None, spec=None, use_refs=True,
                       default_in='body', name='body', required=False):
     """Return an array of OpenAPI parameters given a mapping between field names and
     :class:`Field <marshmallow.Field>` objects. If `default_in` is "body", then return an array
@@ -330,9 +330,9 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True, dump=True,
         if schema is not None:
             # Prevent circular import
             from apispec.ext.marshmallow import resolve_schema_dict
-            prop = resolve_schema_dict(spec, schema, dump=dump)
+            prop = resolve_schema_dict(spec, schema, dump=False)
         else:
-            prop = fields2jsonschema(fields, spec=spec, use_refs=use_refs, dump=dump)
+            prop = fields2jsonschema(fields, spec=spec, use_refs=use_refs, dump=False)
 
         return [{
             'in': default_in,
@@ -346,7 +346,6 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True, dump=True,
 
     exclude_fields = getattr(getattr(schema, 'Meta', None), 'exclude', [])
     dump_only_fields = getattr(getattr(schema, 'Meta', None), 'dump_only', [])
-    load_only_fields = getattr(getattr(schema, 'Meta', None), 'load_only', [])
 
     return [
         field2parameter(
@@ -354,26 +353,25 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True, dump=True,
             name=_observed_name(field_obj, field_name),
             spec=spec,
             use_refs=use_refs,
-            dump=dump,
             default_in=default_in
         )
             for field_name, field_obj in iteritems(fields)
             if not (
                 field_name in exclude_fields or
-                (not dump and (field_obj.dump_only or field_name in dump_only_fields)) or 
-                (dump and (field_obj.load_only or field_name in load_only_fields))
+                field_obj.dump_only or
+                field_name in dump_only_fields
             )
     ]
 
 
-def field2parameter(field, name='body', spec=None, use_refs=True, dump=True, default_in='body'):
+def field2parameter(field, name='body', spec=None, use_refs=True, default_in='body'):
     """Return an OpenAPI parameter as a `dict`, given a marshmallow
     :class:`Field <marshmallow.Field>`.
 
     https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
     """
     location = field.metadata.get('location', None)
-    prop = field2property(field, spec=spec, use_refs=use_refs, dump=dump)
+    prop = field2property(field, spec=spec, use_refs=use_refs, dump=False)
     return property2parameter(
         prop,
         name=name,
