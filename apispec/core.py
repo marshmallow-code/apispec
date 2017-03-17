@@ -219,7 +219,7 @@ class APISpec(object):
         # Execute all helpers from plugins
         for func in self._definition_helpers:
             try:
-                ret.update(func(self, name, **kwargs))
+                ret.update(func(self, name, definition=ret, **kwargs))
             except TypeError:
                 continue
         if properties:
@@ -269,6 +269,8 @@ class APISpec(object):
         - Return a `dict` representation of the definition's Schema object.
 
         The helper may define any named arguments after the `name` argument.
+        In `kwargs`, you will find among other things:
+        - Definition: the current state of the definition of the schema.
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#definitionsObject
 
