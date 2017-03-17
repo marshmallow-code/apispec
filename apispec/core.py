@@ -269,8 +269,8 @@ class APISpec(object):
         - Return a `dict` representation of the definition's Schema object.
 
         The helper may define any named arguments after the `name` argument.
-        In `kwargs`, you will find among other things:
-        - Definition: the current state of the definition of the schema.
+        ``kwargs`` will include (among other things):
+        - definition (dict): current state of the definition
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#definitionsObject
 
