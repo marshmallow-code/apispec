@@ -261,6 +261,10 @@ class TestPlugins:
         spec.setup_plugin(self.DUMMY_PLUGIN)
         assert mock_setup.call_count == 1
 
+    def test_setup_can_modify_plugin_dict(self, spec):
+        spec.setup_plugin(self.DUMMY_PLUGIN)
+        spec.plugins[self.DUMMY_PLUGIN]['foo'] == 42
+
     def test_setup_plugin_doesnt_exist(self, spec):
         with pytest.raises(PluginError):
             spec.setup_plugin('plugin.doesnt.exist')

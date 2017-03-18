@@ -255,9 +255,9 @@ class APISpec(object):
         if not hasattr(mod, 'setup'):
             raise PluginError('Plugin "{0}" has no setup(spec) function'.format(path))
         else:
+            # Each plugin gets a dict to store arbitrary data
+            self.plugins[path] = {}
             mod.setup(self)
-        # Each plugin gets a dict to store arbitrary data
-        self.plugins[path] = {}
         return None
 
     def register_definition_helper(self, func):

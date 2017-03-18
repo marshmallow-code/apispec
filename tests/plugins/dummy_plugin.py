@@ -1,4 +1,4 @@
 # -*- coding: utf-8 -*-
 
 def setup(spec):
-    pass
+    spec.plugins['tests.plugins.dummy_plugin']['foo'] = 42
