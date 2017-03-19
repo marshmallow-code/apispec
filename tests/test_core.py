@@ -83,6 +83,20 @@ class TestDefinitions:
         defs_json = spec.to_dict()['definitions']
         assert defs_json['Pet']['discriminator'] == 'name'
 
+    def test_pass_definition_to_plugins(self, spec):
+        def def_helper(spec, name, **kwargs):
+            if kwargs.get('definition') is not None:
+                return {'available': True}
+
+            return {'available': False}
+
+        spec.register_definition_helper(def_helper)
+        spec.definition('Pet', properties=self.properties)
+
+        defs_json = spec.to_dict()['definitions']
+
+        assert defs_json['Pet']['available']
+
 
 class TestPath:
     paths = {
