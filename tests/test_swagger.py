@@ -297,6 +297,21 @@ class TestMarshmallowSchemaToModelDefinition:
         assert excinfo.value.args[0] == ("{0!r} doesn't have either `fields` "
                                          "or `_declared_fields`".format(NotASchema))
 
+    def test_dump_only_load_only_fields(self):
+        class UserSchema(Schema):
+            _id = fields.Str(dump_only=True)
+            name = fields.Str()
+            password = fields.Str(load_only=True)
+
+        res = swagger.schema2jsonschema(UserSchema())
+        props = res['properties']
+        assert 'name' in props
+        # dump_only field appears with readOnly attribute
+        assert '_id' in props
+        assert 'readOnly' in props['_id']
+        # load_only field appears (writeOnly attribute does not exist)
+        assert 'password' in props
+
 
 class TestMarshmallowSchemaToParameters:
 
