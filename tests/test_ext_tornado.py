@@ -3,6 +3,7 @@ import pytest
 
 from apispec import APISpec
 from tornado.web import RequestHandler
+import tornado.gen
 
 @pytest.fixture()
 def spec():
@@ -114,13 +115,22 @@ class TestPathHelpers:
         spec.add_path(urlspec=urlspec, operations=operations)
         assert '/hello/world' in spec._paths
 
-    def test_path_with_params(self, spec):
+    class HelloWorldHandler(RequestHandler):
+        def get(self, param1, param2):
+            self.write("hello")
 
-        class HelloHandler(RequestHandler):
-            def get(self, param1, param2):
-                self.write("hello")
+    class HelloWorldHandler2(RequestHandler):
+        @tornado.gen.coroutine
+        def get(self, param1, param2):
+            self.write("hello")
 
-        urlspec = (r'/hello/([^/]+)/world/([^/]+)', HelloHandler)
+    @pytest.mark.parametrize('Handler',
+    [
+        HelloWorldHandler,
+        HelloWorldHandler2,
+    ])
+    def test_path_with_params(self, spec, Handler):
+        urlspec = (r'/hello/([^/]+)/world/([^/]+)', Handler)
         operations = (
             {'get': {'parameters': [], 'responses': {'200': '..params..'}}})
 
