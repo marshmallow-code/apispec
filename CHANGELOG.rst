@@ -7,6 +7,7 @@ Changelog
 Bug fixes:
 
 * [apispec.ext.tornado]: Fix compatibility with Tornado>=4.5.
+* [apispec.ext.tornado]: Fix adding paths for handlers with coroutine methods in Python 2 (:issue:`99`).
 
 0.20.0 (2017-03-19)
 +++++++++++++++++++

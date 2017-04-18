@@ -84,6 +84,8 @@ def tornadopath2swagger(urlspec, method):
     if sys.version_info >= (3, 3):
         args = list(inspect.signature(method).parameters.keys())[1:]
     else:
+        if getattr(method, '__tornado_coroutine__', False):
+            method = method.__wrapped__
         args = inspect.getargspec(method).args[1:]
     params = tuple('{{{}}}'.format(arg) for arg in args)
     try:
