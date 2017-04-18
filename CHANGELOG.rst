@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.20.1 (unreleased)
++++++++++++++++++++
+
+Bug fixes:
+
+* [apispec.ext.tornado]: Fix compatibility with Tornado>=4.5.
+
 0.20.0 (2017-03-19)
 +++++++++++++++++++
 

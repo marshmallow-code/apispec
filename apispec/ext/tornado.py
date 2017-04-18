@@ -86,7 +86,11 @@ def tornadopath2swagger(urlspec, method):
     else:
         args = inspect.getargspec(method).args[1:]
     params = tuple('{{{}}}'.format(arg) for arg in args)
-    path = (urlspec._path % params)
+    try:
+        path_tpl = urlspec.matcher._path
+    except AttributeError:  # tornado<4.5
+        path_tpl = urlspec._path
+    path = (path_tpl % params)
     if path.count('/') > 1:
         path = path.rstrip('/?*')
     return path
