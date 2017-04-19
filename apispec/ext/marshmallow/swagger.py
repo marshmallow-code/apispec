@@ -489,6 +489,7 @@ def fields2jsonschema(fields, schema=None, spec=None, use_refs=True, dump=True, 
     exclude = set(getattr(Meta, 'exclude', []))
 
     for field_name, field_obj in iteritems(fields):
+        exclude |= set(getattr(field_obj, 'exclude', []))
         if field_name in exclude or (field_obj.dump_only and not dump):
             continue
 
