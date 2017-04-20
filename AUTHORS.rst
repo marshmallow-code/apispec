@@ -28,3 +28,4 @@ Contributors (chronological)
 - Yuri Heupa `@YuriHeupa <https://github.com/YuriHeupa>`_
 - Matija Besednik `@matijabesednik <https://github.com/matijabesednik>`_
 - Boris Serebrov `@serebrov <https://github.com/serebrov>`_
+- Daniel Radetsky `@dradetsky <https://github.com/dradetsky>`_
