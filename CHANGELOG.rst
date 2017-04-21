@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.21.0 (2017-04-21)
++++++++++++++++++++
+
+Features:
+
+* [apispec.ext.marshmallow] Sort list of required field names in generated spec (:issue:`124`). Thanks :user:`dradetsky`.
+
 0.20.1 (2017-04-18)
 +++++++++++++++++++
 
