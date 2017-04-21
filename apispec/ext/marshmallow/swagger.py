@@ -502,6 +502,9 @@ def fields2jsonschema(fields, schema=None, spec=None, use_refs=True, dump=True, 
             if not partial or (is_collection(partial) and field_name not in partial):
                 jsonschema.setdefault('required', []).append(observed_field_name)
 
+    if 'required' in jsonschema:
+        jsonschema['required'].sort()
+
     if Meta is not None:
         if hasattr(Meta, 'title'):
             jsonschema['title'] = Meta.title
