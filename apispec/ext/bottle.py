@@ -1,0 +1,68 @@
+# -*- coding: utf-8 -*-
+"""Bottle plugin. Includes a path helper that allows you to pass an urlspec (path-handler pair)
+object to `add_path`.
+::
+
+    from bottle import route, default_app
+    
+    app = default_app() 
+
+    @route('/gists/<gist_id>')
+    def gist_detail(gist_id):
+        '''Gist detail view.
+        ---
+        get:
+            responses:
+                200:
+                    schema:
+                        $ref: '#/definitions/Gist'
+        '''
+        return 'detail for gist {}'.format(gist_id)
+
+    app.test_request_context().push()
+    spec.add_path(view=gist_detail)
+    print(spec.to_dict()['paths'])
+    # {'/gists/{gist_id}': {'get': {'responses': {200: {'schema': {'$ref': '#/definitions/Gist'}}}}}}
+    from pprint import pprint
+
+
+"""
+import re
+
+from bottle import default_app
+
+from apispec import Path
+from apispec import utils
+from apispec.exceptions import APISpecError
+
+app = default_app()
+
+
+RE_URL = re.compile(r'<(?:[^:<>]+:)?([^<>]+)>')
+
+
+def bottle_path_to_swagger(path):
+    return RE_URL.sub(r'{\1}', path)
+
+
+def _route_for_view(view):
+    endpoint = None
+    for route in app.routes:
+        if route._context['callback'] == view:
+            endpoint = route
+            break
+    if not endpoint:
+        raise APISpecError('Could not find endpoint for route {0}'.format(view))
+    return endpoint
+
+
+def path_from_router(spec, view, operations, **kwargs):
+    operations = utils.load_operations_from_docstring(view.__doc__)
+    route = _route_for_view(view)
+    bottle_path = bottle_path_to_swagger(route.rule)
+    return Path(path=bottle_path, operations=operations)
+
+
+def setup(spec):
+    """Setup for the plugin."""
+    spec.register_path_helper(path_from_router)
