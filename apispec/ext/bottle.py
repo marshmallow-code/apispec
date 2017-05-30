@@ -21,6 +21,7 @@ object to `add_path`.
     print(spec.to_dict()['paths'])
     # {'/gists/{gist_id}': {'get': {'responses': {200: {'schema': {'$ref': '#/definitions/Gist'}}}}}}
 """
+from __future__ import absolute_import
 import re
 
 from bottle import default_app

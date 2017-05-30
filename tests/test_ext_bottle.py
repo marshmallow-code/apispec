@@ -14,9 +14,9 @@ def spec():
                     'about Swagger at <a href=\"http://swagger.wordnik.com\">http://swagger.wordnik.com</a> '
                     'or on irc.freenode.net, #swagger.  For this sample, you can use the api '
                     'key \"special-key\" to test the authorization filters',
-        plugins=[
-            'apispec.ext.bottle'
-        ]
+        plugins=(
+            'apispec.ext.bottle',
+        )
     )
 
 
