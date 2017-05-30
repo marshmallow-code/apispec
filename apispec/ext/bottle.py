@@ -2,11 +2,8 @@
 """Bottle plugin. Includes a path helper that allows you to pass an urlspec (path-handler pair)
 object to `add_path`.
 ::
-
     from bottle import route, default_app
-    
-    app = default_app() 
-
+    app = default_app()
     @route('/gists/<gist_id>')
     def gist_detail(gist_id):
         '''Gist detail view.
@@ -23,9 +20,6 @@ object to `add_path`.
     spec.add_path(view=gist_detail)
     print(spec.to_dict()['paths'])
     # {'/gists/{gist_id}': {'get': {'responses': {200: {'schema': {'$ref': '#/definitions/Gist'}}}}}}
-    from pprint import pprint
-
-
 """
 import re
 
