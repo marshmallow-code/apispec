@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.22.0 (unreleased)
++++++++++++++++++++
+
+Features:
+
+* [apispec.ext.bottle] Added bottle plugin (:issue:`128`). Thanks :user:`lucasrc`.
+
 0.21.0 (2017-04-21)
 +++++++++++++++++++
 

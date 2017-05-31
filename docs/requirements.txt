@@ -1,6 +1,7 @@
 marshmallow
 Flask
 tornado
+bottle
 sphinx
 sphinx-issues==0.2.0
 sphinx-rtd-theme

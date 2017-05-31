@@ -29,4 +29,4 @@ Contributors (chronological)
 - Matija Besednik `@matijabesednik <https://github.com/matijabesednik>`_
 - Boris Serebrov `@serebrov <https://github.com/serebrov>`_
 - Daniel Radetsky `@dradetsky <https://github.com/dradetsky>`_
-- Lucas Coutinho`@lucas_rc <https://github.com/lucas_rc>`_
+- Lucas Coutinho `@lucasrc <https://github.com/lucasrc>`_

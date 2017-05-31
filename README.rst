@@ -20,7 +20,7 @@ Features
 
 - Supports OpenAPI 2.0 specification (f.k.a. Swagger)
 - Framework-agnostic
-- Includes plugins for `marshmallow <https://marshmallow.readthedocs.io/>`_, `Flask <http://flask.pocoo.org/>`_, and `Tornado <http://www.tornadoweb.org/>`_
+- Includes plugins for `marshmallow <https://marshmallow.readthedocs.io/>`_, `Flask <http://flask.pocoo.org/>`_, `Tornado <http://www.tornadoweb.org/>`_, and `bottle <http://bottlepy.org/docs/dev/>`_.
 - Utilities for parsing docstrings
 
 Example Application

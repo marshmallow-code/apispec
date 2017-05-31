@@ -24,3 +24,9 @@ apispec.ext.tornado
 
 .. automodule:: apispec.ext.tornado
     :members:
+
+apispec.ext.bottle
+-------------------
+
+.. automodule:: apispec.ext.bottle
+    :members:

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Bottle plugin. Includes a path helper that allows you to pass an urlspec (path-handler pair)
-object to `add_path`.
+"""Bottle plugin. Includes a path helper that allows you to pass a view function
+to `add_path`.
 ::
+
     from bottle import route, default_app
     app = default_app()
     @route('/gists/<gist_id>')
@@ -52,6 +53,7 @@ def _route_for_view(view):
 
 
 def path_from_router(spec, view, operations, **kwargs):
+    """Path helper that allows passing a bottle view funciton."""
     operations = utils.load_operations_from_docstring(view.__doc__)
     route = _route_for_view(view)
     bottle_path = bottle_path_to_swagger(route.rule)
