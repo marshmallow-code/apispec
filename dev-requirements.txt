@@ -8,6 +8,7 @@ flake8==3.0.4
 Flask
 marshmallow
 tornado
+bottle
 
 # testing
 pytest>=2.8.0
