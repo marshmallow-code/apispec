@@ -489,7 +489,7 @@ def fields2jsonschema(fields, schema=None, spec=None, use_refs=True, dump=True, 
     exclude = set(getattr(Meta, 'exclude', []))
 
     for field_name, field_obj in iteritems(fields):
-        if field_name in exclude or (field_obj.dump_only and not dump):
+        if field_name in exclude or (field_obj.dump_only and not dump) or (field_obj.load_only and dump):
             continue
 
         observed_field_name = _observed_name(field_obj, field_name)
