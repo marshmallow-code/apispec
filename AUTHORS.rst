@@ -30,3 +30,4 @@ Contributors (chronological)
 - Boris Serebrov `@serebrov <https://github.com/serebrov>`_
 - Daniel Radetsky `@dradetsky <https://github.com/dradetsky>`_
 - Lucas Coutinho `@lucasrc <https://github.com/lucasrc>`_
+- `@lamiskin <https://github.com/lamiskin>`_
