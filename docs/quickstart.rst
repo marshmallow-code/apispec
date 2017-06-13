@@ -26,7 +26,7 @@ Add definitions to your spec using `definition <apispec.APISpec.definition>`.
 
     spec.definition('Gist', properties={
         'id': {'type': 'integer', 'format': 'int64'},
-        'content': 'type': 'string'},
+        'name': {'type': 'string'}
     })
 
 
