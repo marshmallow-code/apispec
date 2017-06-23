@@ -70,10 +70,20 @@ class TestMarshmallowFieldToSwagger:
         res = swagger.field2property(field)
         assert res['default'] == 'foo'
 
+    def test_field_with_boolean_false_default(self):
+        field = fields.Boolean(default=False, missing=None)
+        res = swagger.field2property(field)
+        assert res['default'] is False
+
     def test_field_with_default_load(self):
         field = fields.Str(default='foo', missing='bar')
         res = swagger.field2property(field, dump=False)
         assert res['default'] == 'bar'
+
+    def test_field_with_boolean_false_default_load(self):
+        field = fields.Boolean(default=None, missing=False)
+        res = swagger.field2property(field, dump=False)
+        assert res['default'] is False
 
     def test_fields_with_default_load(self):
         field_dict = {'field': fields.Str(default='foo', missing='bar')}

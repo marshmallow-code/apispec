@@ -12,7 +12,7 @@ from collections import OrderedDict
 import copy
 
 import marshmallow
-from marshmallow.utils import is_collection
+from marshmallow.utils import is_collection, _Missing
 from marshmallow.compat import text_type, binary_type, iteritems
 from marshmallow.orderedset import OrderedSet
 
@@ -231,7 +231,7 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
         ret['format'] = fmt
 
     default = field.default if dump else field.missing
-    if default:
+    if not isinstance(default, _Missing):
         ret['default'] = default
 
     choices = field2choices(field)
