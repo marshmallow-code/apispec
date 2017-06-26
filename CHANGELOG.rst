@@ -1,6 +1,15 @@
 Changelog
 ---------
 
+0.22.1 (2017-06-25)
++++++++++++++++++++
+
+Bug fixes:
+
+* [apispec.ext.marshmallow]: Include ``default`` in output spec when
+  ``False`` is the default for a ``Boolean`` field (:issue:`130`).
+  Thanks :user:`nebularazer`.
+
 0.22.0 (2017-05-30)
 +++++++++++++++++++
 
