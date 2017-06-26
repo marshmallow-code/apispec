@@ -31,3 +31,4 @@ Contributors (chronological)
 - Daniel Radetsky `@dradetsky <https://github.com/dradetsky>`_
 - Lucas Coutinho `@lucasrc <https://github.com/lucasrc>`_
 - `@lamiskin <https://github.com/lamiskin>`_
+- Florian Scheffler `@nebularazer <https://github.com/nebularazer>`_

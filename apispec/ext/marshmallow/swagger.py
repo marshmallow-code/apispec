@@ -231,7 +231,7 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
         ret['format'] = fmt
 
     default = field.default if dump else field.missing
-    if default:
+    if default is not marshmallow.missing:
         ret['default'] = default
 
     choices = field2choices(field)
