@@ -1,20 +1,20 @@
-# Config file for automatic testing at travis-ci.org
-
-# Containerized builds
 sudo: false
-
 language: python
-
 python:
-  - "3.6"
-  - "3.5"
-  - "3.4"
-  - "2.7"
-  - "pypy"
-
+- '3.6'
+- '3.5'
+- '3.4'
+- '2.7'
+- pypy
 install:
-  - pip install -U .
-  - npm install -g swagger-tools
-  - pip install -r dev-requirements.txt
-
+- pip install -U .
+- npm install -g swagger-tools
+- pip install -r dev-requirements.txt
 script: invoke test
+deploy:
+  provider: pypi
+  user: sloria
+  password:
+    secure: g/niD9lToPXGyU1U0pU/zS+dmg2V36EujVC6C1U/1UmpxBf6yQjuHgzbVVFfGi54PKxbbkzlrs1tf5o0kYpaym5sjr1mEXR/YeHXLO8HNLlOJTrJJNE9dvAcaisETK3iqlqaIsrQyi0AbHrTgEI0NDV6/tDfI5lrbsksaLkuRbU=
+  on:
+    tags: true
