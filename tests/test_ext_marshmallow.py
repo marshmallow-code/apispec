@@ -101,10 +101,6 @@ class TestOperationHelper:
                 parameters:
                     - in: body
                       schema: tests.schemas.PetSchema
-                responses:
-                    200:
-                        schema: tests.schemas.PetSchema
-                        description: successful operation
             """
             return '...'
 
