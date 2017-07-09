@@ -68,6 +68,9 @@ Our application will have a marshmallow `Schema <marshmallow.Schema>` for gists.
 
     from marshmallow import Schema, fields
 
+    class GistParameter(Schema):
+        gist_id = fields.Int()
+
     class GistSchema(Schema):
         id = fields.Int()
         content = fields.Str()
@@ -116,6 +119,9 @@ We'll add some YAML in the docstring to add response information.
         """Gist detail view.
         ---
         get:
+            parameters:
+                - in: path
+                  schema: GistParameter
             responses:
                 200:
                     schema: GistSchema
@@ -148,7 +154,12 @@ Our OpenAPI spec now looks like this:
     #         'title': 'Gisty',
     #         'version': '1.0.0'},
     # 'parameters': {},
-    # 'paths': {'/gists/{gist_id}': {'get': {'responses': {200: {'schema': {'$ref': '#/definitions/Gist'}}}}}},
+    # 'paths': {'/gists/{gist_id}': {'get': {'parameters': [{'format': 'int32',
+    #                                                        'in': 'path',
+    #                                                        'name': 'gist_id',
+    #                                                        'required': True,
+    #                                                        'type': 'integer'}],
+    #                                        'responses': {200: {'schema': {'$ref': '#/definitions/Gist'}}}}}},
     # 'swagger': '2.0',
     # 'tags': []}
 
