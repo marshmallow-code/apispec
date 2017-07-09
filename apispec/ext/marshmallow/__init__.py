@@ -126,10 +126,25 @@ def schema_path_helper(spec, view, **kwargs):
         return
     operations = operations.copy()
     for operation in operations.values():
+        if 'parameters' in operation:
+            operation['parameters'] = resolve_parameters(operation['parameters'])
         for response in operation.get('responses', {}).values():
             if 'schema' in response:
                 response['schema'] = resolve_schema_dict(spec, response['schema'])
     return Path(operations=operations)
+
+
+def resolve_parameters(parameters):
+    resolved = []
+    for parameter in parameters:
+        if not isinstance(parameter.get('schema', {}), dict):
+            schema_cls = resolve_schema_cls(parameter['schema'])
+            if issubclass(schema_cls, marshmallow.Schema) and 'in' in parameter:
+                resolved += swagger.schema2parameters(
+                    schema_cls, default_in=parameter['in'])
+                continue
+        resolved.append(parameter)
+    return resolved
 
 
 def resolve_schema_dict(spec, schema, dump=True):
