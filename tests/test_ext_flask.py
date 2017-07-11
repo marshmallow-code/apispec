@@ -2,6 +2,7 @@
 import pytest
 
 from flask import Flask
+from flask.views import MethodView
 from apispec import APISpec
 
 @pytest.fixture()
@@ -41,6 +42,31 @@ class TestPathHelpers:
         assert 'get' in spec._paths['/hello']
         expected = {'parameters': [], 'responses': {'200': '..params..'}}
         assert spec._paths['/hello']['get'] == expected
+
+    def test_path_from_method_view(self, app, spec):
+        class HelloApi(MethodView):
+            def get(self):
+                """A greeting endpoint.
+                ---
+                description: get a greeting
+                responses:
+                    200:
+                        description: said hi
+                """
+                return 'hi'
+
+            def post(self):
+                return 'hi'
+
+        method_view = HelloApi.as_view('hi')
+        app.add_url_rule("/hi", view_func=method_view, methods=('GET', 'POST'))
+        spec.add_path(method_view=method_view)
+        assert '/hi' in spec._paths
+        assert 'get' in spec._paths['/hi']
+        expected = {'description': 'get a greeting',
+                    'responses': {200: {'description': 'said hi'}}}
+        assert spec._paths['/hi']['get'] == expected
+        assert spec._paths['/hi']['post'] == {}
 
     def test_path_with_multiple_methods(self, app, spec):
 
