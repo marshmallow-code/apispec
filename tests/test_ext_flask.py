@@ -45,6 +45,10 @@ class TestPathHelpers:
 
     def test_path_from_method_view(self, app, spec):
         class HelloApi(MethodView):
+            """Greeting API.
+            ---
+            x-extension: global metadata
+            """
             def get(self):
                 """A greeting endpoint.
                 ---
@@ -61,12 +65,11 @@ class TestPathHelpers:
         method_view = HelloApi.as_view('hi')
         app.add_url_rule("/hi", view_func=method_view, methods=('GET', 'POST'))
         spec.add_path(method_view=method_view)
-        assert '/hi' in spec._paths
-        assert 'get' in spec._paths['/hi']
         expected = {'description': 'get a greeting',
                     'responses': {200: {'description': 'said hi'}}}
         assert spec._paths['/hi']['get'] == expected
         assert spec._paths['/hi']['post'] == {}
+        assert spec._paths['/hi']['x-extension'] == 'global metadata'
 
     def test_path_with_multiple_methods(self, app, spec):
 
