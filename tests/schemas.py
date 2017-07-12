@@ -42,3 +42,7 @@ class OrderedSchema(Schema):
 
     class Meta:
         ordered = True
+
+
+class DefaultCallableSchema(Schema):
+    numbers = fields.List(fields.Int, default=list)
