@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+0.22.2 (2017-07-12)
++++++++++++++++++++
+
+Bug fixes:
+
+* [apispec.ext.marshmallow]: Properly handle callable ``default`` values
+  in output spec (:issue:`131`). Thanks :user:`NightBlues`.
+
 0.22.1 (2017-06-25)
 +++++++++++++++++++
 
