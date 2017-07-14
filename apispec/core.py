@@ -88,7 +88,7 @@ class APISpec(object):
     :param tuple plugins: Import paths to plugins.
     :param dict info: Optional dict to add to `info`
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#infoObject
-    :param **dict options: Optional top-level keys
+    :param \*\*dict options: Optional top-level keys
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
     """
 

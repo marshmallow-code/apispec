@@ -5,7 +5,7 @@ import json
 from apispec import APISpec
 from apispec.ext.marshmallow import swagger
 from .schemas import PetSchema, AnalysisSchema, SampleSchema, RunSchema, SelfReferencingSchema,\
-    OrderedSchema, PatternedObjectSchema
+    OrderedSchema, PatternedObjectSchema, DefaultCallableSchema
 
 
 @pytest.fixture()
@@ -227,3 +227,10 @@ class TestFieldWithCustomProps:
         result = spec._definitions['PatternedObject']['properties']['count2']
         assert 'x-count2' in result
         assert result['x-count2'] == 2
+
+
+class TestDefaultCanBeCallable:
+    def test_default_can_be_callable(self, spec):
+        spec.definition('DefaultCallableSchema', schema=DefaultCallableSchema)
+        result = spec._definitions['DefaultCallableSchema']['properties']['numbers']
+        assert result['default'] == []
