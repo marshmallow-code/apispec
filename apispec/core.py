@@ -182,6 +182,7 @@ class APISpec(object):
             if isinstance(ret, Path):
                 ret.path = normalize_path(ret.path)
                 path.update(ret)
+                operations = ret.operations
 
         if not path.path:
             raise APISpecError('Path template is not specified')
