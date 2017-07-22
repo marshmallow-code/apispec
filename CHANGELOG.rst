@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+0.23.0 (unreleased)
++++++++++++++++++++
+
+* Pass `operations` constructed by plugins to downstream marshmallow
+  plugin (:issue:`138`). Thanks :user:`yoichi`.
+
 0.22.3 (2017-07-16)
 +++++++++++++++++++
 
