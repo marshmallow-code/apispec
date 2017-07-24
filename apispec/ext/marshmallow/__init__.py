@@ -57,7 +57,7 @@ def schema_definition_helper(spec, name, schema, **kwargs):
     return swagger.schema2jsonschema(schema_instance, spec=spec, name=name)
 
 
-def schema_path_helper(spec, view, **kwargs):
+def schema_path_helper(spec, view=None, **kwargs):
     """Path helper that allows passing a Schema as a response. Responses can be
     defined in a view's docstring.
     ::
@@ -119,8 +119,8 @@ def schema_path_helper(spec, view, **kwargs):
 
     """
     operations = (
-        load_operations_from_docstring(view.__doc__) or
-        kwargs.get('operations')
+        kwargs.get('operations') or
+        (view and load_operations_from_docstring(view.__doc__))
     )
     if not operations:
         return

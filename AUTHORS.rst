@@ -33,4 +33,4 @@ Contributors (chronological)
 - `@lamiskin <https://github.com/lamiskin>`_
 - Florian Scheffler `@nebularazer <https://github.com/nebularazer>`_
 - Vadim Radovel `@NightBlues <https://github.com/NightBlues>`_
-- Yoichi Nakayama `@yoichi <https://github.com/yoichi>`_
+- Yoichi NAKAYAMA `@yoichi <https://github.com/yoichi>`_

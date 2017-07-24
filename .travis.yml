@@ -18,3 +18,4 @@ deploy:
     secure: g/niD9lToPXGyU1U0pU/zS+dmg2V36EujVC6C1U/1UmpxBf6yQjuHgzbVVFfGi54PKxbbkzlrs1tf5o0kYpaym5sjr1mEXR/YeHXLO8HNLlOJTrJJNE9dvAcaisETK3iqlqaIsrQyi0AbHrTgEI0NDV6/tDfI5lrbsksaLkuRbU=
   on:
     tags: true
+  distributions: "sdist bdist_wheel"
