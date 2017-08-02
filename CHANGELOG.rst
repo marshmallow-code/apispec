@@ -1,6 +1,25 @@
 Changelog
 ---------
 
+0.23.0 (unreleased)
++++++++++++++++++++
+
+* Pass `operations` constructed by plugins to downstream marshmallow
+  plugin (:issue:`138`). Thanks :user:`yoichi`.
+
+0.22.3 (2017-07-16)
++++++++++++++++++++
+
+* Release wheel distribution.
+
+0.22.2 (2017-07-12)
++++++++++++++++++++
+
+Bug fixes:
+
+* [apispec.ext.marshmallow]: Properly handle callable ``default`` values
+  in output spec (:issue:`131`). Thanks :user:`NightBlues`.
+
 0.22.1 (2017-06-25)
 +++++++++++++++++++
 
