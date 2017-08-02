@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Flask plugin. Includes path helpers that allow you to pass a view
+"""Flask plugin. Includes a path helper that allows you to pass a view
 function to `add_path`. Inspects URL rules and view docstrings.
 
 Passing a view function::
