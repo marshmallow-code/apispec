@@ -152,7 +152,7 @@ Our OpenAPI spec now looks like this:
     # 'swagger': '2.0',
     # 'tags': []}
 
-If your API uses `method-based dispatching <http://flask.pocoo.org/docs/0.12/views/#method-based-dispatching>`_, the process is similar. Note that the method no longer needs to be included in the docstring, and that we add the path as a `method_view`.
+If your API uses `method-based dispatching <http://flask.pocoo.org/docs/0.12/views/#method-based-dispatching>`_, the process is similar. Note that the method no longer needs to be included in the docstring.
 
 .. code-block:: python
 
@@ -176,7 +176,7 @@ If your API uses `method-based dispatching <http://flask.pocoo.org/docs/0.12/vie
     app.test_request_context().push()
     method_view = GistApi.as_view('gist')
     app.add_url_rule("/gist", view_func=method_view)
-    spec.add_path(method_view=method_view)
+    spec.add_path(view=method_view)
     print(spec.to_dict()['paths'])
     # {'/gist': {'get': {'description': 'get a gist',
     #                    'responses': {200: {'schema': {'$ref': '#/definitions/Gist'}}}},

@@ -55,7 +55,7 @@ Passing a method view function::
     app.test_request_context().push()
     method_view = GistApi.as_view('gists')
     app.add_url_rule("/gists", view_func=method_view)
-    spec.add_path(method_view=method_view)
+    spec.add_path(view=method_view)
     print(spec.to_dict()['paths'])
     # {'/gists': {'get': {'responses': {200: {'schema': {'$ref': '#/definitions/Gist'}}}},
     #             'post': {},
@@ -72,6 +72,7 @@ except ImportError:
     from urlparse import urljoin
 
 from flask import current_app
+from flask.views import MethodView
 
 from apispec.compat import iteritems
 from apispec import Path
@@ -109,22 +110,16 @@ def path_from_view(spec, view, **kwargs):
     path = urljoin(app_root.rstrip('/') + '/', path.lstrip('/'))
     operations = utils.load_operations_from_docstring(view.__doc__)
     path = Path(path=path, operations=operations)
-    return path
-
-def path_from_method_view(spec, method_view, **kwargs):
-    """Path helper that allows passing a Flask MethodView view function."""
-    path = path_from_view(spec, method_view)
-    operations = {}
-    for method in method_view.methods:
-        method_name = method.lower()
-        view = getattr(method_view.view_class, method_name)
-        docstring_yaml = utils.load_yaml_from_docstring(view.__doc__)
-        operations[method_name] = docstring_yaml or dict()
-
-    path.operations.update(operations)
+    if hasattr(view, 'view_class') and issubclass(view.view_class, MethodView):
+        operations = {}
+        for method in view.methods:
+            method_name = method.lower()
+            method = getattr(view.view_class, method_name)
+            docstring_yaml = utils.load_yaml_from_docstring(method.__doc__)
+            operations[method_name] = docstring_yaml or dict()
+        path.operations.update(operations)
     return path
 
 def setup(spec):
     """Setup for the plugin."""
     spec.register_path_helper(path_from_view)
-    spec.register_path_helper(path_from_method_view)
