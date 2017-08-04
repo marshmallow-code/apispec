@@ -87,6 +87,33 @@ class TestOperationHelper:
         assert post['responses'][201]['schema'] == swagger.schema2jsonschema(PetSchema)
         assert post['responses'][201]['description'] == 'successful operation'
 
+    def test_schema_in_docstring_expand_parameters(self, spec):
+
+        def pet_view():
+            """Not much to see here.
+
+            ---
+            get:
+                parameters:
+                    - in: query
+                      schema: tests.schemas.PetSchema
+            post:
+                parameters:
+                    - in: body
+                      schema: tests.schemas.PetSchema
+            """
+            return '...'
+
+        spec.add_path(path='/pet', view=pet_view)
+        p = spec._paths['/pet']
+        assert 'get' in p
+        get = p['get']
+        assert 'parameters' in get
+        assert get['parameters'] == swagger.schema2parameters(PetSchema, default_in='query')
+        post = p['post']
+        assert 'parameters' in post
+        assert post['parameters'] == swagger.schema2parameters(PetSchema, default_in='body')
+
     def test_schema_in_docstring_uses_ref_if_available(self, spec):
         spec.definition('Pet', schema=PetSchema)
 
@@ -107,6 +134,36 @@ class TestOperationHelper:
         op = p['get']
         assert 'responses' in op
         assert op['responses'][200]['schema']['$ref'] == '#/definitions/Pet'
+
+    def test_schema_in_docstring_uses_ref_in_parameters_if_available(self, spec):
+        spec.definition('Pet', schema=PetSchema)
+
+        def pet_view():
+            """Not much to see here.
+
+            ---
+            get:
+                parameters:
+                    - in: query
+                      schema: tests.schemas.PetSchema
+            post:
+                parameters:
+                    - in: body
+                      schema: tests.schemas.PetSchema
+            """
+            return '...'
+
+        spec.add_path(path='/pet', view=pet_view)
+        p = spec._paths['/pet']
+        assert 'get' in p
+        get = p['get']
+        assert 'parameters' in get
+        for parameter in get['parameters']:
+            assert 'schema' not in parameter
+        post = p['post']
+        assert 'parameters' in post
+        assert len(post['parameters']) == 1
+        assert post['parameters'][0]['schema']['$ref'] == '#/definitions/Pet'
 
     def test_schema_array_in_docstring_uses_ref_if_available(self, spec):
         spec.definition('Pet', schema=PetSchema)
