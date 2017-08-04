@@ -36,3 +36,4 @@ Contributors (chronological)
 - Yoichi NAKAYAMA `@yoichi <https://github.com/yoichi>`_
 - Douglas Anderson `@djanderson <https://github.com/djanderson>`_
 - Marat Sharafutdinov `@decaz <https://github.com/decaz>`_
+- Daniel Radetsky `@dradetsky <https://github.com/dradetsky>`_
