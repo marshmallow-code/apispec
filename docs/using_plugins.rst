@@ -192,7 +192,7 @@ schemas with custom fields, use the
 
     from marshmallow.fields import Integer
 
-    @map_to_swagger_field(Integer):
+    @map_to_swagger_field(Integer)
     class MyCustomFieldThatsKindaLikeAnInteger(Integer):
         ...
 
