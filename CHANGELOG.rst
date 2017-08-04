@@ -1,11 +1,16 @@
 Changelog
 ---------
 
-0.23.0 (unreleased)
+0.23.0 (2017-08-03)
 +++++++++++++++++++
 
 * Pass `operations` constructed by plugins to downstream marshmallow
   plugin (:issue:`138`). Thanks :user:`yoichi`.
+* [apispec.ext.marshmallow] Generate parameter specification from marshmallow Schemas (:issue:`127`).
+  Thanks :user:`ewalker11` for the suggestion thanks :user:`yoichi` for the PR.
+* [apispec.ext.flask] Add support for Flask MethodViews (:issue:`85`,
+  :issue:`125`). Thanks :user:`lafrech` and :user:`boosh` for the
+  suggestion. Thanks :user:`djanderson` and :user:`yoichi` for the PRs.
 
 0.22.3 (2017-07-16)
 +++++++++++++++++++
