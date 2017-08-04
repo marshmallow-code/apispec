@@ -34,3 +34,4 @@ Contributors (chronological)
 - Florian Scheffler `@nebularazer <https://github.com/nebularazer>`_
 - Vadim Radovel `@NightBlues <https://github.com/NightBlues>`_
 - Yoichi NAKAYAMA `@yoichi <https://github.com/yoichi>`_
+- Daniel Radetsky `@dradetsky <https://github.com/dradetsky>`_
