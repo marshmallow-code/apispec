@@ -89,7 +89,7 @@ def _observed_name(field, name):
 
 def _get_json_type_for_field(field):
     if hasattr(type(field), CUSTOM_FIELD_MAPPING_ATTR):
-        json_type, fmt = getattr(type(field), CUSTOM_FIELD_MAPPING_ATTR)
+        json_type, fmt = getattr(field, CUSTOM_FIELD_MAPPING_ATTR)
     else:
         json_type, fmt = FIELD_MAPPING.get(type(field), ('string', None))
     return json_type, fmt
