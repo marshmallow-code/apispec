@@ -48,6 +48,11 @@ class TestCustomField:
         class CustomNameB(Field):
             pass
 
+        with pytest.raises(TypeError):
+            @swagger.map_to_swagger_field('integer')
+            class BadCustomField(Field):
+                pass
+
         class CustomPetASchema(PetSchema):
             name = CustomNameA()
 
