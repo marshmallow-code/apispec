@@ -58,7 +58,7 @@ def map_to_swagger_field(*args):
     elif len(args) == 2:
         swagger_type_field = args
     else:
-        raise ArgumentError('pass core marshmallow field type or (type, fmt) pair')
+        raise TypeError('Pass core marshmallow field type or (type, fmt) pair')
 
     def inner(field_type):
         setattr(field_type, CUSTOM_FIELD_MAPPING_ATTR, swagger_type_field)
