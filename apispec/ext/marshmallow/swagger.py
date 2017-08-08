@@ -41,7 +41,7 @@ FIELD_MAPPING = {
     marshmallow.fields.List: ('array', None),
 }
 
-CUSTOM_FIELD_MAPPING_ATTR = '__custom_swagger_field_mapping'
+CUSTOM_FIELD_MAPPING_ATTR = '__swagger_field_mapping'
 
 
 def map_to_swagger_field(*args):
