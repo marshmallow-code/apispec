@@ -35,3 +35,4 @@ Contributors (chronological)
 - Vadim Radovel `@NightBlues <https://github.com/NightBlues>`_
 - Yoichi NAKAYAMA `@yoichi <https://github.com/yoichi>`_
 - Douglas Anderson `@djanderson <https://github.com/djanderson>`_
+- Marat Sharafutdinov `@decaz <https://github.com/decaz>`_

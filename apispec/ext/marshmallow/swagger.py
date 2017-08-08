@@ -400,7 +400,8 @@ def property2parameter(prop, name='body', required=False, multiple=False, locati
     :raise: TranslationError if arg object cannot be translated to a Parameter Object schema.
     :rtype: dict, a Parameter Object
     """
-    swagger_location = __location_map__.get(location, default_in)
+    swagger_default_in = __location_map__.get(default_in, default_in)
+    swagger_location = __location_map__.get(location, swagger_default_in)
     ret = {
         'in': swagger_location,
         'required': required,
@@ -527,6 +528,7 @@ __location_map__ = {
     'querystring': 'query',
     'json': 'body',
     'headers': 'header',
+    'cookies': 'cookie',
     'form': 'formData',
     'files': 'formData',
 }
