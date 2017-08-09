@@ -44,7 +44,7 @@ FIELD_MAPPING = {
 CUSTOM_FIELD_MAPPING_ATTR = '__swagger_field_mapping'
 
 
-def map_to_swagger_field(*args):
+def map_to_swagger_type(*args):
     """
     decorator to set mapping for custom fields.
 

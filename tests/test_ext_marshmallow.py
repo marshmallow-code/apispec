@@ -40,16 +40,16 @@ class TestCustomField:
 
     def test_can_use_custom_field_decorator(self, spec):
 
-        @swagger.map_to_swagger_field(DateTime)
+        @swagger.map_to_swagger_type(DateTime)
         class CustomNameA(Field):
             pass
 
-        @swagger.map_to_swagger_field('integer', 'int32')
+        @swagger.map_to_swagger_type('integer', 'int32')
         class CustomNameB(Field):
             pass
 
         with pytest.raises(TypeError):
-            @swagger.map_to_swagger_field('integer')
+            @swagger.map_to_swagger_type('integer')
             class BadCustomField(Field):
                 pass
 
