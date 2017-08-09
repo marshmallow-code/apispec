@@ -1,6 +1,15 @@
 Changelog
 ---------
 
+0.23.1 (2017-08-08)
++++++++++++++++++++
+
+Bug fixes:
+
+* [apispec.ext.marshmallow]: Fix swagger location mapping for
+  ``default_in`` param in `property2parameter` (:issue:`142`). Thanks
+  :user:`decaz`.
+
 0.23.0 (2017-08-03)
 +++++++++++++++++++
 
