@@ -1,6 +1,16 @@
 Changelog
 ---------
 
+0.24.0 (2017-08-15)
++++++++++++++++++++
+
+Features:
+
+* [apispec.ext.marshmallow]: Add ``swagger.map_to_swagger_field``
+  decorator to support custom field classes (:issue:`120`). Thanks
+  :user:`frol` for the suggestion and thanks :user:`dradetsky` for the
+  PR.
+
 0.23.1 (2017-08-08)
 +++++++++++++++++++
 
