@@ -46,12 +46,22 @@ CUSTOM_FIELD_MAPPING_ATTR = '__swagger_field_mapping'
 
 def map_to_swagger_type(*args):
     """
-    decorator to set mapping for custom fields.
+    Decorator to set mapping for custom fields.
 
-    args can be:
+    ``*args`` can be:
 
+    - a pair of the form ``(type, format)``
     - a core marshmallow field type (in which case we reuse that type's mapping)
-    - a pair of string|None
+
+    Examples: ::
+
+        @swagger.map_to_swagger_type('string', 'uuid')
+        class MyCustomField(Integer):
+            # ...
+
+        @swagger.map_to_swagger_type(Integer)  # will map to ('integer', 'int32')
+        class MyCustomFieldThatsKindaLikeAnInteger(Integer):
+            # ...
     """
     if len(args) == 1 and args[0] in FIELD_MAPPING:
         swagger_type_field = FIELD_MAPPING[args[0]]

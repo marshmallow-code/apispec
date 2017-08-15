@@ -194,22 +194,24 @@ If your API uses `method-based dispatching <http://flask.pocoo.org/docs/0.12/vie
     #            'post': {}}}
     #
 
-Note that by default, apispec only knows how to set the type of
+By default, apispec only knows how to set the type of
 built-in marshmallow fields. If you want to generate definitions for
 schemas with custom fields, use the
 `apispec.ext.marshmallow.swagger.map_to_swagger_type` decorator:
 
 .. code-block:: python
 
+    from apispec.ext.marshmallow import swagger
     from marshmallow.fields import Integer
 
-    @map_to_swagger_type(Integer)
-    class MyCustomFieldThatsKindaLikeAnInteger(Integer):
-        ...
+    @swagger.map_to_swagger_type('string', 'uuid')
+    class MyCustomField(Integer):
+        # ...
 
-    @map_to_swagger_type('string', 'uuid')
-    class MyOtherCustomField(Integer):
-        ...
+    @swagger.map_to_swagger_type(Integer)  # will map to ('integer', 'int32')
+    class MyCustomFieldThatsKindaLikeAnInteger(Integer):
+        # ...
+
 
 
 Next Steps
