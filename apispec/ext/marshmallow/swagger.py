@@ -41,6 +41,32 @@ FIELD_MAPPING = {
     marshmallow.fields.List: ('array', None),
 }
 
+CUSTOM_FIELD_MAPPING_ATTR = '__swagger_field_mapping'
+
+
+def map_to_swagger_type(*args):
+    """
+    decorator to set mapping for custom fields.
+
+    args can be:
+
+    - a core marshmallow field type (in which case we reuse that type's mapping)
+    - a pair of string|None
+    """
+    if len(args) == 1 and args[0] in FIELD_MAPPING:
+        swagger_type_field = FIELD_MAPPING[args[0]]
+    elif len(args) == 2:
+        swagger_type_field = args
+    else:
+        raise TypeError('Pass core marshmallow field type or (type, fmt) pair')
+
+    def inner(field_type):
+        setattr(field_type, CUSTOM_FIELD_MAPPING_ATTR, swagger_type_field)
+
+        return field_type
+
+    return inner
+
 
 class OrderedLazyDict(LazyDict, OrderedDict):
     pass
@@ -62,7 +88,10 @@ def _observed_name(field, name):
 
 
 def _get_json_type_for_field(field):
-    json_type, fmt = FIELD_MAPPING.get(type(field), ('string', None))
+    if hasattr(field, CUSTOM_FIELD_MAPPING_ATTR):
+        json_type, fmt = getattr(field, CUSTOM_FIELD_MAPPING_ATTR)
+    else:
+        json_type, fmt = FIELD_MAPPING.get(type(field), ('string', None))
     return json_type, fmt
 
 

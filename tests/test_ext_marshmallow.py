@@ -2,6 +2,8 @@
 import pytest
 import json
 
+from marshmallow.fields import Field, DateTime
+
 from apispec import APISpec
 from apispec.ext.marshmallow import swagger
 from .schemas import PetSchema, AnalysisSchema, SampleSchema, RunSchema, SelfReferencingSchema,\
@@ -32,6 +34,47 @@ class TestDefinitionHelper:
 
         assert props['id']['type'] == 'integer'
         assert props['name']['type'] == 'string'
+
+
+class TestCustomField:
+
+    def test_can_use_custom_field_decorator(self, spec):
+
+        @swagger.map_to_swagger_type(DateTime)
+        class CustomNameA(Field):
+            pass
+
+        @swagger.map_to_swagger_type('integer', 'int32')
+        class CustomNameB(Field):
+            pass
+
+        with pytest.raises(TypeError):
+            @swagger.map_to_swagger_type('integer')
+            class BadCustomField(Field):
+                pass
+
+        class CustomPetASchema(PetSchema):
+            name = CustomNameA()
+
+        class CustomPetBSchema(PetSchema):
+            name = CustomNameB()
+
+        spec.definition('Pet', schema=PetSchema)
+        spec.definition('CustomPetA', schema=CustomPetASchema)
+        spec.definition('CustomPetB', schema=CustomPetBSchema)
+
+        props_0 = spec._definitions['Pet']['properties']
+        props_a = spec._definitions['CustomPetA']['properties']
+        props_b = spec._definitions['CustomPetB']['properties']
+
+        assert props_0['name']['type'] == 'string'
+        assert 'format' not in props_0['name']
+
+        assert props_a['name']['type'] == 'string'
+        assert props_a['name']['format'] == 'date-time'
+
+        assert props_b['name']['type'] == 'integer'
+        assert props_b['name']['format'] == 'int32'
 
 class TestOperationHelper:
 
