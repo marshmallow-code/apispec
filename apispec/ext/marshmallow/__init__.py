@@ -147,13 +147,16 @@ def resolve_parameters(spec, parameters):
     return resolved
 
 
-def resolve_schema_dict(spec, schema, dump=True):
+def resolve_schema_dict(spec, schema, dump=True, use_instances=False):
     if isinstance(schema, dict):
         if (schema.get('type') == 'array' and 'items' in schema):
             schema['items'] = resolve_schema_dict(spec, schema['items'])
         return schema
     plug = spec.plugins[NAME] if spec else {}
-    schema_cls = resolve_schema_cls(schema)
+    if isinstance(schema, marshmallow.Schema) and use_instances:
+        schema_cls = schema
+    else:
+        schema_cls = resolve_schema_cls(schema)
     if schema_cls in plug.get('refs', {}):
         ref_schema = {'$ref': '#/definitions/{0}'.format(plug['refs'][schema_cls])}
         if getattr(schema, 'many', False):
