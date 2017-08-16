@@ -60,10 +60,7 @@ def load_yaml_from_docstring(docstring):
 
     yaml_string = "\n".join(split_lines[cut_from:])
     yaml_string = dedent(yaml_string)
-    try:
-        return yaml.load(yaml_string)
-    except yaml.YAMLError:
-        return None
+    return yaml.load(yaml_string)
 
 PATH_KEYS = set([
     'get',
