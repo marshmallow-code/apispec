@@ -1,6 +1,20 @@
 Changelog
 ---------
 
+0.25.0 (2017-08-15)
++++++++++++++++++++
+
+Features:
+
+* [apispec.ext.marshmallow]: Add ``use_instances`` parameter to
+  ``fields2paramters`` (:issue:`144`). Thanks :user:`theirix`.
+
+Other changes:
+
+* Don't swallow ``YAMLError`` when YAML parsing fails
+  (:issue:`135`). Thanks :user:`djanderson` for the suggestion
+  and the PR.
+
 0.24.0 (2017-08-15)
 +++++++++++++++++++
 
