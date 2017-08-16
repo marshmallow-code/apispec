@@ -360,7 +360,8 @@ def schema2parameters(schema, **kwargs):
 
 
 def fields2parameters(fields, schema=None, spec=None, use_refs=True,
-                      default_in='body', name='body', required=False):
+                      default_in='body', name='body', required=False,
+                      use_instances=False):
     """Return an array of OpenAPI parameters given a mapping between field names and
     :class:`Field <marshmallow.Field>` objects. If `default_in` is "body", then return an array
     of a single parameter; else return an array of a parameter for each included field in
@@ -372,7 +373,7 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True,
         if schema is not None:
             # Prevent circular import
             from apispec.ext.marshmallow import resolve_schema_dict
-            prop = resolve_schema_dict(spec, schema, dump=False)
+            prop = resolve_schema_dict(spec, schema, dump=False, use_instances=use_instances)
         else:
             prop = fields2jsonschema(fields, spec=spec, use_refs=use_refs, dump=False)
 
