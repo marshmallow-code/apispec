@@ -150,7 +150,7 @@ def resolve_parameters(spec, parameters):
 def resolve_schema_dict(spec, schema, dump=True, use_instances=False):
     if isinstance(schema, dict):
         if (schema.get('type') == 'array' and 'items' in schema):
-            schema['items'] = resolve_schema_dict(spec, schema['items'])
+            schema['items'] = resolve_schema_dict(spec, schema['items'], use_instances=use_instances)
         return schema
     plug = spec.plugins[NAME] if spec else {}
     if isinstance(schema, marshmallow.Schema) and use_instances:
