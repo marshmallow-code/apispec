@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+0.25.1 (2017-08-23)
++++++++++++++++++++
+
+Bug fixes:
+
+* [apispec.ext.marshmallow]: Fix ``use_instances`` when ``many=True`` is
+  set (:issue:`148`). Thanks :user:`theirix`.
+
 0.25.0 (2017-08-15)
 +++++++++++++++++++
 
