@@ -68,13 +68,11 @@ Example Application
         pet = get_random_pet()
         return jsonify(PetSchema().dump(pet).data)
 
-    ctx = app.test_request_context()
-    ctx.push()
-
     # Register entities and paths
     spec.definition('Category', schema=CategorySchema)
     spec.definition('Pet', schema=PetSchema)
-    spec.add_path(view=random_pet)
+    with app.test_request_context():
+        spec.add_path(view=random_pet)
 
 
 Generated OpenAPI Spec
