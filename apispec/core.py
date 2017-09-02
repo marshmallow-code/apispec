@@ -108,6 +108,7 @@ class APISpec(object):
         self.plugins = {}
         self._definition_helpers = []
         self._path_helpers = []
+        self._operation_resolvers = []
         # {'get': {200: [my_helper]}}
         self._response_helpers = {}
 
@@ -183,6 +184,9 @@ class APISpec(object):
                 ret.path = normalize_path(ret.path)
                 path.update(ret)
                 operations = ret.operations
+        if operations:
+            for func in self._operation_resolvers:
+                func(self, path=path, operations=operations, **kwargs)
 
         if not path.path:
             raise APISpecError('Path template is not specified')
@@ -289,6 +293,17 @@ class APISpec(object):
         The helper may define any named arguments in its signature.
         """
         self._path_helpers.append(func)
+
+    def register_operation_resolver(self, func):
+        """Register a new operation resolver. The helper **must** meet the following conditions:
+
+        - Receive the `APISpec` instance as the first argument.
+        - Receive ``operations`` as a keyword argument.
+        - Include ``**kwargs`` in signature.
+
+        The helper may define any named arguments in its signature.
+        """
+        self._operation_resolvers.append(func)
 
     def register_response_helper(self, func, method, status_code):
         """Register a new response helper. The helper **must** meet the following conditions:
