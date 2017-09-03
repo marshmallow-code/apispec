@@ -234,7 +234,7 @@ class TestOperationHelper:
             'items': {'$ref': '#/definitions/Pet'}
         }
 
-    def test_non_http_method_in_docstring(self, spec):
+    def test_other_than_http_method_in_docstring(self, spec):
         def pet_view():
             """Not much to see here.
 
