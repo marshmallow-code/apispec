@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+0.25.2 (2017-09-05)
++++++++++++++++++++
+
+Bug fixes:
+
+* [apispec.ext.marshmallow]: Avoid AttributeError when passing non-dict
+  items to path objects (:issue:`151`). Thanks :user:`yoichi`.
+
 0.25.1 (2017-08-23)
 +++++++++++++++++++
 
