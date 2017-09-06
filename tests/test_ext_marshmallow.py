@@ -234,6 +234,32 @@ class TestOperationHelper:
             'items': {'$ref': '#/definitions/Pet'}
         }
 
+    def test_other_than_http_method_in_docstring(self, spec):
+        def pet_view():
+            """Not much to see here.
+
+            ---
+            x-extension: value
+            get:
+                responses:
+                    200:
+                        schema:
+                            type: array
+                            items: tests.schemas.PetSchema
+            foo:
+                description: not a valid operation
+                responses:
+                    200:
+                        description: more junk
+            """
+            return '...'
+
+        spec.add_path(path='/pet', view=pet_view)
+        p = spec._paths['/pet']
+        assert 'get' in p
+        assert 'x-extension' in p
+        assert 'foo' not in p
+
     def test_schema_global_state_untouched_2json(self):
         assert RunSchema._declared_fields['sample']._Nested__schema is None
         data = swagger.schema2jsonschema(RunSchema)

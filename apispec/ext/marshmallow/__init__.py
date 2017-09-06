@@ -126,6 +126,8 @@ def schema_path_helper(spec, view=None, **kwargs):
         return
     operations = operations.copy()
     for operation in operations.values():
+        if not isinstance(operation, dict):
+            continue
         if 'parameters' in operation:
             operation['parameters'] = resolve_parameters(spec, operation['parameters'])
         for response in operation.get('responses', {}).values():
