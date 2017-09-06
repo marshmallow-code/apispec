@@ -17,7 +17,6 @@ to `add_path`.
         '''
         return 'detail for gist {}'.format(gist_id)
 
-    app.test_request_context().push()
     spec.add_path(view=gist_detail)
     print(spec.to_dict()['paths'])
     # {'/gists/{gist_id}': {'get': {'responses': {200: {'schema': {'$ref': '#/definitions/Gist'}}}}}}

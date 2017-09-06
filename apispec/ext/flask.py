@@ -21,8 +21,8 @@ Passing a view function::
         '''
         return 'detail for gist {}'.format(gist_id)
 
-    app.test_request_context().push()
-    spec.add_path(view=gist_detail)
+    with app.test_request_context():
+        spec.add_path(view=gist_detail)
     print(spec.to_dict()['paths'])
     # {'/gists/{gist_id}': {'get': {'responses': {200: {'schema': {'$ref': '#/definitions/Gist'}}}},
     #                  'x-extension': 'metadata'}}
@@ -52,10 +52,10 @@ Passing a method view function::
         def post(self):
            pass
 
-    app.test_request_context().push()
     method_view = GistApi.as_view('gists')
     app.add_url_rule("/gists", view_func=method_view)
-    spec.add_path(view=method_view)
+    with app.test_request_context():
+        spec.add_path(view=method_view)
     print(spec.to_dict()['paths'])
     # {'/gists': {'get': {'responses': {200: {'schema': {'$ref': '#/definitions/Gist'}}}},
     #             'post': {},

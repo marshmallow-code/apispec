@@ -135,10 +135,8 @@ The Flask plugin allows us to pass this view to `spec.add_path <apispec.APISpec.
 
     # Since add_path inspects the view and its route,
     # we need to be in a Flask request context
-    ctx = app.test_request_context()
-    ctx.push()
-
-    spec.add_path(view=gist_detail)
+    with app.test_request_context():
+        spec.add_path(view=gist_detail)
 
 
 Our OpenAPI spec now looks like this:
@@ -184,10 +182,10 @@ If your API uses `method-based dispatching <http://flask.pocoo.org/docs/0.12/vie
         def post(self):
             pass
 
-    app.test_request_context().push()
     method_view = GistApi.as_view('gist')
     app.add_url_rule("/gist", view_func=method_view)
-    spec.add_path(view=method_view)
+    with app.test_request_context():
+        spec.add_path(view=method_view)
     print(spec.to_dict()['paths'])
     # {'/gist': {'get': {'description': 'get a gist',
     #                    'responses': {200: {'schema': {'$ref': '#/definitions/Gist'}}}},
