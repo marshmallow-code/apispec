@@ -390,21 +390,28 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True,
     exclude_fields = getattr(getattr(schema, 'Meta', None), 'exclude', [])
     dump_only_fields = getattr(getattr(schema, 'Meta', None), 'dump_only', [])
 
-    return [
-        field2parameter(
-            field_obj,
-            name=_observed_name(field_obj, field_name),
-            spec=spec,
-            use_refs=use_refs,
-            default_in=default_in
-        )
-            for field_name, field_obj in iteritems(fields)
-            if not (
-                field_name in exclude_fields or
-                field_obj.dump_only or
-                field_name in dump_only_fields
-            )
-    ]
+    parameters = []
+    body_param = None
+    for field_name, field_obj in iteritems(fields):
+        if (field_name in exclude_fields
+            or field_obj.dump_only
+            or field_name in dump_only_fields):
+            continue
+        param = field2parameter(field_obj,
+                                name=_observed_name(field_obj, field_name),
+                                spec=spec,
+                                use_refs=use_refs,
+                                default_in=default_in)
+        if param['in'] == 'body' and body_param is not None:
+            body_param['schema']['properties'].update(param['schema']['properties'])
+            required_fields = param['schema'].get('required', [])
+            if required_fields:
+                body_param['schema']['required'] += required_fields
+        else:
+            if param['in'] == 'body':
+                body_param = param
+            parameters.append(param)
+    return parameters
 
 
 def field2parameter(field, name='body', spec=None, use_refs=True, default_in='body'):
@@ -444,18 +451,20 @@ def property2parameter(prop, name='body', required=False, multiple=False, locati
     swagger_location = __location_map__.get(location, swagger_default_in)
     ret = {
         'in': swagger_location,
-        'required': required,
         'name': name,
     }
 
     if swagger_location == 'body':
+        ret['required'] = False
         ret['name'] = 'body'
-        ret['schema'] = {}
-        schema_props = {}
-        if name:
-            schema_props[name] = prop
-        ret['schema']['properties'] = schema_props
+        ret['schema'] = {
+            'type': 'object',
+            'properties': {name: prop} if name else {},
+        }
+        if name and required:
+            ret['schema']['required'] = [name]
     else:
+        ret['required'] = required
         if multiple:
             ret['collectionFormat'] = 'multi'
         ret.update(prop)

@@ -95,6 +95,21 @@ class TestMarshmallowFieldToSwagger:
         res = swagger.fields2parameters(field_dict, default_in='headers')
         assert res[0]['in'] == 'query'
 
+    def test_fields_with_multiple_json_locations(self):
+        field_dict = {'field1': fields.Str(location='json', required=True),
+                      'field2': fields.Str(location='json', required=True),
+                      'field3': fields.Str(location='json')}
+        res = swagger.fields2parameters(field_dict, default_in=None)
+        assert len(res) == 1
+        assert res[0]['in'] == 'body'
+        assert res[0]['required'] is False
+        assert 'field1' in res[0]['schema']['properties']
+        assert 'field2' in res[0]['schema']['properties']
+        assert 'field3' in res[0]['schema']['properties']
+        assert 'required' in res[0]['schema']
+        assert res[0]['schema']['required'] == ['field1', 'field2']
+        assert res == swagger.fields2parameters(field_dict, default_in='body')
+
     def test_fields2parameters_does_not_modify_metadata(self):
         field_dict = {'field': fields.Str(location='querystring')}
         res = swagger.fields2parameters(field_dict, default_in='headers')
@@ -344,7 +359,7 @@ class TestMarshmallowSchemaToParameters:
         assert res['collectionFormat'] == 'multi'
 
     def test_field_required(self):
-        field = fields.Str(required=True)
+        field = fields.Str(required=True, location='query')
         res = swagger.field2parameter(field, name='field')
         assert res['required'] is True
 
