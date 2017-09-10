@@ -107,7 +107,9 @@ class TestMarshmallowFieldToSwagger:
         assert 'field2' in res[0]['schema']['properties']
         assert 'field3' in res[0]['schema']['properties']
         assert 'required' in res[0]['schema']
-        assert res[0]['schema']['required'] == ['field1', 'field2']
+        assert len(res[0]['schema']['required']) == 2
+        assert 'field1' in res[0]['schema']['required']
+        assert 'field2' in res[0]['schema']['required']
         assert res == swagger.fields2parameters(field_dict, default_in='body')
 
     def test_fields2parameters_does_not_modify_metadata(self):
