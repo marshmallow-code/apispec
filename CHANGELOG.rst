@@ -1,6 +1,16 @@
 Changelog
 ---------
 
+0.25.3 (2017-09-27)
++++++++++++++++++++
+
+Bug fixes:
+
+* [apispec.ext.marshmallow]: Correctly handle multiple fields with
+  ``location=json`` (:issue:`75`). Thanks :user:`shaicantor` for
+  reporting and thanks :user:`yoichi` for the patch.
+
+
 0.25.2 (2017-09-05)
 +++++++++++++++++++
 
