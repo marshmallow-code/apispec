@@ -154,6 +154,11 @@ class TestMarshmallowFieldToSwagger:
         res = swagger.field2property(field)
         assert set(res['enum']) == {'freddie', 'brian', 'john'}
 
+    def test_field_with_equal(self):
+        field = fields.Str(validate=validate.Equal('only choice'))
+        res = swagger.field2property(field)
+        assert res['enum'] == ['only choice']
+
     def test_only_allows_valid_properties_in_metadata(self):
         field = fields.Str(
             default='foo',
