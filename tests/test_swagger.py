@@ -128,6 +128,9 @@ class TestMarshmallowFieldToSwagger:
         field_dict = {'field': fields.Str()}
         res = swagger.fields2parameters(field_dict, default_in='headers')
         assert res[0]['in'] == 'header'
+        field_dict = {'field': fields.Str()}
+        res = swagger.fields2parameters(field_dict, default_in='match_info')
+        assert res[0]['in'] == 'path'
 
     def test_fields_with_dump_only(self):
         class UserSchema(Schema):

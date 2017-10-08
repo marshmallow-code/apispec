@@ -12,13 +12,33 @@ build_dir = os.path.join(docs_dir, '_build')
 def test(ctx):
     flake(ctx)
     import pytest
-    errcode = pytest.main(['tests'])
+    args = []
+
+    ignores = []
+    if sys.version_info < (3, 5, 0):
+        ignores += [
+            os.path.join('tests', 'test_ext_aiohttp.py')
+        ]
+    if ignores:
+        for each in ignores:
+            args.append('--ignore={0}'.format(each))
+    errcode = pytest.main(args)
     sys.exit(errcode)
 
 @task
 def flake(ctx):
     """Run flake8 on codebase."""
-    ctx.run('flake8 .', echo=True)
+    cmd = 'flake8 .'
+
+    excludes = []
+    if sys.version_info < (3, 5, 0):
+        excludes += [
+            os.path.join('tests', 'test_ext_aiohttp.py'),
+        ]
+    if excludes:
+        cmd += ' --exclude={0}'.format(','.join(excludes))
+
+    ctx.run(cmd, echo=True)
 
 @task
 def watch(ctx):

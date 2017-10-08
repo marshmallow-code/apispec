@@ -580,4 +580,6 @@ __location_map__ = {
     'cookies': 'cookie',
     'form': 'formData',
     'files': 'formData',
+    'path': 'path',
+    'match_info': 'path',
 }
