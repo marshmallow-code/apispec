@@ -406,7 +406,10 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True,
             body_param['schema']['properties'].update(param['schema']['properties'])
             required_fields = param['schema'].get('required', [])
             if required_fields:
-                body_param['schema']['required'] += required_fields
+                if 'required' not in body_param['schema']:
+                    body_param['schema']['required'] = required_fields
+                else:
+                    body_param['schema']['required'] += required_fields
         else:
             if param['in'] == 'body':
                 body_param = param
