@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+0.25.4 (2017-10-09)
++++++++++++++++++++
+
+Bug fixes:
+
+* [apispec.ext.marshmallow]: Fix swagger location mapping for ``default_in``
+  param in fields2parameters (:issue:`156`). Thanks :user:`decaz`.
+
 0.25.3 (2017-09-27)
 +++++++++++++++++++
 
