@@ -129,6 +129,15 @@ class TestMarshmallowFieldToSwagger:
         res = swagger.fields2parameters(field_dict, default_in='headers')
         assert res[0]['in'] == 'header'
 
+    def test_fields_default_location_mapping_if_schema_many(self):
+
+        class ExampleSchema(Schema):
+            id = fields.Int()
+
+        schema = ExampleSchema(many=True)
+        res = swagger.fields2parameters(schema.fields, schema=schema, default_in='json')
+        assert res[0]['in'] == 'body'
+
     def test_fields_with_dump_only(self):
         class UserSchema(Schema):
             name = fields.Str(dump_only=True)

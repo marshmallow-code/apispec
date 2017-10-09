@@ -369,7 +369,8 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True,
 
     https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
     """
-    if default_in == 'body':
+    swagger_default_in = __location_map__.get(default_in, default_in)
+    if swagger_default_in == 'body':
         if schema is not None:
             # Prevent circular import
             from apispec.ext.marshmallow import resolve_schema_dict
@@ -378,7 +379,7 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True,
             prop = fields2jsonschema(fields, spec=spec, use_refs=use_refs, dump=False)
 
         return [{
-            'in': default_in,
+            'in': swagger_default_in,
             'required': required,
             'name': name,
             'schema': prop,
