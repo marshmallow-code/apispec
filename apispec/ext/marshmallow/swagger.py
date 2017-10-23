@@ -112,15 +112,20 @@ def field2choices(field):
     :param Field field: A marshmallow field.
     :rtype: set
     """
-    validators = [
+    comparable = {
+        validator.comparable for validator in field.validators
+        if hasattr(validator, 'comparable')
+    }
+    if comparable:
+        return comparable
+
+    choices = [
         OrderedSet(validator.choices) for validator in field.validators
         if hasattr(validator, 'choices')
     ]
-    return (
-        functools.reduce(operator.and_, validators)
-        if validators
-        else None
-    )
+    if choices:
+        return functools.reduce(operator.and_, choices)
+
 
 def field2range(field):
     """Return the dictionary of swagger field attributes for a set of

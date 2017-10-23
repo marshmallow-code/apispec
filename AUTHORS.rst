@@ -38,3 +38,4 @@ Contributors (chronological)
 - Marat Sharafutdinov `@decaz <https://github.com/decaz>`_
 - Daniel Radetsky `@dradetsky <https://github.com/dradetsky>`_
 - Evgeny Seliverstov `@theirix <https://github.com/theirix>`_
+- Michael Bangert `@Bangertm <https://github.com/Bangertm>`_
