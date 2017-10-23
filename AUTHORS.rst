@@ -7,6 +7,7 @@ Leads
 
 - Steven Loria `@sloria <https://github.com/sloria>`_
 - Josh Carp `@jmcarp <https://github.com/jmcarp>`_
+- Yoichi NAKAYAMA `@yoichi <https://github.com/yoichi>`_
 
 Contributors (chronological)
 ============================
@@ -33,9 +34,9 @@ Contributors (chronological)
 - `@lamiskin <https://github.com/lamiskin>`_
 - Florian Scheffler `@nebularazer <https://github.com/nebularazer>`_
 - Vadim Radovel `@NightBlues <https://github.com/NightBlues>`_
-- Yoichi NAKAYAMA `@yoichi <https://github.com/yoichi>`_
 - Douglas Anderson `@djanderson <https://github.com/djanderson>`_
 - Marat Sharafutdinov `@decaz <https://github.com/decaz>`_
 - Daniel Radetsky `@dradetsky <https://github.com/dradetsky>`_
 - Evgeny Seliverstov `@theirix <https://github.com/theirix>`_
 - Michael Bangert `@Bangertm <https://github.com/Bangertm>`_
+- Bastien Sevajol `@buxx <https://github.com/buxx>`_

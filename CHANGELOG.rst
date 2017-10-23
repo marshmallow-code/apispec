@@ -1,6 +1,22 @@
 Changelog
 ---------
 
+0.26.0 (2017-10-23)
++++++++++++++++++++
+
+Features:
+
+* [apispec.ext.marshmallow]: Generate "enum" property with single entry
+  when the ``validate.Equal`` validator is used (:issue:`155`). Thanks
+  :user:`Bangertm` for the suggestion and PR.
+
+Bug fixes:
+
+* Allow OPTIONS to be documented (:issue:`162`). Thanks :user:`buxx` for
+  the PR.
+* Fix regression from 0.25.3 that caused a ``KeyError`` (:issue:`163`). Thanks
+  :user:`yoichi`.
+
 0.25.4 (2017-10-09)
 +++++++++++++++++++
 
