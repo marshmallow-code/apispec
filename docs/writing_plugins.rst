@@ -8,7 +8,7 @@ Helper Functions
 
 Plugins are comprised of "helper" functions that augment the behavior of `apispec.APISpec` methods.
 
-There are three types of helper functions:
+There are four types of helper functions:
 
 * Definition helpers
 * Path helpers
