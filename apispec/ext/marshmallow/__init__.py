@@ -185,4 +185,4 @@ def setup(spec):
     """Setup for the marshmallow plugin."""
     spec.register_definition_helper(schema_definition_helper)
     spec.register_path_helper(schema_path_helper)
-    spec.register_operation_resolver(schema_operation_resolver)
+    spec.register_operation_helper(schema_operation_resolver)
