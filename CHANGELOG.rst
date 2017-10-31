@@ -1,6 +1,19 @@
 Changelog
 ---------
 
+0.27.0 (2017-10-30)
++++++++++++++++++++
+
+Features:
+
+* [apispec.core]: Add ``register_operation_helper``.
+
+Bug fixes:
+
+* Order of plugins does not matter (:issue:`136`).
+
+Thanks :user:`yoichi` for these changes.
+
 0.26.0 (2017-10-23)
 +++++++++++++++++++
 
