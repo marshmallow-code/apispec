@@ -125,6 +125,10 @@ def schema_path_helper(spec, view=None, **kwargs):
     if not operations:
         return
     operations = operations.copy()
+    return Path(operations=operations)
+
+
+def schema_operation_resolver(spec, operations, **kwargs):
     for operation in operations.values():
         if not isinstance(operation, dict):
             continue
@@ -133,7 +137,6 @@ def schema_path_helper(spec, view=None, **kwargs):
         for response in operation.get('responses', {}).values():
             if 'schema' in response:
                 response['schema'] = resolve_schema_dict(spec, response['schema'])
-    return Path(operations=operations)
 
 
 def resolve_parameters(spec, parameters):
@@ -184,3 +187,4 @@ def setup(spec):
     """Setup for the marshmallow plugin."""
     spec.register_definition_helper(schema_definition_helper)
     spec.register_path_helper(schema_path_helper)
+    spec.register_operation_helper(schema_operation_resolver)

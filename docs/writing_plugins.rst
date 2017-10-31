@@ -8,10 +8,11 @@ Helper Functions
 
 Plugins are comprised of "helper" functions that augment the behavior of `apispec.APISpec` methods.
 
-There are three types of helper functions:
+There are four types of helper functions:
 
 * Definition helpers
 * Path helpers
+* Operation helpers
 * Response helpers
 
 Each helper function type modifies a different `apispec.APISpec` method. For example, path helpers modify `apispec.APISpec.add_path`.
@@ -97,6 +98,6 @@ To use the plugin:
 Next Steps
 ----------
 
-* To learn more about how to write helper functions, consult the :ref:`Core API docs <core_api>` for `register_definition_helper <apispec.APISpec.register_definition_helper>`, `register_path_helper <apispec.APISpec.register_path_helper>`, and `register_response_helper <apispec.APISpec.register_response_helper>`
+* To learn more about how to write helper functions, consult the :ref:`Core API docs <core_api>` for `register_definition_helper <apispec.APISpec.register_definition_helper>`, `register_path_helper <apispec.APISpec.register_path_helper>`, `register_operation_helper <apispec.APISpec.register_operation_helper>`, and `register_response_helper <apispec.APISpec.register_response_helper>`
 * View the source for apispec's bundled plugins, e.g. `apispec.ext.flask </_modules/apispec/ext/flask.html>`_
 * Check out some projects using apispec: https://github.com/marshmallow-code/apispec/wiki/Ecosystem
