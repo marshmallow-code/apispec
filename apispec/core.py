@@ -91,15 +91,25 @@ class APISpec(object):
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#infoObject
     :param \*\*dict options: Optional top-level keys
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
+    :param callable schema_name_resolver_callable: callable who generate the schema definition name
     """
 
-    def __init__(self, title, version, plugins=(), info=None, **options):
+    def __init__(
+        self,
+        title,
+        version,
+        plugins=(),
+        info=None,
+        schema_name_resolver_callable=None,
+        **options
+    ):
         self.info = {
             'title': title,
             'version': version,
         }
         self.info.update(info or {})
         self.options = options
+        self.schema_name_resolver_callable = schema_name_resolver_callable
         # Metadata
         self._definitions = {}
         self._parameters = {}
