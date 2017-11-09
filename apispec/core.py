@@ -91,7 +91,12 @@ class APISpec(object):
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#infoObject
     :param \*\*dict options: Optional top-level keys
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
-    :param callable schema_name_resolver_callable: callable who generate the schema definition name
+    :param callable schema_name_resolver_callable: callable who generate the
+        schema definition name. The schema will be given to this callable and
+        definition name must be returned by callable, ex:
+
+            def schema_name_resolver_callable(schema):
+                return schema.__name__
     """
 
     def __init__(
