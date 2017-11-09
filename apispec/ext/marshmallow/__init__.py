@@ -165,7 +165,7 @@ def resolve_schema_dict(spec, schema, dump=True, use_instances=False):
 
     # Auto reference schema if available
     if schema_cls not in plug.get('refs', {}):
-        if spec.schema_name_resolver_callable:
+        if spec and spec.schema_name_resolver_callable:
             definition_name = spec.schema_name_resolver_callable(
                 schema_cls)
             spec.definition(
