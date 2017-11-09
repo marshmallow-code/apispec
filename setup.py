@@ -34,7 +34,7 @@ def read(fname):
 
 setup(
     name='apispec',
-    version=__version__,
+    version='0.25.4-algoo',
     description='A pluggable API specification generator. Currently supports the '
                 'OpenAPI specification (f.k.a. Swagger 2.0).',
     long_description=read('README.rst'),
