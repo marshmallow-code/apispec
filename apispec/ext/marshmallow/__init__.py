@@ -167,7 +167,8 @@ def resolve_schema_dict(spec, schema, dump=True, use_instances=False):
     if schema_cls not in plug.get('refs', {}):
         if spec and spec.schema_name_resolver:
             definition_name = spec.schema_name_resolver(schema_cls)
-            spec.definition(definition_name, schema=schema)
+            if definition_name:
+                spec.definition(definition_name, schema=schema)
 
     if schema_cls in plug.get('refs', {}):
         ref_schema = {'$ref': '#/definitions/{0}'.format(plug['refs'][schema_cls])}

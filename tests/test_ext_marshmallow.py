@@ -74,6 +74,45 @@ class TestDefinitionHelper:
         assert 2 == len(spec._definitions)
         assert 'SampleSchema' in spec_dict['definitions']
 
+    @pytest.mark.parametrize('schema', [AnalysisSchema, AnalysisSchema()])
+    def test_resolve_schema_dict_auto_reference_return_none(self, schema):
+        resolver = lambda s: None  # this resolver return None
+        spec = APISpec(
+            title='Test auto-reference',
+            version='2.0',
+            description='Test auto-reference',
+            plugins=(
+                'apispec.ext.marshmallow',
+            ),
+            schema_name_resolver=resolver,
+        )
+        assert {} == spec._definitions
+
+        spec.definition('analysis', schema=schema)
+        spec.add_path('/test', operations={
+            'get': {
+                'responses': {
+                    '200': {
+                        'schema': {
+                            '$ref': '#/definitions/analysis'
+                        }
+                    }
+                }
+            }
+        })
+
+        # Other shemas not yet referenced
+        assert 1 == len(spec._definitions)
+
+        spec_dict = spec.to_dict()
+        assert spec_dict.get('definitions')
+        assert 'analysis' in spec_dict['definitions']
+        # Inspect/Read objects will not auto reference because resolver func
+        # return None
+        json.dumps(spec_dict)
+        # Other shema still not referenced
+        assert 1 == len(spec._definitions)
+
 
 class TestCustomField:
 
