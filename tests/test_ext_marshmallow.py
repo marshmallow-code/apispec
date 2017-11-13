@@ -45,7 +45,7 @@ class TestDefinitionHelper:
             plugins=(
                 'apispec.ext.marshmallow',
             ),
-            schema_name_resolver_callable=resolver,
+            schema_name_resolver=resolver,
         )
         assert {} == spec._definitions
 
