@@ -35,6 +35,45 @@ class TestDefinitionHelper:
         assert props['id']['type'] == 'integer'
         assert props['name']['type'] == 'string'
 
+    @pytest.mark.parametrize('schema', [AnalysisSchema, AnalysisSchema()])
+    def test_resolve_schema_dict_auto_reference(self, schema):
+        resolver = lambda s: s.__name__
+        spec = APISpec(
+            title='Test auto-reference',
+            version='2.0',
+            description='Test auto-reference',
+            plugins=(
+                'apispec.ext.marshmallow',
+            ),
+            schema_name_resolver_callable=resolver,
+        )
+        assert {} == spec._definitions
+
+        spec.definition('analysis', schema=schema)
+        spec.add_path('/test', operations={
+            'get': {
+                'responses': {
+                    '200': {
+                        'schema': {
+                            '$ref': '#/definitions/analysis'
+                        }
+                    }
+                }
+            }
+        })
+
+        # Other shemas not yet referenced
+        assert 1 == len(spec._definitions)
+
+        spec_dict = spec.to_dict()
+        assert spec_dict.get('definitions')
+        assert 'analysis' in spec_dict['definitions']
+        # Inspect/Read objects will trigger auto reference
+        json.dumps(spec_dict)
+        # Other shema is now referenced
+        assert 2 == len(spec._definitions)
+        assert 'SampleSchema' in spec_dict['definitions']
+
 
 class TestCustomField:
 
