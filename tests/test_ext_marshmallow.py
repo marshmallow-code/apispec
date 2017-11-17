@@ -63,17 +63,11 @@ class TestDefinitionHelper:
             }
         })
 
-        # Other shemas not yet referenced
-        assert 1 == len(spec._definitions)
+        assert 3 == len(spec._definitions)
 
-        spec_dict = spec.to_dict()
-        assert spec_dict.get('definitions')
-        assert 'analysis' in spec_dict['definitions']
-        # Inspect/Read objects will trigger auto reference
-        json.dumps(spec_dict)
-        # Other shema is now referenced
-        assert 2 == len(spec._definitions)
-        assert 'SampleSchema' in spec_dict['definitions']
+        assert 'analysis' in spec._definitions
+        assert 'SampleSchema' in spec._definitions
+        assert 'RunSchema' in spec._definitions
 
     @pytest.mark.parametrize('schema', [AnalysisSchema, AnalysisSchema()])
     def test_resolve_schema_dict_auto_reference_return_none(self, schema):

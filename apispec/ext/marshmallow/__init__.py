@@ -34,6 +34,55 @@ from . import swagger
 NAME = 'apispec.ext.marshmallow'
 
 
+def get_schema_instance(schema):
+    """Return schema instance for given schema (instance or class)
+    :param schema: instance or class of marshmallow.Schema
+    :return: schema instance of given schema (instance or class)
+    """
+    if isinstance(schema, type):
+        return schema()
+    else:
+        return schema
+
+
+def get_schema_class(schema):
+    """Return schema class for given schema (instance or class)
+    :param schema: instance or class of marshmallow.Schema
+    :return: schema class of given schema (instance or class)
+    """
+    if isinstance(schema, type):
+        return schema
+    else:
+        return type(schema)
+
+
+def inspect_schema_for_auto_referencing(spec, original_schema_instance):
+    """Parse given schema instance and reference eventual nested schemas
+    :param spec: apispec.core.APISpec instance
+    :param original_schema_instance: schema to parse
+    """
+    # spec.schema_name_resolver must be provided to use this function
+    assert spec.schema_name_resolver
+
+    plug = spec.plugins[NAME]
+    if 'refs' not in plug:
+        plug['refs'] = {}
+
+    for field_name, field in original_schema_instance.fields.items():
+        if isinstance(field, marshmallow.fields.Nested):
+            nested_schema_class = get_schema_class(field.schema)
+
+            if nested_schema_class not in plug['refs']:
+                definition_name = spec.schema_name_resolver(
+                    nested_schema_class,
+                )
+                if definition_name:
+                    spec.definition(
+                        definition_name,
+                        schema=nested_schema_class,
+                    )
+
+
 def schema_definition_helper(spec, name, schema, **kwargs):
     """Definition helper that allows using a marshmallow
     :class:`Schema <marshmallow.Schema>` to provide OpenAPI
@@ -42,19 +91,22 @@ def schema_definition_helper(spec, name, schema, **kwargs):
     :param type|Schema schema: A marshmallow Schema class or instance.
     """
 
-    if isinstance(schema, type):
-        schema_cls = schema
-        schema_instance = schema()
-    else:
-        schema_cls = type(schema)
-        schema_instance = schema
+    schema_cls = get_schema_class(schema)
+    schema_instance = get_schema_instance(schema)
 
     # Store registered refs, keyed by Schema class
     plug = spec.plugins[NAME]
     if 'refs' not in plug:
         plug['refs'] = {}
     plug['refs'][schema_cls] = name
-    return swagger.schema2jsonschema(schema_instance, spec=spec, name=name)
+
+    json_schema = swagger.schema2jsonschema(schema_instance, spec=spec, name=name)
+
+    # Auto reference schema if spec.schema_name_resolver
+    if spec and spec.schema_name_resolver:
+        inspect_schema_for_auto_referencing(spec, schema_instance)
+
+    return json_schema
 
 
 def schema_path_helper(spec, view=None, **kwargs):
@@ -162,13 +214,6 @@ def resolve_schema_dict(spec, schema, dump=True, use_instances=False):
         schema_cls = schema
     else:
         schema_cls = resolve_schema_cls(schema)
-
-    # Auto reference schema if available
-    if schema_cls not in plug.get('refs', {}):
-        if spec and spec.schema_name_resolver:
-            definition_name = spec.schema_name_resolver(schema_cls)
-            if definition_name:
-                spec.definition(definition_name, schema=schema)
 
     if schema_cls in plug.get('refs', {}):
         ref_schema = {'$ref': '#/definitions/{0}'.format(plug['refs'][schema_cls])}
