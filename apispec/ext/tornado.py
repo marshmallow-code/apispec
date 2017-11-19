@@ -87,6 +87,11 @@ def tornadopath2swagger(urlspec, method):
         if getattr(method, '__tornado_coroutine__', False):
             method = method.__wrapped__
         args = inspect.getargspec(method).args[1:]
+    valid_args = []
+        for arg in args:
+            if arg != 'args' and arg != 'kwargs':
+                valid_args.append(arg)
+        args = set(valid_args)
     params = tuple('{{{}}}'.format(arg) for arg in args)
     try:
         path_tpl = urlspec.matcher._path
