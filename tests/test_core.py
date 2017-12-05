@@ -295,6 +295,25 @@ class TestPath:
         assert p['parameters'][0] == {'$ref': '#/parameters/test_parameter'}
         assert route_spec['parameters'][0] == metadata['parameters']['test_parameter']
 
+    def test_add_parameters_3(self, spec_3):
+        route_spec = self.paths['/pet/{petId}']['get']
+
+        spec_3.add_parameter('test_parameter', 'path', **route_spec['parameters'][0])
+
+        spec_3.add_path(
+            path='/pet/{petId}',
+            operations=dict(
+                get=dict(
+                    parameters=['test_parameter'],
+                )
+            )
+        )
+
+        metadata = spec_3.to_dict()
+        p = spec_3._paths['/pet/{petId}']['get']
+
+        assert p['parameters'][0] == {'$ref': '#/components/parameters/test_parameter'}
+        assert route_spec['parameters'][0] == metadata['components']['parameters']['test_parameter']
 
 class TestPlugins:
 

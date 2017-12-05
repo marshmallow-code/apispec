@@ -19,7 +19,7 @@ VALID_METHODS = [
 OPENAPI_VERSIONS = ('2.0', '3.0.0')
 
 
-def clean_operations(operations):
+def clean_operations(operations, openapi_version):
     """Ensure that all parameters with "in" equal to "path" are also required
     as required by the OpenAPI specification, as well as normalizing any
     references to global parameters.
@@ -27,9 +27,19 @@ def clean_operations(operations):
     See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject.
 
     :param dict operations: Dict mapping status codes to operations
+    :param str openapi_version: The version of the OpenAPI standard to use.
+        Supported values are '2.0', and '3.0.0'.
     """
-    def get_ref(x):
-        return x if isinstance(x, dict) else {'$ref': '#/parameters/' + x}
+    def get_ref(x, openapi_version):
+        if isinstance(x, dict):
+            return x
+
+        ref_paths = {
+            '2.0': 'parameters',
+            '3.0.0': 'components/parameters',
+        }
+        ref_path = ref_paths[openapi_version]
+        return {'$ref': '#/{0}/{1}'.format(ref_path, x)}
 
     for operation in (operations or {}).values():
         if 'parameters' in operation:
@@ -38,7 +48,8 @@ def clean_operations(operations):
                 if (isinstance(parameter, dict) and
                         'in' in parameter and parameter['in'] == 'path'):
                     parameter['required'] = True
-            operation['parameters'] = [get_ref(p) for p in parameters]
+            operation['parameters'] = [get_ref(p, openapi_version)
+                                       for p in parameters]
 
 
 class Path(dict):
@@ -50,12 +61,14 @@ class Path(dict):
     :param str method: The HTTP method.
     :param dict operation: The operation object, as a `dict`. See
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject
+    :param str openapi_version: The version of the OpenAPI standard to use.
+        Supported values are '2.0', and '3.0.0'.
     """
 
-    def __init__(self, path=None, operations=None, **kwargs):
+    def __init__(self, path=None, operations=None, openapi_version='2.0', **kwargs):
         self.path = path
         operations = operations or {}
-        clean_operations(operations)
+        clean_operations(operations, openapi_version)
         invalid = {key for key in
                    set(iterkeys(operations)) - set(VALID_METHODS)
                    if not key.startswith('x-')}
@@ -156,7 +169,10 @@ class APISpec(object):
 
         elif self.openapi_version == '3.0.0':
             ret['openapi'] = self.openapi_version
-            ret['components'] = {'schemas': self._definitions}
+            ret['components'] = {
+                'schemas': self._definitions,
+                'parameters': self._parameters,
+            }
 
         ret.update(self.options)
         return ret
@@ -205,7 +221,9 @@ class APISpec(object):
         if isinstance(path, Path):
             path.path = p
         else:
-            path = Path(path=p, operations=operations)
+            path = Path(path=p,
+                        operations=operations,
+                        openapi_version=self.openapi_version)
         # Execute plugins' helpers
         for func in self._path_helpers:
             try:
