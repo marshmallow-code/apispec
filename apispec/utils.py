@@ -96,6 +96,7 @@ def validate_swagger(spec):
             subprocess.check_output(
                 ['swagger-tools', 'validate', fp.name],
                 stderr=subprocess.STDOUT,
+                shell=True,
             )
         except subprocess.CalledProcessError as error:
             raise exceptions.SwaggerError(error.output.decode('utf-8'))
