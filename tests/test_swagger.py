@@ -560,12 +560,12 @@ class TestNesting:
 
     def test_field2property_nested_self(self, spec):
         self_nesting = fields.Nested('self')
-        res = swagger.field2property(self_nesting, name='Foo')
+        res = swagger.field2property(self_nesting, spec=spec, name='Foo')
         assert res == {'$ref': '#/definitions/Foo'}
 
     def test_field2property_nested_self_many(self, spec):
         self_nesting = fields.Nested('self', many=True)
-        res = swagger.field2property(self_nesting, name='Foo')
+        res = swagger.field2property(self_nesting, spec=spec, name='Foo')
         assert res == {'type': 'array', 'items': {'$ref': '#/definitions/Foo'}}
 
     def test_field2property_nested_self_ref_with_meta(self, spec):

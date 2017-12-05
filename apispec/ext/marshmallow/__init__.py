@@ -222,7 +222,9 @@ def resolve_schema_dict(spec, schema, dump=True, use_instances=False):
         schema_cls = resolve_schema_cls(schema)
 
     if schema_cls in plug.get('refs', {}):
-        ref_schema = {'$ref': '#/definitions/{0}'.format(plug['refs'][schema_cls])}
+        ref_path = swagger.get_ref_path(spec.openapi_version)
+        ref_schema = {'$ref': '#/{0}/{1}'.format(ref_path,
+                                                 plug['refs'][schema_cls])}
         if getattr(schema, 'many', False):
             return {
                 'type': 'array',

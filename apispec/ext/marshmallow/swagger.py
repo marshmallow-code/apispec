@@ -308,7 +308,9 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
                     raise ValueError('Must pass `name` argument for self-referencing Nested fields.')
                 # We need to use the `name` argument when the field is self-referencing and
                 # unbound (doesn't have `parent` set) because we can't access field.schema
-                ref_name =  '#/definitions/{name}'.format(name=name)
+                ref_path = get_ref_path(spec.openapi_version)
+                ref_name =  '#/{ref_path}/{name}'.format(ref_path=ref_path,
+                                                         name=name)
             ref_schema = {'$ref': ref_name}
             if field.many:
                 ret['type'] = 'array'
@@ -577,6 +579,16 @@ def fields2jsonschema(fields, schema=None, spec=None, use_refs=True, dump=True, 
         }
 
     return jsonschema
+
+
+def get_ref_path(openapi_version):
+    """Return the path for references based on the openapi version
+
+    :param openapi_version|string: the open api version number
+    """
+    ref_paths = {'2.0': 'definitions',
+                 '3.0.0': 'components/schemas'}
+    return ref_paths[openapi_version]
 
 __location_map__ = {
     'query': 'query',

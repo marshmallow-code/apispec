@@ -16,7 +16,7 @@ VALID_METHODS = [
     'options',
 ]
 
-OPENAPI_VERSION = SWAGGER_VERSION = '2.0'
+OPENAPI_VERSIONS = ('2.0', '3.0.0')
 
 
 def clean_operations(operations):
@@ -109,6 +109,7 @@ class APISpec(object):
         plugins=(),
         info=None,
         schema_name_resolver=None,
+        openapi_version='2.0',
         **options
     ):
         self.info = {
@@ -116,6 +117,13 @@ class APISpec(object):
             'version': version,
         }
         self.info.update(info or {})
+
+        if openapi_version not in OPENAPI_VERSIONS:
+            raise APISpecError(
+                'Not a valid OpenAPI version number: {}'.format(openapi_version)
+            )
+        self.openapi_version = openapi_version
+
         self.options = options
         self.schema_name_resolver = schema_name_resolver
         # Metadata
@@ -136,13 +144,20 @@ class APISpec(object):
 
     def to_dict(self):
         ret = {
-            'swagger': OPENAPI_VERSION,
             'info': self.info,
-            'definitions': self._definitions,
-            'parameters': self._parameters,
             'paths': self._paths,
             'tags': self._tags
         }
+
+        if self.openapi_version == '2.0':
+            ret['swagger'] = self.openapi_version
+            ret['definitions'] = self._definitions
+            ret['parameters'] = self._parameters
+
+        elif self.openapi_version == '3.0.0':
+            ret['openapi'] = self.openapi_version
+            ret['components'] = {'schemas': self._definitions}
+
         ret.update(self.options)
         return ret
 
