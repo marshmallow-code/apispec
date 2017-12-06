@@ -86,6 +86,35 @@ class TestPathHelpers:
         assert get_op['description'] == 'get a greeting'
         assert post_op['description'] == 'post a greeting'
 
+    def test_methods_from_rule(self, app, spec):
+        class HelloApi(MethodView):
+            """Greeting API.
+            ---
+            x-extension: global metadata
+            """
+            def get(self):
+                """A greeting endpoint.
+                ---
+                description: get a greeting
+                responses:
+                    200:
+                        description: said hi
+                """
+                return 'hi'
+
+            def post(self):
+                return 'hi'
+
+            def delete(self):
+                return 'hi'
+
+        method_view = HelloApi.as_view('hi')
+        app.add_url_rule("/hi", view_func=method_view, methods=('GET', 'POST'))
+        spec.add_path(view=method_view)
+        assert 'get' in spec._paths['/hi']
+        assert 'post' in spec._paths['/hi']
+        assert 'delete' not in spec._paths['/hi']
+
     def test_integration_with_docstring_introspection(self, app, spec):
 
         @app.route('/hello')

@@ -113,10 +113,11 @@ def path_from_view(spec, view, **kwargs):
     if hasattr(view, 'view_class') and issubclass(view.view_class, MethodView):
         operations = {}
         for method in view.methods:
-            method_name = method.lower()
-            method = getattr(view.view_class, method_name)
-            docstring_yaml = utils.load_yaml_from_docstring(method.__doc__)
-            operations[method_name] = docstring_yaml or dict()
+            if method in rule.methods:
+                method_name = method.lower()
+                method = getattr(view.view_class, method_name)
+                docstring_yaml = utils.load_yaml_from_docstring(method.__doc__)
+                operations[method_name] = docstring_yaml or dict()
         path.operations.update(operations)
     return path
 
