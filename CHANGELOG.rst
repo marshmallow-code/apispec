@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+0.27.1 (2017-12-06)
++++++++++++++++++++
+
+Bug fixes:
+
+* [apispec.ext.flask]: Don't document view methods that aren't included
+  in ``app.add_url_rule(..., methods=[...]))`` (:issue:`173`). Thanks :user:`ukaratay`.
+
 0.27.0 (2017-10-30)
 +++++++++++++++++++
 
