@@ -6,8 +6,9 @@ from marshmallow.fields import Field, DateTime
 
 from apispec import APISpec
 from apispec.ext.marshmallow import swagger
-from .schemas import PetSchema, AnalysisSchema, SampleSchema, RunSchema, SelfReferencingSchema,\
-    OrderedSchema, PatternedObjectSchema, DefaultCallableSchema
+from .schemas import PetSchema, AnalysisSchema, SampleSchema, RunSchema, \
+    SelfReferencingSchema, OrderedSchema, PatternedObjectSchema, \
+    DefaultCallableSchema, AnalysisWithListSchema
 
 
 @pytest.fixture()
@@ -37,6 +38,40 @@ class TestDefinitionHelper:
 
     @pytest.mark.parametrize('schema', [AnalysisSchema, AnalysisSchema()])
     def test_resolve_schema_dict_auto_reference(self, schema):
+        def resolver(schema):
+            return schema.__name__
+        spec = APISpec(
+            title='Test auto-reference',
+            version='2.0',
+            description='Test auto-reference',
+            plugins=(
+                'apispec.ext.marshmallow',
+            ),
+            schema_name_resolver=resolver,
+        )
+        assert {} == spec._definitions
+
+        spec.definition('analysis', schema=schema)
+        spec.add_path('/test', operations={
+            'get': {
+                'responses': {
+                    '200': {
+                        'schema': {
+                            '$ref': '#/definitions/analysis'
+                        }
+                    }
+                }
+            }
+        })
+
+        assert 3 == len(spec._definitions)
+
+        assert 'analysis' in spec._definitions
+        assert 'SampleSchema' in spec._definitions
+        assert 'RunSchema' in spec._definitions
+
+    @pytest.mark.parametrize('schema', [AnalysisWithListSchema, AnalysisWithListSchema()])
+    def test_resolve_schema_dict_auto_reference_in_list(self, schema):
         def resolver(schema):
             return schema.__name__
         spec = APISpec(
