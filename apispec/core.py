@@ -89,14 +89,17 @@ class APISpec(object):
     :param tuple plugins: Import paths to plugins.
     :param dict info: Optional dict to add to `info`
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#infoObject
-    :param \*\*dict options: Optional top-level keys
-        See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
-    :param callable schema_name_resolver: callable who generate the
-        schema definition name. The schema will be given to this callable and
-        definition name must be returned by callable, ex:
+    :param callable schema_name_resolver: Callable to generate the
+        schema definition name. Receives the `Schema` class and returns the name to be used in
+        refs within the generated spec.
+
+        Example: ::
 
             def schema_name_resolver(schema):
                 return schema.__name__
+
+    :param \*\*dict options: Optional top-level keys
+        See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
     """
 
     def __init__(
