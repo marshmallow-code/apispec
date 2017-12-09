@@ -11,11 +11,20 @@ install:
 - npm install -g swagger-tools
 - pip install -r dev-requirements.txt
 script: invoke test
-deploy:
-  provider: pypi
-  user: sloria
-  password:
-    secure: g/niD9lToPXGyU1U0pU/zS+dmg2V36EujVC6C1U/1UmpxBf6yQjuHgzbVVFfGi54PKxbbkzlrs1tf5o0kYpaym5sjr1mEXR/YeHXLO8HNLlOJTrJJNE9dvAcaisETK3iqlqaIsrQyi0AbHrTgEI0NDV6/tDfI5lrbsksaLkuRbU=
-  on:
-    tags: true
-  distributions: "sdist bdist_wheel"
+jobs:
+  include:
+  - stage: PyPI Release
+    if: tag IS present
+    python: "3.6"
+    # Override install and script to no-ops
+    install: true
+    script: echo "Releasing to PyPI..."
+    after_success: true
+  deploy:
+    provider: pypi
+    user: sloria
+    password:
+      secure: g/niD9lToPXGyU1U0pU/zS+dmg2V36EujVC6C1U/1UmpxBf6yQjuHgzbVVFfGi54PKxbbkzlrs1tf5o0kYpaym5sjr1mEXR/YeHXLO8HNLlOJTrJJNE9dvAcaisETK3iqlqaIsrQyi0AbHrTgEI0NDV6/tDfI5lrbsksaLkuRbU=
+    on:
+      tags: true
+    distributions: "sdist bdist_wheel"
