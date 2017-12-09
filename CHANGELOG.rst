@@ -1,6 +1,16 @@
 Changelog
 ---------
 
+0.28.0 (2017-12-09)
++++++++++++++++++++
+
+Features:
+
+- [apispec.core and apispec.ext.marshmallow]: Add `schema_name_resolver`
+  param to `APISpec` for resolving ref names for marshmallow Schemas.
+  This is useful when a self-referencing schema is nested within another
+  schema (:issue:`167`). Thanks :user:`buxx` for the PR.
+
 0.27.1 (2017-12-06)
 +++++++++++++++++++
 
