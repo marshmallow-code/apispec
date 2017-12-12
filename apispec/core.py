@@ -2,6 +2,7 @@
 """Core apispec classes and functions."""
 import re
 from collections import OrderedDict
+from distutils import version
 
 from apispec.compat import iterkeys
 from .exceptions import APISpecError, PluginError
@@ -15,8 +16,6 @@ VALID_METHODS = [
     'head',
     'options',
 ]
-
-OPENAPI_VERSIONS = ('2.0', '3.0.0')
 
 
 def clean_operations(operations, openapi_version):
@@ -131,11 +130,7 @@ class APISpec(object):
         }
         self.info.update(info or {})
 
-        if openapi_version not in OPENAPI_VERSIONS:
-            raise APISpecError(
-                'Not a valid OpenAPI version number: {}'.format(openapi_version)
-            )
-        self.openapi_version = openapi_version
+        self.openapi_version = validate_openapi_version(openapi_version)
 
         self.options = options
         self.schema_name_resolver = schema_name_resolver
@@ -370,3 +365,21 @@ class APISpec(object):
         if method not in self._response_helpers:
             self._response_helpers[method] = {}
         self._response_helpers[method].setdefault(status_code, []).append(func)
+
+def validate_openapi_version(openapi_version_str):
+    """Function to validate the version of the OpenAPI passed into APISpec
+
+    :param str openapi_version_str: the string version of the desired OpenAPI
+        version used in the output
+    """
+    min_inclusive_version = version.LooseVersion('2.0')
+    max_exclusive_version = version.LooseVersion('4.0')
+
+    openapi_version = version.LooseVersion(openapi_version_str)
+
+    if not min_inclusive_version <= openapi_version < max_exclusive_version:
+        raise APISpecError(
+            'Not a valid OpenAPI version number: {}'.format(openapi_version)
+        )
+
+    return openapi_version.vstring
