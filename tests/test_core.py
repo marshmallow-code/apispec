@@ -41,7 +41,7 @@ class TestAPISpecInit:
                 version='1.0.0',
                 info={'description': description},
                 security=[{'apiKey': []}],
-                openapi_version='no version'
+                openapi_version='4.0'  # 4.0 is not supported
             )
         assert 'Not a valid OpenAPI version number:' in str(excinfo)
 
