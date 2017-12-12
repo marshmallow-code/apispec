@@ -18,7 +18,7 @@ VALID_METHODS = [
 ]
 
 
-def clean_operations(operations, openapi_version):
+def clean_operations(operations, openapi_major_version):
     """Ensure that all parameters with "in" equal to "path" are also required
     as required by the OpenAPI specification, as well as normalizing any
     references to global parameters.
@@ -26,18 +26,18 @@ def clean_operations(operations, openapi_version):
     See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject.
 
     :param dict operations: Dict mapping status codes to operations
-    :param str openapi_version: The version of the OpenAPI standard to use.
-        Supported values are '2.0', and '3.0.0'.
+    :param int openapi_major_version: The major version of the OpenAPI standard
+        to use. Supported values are 2 and 3.
     """
-    def get_ref(x, openapi_version):
+    def get_ref(x, openapi_major_version):
         if isinstance(x, dict):
             return x
 
         ref_paths = {
-            '2.0': 'parameters',
-            '3.0.0': 'components/parameters',
+            2: 'parameters',
+            3: 'components/parameters',
         }
-        ref_path = ref_paths[openapi_version]
+        ref_path = ref_paths[openapi_major_version]
         return {'$ref': '#/{0}/{1}'.format(ref_path, x)}
 
     for operation in (operations or {}).values():
@@ -47,7 +47,7 @@ def clean_operations(operations, openapi_version):
                 if (isinstance(parameter, dict) and
                         'in' in parameter and parameter['in'] == 'path'):
                     parameter['required'] = True
-            operation['parameters'] = [get_ref(p, openapi_version)
+            operation['parameters'] = [get_ref(p, openapi_major_version)
                                        for p in parameters]
 
 
@@ -61,13 +61,15 @@ class Path(dict):
     :param dict operation: The operation object, as a `dict`. See
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject
     :param str openapi_version: The version of the OpenAPI standard to use.
-        Supported values are '2.0', and '3.0.0'.
+        Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI
+        standard.
     """
 
     def __init__(self, path=None, operations=None, openapi_version='2.0', **kwargs):
         self.path = path
         operations = operations or {}
-        clean_operations(operations, openapi_version)
+        openapi_version = validate_openapi_version(openapi_version)
+        clean_operations(operations, openapi_version.version[0])
         invalid = {key for key in
                    set(iterkeys(operations)) - set(VALID_METHODS)
                    if not key.startswith('x-')}
@@ -109,7 +111,9 @@ class APISpec(object):
 
             def schema_name_resolver(schema):
                 return schema.__name__
-
+    :param str openapi_version: The version of the OpenAPI standard to use.
+        Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI
+        standard.
     :param \*\*dict options: Optional top-level keys
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
     """
@@ -157,13 +161,13 @@ class APISpec(object):
             'tags': self._tags
         }
 
-        if self.openapi_version == '2.0':
-            ret['swagger'] = self.openapi_version
+        if self.openapi_version.version[0] == 2:
+            ret['swagger'] = self.openapi_version.vstring
             ret['definitions'] = self._definitions
             ret['parameters'] = self._parameters
 
-        elif self.openapi_version == '3.0.0':
-            ret['openapi'] = self.openapi_version
+        elif self.openapi_version.version[0] == 3:
+            ret['openapi'] = self.openapi_version.vstring
             ret['components'] = {
                 'schemas': self._definitions,
                 'parameters': self._parameters,
@@ -218,7 +222,7 @@ class APISpec(object):
         else:
             path = Path(path=p,
                         operations=operations,
-                        openapi_version=self.openapi_version)
+                        openapi_version=self.openapi_version.vstring)
         # Execute plugins' helpers
         for func in self._path_helpers:
             try:
@@ -382,4 +386,4 @@ def validate_openapi_version(openapi_version_str):
             'Not a valid OpenAPI version number: {}'.format(openapi_version)
         )
 
-    return openapi_version.vstring
+    return openapi_version
