@@ -4,7 +4,10 @@ import re
 from collections import OrderedDict
 from distutils import version
 
-from apispec.compat import iterkeys
+import yaml
+
+from apispec.compat import iterkeys, PY2, unicode
+from apispec.lazy_dict import LazyDict
 from .exceptions import APISpecError, PluginError
 
 VALID_METHODS = [
@@ -175,6 +178,9 @@ class APISpec(object):
 
         ret.update(self.options)
         return ret
+
+    def to_yaml(self):
+        return yaml.dump(self.to_dict(), Dumper=YAMLDumper)
 
     def add_parameter(self, param_id, location, **kwargs):
         """ Add a parameter which can be referenced.
@@ -387,3 +393,26 @@ def validate_openapi_version(openapi_version_str):
         )
 
     return openapi_version
+
+
+class YAMLDumper(yaml.Dumper):
+
+    @staticmethod
+    def _represent_dict(dumper, instance):
+        return dumper.represent_mapping('tag:yaml.org,2002:map',
+                                        instance.items())
+
+    if PY2:
+        @staticmethod
+        def _represent_unicode(dumper, uni):
+            return yaml.ScalarNode(tag=u'tag:yaml.org,2002:str', value=uni)
+
+if PY2:
+    yaml.add_representer(unicode, YAMLDumper._represent_unicode,
+                         Dumper=YAMLDumper)
+yaml.add_representer(OrderedDict, YAMLDumper._represent_dict,
+                     Dumper=YAMLDumper)
+yaml.add_representer(LazyDict, YAMLDumper._represent_dict,
+                     Dumper=YAMLDumper)
+yaml.add_representer(Path, YAMLDumper._represent_dict,
+                     Dumper=YAMLDumper)

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import pytest
 import mock
+import yaml
 
 from apispec import APISpec, Path
 from apispec.exceptions import PluginError, APISpecError
@@ -130,6 +131,14 @@ class TestDefinitions:
 
         assert defs_json['Pet']['available']
 
+    def test_to_yaml(self, spec):
+        enum = ['name', 'photoUrls']
+        spec.definition(
+            'Pet',
+            properties=self.properties,
+            enum=enum
+        )
+        assert spec.to_dict() == yaml.load(spec.to_yaml())
 
 class TestPath:
     paths = {

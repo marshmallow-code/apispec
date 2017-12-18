@@ -66,6 +66,24 @@ To output your OpenAPI spec, invoke the `to_dict <apispec.APISpec.to_dict>` meth
     # 'swagger': '2.0',
     # 'tags': []}
 
+Use `to_yaml <apispec.APISpec.to_yaml>` to export your spec to YAML.
+
+.. code-block:: python
+
+    print(spec.to_yaml())
+    # definitions:
+    #   Pet:
+    #     enum: [name, photoUrls]
+    #     properties:
+    #       id: {format: int64, type: integer}
+    #       name: {example: doggie, type: string}
+    # info: {description: 'This is a sample Petstore server.  You can find out more ', title: Swagger Petstore, version: 1.0.0}
+    # parameters: {}
+    # paths: {}
+    # security:
+    # - apiKey: []
+    # swagger: '2.0'
+    # tags: []
 
 .. seealso::
     For a full reference of the `APISpec <apispec.APISpec>` class, see the :ref:`Core API Reference <core_api>`.
