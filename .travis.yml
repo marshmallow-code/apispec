@@ -8,7 +8,7 @@ python:
 - pypy
 install:
 - pip install -U .
-- npm install -g swagger-tools
+- npm install -g check_api
 - pip install -r dev-requirements.txt
 script: invoke test
 jobs:
