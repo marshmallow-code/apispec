@@ -192,10 +192,10 @@ def schema_operation_resolver(spec, operations, **kwargs):
             continue
         if 'parameters' in operation:
             operation['parameters'] = resolve_parameters(spec, operation['parameters'])
+        if 'requestBody' in operation:  # OpenAPI 3
+            resolve_schema_in_request_body(spec, operation['requestBody'])
         for response in operation.get('responses', {}).values():
-            if 'schema' in response:
-                response['schema'] = resolve_schema_dict(spec, response['schema'])
-
+            resolve_schema_in_response(spec, response)
 
 def resolve_parameters(spec, parameters):
     resolved = []
@@ -209,6 +209,32 @@ def resolve_parameters(spec, parameters):
         resolved.append(parameter)
     return resolved
 
+
+def resolve_schema_in_request_body(spec, request_body):
+    """Function to resolve a schema in a requestBody object - modifies then
+    response dict to convert Marshmallow Schema object or class into dict
+
+    :param APISpec spec: `APISpec` containing refs.
+    """
+    content = request_body['content']
+    for content_type in content:
+        schema = content[content_type]['schema']
+        content[content_type]['schema'] = resolve_schema_dict(spec, schema)
+
+
+def resolve_schema_in_response(spec, response):
+    """Function to resolve a schema in a response - modifies the response
+    dict to convert Marshmallow Schema object or class into dict
+
+    :param APISpec spec: `APISpec` containing refs.
+    :param dict response: the response dictionary that may contain a schema
+    """
+    if 'schema' in response:  # OpenAPI 2
+        response['schema'] = resolve_schema_dict(spec, response['schema'])
+    if 'content' in response:  # OpenAPI 3
+        for content_type in response['content']:
+            schema = response['content'][content_type]['schema']
+            response['content'][content_type]['schema'] = resolve_schema_dict(spec, schema)
 
 def resolve_schema_dict(spec, schema, dump=True, use_instances=False):
     if isinstance(schema, dict):
