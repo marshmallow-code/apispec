@@ -498,6 +498,9 @@ class PetSchema(Schema):
     category = fields.Nested(CategorySchema, many=True, ref='#/definitions/Category')
     name = fields.Str()
 
+class PetSchemaV3(Schema):
+    category = fields.Nested(CategorySchema, many=True, ref='#/components/schemas/Category')
+    name = fields.Str()
 
 class TestNesting:
 
@@ -691,6 +694,78 @@ def test_swagger_tools_validate():
                     201: {
                         'schema': PetSchema,
                         'description': 'A pet',
+                    },
+                },
+            }
+        },
+    )
+    try:
+        utils.validate_swagger(spec)
+    except exceptions.SwaggerError as error:
+        pytest.fail(str(error))
+
+def test_validate_v3():
+    spec = APISpec(
+        title='Pets',
+        version='0.1',
+        plugins=['apispec.ext.marshmallow'],
+        openapi_version='3.0.0'
+    )
+
+    spec.definition('Category', schema=CategorySchema)
+    spec.definition('Pet', schema=PetSchemaV3)
+
+    spec.add_path(
+        view=None,
+        path='/category/{category_id}',
+        operations={
+            'get': {
+                'parameters': [
+                    {'name': 'q',
+                     'in': 'query',
+                     'schema': {'type': 'string'}
+                     },
+                    {'name': 'category_id',
+                     'in': 'path',
+                     'required': True,
+                     'schema': {'type': 'string'}
+                     },
+                ],  # + swagger.schema2parameters(PageSchema, default_in='query'),
+                'responses': {
+                    200: {
+                        'description': 'success',
+                        'content': {
+                            'application/json': {
+                                'schema': PetSchemaV3,
+                            }
+                        }
+                    },
+                },
+            },
+            'post': {
+                'parameters': (
+                    [{'name': 'category_id',
+                      'in': 'path',
+                      'required': True,
+                      'schema': {'type': 'string'}
+                      }
+                     ]
+                ),
+                'requestBody': {
+                    'content': {
+                        'application/json': {
+                            'schema': CategorySchema
+                        }
+                    }
+                },
+                'responses': {
+                    201: {
+                        'description': 'created',
+                        'content': {
+                            'application/json': {
+                                'schema': PetSchemaV3,
+                            }
+                        }
                     },
                 },
             }
