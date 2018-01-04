@@ -9,6 +9,7 @@ Flask
 marshmallow
 tornado
 bottle
+marshmallow-oneofschema
 
 # testing
 pytest>=2.8.0
