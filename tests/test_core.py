@@ -21,11 +21,38 @@ def spec():
         security=[{'apiKey': []}],
     )
 
+@pytest.fixture()
+def spec_3():
+    return APISpec(
+        title='Swagger Petstore',
+        version='1.0.0',
+        info={'description': description},
+        security=[{'apiKey': []}],
+        openapi_version='3.0.0'
+    )
+
+
+class TestAPISpecInit:
+
+    def test_raises_wrong_apispec_version(self):
+        with pytest.raises(APISpecError) as excinfo:
+            APISpec(
+                'Swagger Petstore',
+                version='1.0.0',
+                info={'description': description},
+                security=[{'apiKey': []}],
+                openapi_version='4.0'  # 4.0 is not supported
+            )
+        assert 'Not a valid OpenAPI version number:' in str(excinfo)
+
 
 class TestMetadata:
 
     def test_swagger_version(self, spec):
         assert spec.to_dict()['swagger'] == '2.0'
+
+    def test_openapi_version_3(self, spec_3):
+        assert spec_3.to_dict()['openapi'] == '3.0.0'
 
     def test_swagger_metadata(self, spec):
         metadata = spec.to_dict()
@@ -60,6 +87,12 @@ class TestDefinitions:
         defs_json = spec.to_dict()['definitions']
         assert 'Pet' in defs_json
         assert defs_json['Pet']['properties'] == self.properties
+
+    def test_definition_3(self, spec_3):
+        spec_3.definition('Pet', properties=self.properties)
+        schemas = spec_3.to_dict()['components']['schemas']
+        assert 'Pet' in schemas
+        assert schemas['Pet']['properties'] == self.properties
 
     def test_definition_description(self, spec):
         model_description = 'An animal which lives with humans.'
@@ -262,6 +295,25 @@ class TestPath:
         assert p['parameters'][0] == {'$ref': '#/parameters/test_parameter'}
         assert route_spec['parameters'][0] == metadata['parameters']['test_parameter']
 
+    def test_add_parameters_3(self, spec_3):
+        route_spec = self.paths['/pet/{petId}']['get']
+
+        spec_3.add_parameter('test_parameter', 'path', **route_spec['parameters'][0])
+
+        spec_3.add_path(
+            path='/pet/{petId}',
+            operations=dict(
+                get=dict(
+                    parameters=['test_parameter'],
+                )
+            )
+        )
+
+        metadata = spec_3.to_dict()
+        p = spec_3._paths['/pet/{petId}']['get']
+
+        assert p['parameters'][0] == {'$ref': '#/components/parameters/test_parameter'}
+        assert route_spec['parameters'][0] == metadata['components']['parameters']['test_parameter']
 
 class TestPlugins:
 

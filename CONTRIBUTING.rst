@@ -32,7 +32,7 @@ Setting Up for Local Development
 
     # After activating your virtualenv
     $ pip install -r dev-requirements.txt
-    $ npm install -g swagger-tools
+    $ npm install -g check_api
 
 3. Install apispec in develop mode. ::
 

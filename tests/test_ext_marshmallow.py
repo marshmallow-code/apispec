@@ -11,19 +11,37 @@ from .schemas import PetSchema, AnalysisSchema, SampleSchema, RunSchema, \
     DefaultCallableSchema, AnalysisWithListSchema
 
 
+description = 'This is a sample Petstore server.  You can find out more '
+'about Swagger at <a href=\"http://swagger.wordnik.com\">http://swagger.wordnik.com</a> '
+'or on irc.freenode.net, #swagger.  For this sample, you can use the api '
+'key \"special-key\" to test the authorization filters'
+
+
 @pytest.fixture()
 def spec():
     return APISpec(
         title='Swagger Petstore',
         version='1.0.0',
-        description='This is a sample Petstore server.  You can find out more '
-        'about Swagger at <a href=\"http://swagger.wordnik.com\">http://swagger.wordnik.com</a> '
-        'or on irc.freenode.net, #swagger.  For this sample, you can use the api '
-        'key \"special-key\" to test the authorization filters',
+        description=description,
         plugins=[
             'apispec.ext.marshmallow'
         ]
     )
+
+
+@pytest.fixture()
+def spec_3():
+    return APISpec(
+        title='Swagger Petstore',
+        version='1.0.0',
+        info={'description': description},
+        security=[{'apiKey': []}],
+        openapi_version='3.0.0',
+        plugins=[
+            'apispec.ext.marshmallow'
+        ]
+    )
+
 
 class TestDefinitionHelper:
 
@@ -210,6 +228,35 @@ class TestOperationHelper:
         assert 'responses' in op
         assert op['responses'][200]['schema'] == swagger.schema2jsonschema(PetSchema)
 
+    def test_schema_v3(self, spec_3):
+        def pet_view():
+            return '...'
+
+        spec_3.add_path(
+            path='/pet',
+            view=pet_view,
+            operations={
+                'get': {
+                    'responses': {
+                        200: {
+                            'content': {
+                                'application/json': {
+                                    'schema': PetSchema
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        )
+        p = spec_3._paths['/pet']
+        assert 'get' in p
+        op = p['get']
+        assert 'responses' in op
+
+        resolved_schema = op['responses'][200]['content']['application/json']['schema']
+        assert resolved_schema == swagger.schema2jsonschema(PetSchema)
+
     def test_schema_in_docstring(self, spec):
 
         def pet_view():
@@ -239,6 +286,46 @@ class TestOperationHelper:
         post = p['post']
         assert 'responses' in post
         assert post['responses'][201]['schema'] == swagger.schema2jsonschema(PetSchema)
+        assert post['responses'][201]['description'] == 'successful operation'
+
+    def test_schema_in_docstring_v3(self, spec_3):
+
+        def pet_view():
+            """Not much to see here.
+
+            ---
+            get:
+                responses:
+                    200:
+                        content:
+                            application/json:
+                                schema: tests.schemas.PetSchema
+                        description: successful operation
+            post:
+                responses:
+                    201:
+                        content:
+                            application/json:
+                                schema: tests.schemas.PetSchema
+                        description: successful operation
+            """
+            return '...'
+
+        spec_3.add_path(path='/pet', view=pet_view)
+        p = spec_3._paths['/pet']
+        assert 'get' in p
+        get = p['get']
+        assert 'responses' in get
+
+        resolved_schema = get['responses'][200]['content']['application/json']['schema']
+        assert resolved_schema == swagger.schema2jsonschema(PetSchema)
+
+        assert get['responses'][200]['description'] == 'successful operation'
+        post = p['post']
+        assert 'responses' in post
+
+        resolved_schema = post['responses'][201]['content']['application/json']['schema']
+        assert resolved_schema == swagger.schema2jsonschema(PetSchema)
         assert post['responses'][201]['description'] == 'successful operation'
 
     def test_schema_in_docstring_expand_parameters(self, spec):
@@ -318,6 +405,26 @@ class TestOperationHelper:
         assert 'parameters' in post
         assert len(post['parameters']) == 1
         assert post['parameters'][0]['schema']['$ref'] == '#/definitions/Pet'
+
+    def test_schema_in_request_body(self, spec_3):
+        def pet_view():
+            """Not much to see here.
+
+            ---
+            post:
+                requestBody:
+                    content:
+                        application/json:
+                            schema: tests.schemas.PetSchema
+            """
+            return '...'
+        spec_3.definition('Pet', schema=PetSchema)
+        spec_3.add_path(path='/pet', view=pet_view)
+        p = spec_3._paths['/pet']
+        assert 'post' in p
+        post = p['post']
+        schema_ref = post['requestBody']['content']['application/json']['schema']
+        assert schema_ref == {'$ref': '#/components/schemas/Pet'}
 
     def test_schema_array_in_docstring_uses_ref_if_available(self, spec):
         spec.definition('Pet', schema=PetSchema)

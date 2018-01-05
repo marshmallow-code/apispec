@@ -2,6 +2,7 @@
 """Various utilities for parsing OpenAPI operations from docstrings and validating against
 the OpenAPI spec.
 """
+import os
 import re
 import json
 import tempfile
@@ -85,18 +86,19 @@ def load_operations_from_docstring(docstring):
 
 def validate_swagger(spec):
     """Validate the output of an :class:`APISpec` object.
-    Note: Requires installing the node package `swagger-tools`.
+    Note: Requires installing the node package `check_api`.
 
     :raise: SwaggerError if validation fails.
     """
     with tempfile.NamedTemporaryFile(mode='w') as fp:
         json.dump(spec.to_dict(), fp)
         fp.seek(0)
+        shell = os.name == 'nt'  # Set shell to true if running on Windows
         try:
             subprocess.check_output(
-                ['swagger-tools', 'validate', fp.name],
+                ['check_api', fp.name],
                 stderr=subprocess.STDOUT,
-                shell=True,
+                shell=shell,
             )
         except subprocess.CalledProcessError as error:
             raise exceptions.SwaggerError(error.output.decode('utf-8'))

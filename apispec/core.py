@@ -2,6 +2,7 @@
 """Core apispec classes and functions."""
 import re
 from collections import OrderedDict
+from distutils import version
 
 from apispec.compat import iterkeys
 from .exceptions import APISpecError, PluginError
@@ -16,10 +17,8 @@ VALID_METHODS = [
     'options',
 ]
 
-OPENAPI_VERSION = SWAGGER_VERSION = '2.0'
 
-
-def clean_operations(operations):
+def clean_operations(operations, openapi_major_version):
     """Ensure that all parameters with "in" equal to "path" are also required
     as required by the OpenAPI specification, as well as normalizing any
     references to global parameters.
@@ -27,9 +26,19 @@ def clean_operations(operations):
     See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject.
 
     :param dict operations: Dict mapping status codes to operations
+    :param int openapi_major_version: The major version of the OpenAPI standard
+        to use. Supported values are 2 and 3.
     """
-    def get_ref(x):
-        return x if isinstance(x, dict) else {'$ref': '#/parameters/' + x}
+    def get_ref(x, openapi_major_version):
+        if isinstance(x, dict):
+            return x
+
+        ref_paths = {
+            2: 'parameters',
+            3: 'components/parameters',
+        }
+        ref_path = ref_paths[openapi_major_version]
+        return {'$ref': '#/{0}/{1}'.format(ref_path, x)}
 
     for operation in (operations or {}).values():
         if 'parameters' in operation:
@@ -38,7 +47,8 @@ def clean_operations(operations):
                 if (isinstance(parameter, dict) and
                         'in' in parameter and parameter['in'] == 'path'):
                     parameter['required'] = True
-            operation['parameters'] = [get_ref(p) for p in parameters]
+            operation['parameters'] = [get_ref(p, openapi_major_version)
+                                       for p in parameters]
 
 
 class Path(dict):
@@ -50,12 +60,16 @@ class Path(dict):
     :param str method: The HTTP method.
     :param dict operation: The operation object, as a `dict`. See
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject
+    :param str openapi_version: The version of the OpenAPI standard to use.
+        Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI
+        standard.
     """
 
-    def __init__(self, path=None, operations=None, **kwargs):
+    def __init__(self, path=None, operations=None, openapi_version='2.0', **kwargs):
         self.path = path
         operations = operations or {}
-        clean_operations(operations)
+        openapi_version = validate_openapi_version(openapi_version)
+        clean_operations(operations, openapi_version.version[0])
         invalid = {key for key in
                    set(iterkeys(operations)) - set(VALID_METHODS)
                    if not key.startswith('x-')}
@@ -97,7 +111,9 @@ class APISpec(object):
 
             def schema_name_resolver(schema):
                 return schema.__name__
-
+    :param str openapi_version: The version of the OpenAPI standard to use.
+        Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI
+        standard.
     :param \*\*dict options: Optional top-level keys
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
     """
@@ -109,6 +125,7 @@ class APISpec(object):
         plugins=(),
         info=None,
         schema_name_resolver=None,
+        openapi_version='2.0',
         **options
     ):
         self.info = {
@@ -116,6 +133,9 @@ class APISpec(object):
             'version': version,
         }
         self.info.update(info or {})
+
+        self.openapi_version = validate_openapi_version(openapi_version)
+
         self.options = options
         self.schema_name_resolver = schema_name_resolver
         # Metadata
@@ -136,13 +156,23 @@ class APISpec(object):
 
     def to_dict(self):
         ret = {
-            'swagger': OPENAPI_VERSION,
             'info': self.info,
-            'definitions': self._definitions,
-            'parameters': self._parameters,
             'paths': self._paths,
             'tags': self._tags
         }
+
+        if self.openapi_version.version[0] == 2:
+            ret['swagger'] = self.openapi_version.vstring
+            ret['definitions'] = self._definitions
+            ret['parameters'] = self._parameters
+
+        elif self.openapi_version.version[0] == 3:
+            ret['openapi'] = self.openapi_version.vstring
+            ret['components'] = {
+                'schemas': self._definitions,
+                'parameters': self._parameters,
+            }
+
         ret.update(self.options)
         return ret
 
@@ -190,7 +220,9 @@ class APISpec(object):
         if isinstance(path, Path):
             path.path = p
         else:
-            path = Path(path=p, operations=operations)
+            path = Path(path=p,
+                        operations=operations,
+                        openapi_version=self.openapi_version.vstring)
         # Execute plugins' helpers
         for func in self._path_helpers:
             try:
@@ -337,3 +369,21 @@ class APISpec(object):
         if method not in self._response_helpers:
             self._response_helpers[method] = {}
         self._response_helpers[method].setdefault(status_code, []).append(func)
+
+def validate_openapi_version(openapi_version_str):
+    """Function to validate the version of the OpenAPI passed into APISpec
+
+    :param str openapi_version_str: the string version of the desired OpenAPI
+        version used in the output
+    """
+    min_inclusive_version = version.LooseVersion('2.0')
+    max_exclusive_version = version.LooseVersion('4.0')
+
+    openapi_version = version.LooseVersion(openapi_version_str)
+
+    if not min_inclusive_version <= openapi_version < max_exclusive_version:
+        raise APISpecError(
+            'Not a valid OpenAPI version number: {}'.format(openapi_version)
+        )
+
+    return openapi_version
