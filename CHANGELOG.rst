@@ -1,6 +1,15 @@
 Changelog
 ---------
 
+0.29.0 (2018-01-04)
++++++++++++++++++++
+
+Features:
+
+- [apispec.core and apispec.ext.marshmallow]: Add limited support for
+  OpenAPI v3. Pass `openapi_version='3.0.0'` to `Spec` to use it
+  (:issue:`165`). Thanks :user:`Bangertm`.
+
 0.28.0 (2017-12-09)
 +++++++++++++++++++
 
