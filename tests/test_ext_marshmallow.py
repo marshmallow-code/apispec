@@ -58,6 +58,13 @@ class TestDefinitionHelper:
     def test_resolve_schema_dict_auto_reference(self, schema):
         def resolver(schema):
             return schema.__name__
+
+        def class_resolver(schema):
+            if isinstance(schema,type):
+                return schema
+            else:
+                return type(schema)
+
         spec = APISpec(
             title='Test auto-reference',
             version='2.0',
@@ -65,7 +72,9 @@ class TestDefinitionHelper:
             plugins=(
                 'apispec.ext.marshmallow',
             ),
+            auto_referencing=True,
             schema_name_resolver=resolver,
+            schema_class_resolver=class_resolver,
         )
         assert {} == spec._definitions
 
@@ -92,6 +101,13 @@ class TestDefinitionHelper:
     def test_resolve_schema_dict_auto_reference_in_list(self, schema):
         def resolver(schema):
             return schema.__name__
+
+        def class_resolver(schema):
+            if isinstance(schema,type):
+                return schema
+            else:
+                return type(schema)
+
         spec = APISpec(
             title='Test auto-reference',
             version='2.0',
@@ -100,6 +116,8 @@ class TestDefinitionHelper:
                 'apispec.ext.marshmallow',
             ),
             schema_name_resolver=resolver,
+            schema_class_resolver=class_resolver,
+            auto_referencing=True,
         )
         assert {} == spec._definitions
 
@@ -128,6 +146,12 @@ class TestDefinitionHelper:
         def resolver(schema):
             return None
 
+        def class_resolver(schema):
+            if isinstance(schema,type):
+                return schema
+            else:
+                return type(schema)
+
         spec = APISpec(
             title='Test auto-reference',
             version='2.0',
@@ -136,6 +160,8 @@ class TestDefinitionHelper:
                 'apispec.ext.marshmallow',
             ),
             schema_name_resolver=resolver,
+            schema_class_resolver=class_resolver,
+            auto_referencing=True,
         )
         assert {} == spec._definitions
 
