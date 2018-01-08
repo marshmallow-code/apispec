@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 import pytest
+import json
 from marshmallow import Schema, fields
 from marshmallow.validate import Equal
 from marshmallow_oneofschema import OneOfSchema
@@ -68,6 +69,8 @@ class Pet(OneOfSchema):
     }
     type_field = 'petType'
 
+class Home(Schema):
+    pet = fields.Nested(Pet)
 
 class TestIsOneofSchema:
     def test_is_oneof(self):
@@ -112,6 +115,56 @@ class TestOneOfSchema2SchemaObject:
                                                   }
 
         spec_3._definitions['Pet'] = schema_object
-        import json
         print(json.dumps(spec_3.to_dict(), indent=4))
         utils.validate_swagger(spec_3)
+
+class TestOneOfFunctional:
+    def test(self, spec_3):
+        def pet_view():
+            """not much to see here
+            ---
+            post:
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/Pet'
+              responses:
+                '201':
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/Pet'
+                  description: created
+            """
+        spec_3.add_path(path='/pet', view=pet_view)
+
+        spec_3.definition('Pet', schema=Pet)
+
+        pet_oneof = spec_3._definitions['Pet']['oneOf']
+        assert {'$ref': '#/components/schemas/cat'} in pet_oneof
+
+    def test_nested(self, spec_3):
+        def home_view():
+            """not much to see here
+            ---
+            post:
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/Home'
+              responses:
+                '201':
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/Home'
+                  description: created
+            """
+        spec_3.add_path(path='/home', view=home_view)
+
+        spec_3.definition('Home', schema=Home)
+
+        pet_oneof = spec_3._definitions['Home']['properties']['pet']['oneOf']
+        assert {'$ref': '#/components/schemas/cat'} in pet_oneof
