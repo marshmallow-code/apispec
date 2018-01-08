@@ -65,7 +65,7 @@ class Pet(OneOfSchema):
     type_schemas = {
         'cat': Cat,
         'dog': Dog,
-        'lizard': Lizard,
+        'lizard schema': Lizard,
     }
     type_field = 'petType'
 
@@ -104,13 +104,13 @@ class TestOneOfSchema2SchemaObject:
 
         assert {'$ref': '#/components/schemas/cat'} in schema_object['oneOf']
         assert {'$ref': '#/components/schemas/dog'} in schema_object['oneOf']
-        assert {'$ref': '#/components/schemas/lizard'} in schema_object['oneOf']
+        assert {'$ref': '#/components/schemas/lizard_schema'} in schema_object['oneOf']
 
         assert schema_object['discriminator'] == {'propertyName': 'petType',
                                                   'mapping': {
                                                       'cat': '#/components/schemas/cat',
                                                       'dog': '#/components/schemas/dog',
-                                                      'lizard': '#/components/schemas/lizard',
+                                                      'lizard_schema': '#/components/schemas/lizard_schema',
                                                   }
                                                   }
 
