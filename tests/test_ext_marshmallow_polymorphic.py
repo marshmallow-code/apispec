@@ -18,10 +18,13 @@ description = 'This is a sample Petstore server.  You can find out more '
 
 @pytest.fixture()
 def spec_3():
+    def resolver(schema):
+        return schema.__name__
     return APISpec(
         title='Swagger Petstore',
         version='1.0.0',
         info={'description': description},
+        schema_name_resolver=resolver,
         openapi_version='3.0.0',
         plugins=[
             'apispec.ext.marshmallow'
@@ -110,7 +113,7 @@ class TestOneOfSchema2SchemaObject:
                                                   'mapping': {
                                                       'cat': '#/components/schemas/cat',
                                                       'dog': '#/components/schemas/dog',
-                                                      'lizard_schema': '#/components/schemas/lizard_schema',
+                                                      'lizard schema': '#/components/schemas/lizard_schema',
                                                   }
                                                   }
 
@@ -141,6 +144,7 @@ class TestOneOfFunctional:
 
         spec_3.definition('Pet', schema=Pet)
 
+        utils.validate_swagger(spec_3)
         pet_oneof = spec_3._definitions['Pet']['oneOf']
         assert {'$ref': '#/components/schemas/cat'} in pet_oneof
 
@@ -166,5 +170,7 @@ class TestOneOfFunctional:
 
         spec_3.definition('Home', schema=Home)
 
-        pet_oneof = spec_3._definitions['Home']['properties']['pet']['oneOf']
+        utils.validate_swagger(spec_3)
+
+        pet_oneof = spec_3._definitions['Pet']['oneOf']
         assert {'$ref': '#/components/schemas/cat'} in pet_oneof

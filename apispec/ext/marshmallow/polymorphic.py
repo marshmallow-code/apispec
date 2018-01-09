@@ -20,9 +20,9 @@ def oneof_schema_2_schema_object(spec, oneof_schema):
     mapping = {}
     oneof = []
     for name, schema in oneof_schema.type_schemas.items():
-        name = name.replace(' ', '_')
-        spec.definition(name, schema=schema)
-        ref = '#/components/schemas/{}'.format(name)
+        component_name = name.replace(' ', '_')
+        spec.definition(component_name, schema=schema)
+        ref = '#/components/schemas/{}'.format(component_name)
         mapping.update({name: ref})
         oneof.append({'$ref': ref})
 
