@@ -7,12 +7,12 @@ def default_schema_name_resolver(schema):
     if not isinstance(schema, type):
         schema = type(schema)
 
-    schema_name = '{name}({id})'.format(
-        name=schema.__name__,
-        id=str(id(schema)),
-    )
-    return schema_name
+    if getattr(schema, '_schema_name', None):
+        schema_name = schema._schema_name
+    else:
+        schema_name = schema.__name__
 
+    return schema_name
 
 def get_excluded_params(schema):
     if isinstance(schema, type):
@@ -77,5 +77,9 @@ def default_schema_class_resolver(schema):
 
     NewSchema.opts.exclude = exclude
     NewSchema.__name__ = cls_schema.__name__
+    NewSchema._schema_name = '{}_{}'.format(
+        cls_schema.__name__,
+        id(NewSchema),
+    )
     auto_generated_schemas[schema_id] = NewSchema
     return NewSchema
