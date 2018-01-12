@@ -41,3 +41,4 @@ Contributors (chronological)
 - Michael Bangert `@Bangertm <https://github.com/Bangertm>`_
 - Bastien Sevajol `@buxx <https://github.com/buxx>`_
 - Durmus Karatay `@ukaratay <https://github.com/ukaratay>`_
+- Julien Danjou `@jd <https://github.com/jd>`_
