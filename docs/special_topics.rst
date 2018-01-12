@@ -30,14 +30,6 @@ Rendering to YAML or JSON
 YAML
 ++++
 
-`apispec` provides proper a YAML dumper so you can serialize directly your spec
-in YAML.
-
-::
-
-    pip install PyYAML
-
-
 .. code-block:: python
 
     spec.to_yaml()
@@ -45,9 +37,6 @@ in YAML.
 
 JSON
 ++++
-
-You can directly serialize the to JSON the dictionary provided by `apispec` for
-your spec.
 
 .. code-block:: python
 
