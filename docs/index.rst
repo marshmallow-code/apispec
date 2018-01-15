@@ -124,6 +124,21 @@ Generated OpenAPI Spec
     #   },
     # }
 
+    spec.to_yaml()
+    # definitions:
+    #   Pet:
+    #     enum: [name, photoUrls]
+    #     properties:
+    #       id: {format: int64, type: integer}
+    #       name: {example: doggie, type: string}
+    # info: {description: 'This is a sample Petstore server.  You can find out more ', title: Swagger Petstore, version: 1.0.0}
+    # parameters: {}
+    # paths: {}
+    # security:
+    # - apiKey: []
+    # swagger: '2.0'
+    # tags: []
+
 User Guide
 ==========
 

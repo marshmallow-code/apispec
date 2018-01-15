@@ -27,21 +27,12 @@ To add additional fields (e.g. ``"discriminator"``) to Schema objects generated 
 Rendering to YAML or JSON
 -------------------------
 
-`apispec` will only serialize your spec to a Python dictionary. Use an appropriate module to render your spec to YAML or JSON.
-
 YAML
 ++++
 
-::
-
-    pip install PyYAML
-
-
 .. code-block:: python
 
-    import yaml
-
-    yaml.dump(spec.to_dict())
+    spec.to_yaml()
 
 
 JSON

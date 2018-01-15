@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+0.30.0 (2018-01-12)
++++++++++++++++++++
+
+Features:
+
+- [apispec.core]: Add ``Spec.to_yaml`` method for serializing to YAML
+  (:issue:`161`). Thanks :user:`jd`.
+
 0.29.0 (2018-01-04)
 +++++++++++++++++++
 
