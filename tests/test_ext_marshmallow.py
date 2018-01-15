@@ -59,7 +59,7 @@ class TestDefinitionHelper:
         def resolver(schema):
             return schema.__name__
 
-        def class_resolver(schema):
+        def class_resolver(spec, schema):
             if isinstance(schema,type):
                 return schema
             else:
@@ -102,8 +102,8 @@ class TestDefinitionHelper:
         def resolver(schema):
             return schema.__name__
 
-        def class_resolver(schema):
-            if isinstance(schema,type):
+        def class_resolver(spec, schema):
+            if isinstance(schema, type):
                 return schema
             else:
                 return type(schema)
@@ -146,7 +146,7 @@ class TestDefinitionHelper:
         def resolver(schema):
             return None
 
-        def class_resolver(schema):
+        def class_resolver(spec, schema):
             if isinstance(schema, type):
                 return schema
             else:
@@ -199,7 +199,7 @@ class TestDefinitionHelper:
             else:
                 return schema.__name__
 
-        def class_resolver_handle_exclude(schema):
+        def class_resolver_handle_exclude(spec, schema):
             if isinstance(schema, type):
                 return schema
             else:

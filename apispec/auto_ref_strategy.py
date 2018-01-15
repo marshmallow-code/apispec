@@ -1,7 +1,5 @@
-# Global list of auto-generated schemas,
-# dict with str id generated with generate_id method as key
-# and schema cls as value
-auto_generated_schemas = {}
+# -*- coding: utf-8 -*-
+"""Default auto referencing strategy for apispec """
 
 
 def default_schema_name_resolver(schema) -> str:
@@ -71,9 +69,10 @@ def generate_id(schema, exclude=()) -> str:
     return schema_id
 
 
-def default_schema_class_resolver(schema):
+def default_schema_class_resolver(spec, schema):
     """
     Return best candidate class for a schema instance or cls.
+    :param spec: Apispec instance
     :param schema: schema instance or cls
     :return: best schema cls
     """
@@ -93,8 +92,8 @@ def default_schema_class_resolver(schema):
         return cls_schema
 
     # already generated similar schema ?
-    if schema_id in auto_generated_schemas:
-        return auto_generated_schemas[schema_id]
+    if schema_id in spec.auto_generated_schemas:
+        return spec.auto_generated_schemas[schema_id]
 
     # no similar schema found, create new one
     class NewSchema(cls_schema):
@@ -106,5 +105,5 @@ def default_schema_class_resolver(schema):
         cls_schema.__name__,
         id(NewSchema),
     )
-    auto_generated_schemas[schema_id] = NewSchema
+    spec.auto_generated_schemas[schema_id] = NewSchema
     return NewSchema

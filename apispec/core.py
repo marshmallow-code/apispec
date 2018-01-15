@@ -153,6 +153,7 @@ class APISpec(object):
         self.auto_referencing = auto_referencing
         self.schema_name_resolver = schema_name_resolver
         self.schema_class_resolver = schema_class_resolver
+        self.auto_generated_schemas = {}
         # Metadata
         self._definitions = {}
         self._parameters = {}
