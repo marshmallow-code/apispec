@@ -1,9 +1,15 @@
-import copy
-
+# Global list of auto-generated schemas,
+# dict with str id generated with generate_id method as key
+# and schema cls as value
 auto_generated_schemas = {}
 
 
-def default_schema_name_resolver(schema):
+def default_schema_name_resolver(schema) -> str:
+    """
+    Return best candidate name for one schema cls or instance.
+    :param schema: instance or cls schema
+    :return: best schema name
+    """
     if not isinstance(schema, type):
         schema = type(schema)
 
@@ -14,7 +20,15 @@ def default_schema_name_resolver(schema):
 
     return schema_name
 
-def get_excluded_params(schema):
+
+def get_excluded_params(schema) -> set:
+    """
+    Get all params excluded in this schema,
+    if "only" is provided in schema instance,
+    consider all not included params as excluded.
+    :param schema: instance or cls schema
+    :return: set of excluded params
+    """
     if isinstance(schema, type):
         return set()
 
@@ -31,8 +45,14 @@ def get_excluded_params(schema):
     return exclude
 
 
-def generate_id(schema, exclude=()):
-    # cls_name
+def generate_id(schema, exclude=()) -> str:
+    """
+    Generate id in order to distinct 2 schemas, instance
+    or cls.
+    :param schema: base_schema
+    :param exclude: excluded fields
+    :return: str id related to schema and exclude params
+    """
     schema_id = ''
     if isinstance(schema, type):
         schema_id += schema.__name__
@@ -52,6 +72,11 @@ def generate_id(schema, exclude=()):
 
 
 def default_schema_class_resolver(schema):
+    """
+    Return best candidate class for a schema instance or cls.
+    :param schema: schema instance or cls
+    :return: best schema cls
+    """
     if isinstance(schema, type):
         return schema
 
