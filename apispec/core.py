@@ -4,10 +4,10 @@ import re
 from collections import OrderedDict
 from distutils import version
 
-from apispec.auto_ref_strategy import \
-    default_schema_name_resolver, default_schema_class_resolver
 import yaml
 
+from apispec.auto_ref_strategy import default_schema_name_resolver
+from apispec.auto_ref_strategy import default_schema_class_resolver
 from apispec.compat import iterkeys, PY2, unicode
 from apispec.lazy_dict import LazyDict
 from .exceptions import APISpecError, PluginError
