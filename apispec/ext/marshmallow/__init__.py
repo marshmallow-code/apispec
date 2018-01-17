@@ -61,8 +61,8 @@ def inspect_schema_for_auto_referencing(spec, original_schema_instance):
     :param spec: apispec.core.APISpec instance
     :param original_schema_instance: schema to parse
     """
-    # spec.schema_name_resolver must be provided to use this function
-    assert spec.schema_name_resolver
+    # spec.auto_referencing must be provided to use this function
+    assert spec.auto_referencing
 
     plug = spec.plugins[NAME]
     if 'refs' not in plug:
@@ -72,11 +72,17 @@ def inspect_schema_for_auto_referencing(spec, original_schema_instance):
         nested_schema_class = None
 
         if isinstance(field, marshmallow.fields.Nested):
-            nested_schema_class = get_schema_class(field.schema)
+            nested_schema_class = spec.schema_class_resolver(
+                spec,
+                field.schema,
+            )
 
         elif isinstance(field, marshmallow.fields.List) \
                 and isinstance(field.container, marshmallow.fields.Nested):
-            nested_schema_class = get_schema_class(field.container.schema)
+            nested_schema_class = spec.schema_class_resolver(
+                spec,
+                field.container.schema,
+            )
 
         if nested_schema_class and nested_schema_class not in plug['refs']:
             definition_name = spec.schema_name_resolver(
@@ -109,7 +115,7 @@ def schema_definition_helper(spec, name, schema, **kwargs):
     json_schema = swagger.schema2jsonschema(schema_instance, spec=spec, name=name)
 
     # Auto reference schema if spec.schema_name_resolver
-    if spec and spec.schema_name_resolver:
+    if spec and spec.auto_referencing:
         inspect_schema_for_auto_referencing(spec, schema_instance)
 
     return json_schema
@@ -244,6 +250,11 @@ def resolve_schema_dict(spec, schema, dump=True, use_instances=False):
     plug = spec.plugins[NAME] if spec else {}
     if isinstance(schema, marshmallow.Schema) and use_instances:
         schema_cls = schema
+    elif spec and spec.auto_referencing:
+        schema_cls = spec.schema_class_resolver(
+            spec,
+            schema,
+        )
     else:
         schema_cls = resolve_schema_cls(schema)
 
