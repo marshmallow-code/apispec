@@ -60,7 +60,7 @@ class TestDefinitionHelper:
             return schema.__name__
 
         def class_resolver(spec, schema):
-            if isinstance(schema,type):
+            if isinstance(schema, type):
                 return schema
             else:
                 return type(schema)
@@ -189,7 +189,6 @@ class TestDefinitionHelper:
         json.dumps(spec_dict)
         # Other shema still not referenced
         assert 1 == len(spec._definitions)
-
 
     @pytest.mark.parametrize('schema', [AnalysisSchema, AnalysisSchema()])
     def test_resolve_schema_dict_auto_reference_custom_schema_resolver(self, schema):
