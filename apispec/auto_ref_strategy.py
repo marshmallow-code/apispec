@@ -2,7 +2,7 @@
 """Default auto referencing strategy for apispec """
 
 
-def default_schema_name_resolver(schema) -> str:
+def default_schema_name_resolver(schema):
     """
     Return best candidate name for one schema cls or instance.
     :param schema: instance or cls schema
@@ -19,7 +19,7 @@ def default_schema_name_resolver(schema) -> str:
     return schema_name
 
 
-def get_excluded_params(schema) -> set:
+def get_excluded_params(schema):
     """
     Get all params excluded in this schema,
     if "only" is provided in schema instance,
@@ -43,7 +43,7 @@ def get_excluded_params(schema) -> set:
     return exclude
 
 
-def generate_id(schema, exclude=()) -> str:
+def generate_id(schema, exclude=()):
     """
     Generate id in order to distinct 2 schemas, instance
     or cls.

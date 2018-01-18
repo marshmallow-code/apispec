@@ -204,7 +204,9 @@ class TestDefinitionHelper:
             else:
                 if getattr(schema, 'exclude', ()):
                     exclude = set(getattr(schema, 'exclude', ()))
-
+                    str_exclude = ''
+                    for elem in exclude:
+                        str_exclude += '_{}'.format(elem)
                     cls_schema = type(schema)
 
                     class NewSchema(cls_schema):
@@ -212,9 +214,9 @@ class TestDefinitionHelper:
 
                     NewSchema.opts.exclude = exclude
                     NewSchema.__name__ = cls_schema.__name__
-                    NewSchema._schema_name = '{}_{}'.format(
+                    NewSchema._schema_name = '{}-{}'.format(
                         cls_schema.__name__,
-                        str(exclude),
+                        str_exclude,
                     )
                     return NewSchema
                 else:
@@ -249,7 +251,7 @@ class TestDefinitionHelper:
 
         assert 'analysis' in spec._definitions
         assert 'SampleSchema' in spec._definitions
-        assert "RunSchema_{'sample'}" in spec._definitions
+        assert 'RunSchema-_sample' in spec._definitions
 
 
 class TestCustomField:
