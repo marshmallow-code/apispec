@@ -92,9 +92,7 @@ def _observed_name(field, name):
     # use getattr in case we're running against older versions of marshmallow.
     dump_to = getattr(field, 'dump_to', None)
     load_from = getattr(field, 'load_from', None)
-    if load_from != dump_to:
-        return name
-    return dump_to or name
+    return dump_to or load_from or name
 
 
 def _get_json_type_for_field(field):
