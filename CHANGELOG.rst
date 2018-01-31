@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.31.0 (2018-01-30)
++++++++++++++++++++
+
+- [apispec.ext.marshmallow]: Use ``dump_to`` for name even if
+  ``load_from`` does not match it (:issue:`178`). Thanks :user:`LeonAgmonNacht`
+  for reporting and thanks :user:`lafrech` for the fix.
+
 0.30.0 (2018-01-12)
 +++++++++++++++++++
 
