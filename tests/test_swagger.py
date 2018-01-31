@@ -230,7 +230,8 @@ class TestMarshmallowSchemaToModelDefinition:
     def test_schema2jsonschema_override_name(self):
         class ExampleSchema(Schema):
             _id = fields.Int(load_from='id', dump_to='id')
-            _as = fields.Int(load_from='as', dump_to='other')
+            _dt = fields.Int(load_from='lf_no_match', dump_to='dt')
+            _lf = fields.Int(load_from='lf')
             _global = fields.Int(load_from='global', dump_to='global')
 
             class Meta:
@@ -241,8 +242,11 @@ class TestMarshmallowSchemaToModelDefinition:
         props = res['properties']
         # `_id` renamed to `id`
         assert '_id' not in props and props['id']['type'] == 'integer'
-        # `load_from` and `dump_to` do not match for `_as`
-        assert 'as' not in props
+        # `load_from` and `dump_to` do not match, `dump_to` is used
+        assert 'lf_no_match' not in props
+        assert props['dt']['type'] == 'integer'
+        # `load_from` and no `dump_to`, `load_from` is used
+        assert props['lf']['type'] == 'integer'
         # `_global` excluded correctly
         assert '_global' not in props and 'global' not in props
 
