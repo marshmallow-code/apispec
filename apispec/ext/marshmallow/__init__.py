@@ -203,8 +203,9 @@ def resolve_parameters(spec, parameters):
         if not isinstance(parameter.get('schema', {}), dict):
             schema_cls = resolve_schema_cls(parameter['schema'])
             if issubclass(schema_cls, marshmallow.Schema) and 'in' in parameter:
+                del parameter['schema']
                 resolved += swagger.schema2parameters(
-                    schema_cls, default_in=parameter['in'], spec=spec)
+                    schema_cls, default_in=parameter.pop('in'), spec=spec, **parameter)
                 continue
         resolved.append(parameter)
     return resolved
