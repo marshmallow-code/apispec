@@ -452,6 +452,35 @@ class TestOperationHelper:
             'items': {'$ref': '#/definitions/Pet'}
         }
 
+    def test_schema_partially_in_docstring(self, spec):
+        spec.definition('Pet', schema=PetSchema)
+
+        def pet_parents_view():
+            """Not much to see here.
+
+            ---
+            get:
+                responses:
+                    200:
+                        schema:
+                            type: object
+                            properties:
+                                mother: tests.schemas.PetSchema
+                                father: tests.schemas.PetSchema
+            """
+            return '...'
+
+        spec.add_path(path='/parents', view=pet_parents_view)
+        p = spec._paths['/parents']
+        op = p['get']
+        assert op['responses'][200]['schema'] == {
+            'type': 'object',
+            'properties': {
+                "mother": {'$ref': '#/definitions/Pet'},
+                "father": {'$ref': '#/definitions/Pet'},
+            },
+        }
+
     def test_other_than_http_method_in_docstring(self, spec):
         def pet_view():
             """Not much to see here.

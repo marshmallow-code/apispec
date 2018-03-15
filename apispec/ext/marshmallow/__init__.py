@@ -238,8 +238,11 @@ def resolve_schema_in_response(spec, response):
 
 def resolve_schema_dict(spec, schema, dump=True, use_instances=False):
     if isinstance(schema, dict):
-        if (schema.get('type') == 'array' and 'items' in schema):
+        if schema.get('type') == 'array' and 'items' in schema:
             schema['items'] = resolve_schema_dict(spec, schema['items'], use_instances=use_instances)
+        if schema.get('type') == 'object' and 'properties' in schema:
+            schema['properties'] = {k: resolve_schema_dict(spec, v, dump=dump, use_instances=use_instances)
+                                    for k, v in schema['properties'].items()}
         return schema
     plug = spec.plugins[NAME] if spec else {}
     if isinstance(schema, marshmallow.Schema) and use_instances:
