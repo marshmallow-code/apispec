@@ -129,6 +129,10 @@ class TestMarshmallowFieldToSwagger:
         res = swagger.fields2parameters(field_dict, default_in='headers')
         assert res[0]['in'] == 'header'
 
+        field_dict = {'field': fields.Str()}
+        res = swagger.fields2parameters(field_dict, default_in='match_info')
+        assert res[0]['in'] == 'path'
+
     def test_fields_default_location_mapping_if_schema_many(self):
 
         class ExampleSchema(Schema):
