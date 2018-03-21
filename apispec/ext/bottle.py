@@ -30,17 +30,16 @@ from apispec import Path
 from apispec import utils
 from apispec.exceptions import APISpecError
 
-app = default_app()
-
 
 RE_URL = re.compile(r'<(?:[^:<>]+:)?([^<>]+)>')
 
+_default_app = default_app()
 
 def bottle_path_to_swagger(path):
     return RE_URL.sub(r'{\1}', path)
 
 
-def _route_for_view(view):
+def _route_for_view(app, view):
     endpoint = None
     for route in app.routes:
         if route._context['callback'] == view:
@@ -54,7 +53,8 @@ def _route_for_view(view):
 def path_from_router(spec, view, operations, **kwargs):
     """Path helper that allows passing a bottle view funciton."""
     operations = utils.load_operations_from_docstring(view.__doc__)
-    route = _route_for_view(view)
+    app = kwargs.get('app', _default_app)
+    route = _route_for_view(app, view)
     bottle_path = bottle_path_to_swagger(route.rule)
     return Path(path=bottle_path, operations=operations)
 
