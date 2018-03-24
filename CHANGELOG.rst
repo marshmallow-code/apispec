@@ -1,6 +1,22 @@
 Changelog
 ---------
 
+0.32.0 (unreleased)
++++++++++++++++++++
+
+Features:
+
+- [apispec.ext.bottle]: Allow `app` to be passed to `spec.add_path`
+  (:issue:`188`). Thanks :user:`dtaniwaki` for the PR.
+
+Bug fixes:
+
+- [apispec.ext.marshmallow]: Fix issue where "body" and "required" were
+  getting overwritten when passing a ``Schema`` to a parameter
+  (:issue:`168`, :issue:`184`).
+  Thanks :user:`dlopuch` and :user:`mathewmarcus` for reporting and
+  thanks :user:`mathewmarcus` for the PR.
+
 0.31.0 (2018-01-30)
 +++++++++++++++++++
 

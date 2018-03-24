@@ -42,3 +42,5 @@ Contributors (chronological)
 - Bastien Sevajol `@buxx <https://github.com/buxx>`_
 - Durmus Karatay `@ukaratay <https://github.com/ukaratay>`_
 - Julien Danjou `@jd <https://github.com/jd>`_
+- Daisuke Taniwaki `@dtaniwaki <https://github.com/dtaniwaki`_
+- `@mathewmarcus <https://github.com/mathewmarcus>`_
