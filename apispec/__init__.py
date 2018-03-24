@@ -3,7 +3,7 @@
 """
 from .core import APISpec, Path
 
-__version__ = '0.31.0'
+__version__ = '0.32.0'
 __author__ = 'Steven Loria, Josh Carp, and contributors'
 __license__ = 'MIT'
 
