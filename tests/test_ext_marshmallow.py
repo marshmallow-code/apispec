@@ -341,6 +341,9 @@ class TestOperationHelper:
             post:
                 parameters:
                     - in: body
+                      description: "a pet schema"
+                      required: true
+                      name: pet
                       schema: tests.schemas.PetSchema
             """
             return '...'
@@ -353,7 +356,8 @@ class TestOperationHelper:
         assert get['parameters'] == swagger.schema2parameters(PetSchema, default_in='query')
         post = p['post']
         assert 'parameters' in post
-        assert post['parameters'] == swagger.schema2parameters(PetSchema, default_in='body')
+        assert post['parameters'] == swagger.schema2parameters(PetSchema, default_in='body', required=True,
+                                                               name='pet', description='a pet schema')
 
     def test_schema_in_docstring_uses_ref_if_available(self, spec):
         spec.definition('Pet', schema=PetSchema)

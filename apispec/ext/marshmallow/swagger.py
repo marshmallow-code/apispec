@@ -360,13 +360,12 @@ def schema2parameters(schema, **kwargs):
         raise ValueError(
             "{0!r} doesn't have either `fields` or `_declared_fields`".format(schema)
         )
-
     return fields2parameters(fields, schema, **kwargs)
 
 
 def fields2parameters(fields, schema=None, spec=None, use_refs=True,
                       default_in='body', name='body', required=False,
-                      use_instances=False):
+                      use_instances=False, description=None, **kwargs):
     """Return an array of OpenAPI parameters given a mapping between field names and
     :class:`Field <marshmallow.Field>` objects. If `default_in` is "body", then return an array
     of a single parameter; else return an array of a parameter for each included field in
@@ -383,12 +382,17 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True,
         else:
             prop = fields2jsonschema(fields, spec=spec, use_refs=use_refs, dump=False)
 
-        return [{
+        param = {
             'in': swagger_default_in,
             'required': required,
             'name': name,
             'schema': prop,
-        }]
+        }
+
+        if description:
+            param['description'] = description
+
+        return [param]
 
     assert not getattr(schema, 'many', False), \
         "Schemas with many=True are only supported for 'json' location (aka 'in: body')"
