@@ -70,7 +70,7 @@ class Path(object):
 
     def __init__(self, path=None, operations=None, openapi_version='2.0'):
         self.path = path
-        operations = operations or {}
+        operations = operations or OrderedDict()
         openapi_version = validate_openapi_version(openapi_version)
         clean_operations(operations, openapi_version.version[0])
         invalid = {key for key in
