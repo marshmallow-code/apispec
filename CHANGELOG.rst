@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+0.33.0 (2018-04-01)
++++++++++++++++++++
+
+Features:
+
+- [apispec.ext.marshmallow]: Respect ``data_key`` argument on fields
+  (in marshmallow 3). Thanks :user:`lafrech`.
+
 0.32.0 (2018-03-24)
 +++++++++++++++++++
 
