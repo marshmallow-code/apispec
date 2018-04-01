@@ -227,7 +227,9 @@ class TestMarshmallowSchemaToModelDefinition:
         assert props['email']['format'] == 'email'
         assert props['email']['description'] == 'email address of the user'
 
-    def test_schema2jsonschema_override_name(self):
+    @pytest.mark.skipif(swagger.MARSHMALLOW_VERSION_INFO[0] >= 3,
+                        reason='Behaviour changed in marshmallow 3')
+    def test_schema2jsonschema_override_name_ma2(self):
         class ExampleSchema(Schema):
             _id = fields.Int(load_from='id', dump_to='id')
             _dt = fields.Int(load_from='lf_no_match', dump_to='dt')
@@ -247,6 +249,24 @@ class TestMarshmallowSchemaToModelDefinition:
         assert props['dt']['type'] == 'integer'
         # `load_from` and no `dump_to`, `load_from` is used
         assert props['lf']['type'] == 'integer'
+        # `_global` excluded correctly
+        assert '_global' not in props and 'global' not in props
+
+    @pytest.mark.skipif(swagger.MARSHMALLOW_VERSION_INFO[0] < 3,
+                        reason='Behaviour changed in marshmallow 3')
+    def test_schema2jsonschema_override_name_ma3(self):
+        class ExampleSchema(Schema):
+            _id = fields.Int(data_key='id')
+            _global = fields.Int(data_key='global')
+
+            class Meta:
+                exclude = ('_global', )
+
+        res = swagger.schema2jsonschema(ExampleSchema)
+        assert res['type'] == 'object'
+        props = res['properties']
+        # `_id` renamed to `id`
+        assert '_id' not in props and props['id']['type'] == 'integer'
         # `_global` excluded correctly
         assert '_global' not in props and 'global' not in props
 
@@ -315,9 +335,14 @@ class TestMarshmallowSchemaToModelDefinition:
         assert issubclass(warning.category, UserWarning)
 
     def test_observed_field_name_for_required_field(self):
-        fields_dict = {
-            "user_id": fields.Int(load_from="id", dump_to="id", required=True)
-        }
+        if swagger.MARSHMALLOW_VERSION_INFO[0] < 3:
+            fields_dict = {
+                "user_id": fields.Int(load_from="id", dump_to="id", required=True)
+            }
+        else:
+            fields_dict = {
+                "user_id": fields.Int(data_key="id", required=True)
+            }
 
         res = swagger.fields2jsonschema(fields_dict)
         assert res["required"] == ["id"]

@@ -20,6 +20,10 @@ from apispec.lazy_dict import LazyDict
 
 ##### marshmallow #####
 
+MARSHMALLOW_VERSION_INFO = tuple(
+    [int(part) for part in marshmallow.__version__.split('.') if part.isdigit()]
+)
+
 # marshmallow field => (JSON Schema type, format)
 FIELD_MAPPING = {
     marshmallow.fields.Integer: ('integer', 'int32'),
@@ -89,10 +93,13 @@ def _observed_name(field, name):
     :param str name: Field name
     :rtype: str
     """
-    # use getattr in case we're running against older versions of marshmallow.
-    dump_to = getattr(field, 'dump_to', None)
-    load_from = getattr(field, 'load_from', None)
-    return dump_to or load_from or name
+    if MARSHMALLOW_VERSION_INFO[0] < 3:
+        # use getattr in case we're running against older versions of marshmallow.
+        dump_to = getattr(field, 'dump_to', None)
+        load_from = getattr(field, 'load_from', None)
+        return dump_to or load_from or name
+    else:
+        return field.data_key or name
 
 
 def _get_json_type_for_field(field):
