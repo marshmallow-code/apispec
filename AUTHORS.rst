@@ -8,6 +8,8 @@ Leads
 - Steven Loria `@sloria <https://github.com/sloria>`_
 - Josh Carp `@jmcarp <https://github.com/jmcarp>`_
 - Yoichi NAKAYAMA `@yoichi <https://github.com/yoichi>`_
+- Jérôme Lafréchoux `@lafrech <https://github.com/lafrech>`_
+- Michael Bangert `@Bangertm <https://github.com/Bangertm>`_
 
 Contributors (chronological)
 ============================
