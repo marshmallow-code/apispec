@@ -92,3 +92,7 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Node stuff:
+node_modules/
+package-lock.json
