@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from collections import OrderedDict
+
 import pytest
 import mock
 import yaml
@@ -210,6 +212,12 @@ class TestPath:
         spec.add_path(path='/path3')
         spec.add_path(path='/path4')
         assert list(spec.to_dict()['paths'].keys()) == ['/path1', '/path2', '/path3', '/path4']
+
+    def test_methods_maintain_order(self, spec):
+        methods = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options']
+        for method in methods:
+            spec.add_path(path='/path', operations=OrderedDict({method: {}}))
+        assert list(spec.to_dict()['paths']['/path']) == methods
 
     def test_add_path_merges_paths(self, spec):
         """Test that adding a second HTTP method to an existing path performs
