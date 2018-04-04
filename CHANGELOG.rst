@@ -1,6 +1,19 @@
 Changelog
 ---------
 
+0.34.0 (2018-04-04)
++++++++++++++++++++
+
+Features:
+
+- [apispec.core]: Maintain order in which methods are added to an
+  endpoint (:issue:`189`). Thanks :user:`lafrech`.
+
+Other changes:
+
+- [apispec.core]: `Path` no longer inherits from `dict` (:issue:`190`).
+  Thanks :user:`lafrech`.
+
 0.33.0 (2018-04-01)
 +++++++++++++++++++
 
