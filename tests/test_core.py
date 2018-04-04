@@ -274,7 +274,7 @@ class TestPath:
         spec.add_path(path)
 
         p = spec._paths[path.path]
-        assert path.path == p.path
+        assert p == path.operations
         assert 'get' in p
 
     def test_add_path_strips_path_base_path(self, spec):
@@ -419,7 +419,7 @@ class TestPathHelpers:
 
     def test_path_helper_is_used(self, spec):
         def path_helper(spec, view_func, **kwargs):
-            return Path(path=view_func['path'], method='get')
+            return Path(path=view_func['path'])
         spec.register_path_helper(path_helper)
         spec.add_path(
             view_func={'path': '/pet/{petId}'},
