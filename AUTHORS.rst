@@ -46,3 +46,4 @@ Contributors (chronological)
 - Julien Danjou `@jd <https://github.com/jd>`_
 - Daisuke Taniwaki `@dtaniwaki <https://github.com/dtaniwaki`_
 - `@mathewmarcus <https://github.com/mathewmarcus>`_
+- Louis-Philippe Huberdeau `@lphuberdeau <https://github.com/lphuberdeau>`_

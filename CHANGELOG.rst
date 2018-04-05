@@ -1,6 +1,20 @@
 Changelog
 ---------
 
+0.35.0 (unreleased)
++++++++++++++++++++
+
+Features:
+
+- [apispec.ext.marshmallow]: Recurse over properties when resolving
+  schemas (:issue:`186`). Thanks :user:`lphuberdeau`.
+
+Bug fixes:
+
+- [apispec.ext.marshmallow]: Always use `field.missing` instead of
+  `field.default` when introspecting fields (:issue:`32`). Thanks
+  :user:`lafrech`.
+
 0.34.0 (2018-04-04)
 +++++++++++++++++++
 
