@@ -18,7 +18,7 @@ A pluggable API specification generator. Currently supports the `OpenAPI Specifi
 Features
 ========
 
-- Supports OpenAPI Specification vesions 2 and 3 (f.k.a. the Swagger specification)
+- Supports OpenAPI Specification version 2 (f.k.a. the Swagger specification) with limited support for version 3.
 - Framework-agnostic
 - Includes plugins for `marshmallow <https://marshmallow.readthedocs.io/>`_, `Flask <http://flask.pocoo.org/>`_, `Tornado <http://www.tornadoweb.org/>`_, and `bottle <http://bottlepy.org/docs/dev/>`_.
 - Utilities for parsing docstrings
