@@ -216,6 +216,23 @@ def field2length(field):
     return attributes
 
 
+def field2nullable(field, spec):
+    """Returns the dictionary with an appropriate nullable key depending on
+    the OpenAPI version.  Returns an empty dict if the field is not nullable
+
+    :param Field field: A marshmallow field.
+    :param spec: apispec.core.APISpec instance
+    :rtype: dict
+    """
+    if not field.allow_none:
+        return {}
+
+    if spec and spec.openapi_version.version[0] == 3:
+        return {'nullable': True}
+
+    return {'x-nullable': True}
+
+
 # Properties that may be defined in a field's metadata that will be added to the output
 # of field2property
 # https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
@@ -293,8 +310,7 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
     if field.dump_only:
         ret['readOnly'] = True
 
-    if field.allow_none:
-        ret['x-nullable'] = True
+    ret.update(field2nullable(field, spec))
 
     ret.update(field2range(field))
     ret.update(field2length(field))
