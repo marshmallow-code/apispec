@@ -111,25 +111,52 @@ def _get_json_type_for_field(field):
 
 
 def field2choices(field):
-    """Return the set of valid choices for a :class:`Field <marshmallow.fields.Field>`,
-    or ``None`` if no choices are specified.
+    """Return the dictionary of swagger field attributes for valid choices definition
 
     :param Field field: A marshmallow field.
-    :rtype: set
+    :rtype: dict
     """
-    comparable = {
+    attributes = {}
+
+    comparable = [
         validator.comparable for validator in field.validators
         if hasattr(validator, 'comparable')
-    }
-    if comparable:
-        return comparable
-
-    choices = [
-        OrderedSet(validator.choices) for validator in field.validators
-        if hasattr(validator, 'choices')
     ]
-    if choices:
-        return functools.reduce(operator.and_, choices)
+    if comparable:
+        attributes['enum'] = comparable
+    else:
+        choices = [
+            OrderedSet(validator.choices) for validator in field.validators
+            if hasattr(validator, 'choices')
+        ]
+        if choices:
+            attributes['enum'] = list(functools.reduce(operator.and_, choices))
+
+    return attributes
+
+
+def field2dump_only(field):
+    """Return the dictionary of swagger field attributes for a dump_only field.
+
+    :param Field field: A marshmallow field.
+    :rtype: dict
+    """
+    attributes = {}
+    if field.dump_only:
+        attributes['readOnly'] = True
+    return attributes
+
+
+def field2nullable(field):
+    """Return the dictionary of swagger field attributes for a nullable field.
+
+    :param Field field: A marshmallow field.
+    :rtype: dict
+    """
+    attributes = {}
+    if field.allow_none:
+        attributes['x-nullable'] = True
+    return attributes
 
 
 def field2range(field):
@@ -286,18 +313,14 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
         else:
             ret['default'] = default
 
-    choices = field2choices(field)
-    if choices:
-        ret['enum'] = list(choices)
-
-    if field.dump_only:
-        ret['readOnly'] = True
-
-    if field.allow_none:
-        ret['x-nullable'] = True
-
-    ret.update(field2range(field))
-    ret.update(field2length(field))
+    for attr_func in (
+        field2choices,
+        field2dump_only,
+        field2nullable,
+        field2range,
+        field2length,
+    ):
+        ret.update(attr_func(field))
 
     if isinstance(field, marshmallow.fields.Nested):
         del ret['type']
