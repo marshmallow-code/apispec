@@ -135,7 +135,7 @@ def field2choices(field, **kwargs):
     return attributes
 
 
-def field2dump_only(field, **kwargs):
+def field2read_only(field, **kwargs):
     """Return the dictionary of swagger field attributes for a dump_only field.
 
     :param Field field: A marshmallow field.
@@ -144,6 +144,18 @@ def field2dump_only(field, **kwargs):
     attributes = {}
     if field.dump_only:
         attributes['readOnly'] = True
+    return attributes
+
+
+def field2write_only(field, **kwargs):
+    """Return the dictionary of swagger field attributes for a load_only field.
+
+    :param Field field: A marshmallow field.
+    :rtype: dict
+    """
+    attributes = {}
+    if field.load_only and kwargs['openapi_major_version'] >= 3:
+        attributes['writeOnly'] = True
     return attributes
 
 
@@ -322,7 +334,8 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
 
     for attr_func in (
         field2choices,
-        field2dump_only,
+        field2read_only,
+        field2write_only,
         field2nullable,
         field2range,
         field2length,

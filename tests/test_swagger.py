@@ -387,13 +387,21 @@ class TestMarshmallowSchemaToModelDefinition:
         assert excinfo.value.args[0] == ("{0!r} doesn't have either `fields` "
                                          "or `_declared_fields`".format(NotASchema))
 
-    def test_dump_only_load_only_fields(self):
+    @pytest.mark.parametrize('openapi_version', ['2.0.0', '3.0.0'])
+    def test_dump_only_load_only_fields(self, openapi_version):
+        spec = APISpec(
+            title='Pets',
+            version='0.1',
+            plugins=['apispec.ext.marshmallow'],
+            openapi_version=openapi_version
+        )
+
         class UserSchema(Schema):
             _id = fields.Str(dump_only=True)
             name = fields.Str()
             password = fields.Str(load_only=True)
 
-        res = swagger.schema2jsonschema(UserSchema())
+        res = swagger.schema2jsonschema(UserSchema(), spec)
         props = res['properties']
         assert 'name' in props
         # dump_only field appears with readOnly attribute
@@ -401,6 +409,10 @@ class TestMarshmallowSchemaToModelDefinition:
         assert 'readOnly' in props['_id']
         # load_only field appears (writeOnly attribute does not exist)
         assert 'password' in props
+        if openapi_version == '2.0.0':
+            assert 'writeOnly' not in props['password']
+        else:
+            assert 'writeOnly' in props['password']
 
 
 class TestMarshmallowSchemaToParameters:
