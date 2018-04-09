@@ -155,7 +155,8 @@ def field2nullable(field, **kwargs):
     """
     attributes = {}
     if field.allow_none:
-        attributes['x-nullable'] = True
+        omv = kwargs['openapi_major_version']
+        attributes['x-nullable' if omv < 3 else 'nullable'] = True
     return attributes
 
 
