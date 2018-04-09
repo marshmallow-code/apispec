@@ -110,7 +110,7 @@ def _get_json_type_for_field(field):
     return json_type, fmt
 
 
-def field2choices(field):
+def field2choices(field, **kwargs):
     """Return the dictionary of swagger field attributes for valid choices definition
 
     :param Field field: A marshmallow field.
@@ -135,7 +135,7 @@ def field2choices(field):
     return attributes
 
 
-def field2dump_only(field):
+def field2dump_only(field, **kwargs):
     """Return the dictionary of swagger field attributes for a dump_only field.
 
     :param Field field: A marshmallow field.
@@ -147,7 +147,7 @@ def field2dump_only(field):
     return attributes
 
 
-def field2nullable(field):
+def field2nullable(field, **kwargs):
     """Return the dictionary of swagger field attributes for a nullable field.
 
     :param Field field: A marshmallow field.
@@ -159,7 +159,7 @@ def field2nullable(field):
     return attributes
 
 
-def field2range(field):
+def field2range(field, **kwargs):
     """Return the dictionary of swagger field attributes for a set of
     :class:`Range <marshmallow.validators.Range>` validators.
 
@@ -195,7 +195,7 @@ def field2range(field):
                 attributes['maximum'] = validator.max
     return attributes
 
-def field2length(field):
+def field2length(field, **kwargs):
     """Return the dictionary of swagger field attributes for a set of
     :class:`Length <marshmallow.validators.Length>` validators.
 
@@ -296,6 +296,12 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
     :param str name: The definition name, if applicable, used to construct the $ref value.
     :rtype: dict, a Property Object
     """
+    if spec:
+        openapi_major_version = spec.openapi_version.version[0]
+    else:
+        # Default to 2 for backward compatibility
+        openapi_major_version = 2
+
     from apispec.ext.marshmallow import resolve_schema_dict
     type_, fmt = _get_json_type_for_field(field)
 
@@ -320,7 +326,8 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
         field2range,
         field2length,
     ):
-        ret.update(attr_func(field))
+        ret.update(attr_func(
+            field, openapi_major_version=openapi_major_version))
 
     if isinstance(field, marshmallow.fields.Nested):
         del ret['type']
@@ -336,7 +343,7 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
                     raise ValueError('Must pass `name` argument for self-referencing Nested fields.')
                 # We need to use the `name` argument when the field is self-referencing and
                 # unbound (doesn't have `parent` set) because we can't access field.schema
-                ref_path = get_ref_path(spec.openapi_version.version[0])
+                ref_path = get_ref_path(openapi_major_version)
                 ref_name =  '#/{ref_path}/{name}'.format(ref_path=ref_path,
                                                          name=name)
             ref_schema = {'$ref': ref_name}
