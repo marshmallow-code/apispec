@@ -202,6 +202,18 @@ class TestMarshmallowFieldToSwagger:
         res = swagger.field2property(field)
         assert res['x-nullable'] is True
 
+    def test_field_with_allow_none_v3(self):
+        spec = APISpec(
+            title='Pets',
+            version='0.1',
+            plugins=['apispec.ext.marshmallow'],
+            openapi_version='3.0.0'
+        )
+        field = fields.Str(allow_none=True)
+        res = swagger.field2property(field, spec)
+        assert res['nullable'] is True
+
+
 class TestMarshmallowSchemaToModelDefinition:
 
     def test_invalid_schema(self):
