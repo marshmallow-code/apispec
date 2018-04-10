@@ -279,7 +279,7 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
     if fmt:
         ret['format'] = fmt
 
-    default = field.default if dump else field.missing
+    default = field.missing
     if default is not marshmallow.missing:
         if callable(default):
             ret['default'] = default()

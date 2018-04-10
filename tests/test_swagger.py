@@ -65,27 +65,27 @@ class TestMarshmallowFieldToSwagger:
         res = swagger.field2property(field)
         assert res['description'] == 'a username'
 
-    def test_field_with_default(self):
+    def test_field_with_missing(self):
         field = fields.Str(default='foo', missing='bar')
         res = swagger.field2property(field)
-        assert res['default'] == 'foo'
+        assert res['default'] == 'bar'
 
-    def test_field_with_boolean_false_default(self):
-        field = fields.Boolean(default=False, missing=None)
+    def test_field_with_boolean_false_missing(self):
+        field = fields.Boolean(default=None, missing=False)
         res = swagger.field2property(field)
         assert res['default'] is False
 
-    def test_field_with_default_load(self):
+    def test_field_with_missing_load(self):
         field = fields.Str(default='foo', missing='bar')
         res = swagger.field2property(field, dump=False)
         assert res['default'] == 'bar'
 
-    def test_field_with_boolean_false_default_load(self):
+    def test_field_with_boolean_false_missing_load(self):
         field = fields.Boolean(default=None, missing=False)
         res = swagger.field2property(field, dump=False)
         assert res['default'] is False
 
-    def test_fields_with_default_load(self):
+    def test_fields_with_missing_load(self):
         field_dict = {'field': fields.Str(default='foo', missing='bar')}
         res = swagger.fields2parameters(field_dict, default_in='query')
         assert res[0]['default'] == 'bar'
@@ -170,15 +170,14 @@ class TestMarshmallowFieldToSwagger:
 
     def test_only_allows_valid_properties_in_metadata(self):
         field = fields.Str(
-            default='foo',
+            missing='foo',
             description='foo',
             enum=['red', 'blue'],
             allOf=['bar'],
             not_valid='lol'
         )
         res = swagger.field2property(field)
-        assert 'default' in res
-        assert res['default'] == field.default
+        assert res['default'] == field.missing
         assert 'description' in res
         assert 'enum' in res
         assert 'allOf' in res
