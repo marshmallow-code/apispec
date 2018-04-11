@@ -1,19 +1,28 @@
 Changelog
 ---------
 
-0.35.0 (unreleased)
+0.35.0 (2018-04-10)
 +++++++++++++++++++
 
 Features:
 
 - [apispec.ext.marshmallow]: Recurse over properties when resolving
   schemas (:issue:`186`). Thanks :user:`lphuberdeau`.
+- [apispec.ext.marshmallow]: Support ``writeOnly`` and ``nullable`` in
+  OpenAPI 3 (fall back to ``x-nullable`` for OpenAPI 2) (:issue:`165`).
+  Thanks :user:`lafrech`.
 
 Bug fixes:
 
 - [apispec.ext.marshmallow]: Always use `field.missing` instead of
   `field.default` when introspecting fields (:issue:`32`). Thanks
   :user:`lafrech`.
+
+Other changes:
+
+- [apispec.ext.marshmallow]: Refactor some of the internal functions in
+  `apispec.ext.marshmallow.swagger` for consistent API (:issue:`199`).
+  Thanks :user:`lafrech`.
 
 0.34.0 (2018-04-04)
 +++++++++++++++++++
