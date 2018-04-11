@@ -20,7 +20,6 @@ def confirm_ext_order_independency(web_framework, **kwargs_for_add_path):
     extensions = [web_framework, 'marshmallow']
     specs = []
     for reverse in (False, True):
-        print(reverse)
         if reverse:
             spec = create_spec(reversed(extensions))
         else:

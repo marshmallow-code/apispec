@@ -110,29 +110,69 @@ def _get_json_type_for_field(field):
     return json_type, fmt
 
 
-def field2choices(field):
-    """Return the set of valid choices for a :class:`Field <marshmallow.fields.Field>`,
-    or ``None`` if no choices are specified.
+def field2choices(field, **kwargs):
+    """Return the dictionary of swagger field attributes for valid choices definition
 
     :param Field field: A marshmallow field.
-    :rtype: set
+    :rtype: dict
     """
-    comparable = {
+    attributes = {}
+
+    comparable = [
         validator.comparable for validator in field.validators
         if hasattr(validator, 'comparable')
-    }
-    if comparable:
-        return comparable
-
-    choices = [
-        OrderedSet(validator.choices) for validator in field.validators
-        if hasattr(validator, 'choices')
     ]
-    if choices:
-        return functools.reduce(operator.and_, choices)
+    if comparable:
+        attributes['enum'] = comparable
+    else:
+        choices = [
+            OrderedSet(validator.choices) for validator in field.validators
+            if hasattr(validator, 'choices')
+        ]
+        if choices:
+            attributes['enum'] = list(functools.reduce(operator.and_, choices))
+
+    return attributes
 
 
-def field2range(field):
+def field2read_only(field, **kwargs):
+    """Return the dictionary of swagger field attributes for a dump_only field.
+
+    :param Field field: A marshmallow field.
+    :rtype: dict
+    """
+    attributes = {}
+    if field.dump_only:
+        attributes['readOnly'] = True
+    return attributes
+
+
+def field2write_only(field, **kwargs):
+    """Return the dictionary of swagger field attributes for a load_only field.
+
+    :param Field field: A marshmallow field.
+    :rtype: dict
+    """
+    attributes = {}
+    if field.load_only and kwargs['openapi_major_version'] >= 3:
+        attributes['writeOnly'] = True
+    return attributes
+
+
+def field2nullable(field, **kwargs):
+    """Return the dictionary of swagger field attributes for a nullable field.
+
+    :param Field field: A marshmallow field.
+    :rtype: dict
+    """
+    attributes = {}
+    if field.allow_none:
+        omv = kwargs['openapi_major_version']
+        attributes['x-nullable' if omv < 3 else 'nullable'] = True
+    return attributes
+
+
+def field2range(field, **kwargs):
     """Return the dictionary of swagger field attributes for a set of
     :class:`Range <marshmallow.validators.Range>` validators.
 
@@ -168,7 +208,7 @@ def field2range(field):
                 attributes['maximum'] = validator.max
     return attributes
 
-def field2length(field):
+def field2length(field, **kwargs):
     """Return the dictionary of swagger field attributes for a set of
     :class:`Length <marshmallow.validators.Length>` validators.
 
@@ -269,6 +309,12 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
     :param str name: The definition name, if applicable, used to construct the $ref value.
     :rtype: dict, a Property Object
     """
+    if spec:
+        openapi_major_version = spec.openapi_version.version[0]
+    else:
+        # Default to 2 for backward compatibility
+        openapi_major_version = 2
+
     from apispec.ext.marshmallow import resolve_schema_dict
     type_, fmt = _get_json_type_for_field(field)
 
@@ -286,18 +332,16 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
         else:
             ret['default'] = default
 
-    choices = field2choices(field)
-    if choices:
-        ret['enum'] = list(choices)
-
-    if field.dump_only:
-        ret['readOnly'] = True
-
-    if field.allow_none:
-        ret['x-nullable'] = True
-
-    ret.update(field2range(field))
-    ret.update(field2length(field))
+    for attr_func in (
+        field2choices,
+        field2read_only,
+        field2write_only,
+        field2nullable,
+        field2range,
+        field2length,
+    ):
+        ret.update(attr_func(
+            field, openapi_major_version=openapi_major_version))
 
     if isinstance(field, marshmallow.fields.Nested):
         del ret['type']
@@ -313,7 +357,7 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
                     raise ValueError('Must pass `name` argument for self-referencing Nested fields.')
                 # We need to use the `name` argument when the field is self-referencing and
                 # unbound (doesn't have `parent` set) because we can't access field.schema
-                ref_path = get_ref_path(spec.openapi_version.version[0])
+                ref_path = get_ref_path(openapi_major_version)
                 ref_name =  '#/{ref_path}/{name}'.format(ref_path=ref_path,
                                                          name=name)
             ref_schema = {'$ref': ref_name}
