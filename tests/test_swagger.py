@@ -15,7 +15,7 @@ class TestMarshmallowFieldToSwagger:
     def test_field2choices_preserving_order(self):
         choices = ['a', 'b', 'c', 'aa', '0', 'cc']
         field = fields.String(validate=validate.OneOf(choices))
-        assert swagger.field2choices(field) == choices
+        assert swagger.field2choices(field) == {'enum': choices}
 
     @mark.parametrize(('FieldClass', 'jsontype'), [
         (fields.Integer, 'integer'),
@@ -65,27 +65,27 @@ class TestMarshmallowFieldToSwagger:
         res = swagger.field2property(field)
         assert res['description'] == 'a username'
 
-    def test_field_with_default(self):
+    def test_field_with_missing(self):
         field = fields.Str(default='foo', missing='bar')
         res = swagger.field2property(field)
-        assert res['default'] == 'foo'
+        assert res['default'] == 'bar'
 
-    def test_field_with_boolean_false_default(self):
-        field = fields.Boolean(default=False, missing=None)
+    def test_field_with_boolean_false_missing(self):
+        field = fields.Boolean(default=None, missing=False)
         res = swagger.field2property(field)
         assert res['default'] is False
 
-    def test_field_with_default_load(self):
+    def test_field_with_missing_load(self):
         field = fields.Str(default='foo', missing='bar')
         res = swagger.field2property(field, dump=False)
         assert res['default'] == 'bar'
 
-    def test_field_with_boolean_false_default_load(self):
+    def test_field_with_boolean_false_missing_load(self):
         field = fields.Boolean(default=None, missing=False)
         res = swagger.field2property(field, dump=False)
         assert res['default'] is False
 
-    def test_fields_with_default_load(self):
+    def test_fields_with_missing_load(self):
         field_dict = {'field': fields.Str(default='foo', missing='bar')}
         res = swagger.fields2parameters(field_dict, default_in='query')
         assert res[0]['default'] == 'bar'
@@ -170,15 +170,14 @@ class TestMarshmallowFieldToSwagger:
 
     def test_only_allows_valid_properties_in_metadata(self):
         field = fields.Str(
-            default='foo',
+            missing='foo',
             description='foo',
             enum=['red', 'blue'],
             allOf=['bar'],
             not_valid='lol'
         )
         res = swagger.field2property(field)
-        assert 'default' in res
-        assert res['default'] == field.default
+        assert res['default'] == field.missing
         assert 'description' in res
         assert 'enum' in res
         assert 'allOf' in res
@@ -202,6 +201,17 @@ class TestMarshmallowFieldToSwagger:
         field = fields.Str(allow_none=True)
         res = swagger.field2property(field)
         assert res['x-nullable'] is True
+
+    def test_field_with_allow_none_v3(self):
+        spec = APISpec(
+            title='Pets',
+            version='0.1',
+            plugins=['apispec.ext.marshmallow'],
+            openapi_version='3.0.0'
+        )
+        field = fields.Str(allow_none=True)
+        res = swagger.field2property(field, spec)
+        assert res['nullable'] is True
 
 class TestMarshmallowSchemaToModelDefinition:
 
@@ -227,10 +237,13 @@ class TestMarshmallowSchemaToModelDefinition:
         assert props['email']['format'] == 'email'
         assert props['email']['description'] == 'email address of the user'
 
-    def test_schema2jsonschema_override_name(self):
+    @pytest.mark.skipif(swagger.MARSHMALLOW_VERSION_INFO[0] >= 3,
+                        reason='Behaviour changed in marshmallow 3')
+    def test_schema2jsonschema_override_name_ma2(self):
         class ExampleSchema(Schema):
             _id = fields.Int(load_from='id', dump_to='id')
-            _as = fields.Int(load_from='as', dump_to='other')
+            _dt = fields.Int(load_from='lf_no_match', dump_to='dt')
+            _lf = fields.Int(load_from='lf')
             _global = fields.Int(load_from='global', dump_to='global')
 
             class Meta:
@@ -241,8 +254,29 @@ class TestMarshmallowSchemaToModelDefinition:
         props = res['properties']
         # `_id` renamed to `id`
         assert '_id' not in props and props['id']['type'] == 'integer'
-        # `load_from` and `dump_to` do not match for `_as`
-        assert 'as' not in props
+        # `load_from` and `dump_to` do not match, `dump_to` is used
+        assert 'lf_no_match' not in props
+        assert props['dt']['type'] == 'integer'
+        # `load_from` and no `dump_to`, `load_from` is used
+        assert props['lf']['type'] == 'integer'
+        # `_global` excluded correctly
+        assert '_global' not in props and 'global' not in props
+
+    @pytest.mark.skipif(swagger.MARSHMALLOW_VERSION_INFO[0] < 3,
+                        reason='Behaviour changed in marshmallow 3')
+    def test_schema2jsonschema_override_name_ma3(self):
+        class ExampleSchema(Schema):
+            _id = fields.Int(data_key='id')
+            _global = fields.Int(data_key='global')
+
+            class Meta:
+                exclude = ('_global', )
+
+        res = swagger.schema2jsonschema(ExampleSchema)
+        assert res['type'] == 'object'
+        props = res['properties']
+        # `_id` renamed to `id`
+        assert '_id' not in props and props['id']['type'] == 'integer'
         # `_global` excluded correctly
         assert '_global' not in props and 'global' not in props
 
@@ -311,9 +345,14 @@ class TestMarshmallowSchemaToModelDefinition:
         assert issubclass(warning.category, UserWarning)
 
     def test_observed_field_name_for_required_field(self):
-        fields_dict = {
-            "user_id": fields.Int(load_from="id", dump_to="id", required=True)
-        }
+        if swagger.MARSHMALLOW_VERSION_INFO[0] < 3:
+            fields_dict = {
+                "user_id": fields.Int(load_from="id", dump_to="id", required=True)
+            }
+        else:
+            fields_dict = {
+                "user_id": fields.Int(data_key="id", required=True)
+            }
 
         res = swagger.fields2jsonschema(fields_dict)
         assert res["required"] == ["id"]
@@ -347,13 +386,21 @@ class TestMarshmallowSchemaToModelDefinition:
         assert excinfo.value.args[0] == ("{0!r} doesn't have either `fields` "
                                          "or `_declared_fields`".format(NotASchema))
 
-    def test_dump_only_load_only_fields(self):
+    @pytest.mark.parametrize('openapi_version', ['2.0.0', '3.0.0'])
+    def test_dump_only_load_only_fields(self, openapi_version):
+        spec = APISpec(
+            title='Pets',
+            version='0.1',
+            plugins=['apispec.ext.marshmallow'],
+            openapi_version=openapi_version
+        )
+
         class UserSchema(Schema):
             _id = fields.Str(dump_only=True)
             name = fields.Str()
             password = fields.Str(load_only=True)
 
-        res = swagger.schema2jsonschema(UserSchema())
+        res = swagger.schema2jsonschema(UserSchema(), spec)
         props = res['properties']
         assert 'name' in props
         # dump_only field appears with readOnly attribute
@@ -361,6 +408,10 @@ class TestMarshmallowSchemaToModelDefinition:
         assert 'readOnly' in props['_id']
         # load_only field appears (writeOnly attribute does not exist)
         assert 'password' in props
+        if openapi_version == '2.0.0':
+            assert 'writeOnly' not in props['password']
+        else:
+            assert 'writeOnly' in props['password']
 
 
 class TestMarshmallowSchemaToParameters:

@@ -49,4 +49,4 @@ class OrderedSchema(Schema):
 
 
 class DefaultCallableSchema(Schema):
-    numbers = fields.List(fields.Int, default=list)
+    numbers = fields.List(fields.Int, missing=list)

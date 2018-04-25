@@ -8,6 +8,8 @@ Leads
 - Steven Loria `@sloria <https://github.com/sloria>`_
 - Josh Carp `@jmcarp <https://github.com/jmcarp>`_
 - Yoichi NAKAYAMA `@yoichi <https://github.com/yoichi>`_
+- Jérôme Lafréchoux `@lafrech <https://github.com/lafrech>`_
+- Michael Bangert `@Bangertm <https://github.com/Bangertm>`_
 
 Contributors (chronological)
 ============================
@@ -42,3 +44,6 @@ Contributors (chronological)
 - Bastien Sevajol `@buxx <https://github.com/buxx>`_
 - Durmus Karatay `@ukaratay <https://github.com/ukaratay>`_
 - Julien Danjou `@jd <https://github.com/jd>`_
+- Daisuke Taniwaki `@dtaniwaki <https://github.com/dtaniwaki`_
+- `@mathewmarcus <https://github.com/mathewmarcus>`_
+- Louis-Philippe Huberdeau `@lphuberdeau <https://github.com/lphuberdeau>`_

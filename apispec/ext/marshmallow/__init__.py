@@ -209,8 +209,9 @@ def resolve_parameters(spec, parameters):
         if not isinstance(parameter.get('schema', {}), dict):
             schema_cls = resolve_schema_cls(parameter['schema'])
             if issubclass(schema_cls, marshmallow.Schema) and 'in' in parameter:
+                del parameter['schema']
                 resolved += swagger.schema2parameters(
-                    schema_cls, default_in=parameter['in'], spec=spec)
+                    schema_cls, default_in=parameter.pop('in'), spec=spec, **parameter)
                 continue
         resolved.append(parameter)
     return resolved
@@ -244,8 +245,11 @@ def resolve_schema_in_response(spec, response):
 
 def resolve_schema_dict(spec, schema, dump=True, use_instances=False):
     if isinstance(schema, dict):
-        if (schema.get('type') == 'array' and 'items' in schema):
+        if schema.get('type') == 'array' and 'items' in schema:
             schema['items'] = resolve_schema_dict(spec, schema['items'], use_instances=use_instances)
+        if schema.get('type') == 'object' and 'properties' in schema:
+            schema['properties'] = {k: resolve_schema_dict(spec, v, dump=dump, use_instances=use_instances)
+                                    for k, v in schema['properties'].items()}
         return schema
     plug = spec.plugins[NAME] if spec else {}
     if isinstance(schema, marshmallow.Schema) and use_instances:
