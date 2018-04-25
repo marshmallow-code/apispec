@@ -56,7 +56,7 @@ def clean_operations(operations, openapi_major_version):
                                        for p in parameters]
 
 
-class Path(dict):
+class Path(object):
     """Represents an OpenAPI Path object.
 
     https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathsObject
@@ -70,9 +70,9 @@ class Path(dict):
         standard.
     """
 
-    def __init__(self, path=None, operations=None, openapi_version='2.0', **kwargs):
+    def __init__(self, path=None, operations=None, openapi_version='2.0'):
         self.path = path
-        operations = operations or {}
+        operations = operations or OrderedDict()
         openapi_version = validate_openapi_version(openapi_version)
         clean_operations(operations, openapi_version.version[0])
         invalid = {key for key in
@@ -83,8 +83,6 @@ class Path(dict):
                 'One or more HTTP methods are invalid: {0}'.format(", ".join(invalid))
             )
         self.operations = operations
-        kwargs.update(self.operations)
-        super(Path, self).__init__(**kwargs)
 
     def to_dict(self):
         if not self.path:
@@ -93,11 +91,10 @@ class Path(dict):
             self.path: self.operations
         }
 
-    def update(self, path, **kwargs):
+    def update(self, path):
         if path.path:
             self.path = path.path
         self.operations.update(path.operations)
-        super(Path, self).update(path.operations)
 
 
 class APISpec(object):
@@ -273,7 +270,7 @@ class APISpec(object):
                         func(self, **kwargs)
                     )
 
-        self._paths.setdefault(path.path, path).update(path)
+        self._paths.setdefault(path.path, path.operations).update(path.operations)
 
     def definition(self, name, properties=None, enum=None, description=None, extra_fields=None,
                    **kwargs):

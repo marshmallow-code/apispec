@@ -1,6 +1,73 @@
 Changelog
 ---------
 
+0.35.0 (2018-04-10)
++++++++++++++++++++
+
+Features:
+
+- [apispec.ext.marshmallow]: Recurse over properties when resolving
+  schemas (:issue:`186`). Thanks :user:`lphuberdeau`.
+- [apispec.ext.marshmallow]: Support ``writeOnly`` and ``nullable`` in
+  OpenAPI 3 (fall back to ``x-nullable`` for OpenAPI 2) (:issue:`165`).
+  Thanks :user:`lafrech`.
+
+Bug fixes:
+
+- [apispec.ext.marshmallow]: Always use `field.missing` instead of
+  `field.default` when introspecting fields (:issue:`32`). Thanks
+  :user:`lafrech`.
+
+Other changes:
+
+- [apispec.ext.marshmallow]: Refactor some of the internal functions in
+  `apispec.ext.marshmallow.swagger` for consistent API (:issue:`199`).
+  Thanks :user:`lafrech`.
+
+0.34.0 (2018-04-04)
++++++++++++++++++++
+
+Features:
+
+- [apispec.core]: Maintain order in which methods are added to an
+  endpoint (:issue:`189`). Thanks :user:`lafrech`.
+
+Other changes:
+
+- [apispec.core]: `Path` no longer inherits from `dict` (:issue:`190`).
+  Thanks :user:`lafrech`.
+
+0.33.0 (2018-04-01)
++++++++++++++++++++
+
+Features:
+
+- [apispec.ext.marshmallow]: Respect ``data_key`` argument on fields
+  (in marshmallow 3). Thanks :user:`lafrech`.
+
+0.32.0 (2018-03-24)
++++++++++++++++++++
+
+Features:
+
+- [apispec.ext.bottle]: Allow `app` to be passed to `spec.add_path`
+  (:issue:`188`). Thanks :user:`dtaniwaki` for the PR.
+
+Bug fixes:
+
+- [apispec.ext.marshmallow]: Fix issue where "body" and "required" were
+  getting overwritten when passing a ``Schema`` to a parameter
+  (:issue:`168`, :issue:`184`).
+  Thanks :user:`dlopuch` and :user:`mathewmarcus` for reporting and
+  thanks :user:`mathewmarcus` for the PR.
+
+0.31.0 (2018-01-30)
++++++++++++++++++++
+
+- [apispec.ext.marshmallow]: Use ``dump_to`` for name even if
+  ``load_from`` does not match it (:issue:`178`). Thanks :user:`LeonAgmonNacht`
+  for reporting and thanks :user:`lafrech` for the fix.
+
 0.30.0 (2018-01-12)
 +++++++++++++++++++
 

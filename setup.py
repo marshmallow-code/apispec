@@ -24,6 +24,7 @@ def find_version(fname):
         raise RuntimeError('Cannot find version information')
     return version
 
+
 __version__ = find_version('apispec/__init__.py')
 
 
@@ -32,11 +33,12 @@ def read(fname):
         content = fp.read()
     return content
 
+
 setup(
     name='apispec',
     version=__version__,
     description='A pluggable API specification generator. Currently supports the '
-                'OpenAPI specification (f.k.a. Swagger 2.0).',
+                'OpenAPI specification (f.k.a. the Swagger specification).',
     long_description=read('README.rst'),
     author='Steven Loria, Josh Carp',
     author_email='sloria1@gmail.com',

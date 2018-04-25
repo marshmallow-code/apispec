@@ -430,6 +430,9 @@ class TestOperationHelper:
             post:
                 parameters:
                     - in: body
+                      description: "a pet schema"
+                      required: true
+                      name: pet
                       schema: tests.schemas.PetSchema
             """
             return '...'
@@ -442,7 +445,8 @@ class TestOperationHelper:
         assert get['parameters'] == swagger.schema2parameters(PetSchema, default_in='query')
         post = p['post']
         assert 'parameters' in post
-        assert post['parameters'] == swagger.schema2parameters(PetSchema, default_in='body')
+        assert post['parameters'] == swagger.schema2parameters(PetSchema, default_in='body', required=True,
+                                                               name='pet', description='a pet schema')
 
     def test_schema_in_docstring_uses_ref_if_available(self, spec):
         spec.definition('Pet', schema=PetSchema)
@@ -539,6 +543,35 @@ class TestOperationHelper:
         assert op['responses'][200]['schema'] == {
             'type': 'array',
             'items': {'$ref': '#/definitions/Pet'}
+        }
+
+    def test_schema_partially_in_docstring(self, spec):
+        spec.definition('Pet', schema=PetSchema)
+
+        def pet_parents_view():
+            """Not much to see here.
+
+            ---
+            get:
+                responses:
+                    200:
+                        schema:
+                            type: object
+                            properties:
+                                mother: tests.schemas.PetSchema
+                                father: tests.schemas.PetSchema
+            """
+            return '...'
+
+        spec.add_path(path='/parents', view=pet_parents_view)
+        p = spec._paths['/parents']
+        op = p['get']
+        assert op['responses'][200]['schema'] == {
+            'type': 'object',
+            'properties': {
+                "mother": {'$ref': '#/definitions/Pet'},
+                "father": {'$ref': '#/definitions/Pet'},
+            },
         }
 
     def test_other_than_http_method_in_docstring(self, spec):
