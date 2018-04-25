@@ -1,6 +1,8 @@
-*******
-apispec
-*******
+*************
+hapic-apispec
+*************
+
+Friendly fork of apispec waiting for merging `instance support <https://github.com/marshmallow-code/apispec/pull/179>`_
 
 .. image:: https://badge.fury.io/py/apispec.svg
     :target: http://badge.fury.io/py/apispec
