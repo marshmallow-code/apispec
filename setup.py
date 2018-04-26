@@ -35,7 +35,7 @@ def read(fname):
 
 
 setup(
-    name='apispec',
+    name='hapic_apispec',
     version=__version__,
     description='A pluggable API specification generator. Currently supports the '
                 'OpenAPI specification (f.k.a. the Swagger specification).',
