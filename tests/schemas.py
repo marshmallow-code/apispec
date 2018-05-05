@@ -24,6 +24,10 @@ class AnalysisWithListSchema(Schema):
     samples = fields.List(fields.Nested(SampleSchema))
 
 
+class AnalysisWithDictSchema(Schema):
+    samplesDict = fields.Dict(values=fields.Nested(SampleSchema))
+
+
 class PatternedObjectSchema(Schema):
     count = fields.Int(dump_only=True, **{'x-count': 1})
     count2 = fields.Int(dump_only=True, x_count2=2)
