@@ -8,7 +8,7 @@ from apispec import APISpec
 from apispec.ext.marshmallow import swagger
 from .schemas import PetSchema, AnalysisSchema, SampleSchema, RunSchema, \
     SelfReferencingSchema, OrderedSchema, PatternedObjectSchema, \
-    DefaultCallableSchema, AnalysisWithListSchema
+    DefaultCallableSchema, AnalysisWithListSchema, AnalysisWithDictSchema
 
 
 description = 'This is a sample Petstore server.  You can find out more '
@@ -584,3 +584,12 @@ class TestDefaultCanBeCallable:
         spec.definition('DefaultCallableSchema', schema=DefaultCallableSchema)
         result = spec._definitions['DefaultCallableSchema']['properties']['numbers']
         assert result['default'] == []
+
+
+class TestDictValues:
+    def test_dict_values_resolve_to_additional_properties(self, spec):
+        spec.definition('SampleSchema', schema=SampleSchema)
+        spec.definition('AnalysisWithDictSchema', schema=AnalysisWithDictSchema)
+        dict_schema_definition = spec._definitions['AnalysisWithDictSchema']
+        additional_props = dict_schema_definition['properties']['samplesDict']['additionalProperties']
+        assert additional_props['$ref'] == '#/definitions/SampleSchema'
