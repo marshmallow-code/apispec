@@ -6,16 +6,25 @@ python:
 - '3.4'
 - '2.7'
 - pypy
+
+env:
+  # Lowest supported version
+  - MARSHMALLOW_VERSION="==2.7.0"
+  # Latest release
+  - MARSHMALLOW_VERSION=""
+
 install:
-- pip install -U .
-- npm install -g check_api
-- pip install -r dev-requirements.txt
+- travis_retry pip install -U .
+- travis_retry npm install -g check_api
+- travis_retry pip install -r dev-requirements.txt
+- travis_retry pip install -U marshmallow"$MARSHMALLOW_VERSION" --pre
 script: invoke test
 jobs:
   include:
   - stage: PyPI Release
     if: tag IS present
     python: "3.6"
+    env: []
     # Override install and script to no-ops
     install: true
     script: echo "Releasing to PyPI..."
