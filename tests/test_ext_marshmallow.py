@@ -585,7 +585,8 @@ class TestDefaultCanBeCallable:
         result = spec._definitions['DefaultCallableSchema']['properties']['numbers']
         assert result['default'] == []
 
-
+@pytest.mark.skipif(swagger.MARSHMALLOW_VERSION_INFO[0] < 3,
+                    reason='Values ignored in marshmallow 2')
 class TestDictValues:
     def test_dict_values_resolve_to_additional_properties(self, spec):
         spec.definition('SampleSchema', schema=SampleSchema)
