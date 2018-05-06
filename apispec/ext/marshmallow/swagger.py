@@ -380,9 +380,9 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
     elif isinstance(field, marshmallow.fields.List):
         ret['items'] = field2property(field.container, spec=spec, use_refs=use_refs, dump=dump)
     elif isinstance(field, marshmallow.fields.Dict):
-        if 'values' in field.metadata:
-            ret['additionalProperties'] = field2property(field.metadata['values'], spec=spec, use_refs=use_refs, dump=dump)
-        
+        if MARSHMALLOW_VERSION_INFO[0] >= 3:            
+            ret['additionalProperties'] = field2property(field.value_container, spec=spec, use_refs=use_refs, dump=dump)
+
     # Dasherize metadata that starts with x_
     metadata = {
         key.replace('_', '-') if key.startswith('x_') else key: value
