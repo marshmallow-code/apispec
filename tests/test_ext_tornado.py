@@ -26,7 +26,7 @@ class TestPathHelpers:
     def test_path_from_urlspec(self, spec):
         class HelloHandler(RequestHandler):
             def get(self):
-                self.write("hello")
+                self.write('hello')
 
         urlspec = (r'/hello', HelloHandler)
         operations = (
@@ -42,10 +42,10 @@ class TestPathHelpers:
 
         class HelloHandler(RequestHandler):
             def get(self):
-                self.write("hello")
+                self.write('hello')
 
             def post(self):
-                self.write("hello")
+                self.write('hello')
 
         urlspec = (r'/hello', HelloHandler)
         operations = {
@@ -81,7 +81,7 @@ class TestPathHelpers:
                         schema:
                             $ref: #/definitions/Pet
                 """
-                self.write("hello")
+                self.write('hello')
 
             def post(self):
                 """Post a greeting endpoint.
@@ -91,7 +91,7 @@ class TestPathHelpers:
                     200:
                         description:some data
                 """
-                self.write("hello")
+                self.write('hello')
 
         urlspec = (r'/hello', HelloHandler)
         spec.add_path(urlspec=urlspec)
@@ -106,7 +106,7 @@ class TestPathHelpers:
 
         class HelloHandler(RequestHandler):
             def get(self):
-                self.write("hello world")
+                self.write('hello world')
 
         urlspec = (r'/hello/world/*', HelloHandler)
         operations = (
@@ -117,12 +117,12 @@ class TestPathHelpers:
 
     class HelloWorldHandler(RequestHandler):
         def get(self, param1, param2):
-            self.write("hello")
+            self.write('hello')
 
     class HelloWorldHandler2(RequestHandler):
         @tornado.gen.coroutine
         def get(self, param1, param2):
-            self.write("hello")
+            self.write('hello')
 
     @pytest.mark.parametrize('Handler',
     [

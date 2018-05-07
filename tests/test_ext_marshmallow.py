@@ -481,8 +481,8 @@ class TestOperationHelper:
         assert op['responses'][200]['schema'] == {
             'type': 'object',
             'properties': {
-                "mother": {'$ref': '#/definitions/Pet'},
-                "father": {'$ref': '#/definitions/Pet'},
+                'mother': {'$ref': '#/definitions/Pet'},
+                'father': {'$ref': '#/definitions/Pet'},
             },
         }
 

@@ -157,23 +157,23 @@ class TestPath:
                     }
                 ],
                 'responses': {
-                    "200": {
-                        "schema": {'$ref': '#/definitions/Pet'},
+                    '200': {
+                        'schema': {'$ref': '#/definitions/Pet'},
                         'description': 'successful operation'
                     },
-                    "400": {
-                        "description": "Invalid ID supplied"
+                    '400': {
+                        'description': 'Invalid ID supplied'
                     },
-                    "404": {
-                        "description": "Pet not found"
+                    '404': {
+                        'description': 'Pet not found'
                     }
                 },
-                "produces": [
-                    "application/json",
-                    "application/xml"
+                'produces': [
+                    'application/json',
+                    'application/xml'
                 ],
-                "operationId": "getPetById",
-                "summary": "Find pet by ID",
+                'operationId': 'getPetById',
+                'summary': 'Find pet by ID',
                 'description': ('Returns a pet when ID < 10.  '
                             'ID > 10 or nonintegers will simulate API error conditions'),
                 'tags': ['pet']
@@ -435,8 +435,8 @@ class TestPathHelpers:
                 get=dict(
                     produces=('application/xml', ),
                     responses={
-                        "200": {
-                            "schema": {'$ref': '#/definitions/Pet'},
+                        '200': {
+                            'schema': {'$ref': '#/definitions/Pet'},
                             'description': 'successful operation'
                         }
                     }

@@ -78,7 +78,7 @@ class Path(object):
                    if not key.startswith('x-')}
         if invalid:
             raise APISpecError(
-                'One or more HTTP methods are invalid: {0}'.format(", ".join(invalid))
+                'One or more HTTP methods are invalid: {0}'.format(', '.join(invalid))
             )
         self.operations = operations
 
