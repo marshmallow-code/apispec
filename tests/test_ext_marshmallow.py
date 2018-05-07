@@ -597,5 +597,13 @@ class TestDictValues:
 
         spec.definition('SchemaWithDict', schema=SchemaWithDict)
         result = spec._definitions['SchemaWithDict']['properties']['dict_field']
-        assert 'additionalProperties' in result
-        assert result['additionalProperties']['type'] == 'string'
+        assert result == {'type': 'object', 'additionalProperties': {'type': 'string'}}
+
+    def test_dict_with_empty_values_field(self, spec):
+
+        class SchemaWithDict(Schema):
+            dict_field = Dict()
+
+        spec.definition('SchemaWithDict', schema=SchemaWithDict)
+        result = spec._definitions['SchemaWithDict']['properties']['dict_field']
+        assert result == {'type': 'object'}
