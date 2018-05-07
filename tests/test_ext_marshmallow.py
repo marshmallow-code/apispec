@@ -598,4 +598,4 @@ class TestDictValues:
         spec.definition('SchemaWithDict', schema=SchemaWithDict)
         result = spec._definitions['SchemaWithDict']['properties']['dict_field']
         assert 'additionalProperties' in result
-        assert result['additionalProperties'] == 'string'
+        assert result['additionalProperties']['type'] == 'string'
