@@ -25,7 +25,7 @@ def trim_docstring(docstring):
     lines = docstring.expandtabs().splitlines()
     indent = min(len(line) - len(line.lstrip()) for line in lines if line.lstrip())
     trimmed = [lines[0].lstrip()] + [line[indent:].rstrip() for line in lines[1:]]
-    return "\n".join(trimmed).strip()
+    return '\n'.join(trimmed).strip()
 
 # from rest_framework.utils.formatting
 def dedent(content):
@@ -59,9 +59,10 @@ def load_yaml_from_docstring(docstring):
     else:
         return None
 
-    yaml_string = "\n".join(split_lines[cut_from:])
+    yaml_string = '\n'.join(split_lines[cut_from:])
     yaml_string = dedent(yaml_string)
     return yaml.load(yaml_string)
+
 
 PATH_KEYS = set([
     'get',

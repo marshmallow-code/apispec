@@ -2,7 +2,8 @@ invoke>=0.13.0
 pyyaml
 
 # Syntax checking
-flake8==3.0.4
+flake8==3.5.0
+flake8-quotes==1.0.0
 
 # soft dependencies
 Flask

@@ -86,7 +86,7 @@ class TestExtOrder:
                 return 'hi'
 
         method_view = HelloApi.as_view('hi')
-        app.add_url_rule("/hello", view_func=method_view)
+        app.add_url_rule('/hello', view_func=method_view)
         with app.test_request_context():
             confirm_ext_order_independency('flask', view=method_view)
 
