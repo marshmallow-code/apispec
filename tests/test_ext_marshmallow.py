@@ -2,13 +2,14 @@
 import pytest
 import json
 
-from marshmallow.fields import Field, DateTime
+from marshmallow.fields import Field, DateTime, Dict, String
+from marshmallow import Schema
 
 from apispec import APISpec
 from apispec.ext.marshmallow import swagger
 from .schemas import PetSchema, AnalysisSchema, SampleSchema, RunSchema, \
     SelfReferencingSchema, OrderedSchema, PatternedObjectSchema, \
-    DefaultCallableSchema, AnalysisWithListSchema, AnalysisWithDictSchema
+    DefaultCallableSchema, AnalysisWithListSchema
 
 
 description = 'This is a sample Petstore server.  You can find out more '
@@ -585,12 +586,16 @@ class TestDefaultCanBeCallable:
         result = spec._definitions['DefaultCallableSchema']['properties']['numbers']
         assert result['default'] == []
 
+
 @pytest.mark.skipif(swagger.MARSHMALLOW_VERSION_INFO[0] < 3,
                     reason='Values ignored in marshmallow 2')
 class TestDictValues:
     def test_dict_values_resolve_to_additional_properties(self, spec):
-        spec.definition('SampleSchema', schema=SampleSchema)
-        spec.definition('AnalysisWithDictSchema', schema=AnalysisWithDictSchema)
-        dict_schema_definition = spec._definitions['AnalysisWithDictSchema']
-        additional_props = dict_schema_definition['properties']['samplesDict']['additionalProperties']
-        assert additional_props['$ref'] == '#/definitions/SampleSchema'
+
+        class SchemaWithDict(Schema):
+            dict_field = Dict(values=String())
+
+        spec.definition('SchemaWithDict', schema=SchemaWithDict)
+        result = spec._definitions['SchemaWithDict']['properties']['dict_field']
+        assert 'additionalProperties' in result
+        assert result['additionalProperties'] == 'string'
