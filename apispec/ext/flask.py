@@ -82,15 +82,16 @@ from apispec import utils
 def _rule_for_view(view):
     view_funcs = current_app.view_functions
     endpoint = None
-    for ep, view_func in iteritems(view_funcs):
+    for ept, view_func in iteritems(view_funcs):
         if view_func == view:
-            endpoint = ep
+            endpoint = ept
     if not endpoint:
         raise APISpecError('Could not find endpoint for view {0}'.format(view))
 
     # WARNING: Assume 1 rule per view function for now
     rule = current_app.url_map._rules_by_endpoint[endpoint][0]
     return rule
+
 
 # from flask-restplus
 RE_URL = re.compile(r'<(?:[^:<>]+:)?([^<>]+)>')

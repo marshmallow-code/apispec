@@ -63,6 +63,7 @@ def load_yaml_from_docstring(docstring):
     yaml_string = dedent(yaml_string)
     return yaml.load(yaml_string)
 
+
 PATH_KEYS = set([
     'get',
     'put',
