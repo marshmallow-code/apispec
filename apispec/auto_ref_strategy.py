@@ -61,10 +61,10 @@ def generate_id(schema, exclude=()):
     fields = [field for field in schema._declared_fields.keys()
               if field not in exclude]
     fields = sorted(fields)
-    schema_id += "("
+    schema_id += '('
     for field in fields:
-        schema_id += "_" + str(field)
-    schema_id += ")"
+        schema_id += '_' + str(field)
+    schema_id += ')'
 
     return schema_id
 
