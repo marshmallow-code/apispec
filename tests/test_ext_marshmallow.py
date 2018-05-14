@@ -439,6 +439,11 @@ class TestOperationHelper:
 
             ---
             get:
+                parameters:
+                    - in: body
+                      schema:
+                        type: array
+                        items: tests.schemas.PetSchema
                 responses:
                     200:
                         schema:
@@ -451,11 +456,15 @@ class TestOperationHelper:
         p = spec._paths['/pet']
         assert 'get' in p
         op = p['get']
+        assert 'parameters' in op
+        len(op['parameters']) == 1
         assert 'responses' in op
-        assert op['responses'][200]['schema'] == {
+        resolved_schema = {
             'type': 'array',
             'items': {'$ref': '#/definitions/Pet'}
         }
+        assert op['parameters'][0]['schema'] == resolved_schema
+        assert op['responses'][200]['schema'] == resolved_schema
 
     def test_schema_partially_in_docstring(self, spec):
         spec.definition('Pet', schema=PetSchema)

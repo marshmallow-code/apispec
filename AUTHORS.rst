@@ -48,3 +48,4 @@ Contributors (chronological)
 - `@mathewmarcus <https://github.com/mathewmarcus>`_
 - Louis-Philippe Huberdeau `@lphuberdeau <https://github.com/lphuberdeau>`_
 - Urban `@UrKr <https://github.com/UrKr>`_
+- Christina Long `@cvlong <https://github.com/cvlong>`_
