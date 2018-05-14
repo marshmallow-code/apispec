@@ -347,15 +347,15 @@ class TestMarshmallowSchemaToModelDefinition:
     def test_observed_field_name_for_required_field(self):
         if swagger.MARSHMALLOW_VERSION_INFO[0] < 3:
             fields_dict = {
-                "user_id": fields.Int(load_from="id", dump_to="id", required=True)
+                'user_id': fields.Int(load_from='id', dump_to='id', required=True)
             }
         else:
             fields_dict = {
-                "user_id": fields.Int(data_key="id", required=True)
+                'user_id': fields.Int(data_key='id', required=True)
             }
 
         res = swagger.fields2jsonschema(fields_dict)
-        assert res["required"] == ["id"]
+        assert res['required'] == ['id']
 
     def test_schema_instance_inspection(self):
         class UserSchema(Schema):
@@ -384,7 +384,7 @@ class TestMarshmallowSchemaToModelDefinition:
             swagger.schema2jsonschema(NotASchema)
 
         assert excinfo.value.args[0] == ("{0!r} doesn't have either `fields` "
-                                         "or `_declared_fields`".format(NotASchema))
+                                         'or `_declared_fields`'.format(NotASchema))
 
     @pytest.mark.parametrize('openapi_version', ['2.0.0', '3.0.0'])
     def test_dump_only_load_only_fields(self, openapi_version):
@@ -533,7 +533,7 @@ class TestMarshmallowSchemaToParameters:
             swagger.schema2jsonschema(NotASchema)
 
         assert excinfo.value.args[0] == ("{0!r} doesn't have either `fields` "
-                                         "or `_declared_fields`".format(NotASchema))
+                                         'or `_declared_fields`'.format(NotASchema))
 
 
 class CategorySchema(Schema):
@@ -565,7 +565,7 @@ class TestNesting:
 
     def test_field2property_nested_spec_metadatas(self, spec):
         spec.definition('Category', schema=CategorySchema)
-        category = fields.Nested(CategorySchema, description="A category")
+        category = fields.Nested(CategorySchema, description='A category')
         result = swagger.field2property(category, spec=spec)
         assert result == {'$ref': '#/definitions/Category', 'description': 'A category'}
 
@@ -592,9 +592,9 @@ class TestNesting:
         category = fields.Nested(CategorySchema)
         assert swagger.field2property(category) == swagger.schema2jsonschema(CategorySchema)
 
-        cat_with_ref = fields.Nested(CategorySchema, ref='Category', description="A category")
+        cat_with_ref = fields.Nested(CategorySchema, ref='Category', description='A category')
         result = swagger.field2property(cat_with_ref)
-        assert result == {'$ref': 'Category', 'description': "A category"}
+        assert result == {'$ref': 'Category', 'description': 'A category'}
 
     def test_field2property_nested_many(self, spec):
         categories = fields.Nested(CategorySchema, many=True)
@@ -701,6 +701,7 @@ class TestNesting:
         assert swagger.field2property(category_8, spec=spec) == {
             'items': {'$ref': '#/definitions/Category'}, 'readOnly': True, 'type': 'array'}
 
+@pytest.mark.nodetest
 def test_swagger_tools_validate():
     spec = APISpec(
         title='Pets',
@@ -755,6 +756,7 @@ def test_swagger_tools_validate():
     except exceptions.SwaggerError as error:
         pytest.fail(str(error))
 
+@pytest.mark.nodetest
 def test_validate_v3():
     spec = APISpec(
         title='Pets',

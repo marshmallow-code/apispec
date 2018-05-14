@@ -39,10 +39,7 @@ def get_schema_instance(schema):
     :param schema: instance or class of marshmallow.Schema
     :return: schema instance of given schema (instance or class)
     """
-    if isinstance(schema, type):
-        return schema()
-    else:
-        return schema
+    return schema() if isinstance(schema, type) else schema
 
 
 def get_schema_class(schema):
@@ -50,10 +47,7 @@ def get_schema_class(schema):
     :param schema: instance or class of marshmallow.Schema
     :return: schema class of given schema (instance or class)
     """
-    if isinstance(schema, type):
-        return schema
-    else:
-        return type(schema)
+    return schema if isinstance(schema, type) else type(schema)
 
 
 def inspect_schema_for_auto_referencing(spec, original_schema_instance):
@@ -68,7 +62,7 @@ def inspect_schema_for_auto_referencing(spec, original_schema_instance):
     if 'refs' not in plug:
         plug['refs'] = {}
 
-    for field_name, field in original_schema_instance.fields.items():
+    for field in original_schema_instance.fields.values():
         nested_schema_class = None
 
         if isinstance(field, marshmallow.fields.Nested):
@@ -187,7 +181,7 @@ def schema_path_helper(spec, view=None, **kwargs):
         (view and load_operations_from_docstring(view.__doc__))
     )
     if not operations:
-        return
+        return None
     operations = operations.copy()
     return Path(operations=operations)
 

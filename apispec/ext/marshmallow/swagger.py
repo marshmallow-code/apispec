@@ -13,7 +13,7 @@ import copy
 
 import marshmallow
 from marshmallow.utils import is_collection
-from marshmallow.compat import text_type, binary_type, iteritems
+from marshmallow.compat import iteritems
 from marshmallow.orderedset import OrderedSet
 
 from apispec.lazy_dict import LazyDict
@@ -98,8 +98,7 @@ def _observed_name(field, name):
         dump_to = getattr(field, 'dump_to', None)
         load_from = getattr(field, 'load_from', None)
         return dump_to or load_from or name
-    else:
-        return field.data_key or name
+    return field.data_key or name
 
 
 def _get_json_type_for_field(field):
@@ -190,7 +189,7 @@ def field2range(field, **kwargs):
 
     attributes = {}
     for validator in validators:
-        if not validator.min is None:
+        if validator.min is not None:
             if hasattr(attributes, 'minimum'):
                 attributes['minimum'] = max(
                     attributes['minimum'],
@@ -198,7 +197,7 @@ def field2range(field, **kwargs):
                 )
             else:
                 attributes['minimum'] = validator.min
-        if not validator.max is None:
+        if validator.max is not None:
             if hasattr(attributes, 'maximum'):
                 attributes['maximum'] = min(
                     attributes['maximum'],
@@ -232,7 +231,7 @@ def field2length(field, **kwargs):
     max_attr = 'maxItems' if is_array else 'maxLength'
 
     for validator in validators:
-        if not validator.min is None:
+        if validator.min is not None:
             if hasattr(attributes, min_attr):
                 attributes[min_attr] = max(
                     attributes[min_attr],
@@ -240,7 +239,7 @@ def field2length(field, **kwargs):
                 )
             else:
                 attributes[min_attr] = validator.min
-        if not validator.max is None:
+        if validator.max is not None:
             if hasattr(attributes, max_attr):
                 attributes[max_attr] = min(
                     attributes[max_attr],
@@ -250,7 +249,7 @@ def field2length(field, **kwargs):
                 attributes[max_attr] = validator.max
 
     for validator in validators:
-        if not validator.equal is None:
+        if validator.equal is not None:
             attributes[min_attr] = validator.equal
             attributes[max_attr] = validator.equal
     return attributes
@@ -333,12 +332,12 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
             ret['default'] = default
 
     for attr_func in (
-        field2choices,
-        field2read_only,
-        field2write_only,
-        field2nullable,
-        field2range,
-        field2length,
+            field2choices,
+            field2read_only,
+            field2write_only,
+            field2nullable,
+            field2range,
+            field2length,
     ):
         ret.update(attr_func(
             field, openapi_major_version=openapi_major_version))
@@ -354,12 +353,12 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
                 ref_name = field.metadata['ref']
             else:
                 if not name:
-                    raise ValueError('Must pass `name` argument for self-referencing Nested fields.')
+                    raise ValueError(
+                        'Must pass `name` argument for self-referencing Nested fields.')
                 # We need to use the `name` argument when the field is self-referencing and
                 # unbound (doesn't have `parent` set) because we can't access field.schema
                 ref_path = get_ref_path(openapi_major_version)
-                ref_name =  '#/{ref_path}/{name}'.format(ref_path=ref_path,
-                                                         name=name)
+                ref_name = '#/{ref_path}/{name}'.format(ref_path=ref_path, name=name)
             ref_schema = {'$ref': ref_name}
             if field.many:
                 ret['type'] = 'array'
@@ -379,6 +378,11 @@ def field2property(field, spec=None, use_refs=True, dump=True, name=None):
             ret.update(schema2jsonschema(field.schema, dump=dump))
     elif isinstance(field, marshmallow.fields.List):
         ret['items'] = field2property(field.container, spec=spec, use_refs=use_refs, dump=dump)
+    elif isinstance(field, marshmallow.fields.Dict):
+        if MARSHMALLOW_VERSION_INFO[0] >= 3:
+            if field.value_container:
+                ret['additionalProperties'] = field2property(
+                    field.value_container, spec=spec, use_refs=use_refs, dump=dump)
 
     # Dasherize metadata that starts with x_
     metadata = {
@@ -454,9 +458,7 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True,
     parameters = []
     body_param = None
     for field_name, field_obj in iteritems(fields):
-        if (field_name in exclude_fields
-            or field_obj.dump_only
-            or field_name in dump_only_fields):
+        if (field_name in exclude_fields or field_obj.dump_only or field_name in dump_only_fields):
             continue
         param = field2parameter(field_obj,
                                 name=_observed_name(field_obj, field_name),
@@ -587,9 +589,8 @@ def fields2jsonschema(fields, schema=None, spec=None, use_refs=True, dump=True, 
     Meta = getattr(schema, 'Meta', None)
     if getattr(Meta, 'fields', None) or getattr(Meta, 'additional', None):
         declared_fields = set(schema._declared_fields.keys())
-        if (set(getattr(Meta, 'fields', set())) > declared_fields
-            or
-            set(getattr(Meta, 'additional', set())) > declared_fields):
+        if (set(getattr(Meta, 'fields', set())) > declared_fields or
+                set(getattr(Meta, 'additional', set())) > declared_fields):
             warnings.warn(
                 "Only explicitly-declared fields will be included in the Schema Object. "
                 "Fields defined in Meta.fields or Meta.additional are ignored."
@@ -607,8 +608,8 @@ def fields2jsonschema(fields, schema=None, spec=None, use_refs=True, dump=True, 
             continue
 
         observed_field_name = _observed_name(field_obj, field_name)
-        prop_func = lambda field_obj=field_obj: \
-            field2property(field_obj, spec=spec, use_refs=use_refs, dump=dump, name=name)  # flake8: noqa
+        prop_func = lambda field_obj=field_obj: field2property(  # flake8: noqa
+            field_obj, spec=spec, use_refs=use_refs, dump=dump, name=name)
         jsonschema['properties'][observed_field_name] = prop_func
 
         partial = getattr(schema, 'partial', None)
@@ -643,6 +644,7 @@ def get_ref_path(openapi_major_version):
     ref_paths = {2: 'definitions',
                  3: 'components/schemas'}
     return ref_paths[openapi_major_version]
+
 
 __location_map__ = {
     'query': 'query',

@@ -63,7 +63,7 @@ class TestPathHelpers:
                 return 'hi'
 
         method_view = HelloApi.as_view('hi')
-        app.add_url_rule("/hi", view_func=method_view, methods=('GET', 'POST'))
+        app.add_url_rule('/hi', view_func=method_view, methods=('GET', 'POST'))
         spec.add_path(view=method_view)
         expected = {'description': 'get a greeting',
                     'responses': {200: {'description': 'said hi'}}}
@@ -109,7 +109,7 @@ class TestPathHelpers:
                 return 'hi'
 
         method_view = HelloApi.as_view('hi')
-        app.add_url_rule("/hi", view_func=method_view, methods=('GET', 'POST'))
+        app.add_url_rule('/hi', view_func=method_view, methods=('GET', 'POST'))
         spec.add_path(view=method_view)
         assert 'get' in spec._paths['/hi']
         assert 'post' in spec._paths['/hi']

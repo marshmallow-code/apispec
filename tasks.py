@@ -29,15 +29,15 @@ def watch(ctx):
 
 @task
 def clean(ctx):
-    ctx.run("rm -rf build")
-    ctx.run("rm -rf dist")
-    ctx.run("rm -rf apispec.egg-info")
+    ctx.run('rm -rf build')
+    ctx.run('rm -rf dist')
+    ctx.run('rm -rf apispec.egg-info')
     clean_docs(ctx)
-    print("Cleaned up.")
+    print('Cleaned up.')
 
 @task
 def clean_docs(ctx):
-    ctx.run("rm -rf %s" % build_dir, echo=True)
+    ctx.run('rm -rf %s' % build_dir, echo=True)
 
 @task
 def browse_docs(ctx):
@@ -49,7 +49,7 @@ def docs(ctx, clean=False, browse=False, watch=False):
     """Build the docs."""
     if clean:
         clean_docs(ctx)
-    ctx.run("sphinx-build %s %s" % (docs_dir, build_dir), echo=True)
+    ctx.run('sphinx-build %s %s' % (docs_dir, build_dir), echo=True)
     if browse:
         browse_docs(ctx)
     if watch:
@@ -70,6 +70,6 @@ def watch_docs(ctx):
 
 @task
 def readme(ctx, browse=False):
-    ctx.run("rst2html.py README.rst > README.html")
+    ctx.run('rst2html.py README.rst > README.html')
     if browse:
         webbrowser.open_new_tab('README.html')

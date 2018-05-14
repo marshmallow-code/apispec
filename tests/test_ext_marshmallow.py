@@ -2,7 +2,8 @@
 import pytest
 import json
 
-from marshmallow.fields import Field, DateTime
+from marshmallow.fields import Field, DateTime, Dict, String
+from marshmallow import Schema
 
 from apispec import APISpec
 from apispec.ext.marshmallow import swagger
@@ -569,8 +570,8 @@ class TestOperationHelper:
         assert op['responses'][200]['schema'] == {
             'type': 'object',
             'properties': {
-                "mother": {'$ref': '#/definitions/Pet'},
-                "father": {'$ref': '#/definitions/Pet'},
+                'mother': {'$ref': '#/definitions/Pet'},
+                'father': {'$ref': '#/definitions/Pet'},
             },
         }
 
@@ -673,3 +674,25 @@ class TestDefaultCanBeCallable:
         spec.definition('DefaultCallableSchema', schema=DefaultCallableSchema)
         result = spec._definitions['DefaultCallableSchema']['properties']['numbers']
         assert result['default'] == []
+
+
+@pytest.mark.skipif(swagger.MARSHMALLOW_VERSION_INFO[0] < 3,
+                    reason='Values ignored in marshmallow 2')
+class TestDictValues:
+    def test_dict_values_resolve_to_additional_properties(self, spec):
+
+        class SchemaWithDict(Schema):
+            dict_field = Dict(values=String())
+
+        spec.definition('SchemaWithDict', schema=SchemaWithDict)
+        result = spec._definitions['SchemaWithDict']['properties']['dict_field']
+        assert result == {'type': 'object', 'additionalProperties': {'type': 'string'}}
+
+    def test_dict_with_empty_values_field(self, spec):
+
+        class SchemaWithDict(Schema):
+            dict_field = Dict()
+
+        spec.definition('SchemaWithDict', schema=SchemaWithDict)
+        result = spec._definitions['SchemaWithDict']['properties']['dict_field']
+        assert result == {'type': 'object'}

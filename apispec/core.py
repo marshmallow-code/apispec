@@ -2,7 +2,7 @@
 """Core apispec classes and functions."""
 import re
 from collections import OrderedDict
-from distutils import version
+from distutils import version as du_version
 
 import yaml
 
@@ -34,16 +34,16 @@ def clean_operations(operations, openapi_major_version):
     :param int openapi_major_version: The major version of the OpenAPI standard
         to use. Supported values are 2 and 3.
     """
-    def get_ref(x, openapi_major_version):
-        if isinstance(x, dict):
-            return x
+    def get_ref(param, openapi_major_version):
+        if isinstance(param, dict):
+            return param
 
         ref_paths = {
             2: 'parameters',
             3: 'components/parameters',
         }
         ref_path = ref_paths[openapi_major_version]
-        return {'$ref': '#/{0}/{1}'.format(ref_path, x)}
+        return {'$ref': '#/{0}/{1}'.format(ref_path, param)}
 
     for operation in (operations or {}).values():
         if 'parameters' in operation:
@@ -80,7 +80,7 @@ class Path(object):
                    if not key.startswith('x-')}
         if invalid:
             raise APISpecError(
-                'One or more HTTP methods are invalid: {0}'.format(", ".join(invalid))
+                'One or more HTTP methods are invalid: {0}'.format(', '.join(invalid))
             )
         self.operations = operations
 
@@ -121,7 +121,7 @@ class APISpec(object):
     :param str openapi_version: The version of the OpenAPI standard to use.
         Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI
         standard.
-    :param \*\*dict options: Optional top-level keys
+    :param dict options: Optional top-level keys
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
     """
 
@@ -131,9 +131,9 @@ class APISpec(object):
         version,
         plugins=(),
         info=None,
+        schema_name_resolver=default_schema_name_resolver,
         openapi_version='2.0',
         auto_referencing=False,
-        schema_name_resolver=default_schema_name_resolver,
         schema_class_resolver=default_schema_class_resolver,
         **options
     ):
@@ -227,16 +227,10 @@ class APISpec(object):
 
             return path
 
-        p = path
         if isinstance(path, Path):
-            p = path.path
-
-        p = normalize_path(p)
-
-        if isinstance(path, Path):
-            path.path = p
+            path.path = normalize_path(path.path)
         else:
-            path = Path(path=p,
+            path = Path(path=normalize_path(path),
                         operations=operations,
                         openapi_version=self.openapi_version.vstring)
         # Execute plugins' helpers
@@ -330,7 +324,6 @@ class APISpec(object):
             # Each plugin gets a dict to store arbitrary data
             self.plugins[path] = {}
             mod.setup(self)
-        return None
 
     def register_definition_helper(self, func):
         """Register a new definition helper. The helper **must** meet the following conditions:
@@ -392,10 +385,10 @@ def validate_openapi_version(openapi_version_str):
     :param str openapi_version_str: the string version of the desired OpenAPI
         version used in the output
     """
-    min_inclusive_version = version.LooseVersion('2.0')
-    max_exclusive_version = version.LooseVersion('4.0')
+    min_inclusive_version = du_version.LooseVersion('2.0')
+    max_exclusive_version = du_version.LooseVersion('4.0')
 
-    openapi_version = version.LooseVersion(openapi_version_str)
+    openapi_version = du_version.LooseVersion(openapi_version_str)
 
     if not min_inclusive_version <= openapi_version < max_exclusive_version:
         raise APISpecError(
@@ -409,20 +402,16 @@ class YAMLDumper(yaml.Dumper):
 
     @staticmethod
     def _represent_dict(dumper, instance):
-        return dumper.represent_mapping('tag:yaml.org,2002:map',
-                                        instance.items())
+        return dumper.represent_mapping('tag:yaml.org,2002:map', instance.items())
 
     if PY2:
         @staticmethod
-        def _represent_unicode(dumper, uni):
+        def _represent_unicode(_, uni):
             return yaml.ScalarNode(tag=u'tag:yaml.org,2002:str', value=uni)
 
+
 if PY2:
-    yaml.add_representer(unicode, YAMLDumper._represent_unicode,
-                         Dumper=YAMLDumper)
-yaml.add_representer(OrderedDict, YAMLDumper._represent_dict,
-                     Dumper=YAMLDumper)
-yaml.add_representer(LazyDict, YAMLDumper._represent_dict,
-                     Dumper=YAMLDumper)
-yaml.add_representer(Path, YAMLDumper._represent_dict,
-                     Dumper=YAMLDumper)
+    yaml.add_representer(unicode, YAMLDumper._represent_unicode, Dumper=YAMLDumper)
+yaml.add_representer(OrderedDict, YAMLDumper._represent_dict, Dumper=YAMLDumper)
+yaml.add_representer(LazyDict, YAMLDumper._represent_dict, Dumper=YAMLDumper)
+yaml.add_representer(Path, YAMLDumper._represent_dict, Dumper=YAMLDumper)

@@ -47,3 +47,4 @@ Contributors (chronological)
 - Daisuke Taniwaki `@dtaniwaki <https://github.com/dtaniwaki`_
 - `@mathewmarcus <https://github.com/mathewmarcus>`_
 - Louis-Philippe Huberdeau `@lphuberdeau <https://github.com/lphuberdeau>`_
+- Urban `@UrKr <https://github.com/UrKr>`_

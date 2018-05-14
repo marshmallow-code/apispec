@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+0.36.0 (2018-05-07)
++++++++++++++++++++
+
+Features:
+
+- [apispec.ext.marshmallow]: Document ``values`` parameter of ``Dict`` field
+  as ``additionalProperties`` (:issue:`201`). Thanks :user:`UrKr`.
+
 0.35.0 (2018-04-10)
 +++++++++++++++++++
 
