@@ -189,7 +189,7 @@ def schema_operation_resolver(spec, operations, **kwargs):
         if 'requestBody' in operation:  # OpenAPI 3
             resolve_schema_in_request_body(spec, operation['requestBody'])
         for response in operation.get('responses', {}).values():
-            resolve_schema_in_response(spec, response)
+            resolve_schema(spec, response)
 
 def resolve_parameters(spec, parameters):
     resolved = []
@@ -201,6 +201,7 @@ def resolve_parameters(spec, parameters):
                 resolved += swagger.schema2parameters(
                     schema_cls, default_in=parameter.pop('in'), spec=spec, **parameter)
                 continue
+        resolve_schema(spec, parameter)
         resolved.append(parameter)
     return resolved
 
@@ -217,19 +218,19 @@ def resolve_schema_in_request_body(spec, request_body):
         content[content_type]['schema'] = resolve_schema_dict(spec, schema)
 
 
-def resolve_schema_in_response(spec, response):
-    """Function to resolve a schema in a response - modifies the response
-    dict to convert Marshmallow Schema object or class into dict
+def resolve_schema(spec, data):
+    """Function to resolve a schema in a parameter or response - modifies the
+    corresponding dict to convert Marshmallow Schema object or class into dict
 
     :param APISpec spec: `APISpec` containing refs.
-    :param dict response: the response dictionary that may contain a schema
+    :param dict data: the parameter or response dictionary that may contain a schema
     """
-    if 'schema' in response:  # OpenAPI 2
-        response['schema'] = resolve_schema_dict(spec, response['schema'])
-    if 'content' in response:  # OpenAPI 3
-        for content_type in response['content']:
-            schema = response['content'][content_type]['schema']
-            response['content'][content_type]['schema'] = resolve_schema_dict(spec, schema)
+    if 'schema' in data:  # OpenAPI 2
+        data['schema'] = resolve_schema_dict(spec, data['schema'])
+    if 'content' in data:  # OpenAPI 3
+        for content_type in data['content']:
+            schema = data['content'][content_type]['schema']
+            data['content'][content_type]['schema'] = resolve_schema_dict(spec, schema)
 
 def resolve_schema_dict(spec, schema, dump=True, use_instances=False):
     if isinstance(schema, dict):

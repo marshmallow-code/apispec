@@ -439,6 +439,11 @@ class TestOperationHelper:
 
             ---
             get:
+                parameters:
+                    - in: body
+                      schema:
+                        type: array
+                        items: tests.schemas.PetSchema
                 responses:
                     200:
                         schema:
@@ -451,11 +456,51 @@ class TestOperationHelper:
         p = spec._paths['/pet']
         assert 'get' in p
         op = p['get']
+        assert 'parameters' in op
+        len(op['parameters']) == 1
         assert 'responses' in op
-        assert op['responses'][200]['schema'] == {
+        resolved_schema = {
             'type': 'array',
             'items': {'$ref': '#/definitions/Pet'}
         }
+        assert op['parameters'][0]['schema'] == resolved_schema
+        assert op['responses'][200]['schema'] == resolved_schema
+
+    def test_schema_array_in_docstring_uses_ref_if_available_v3(self, spec_3):
+        def pet_view():
+            """Not much to see here.
+
+            ---
+            get:
+                parameters:
+                    - in: body
+                      content:
+                        application/json:
+                            schema:
+                                type: array
+                                items: tests.schemas.PetSchema
+                responses:
+                    200:
+                        content:
+                            application/json:
+                                schema:
+                                    type: array
+                                    items: tests.schemas.PetSchema
+            """
+            return '...'
+
+        spec_3.add_path(path='/pet', view=pet_view)
+        p = spec_3._paths['/pet']
+        assert 'get' in p
+        op = p['get']
+        resolved_schema = {
+            'type': 'array',
+            'items': swagger.schema2jsonschema(PetSchema),
+        }
+        request_schema = op['parameters'][0]['content']['application/json']['schema']
+        assert request_schema == resolved_schema
+        response_schema = op['responses'][200]['content']['application/json']['schema']
+        assert response_schema == resolved_schema
 
     def test_schema_partially_in_docstring(self, spec):
         spec.definition('Pet', schema=PetSchema)
