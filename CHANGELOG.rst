@@ -1,6 +1,15 @@
 Changelog
 ---------
 
+0.37.0 (2018-05-18)
++++++++++++++++++++
+
+Features:
+
+- [apispec.ext.marshmallow]: Resolve an array of schema objects in
+  parameters (:issue:`209`). Thanks :user:`cvlong` for reporting and
+  implementing this.
+
 0.36.0 (2018-05-07)
 +++++++++++++++++++
 
