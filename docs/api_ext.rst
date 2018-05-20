@@ -30,3 +30,9 @@ apispec.ext.bottle
 
 .. automodule:: apispec.ext.bottle
     :members:
+
+apispec.ext.pyramid
+-------------------
+
+.. automodule:: apispec.ext.pyramid
+    :members:
