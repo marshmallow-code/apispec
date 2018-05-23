@@ -51,7 +51,7 @@ def _route_for_view(app, view):
 
 
 def path_from_router(spec, view, operations, **kwargs):
-    """Path helper that allows passing a bottle view funciton."""
+    """Path helper that allows passing a bottle view function."""
     operations = utils.load_operations_from_docstring(view.__doc__)
     app = kwargs.get('app', _default_app)
     route = _route_for_view(app, view)
