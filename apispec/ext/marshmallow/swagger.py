@@ -17,6 +17,7 @@ from marshmallow.compat import iteritems
 from marshmallow.orderedset import OrderedSet
 
 from apispec.lazy_dict import LazyDict
+from .common import resolve_schema_cls
 
 ##### marshmallow #####
 
@@ -665,7 +666,6 @@ class Swagger(object):
         if isinstance(schema, marshmallow.Schema) and use_instances:
             schema_cls = schema
         else:
-            from apispec.ext.marshmallow import resolve_schema_cls
             schema_cls = resolve_schema_cls(schema)
 
         if schema_cls in self.refs:

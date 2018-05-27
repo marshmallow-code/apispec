@@ -29,31 +29,8 @@ import marshmallow
 
 from apispec.core import Path
 from apispec.utils import load_operations_from_docstring
+from .common import resolve_schema_cls, resolve_schema_instance
 from .swagger import Swagger
-
-
-def get_schema_instance(schema):
-    """Return schema instance for given schema (instance or class)
-    :param schema: instance or class of marshmallow.Schema
-    :return: schema instance of given schema (instance or class)
-    """
-    return schema() if isinstance(schema, type) else schema
-
-
-def get_schema_class(schema):
-    """Return schema class for given schema (instance or class)
-    :param schema: instance or class of marshmallow.Schema
-    :return: schema class of given schema (instance or class)
-    """
-    return schema if isinstance(schema, type) else type(schema)
-
-
-def resolve_schema_cls(schema):
-    if isinstance(schema, type) and issubclass(schema, marshmallow.Schema):
-        return schema
-    if isinstance(schema, marshmallow.Schema):
-        return type(schema)
-    return marshmallow.class_registry.get_class(schema)
 
 
 class MarshmallowPlugin(object):
@@ -95,11 +72,11 @@ class MarshmallowPlugin(object):
             nested_schema_class = None
 
             if isinstance(field, marshmallow.fields.Nested):
-                nested_schema_class = get_schema_class(field.schema)
+                nested_schema_class = resolve_schema_cls(field.schema)
 
             elif isinstance(field, marshmallow.fields.List) \
                     and isinstance(field.container, marshmallow.fields.Nested):
-                nested_schema_class = get_schema_class(field.container.schema)
+                nested_schema_class = resolve_schema_cls(field.container.schema)
 
             if nested_schema_class and nested_schema_class not in self.swagger.refs:
                 definition_name = self.schema_name_resolver(
@@ -159,8 +136,8 @@ class MarshmallowPlugin(object):
         :param type|Schema schema: A marshmallow Schema class or instance.
         """
 
-        schema_cls = get_schema_class(schema)
-        schema_instance = get_schema_instance(schema)
+        schema_cls = resolve_schema_cls(schema)
+        schema_instance = resolve_schema_instance(schema)
 
         # Store registered refs, keyed by Schema class
         self.swagger.refs[schema_cls] = name
