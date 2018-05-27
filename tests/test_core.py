@@ -479,3 +479,26 @@ class TestResponseHelpers:
         resp_obj = spec._paths['/pet/{petId}']['get']['responses'][200]
         assert resp_obj['schema'] == {'$ref': 'Pet'}
         assert resp_obj['description'] == 'success!'
+
+
+def test_helper_functions_deprecation_warning(spec, recwarn):
+    with pytest.deprecated_call():
+        spec.register_definition_helper(lambda x: x)
+    with pytest.deprecated_call():
+        spec.register_path_helper(lambda x: x)
+    with pytest.deprecated_call():
+        spec.register_operation_helper(lambda x: x)
+    with pytest.deprecated_call():
+        spec.register_response_helper(lambda x: x, 'GET', 200)
+
+def test_schema_name_resolver_deprecation_warning(recwarn):
+    with pytest.deprecated_call():
+        APISpec(
+            title='Swagger Petstore', version='1.0.0',
+            schema_name_resolver=lambda x: x)
+
+def test_plugins_as_string_deprecation_warning(spec, recwarn):
+    with pytest.deprecated_call():
+        APISpec(
+            title='Swagger Petstore', version='1.0.0',
+            plugins=('tests.plugins.dummy_plugin', ))

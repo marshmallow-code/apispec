@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Core apispec classes and functions."""
 import re
+import warnings
 from collections import OrderedDict
 
 import yaml
@@ -126,6 +127,8 @@ class APISpec(object):
         self.openapi_version = OpenAPIVersion(openapi_version)
 
         self.options = options
+        if schema_name_resolver is not None:
+            warnings.warn('schema_name_resolver parameter is deprecated.', DeprecationWarning)
         self.schema_name_resolver = schema_name_resolver
         # Metadata
         self._definitions = {}
@@ -149,6 +152,9 @@ class APISpec(object):
         # {'get': {200: [my_helper]}}
         self._response_helpers = {}
         old_plugins = list(p for p in plugins if isinstance(p, str))
+        if old_plugins:
+            warnings.warn(
+                'Old style plugins are deprecated. Use classes instead.', DeprecationWarning)
         for plugin_path in old_plugins:
             self.setup_plugin(plugin_path)
 
@@ -354,6 +360,8 @@ class APISpec(object):
 
         :param callable func: The definition helper function.
         """
+        warnings.warn(
+            'Helper functions are deprecated. Use plugin classes.', DeprecationWarning)
         self._definition_helpers.append(func)
 
     def register_path_helper(self, func):
@@ -365,6 +373,8 @@ class APISpec(object):
 
         The helper may define any named arguments in its signature.
         """
+        warnings.warn(
+            'Helper functions are deprecated. Use plugin classes.', DeprecationWarning)
         self._path_helpers.append(func)
 
     def register_operation_helper(self, func):
@@ -376,6 +386,8 @@ class APISpec(object):
 
         The helper may define any named arguments in its signature.
         """
+        warnings.warn(
+            'Helper functions are deprecated. Use plugin classes.', DeprecationWarning)
         self._operation_helpers.append(func)
 
     def register_response_helper(self, func, method, status_code):
@@ -387,6 +399,8 @@ class APISpec(object):
 
         The helper may define any named arguments in its signature.
         """
+        warnings.warn(
+            'Helper functions are deprecated. Use plugin classes.', DeprecationWarning)
         method = method.lower()
         if method not in self._response_helpers:
             self._response_helpers[method] = {}
