@@ -132,7 +132,11 @@ class APISpec(object):
         self._path_helpers = []
         self._operation_helpers = []
         # {'get': {200: [my_helper]}}
-        self._response_helpers = []
+        self._response_helpers = {}
+        self._plugin_definition_helpers = []
+        self._plugin_path_helpers = []
+        self._plugin_operation_helpers = []
+        self._plugin_response_helpers = []
 
         for plugin in self.plugin_objects:
             self.setup_plugin(plugin)
@@ -204,7 +208,7 @@ class APISpec(object):
                         operations=operations,
                         openapi_version=self.openapi_version.vstring)
         # Execute plugins' helpers
-        for func in self._path_helpers:
+        for func in self._plugin_path_helpers:
             try:
                 ret = func(path=path, operations=operations, **kwargs)
             except TypeError:
@@ -213,9 +217,24 @@ class APISpec(object):
                 ret.path = normalize_path(ret.path)
                 path.update(ret)
                 operations = ret.operations
+        # Deprecated interface
+        for func in self._path_helpers:
+            try:
+                ret = func(
+                    self, path=path, operations=operations, **kwargs
+                )
+            except TypeError:
+                continue
+            if isinstance(ret, Path):
+                ret.path = normalize_path(ret.path)
+                path.update(ret)
+                operations = ret.operations
         if operations:
-            for func in self._operation_helpers:
+            for func in self._plugin_operation_helpers:
                 func(path=path, operations=operations, **kwargs)
+            # Deprecated interface
+            for func in self._operation_helpers:
+                func(self, path=path, operations=operations, **kwargs)
 
         if not path.path:
             raise APISpecError('Path template is not specified')
@@ -223,10 +242,21 @@ class APISpec(object):
         # Process response helpers for any path operations defined.
         # TODO: optimize this?
         for method, operation in iteritems(path.operations):
-            if method in VALID_METHODS:
-                for status_code, response in iteritems(operation):
-                    for func in self._response_helpers:
+            if method in VALID_METHODS and 'responses' in operation:
+                for status_code, response in iteritems(operation['responses']):
+                    for func in self._plugin_response_helpers:
                         response.update(func(method, status_code, **kwargs))
+        # Deprecated interface
+        # Rule is that method + http status exist in both operations and helpers
+        methods = set(iterkeys(path.operations)) & set(iterkeys(self._response_helpers))
+        for method in methods:
+            responses = path.operations[method]['responses']
+            statuses = set(iterkeys(responses)) & set(iterkeys(self._response_helpers[method]))
+            for status_code in statuses:
+                for func in self._response_helpers[method][status_code]:
+                    responses[status_code].update(
+                        func(self, **kwargs)
+                    )
 
         self._paths.setdefault(path.path, path.operations).update(path.operations)
 
@@ -247,9 +277,15 @@ class APISpec(object):
         """
         ret = {}
         # Execute all helpers from plugins
-        for func in self._definition_helpers:
+        for func in self._plugin_definition_helpers:
             try:
                 ret.update(func(name, definition=ret, **kwargs))
+            except TypeError:
+                continue
+        # Deprecated interface
+        for func in self._definition_helpers:
+            try:
+                ret.update(func(self, name, definition=ret, **kwargs))
             except TypeError:
                 continue
         if properties:
@@ -267,13 +303,67 @@ class APISpec(object):
     def setup_plugin(self, plugin):
         plugin.init_spec(self)
         if hasattr(plugin, 'definition_helper'):
-            self._definition_helpers.append(plugin.definition_helper)
+            self._plugin_definition_helpers.append(plugin.definition_helper)
         if hasattr(plugin, 'path_helper'):
-            self._path_helpers.append(plugin.path_helper)
+            self._plugin_path_helpers.append(plugin.path_helper)
         if hasattr(plugin, 'operation_helper'):
-            self._operation_helpers.append(plugin.operation_helper)
+            self._plugin_operation_helpers.append(plugin.operation_helper)
         if hasattr(plugin, 'response_helper'):
-            self._response_helpers.append(plugin.response_helper)
+            self._plugin_response_helpers.append(plugin.response_helper)
+
+    def register_definition_helper(self, func):
+        """Register a new definition helper. The helper **must** meet the following conditions:
+
+        - Receive the `APISpec` instance as the first argument.
+        - Receive the definition `name` as the second argument.
+        - Include ``**kwargs`` in its signature.
+        - Return a `dict` representation of the definition's Schema object.
+
+        The helper may define any named arguments after the `name` argument.
+        ``kwargs`` will include (among other things):
+        - definition (dict): current state of the definition
+
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#definitionsObject
+
+        :param callable func: The definition helper function.
+        """
+        self._definition_helpers.append(func)
+
+    def register_path_helper(self, func):
+        """Register a new path helper. The helper **must** meet the following conditions:
+
+        - Receive the `APISpec` instance as the first argument.
+        - Include ``**kwargs`` in signature.
+        - Return a `apispec.core.Path` object.
+
+        The helper may define any named arguments in its signature.
+        """
+        self._path_helpers.append(func)
+
+    def register_operation_helper(self, func):
+        """Register a new operation helper. The helper **must** meet the following conditions:
+
+        - Receive the `APISpec` instance as the first argument.
+        - Receive ``operations`` as a keyword argument.
+        - Include ``**kwargs`` in signature.
+
+        The helper may define any named arguments in its signature.
+        """
+        self._operation_helpers.append(func)
+
+    def register_response_helper(self, func, method, status_code):
+        """Register a new response helper. The helper **must** meet the following conditions:
+
+        - Receive the `APISpec` instance as the first argument.
+        - Include ``**kwargs`` in signature.
+        - Return a `dict` response object.
+
+        The helper may define any named arguments in its signature.
+        """
+        method = method.lower()
+        if method not in self._response_helpers:
+            self._response_helpers[method] = {}
+        self._response_helpers[method].setdefault(status_code, []).append(func)
 
 def validate_openapi_version(openapi_version_str):
     """Function to validate the version of the OpenAPI passed into APISpec
