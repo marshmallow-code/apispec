@@ -90,8 +90,19 @@ def resolve_schema_dict(spec, schema, dump=True, use_instances=False):
 
 
 class MarshmallowPlugin(object):
+    """
+    :param callable schema_name_resolver: Callable to generate the
+        schema definition name. Receives the `Schema` class and returns the name to be used in
+        refs within the generated spec.
 
-    def __init__(self, spec=None):
+        Example: ::
+
+            def schema_name_resolver(schema):
+                return schema.__name__
+    """
+
+    def __init__(self, spec=None, schema_name_resolver=None):
+        self.schema_name_resolver = schema_name_resolver
         if spec is not None:
             self.init_spec(spec)
 
@@ -103,8 +114,8 @@ class MarshmallowPlugin(object):
         :param spec: apispec.core.APISpec instance
         :param original_schema_instance: schema to parse
         """
-        # spec.schema_name_resolver must be provided to use this function
-        assert self.spec.schema_name_resolver
+        # schema_name_resolver must be provided to use this function
+        assert self.schema_name_resolver
 
         plug = self.spec.plugins[NAME]
         if 'refs' not in plug:
@@ -121,7 +132,7 @@ class MarshmallowPlugin(object):
                 nested_schema_class = get_schema_class(field.container.schema)
 
             if nested_schema_class and nested_schema_class not in plug['refs']:
-                definition_name = self.spec.schema_name_resolver(
+                definition_name = self.schema_name_resolver(
                     nested_schema_class,
                 )
                 if definition_name:
@@ -189,8 +200,8 @@ class MarshmallowPlugin(object):
 
         json_schema = swagger.schema2jsonschema(schema_instance, spec=self.spec, name=name)
 
-        # Auto reference schema if spec.schema_name_resolver
-        if self.spec.schema_name_resolver:
+        # Auto reference schema if schema_name_resolver
+        if self.schema_name_resolver:
             self.inspect_schema_for_auto_referencing(schema_instance)
 
         return json_schema

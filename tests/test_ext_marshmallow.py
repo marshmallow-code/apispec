@@ -64,9 +64,8 @@ class TestDefinitionHelper:
             version='2.0',
             description='Test auto-reference',
             plugins=(
-                MarshmallowPlugin(),
+                MarshmallowPlugin(schema_name_resolver=resolver),
             ),
-            schema_name_resolver=resolver,
         )
         assert {} == spec._definitions
 
@@ -98,9 +97,8 @@ class TestDefinitionHelper:
             version='2.0',
             description='Test auto-reference',
             plugins=(
-                MarshmallowPlugin(),
+                MarshmallowPlugin(schema_name_resolver=resolver,),
             ),
-            schema_name_resolver=resolver,
         )
         assert {} == spec._definitions
 
@@ -134,9 +132,8 @@ class TestDefinitionHelper:
             version='2.0',
             description='Test auto-reference',
             plugins=(
-                MarshmallowPlugin(),
+                MarshmallowPlugin(schema_name_resolver=resolver,),
             ),
-            schema_name_resolver=resolver,
         )
         assert {} == spec._definitions
 
