@@ -412,7 +412,8 @@ class TestOperationHelper:
             PetSchema, default_in='body', required=True,
             name='pet', description='a pet schema')
 
-    def test_schema_in_docstring_uses_ref_if_available(self, spec_fixture):
+    @pytest.mark.parametrize('spec_fixture', ('2.0.0', ), indirect=True)
+    def test_schema_in_docstring_uses_ref_if_available_v2(self, spec_fixture):
         spec_fixture.spec.definition('Pet', schema=PetSchema)
 
         def pet_view():
@@ -433,7 +434,33 @@ class TestOperationHelper:
         assert 'responses' in op
         assert op['responses'][200]['schema']['$ref'] == self.ref_path(spec_fixture.spec) + 'Pet'
 
-    def test_schema_in_docstring_uses_ref_in_parameters_if_available(self, spec_fixture):
+    @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
+    def test_schema_in_docstring_uses_ref_if_available_v3(self, spec_fixture):
+        spec_fixture.spec.definition('Pet', schema=PetSchema)
+
+        def pet_view():
+            """Not much to see here.
+
+            ---
+            get:
+                responses:
+                    200:
+                        content:
+                            application/json:
+                                schema: tests.schemas.PetSchema
+            """
+            return '...'
+
+        spec_fixture.spec.add_path(path='/pet', view=pet_view)
+        p = spec_fixture.spec._paths['/pet']
+        assert 'get' in p
+        op = p['get']
+        assert 'responses' in op
+        assert op['responses'][200]['content']['application/json']['schema']['$ref'] == self.ref_path(
+            spec_fixture.spec) + 'Pet'
+
+    @pytest.mark.parametrize('spec_fixture', ('2.0.0', ), indirect=True)
+    def test_schema_in_docstring_uses_ref_in_parameters_and_request_body_if_available_v2(self, spec_fixture):
         spec_fixture.spec.definition('Pet', schema=PetSchema)
 
         def pet_view():
@@ -453,22 +480,25 @@ class TestOperationHelper:
 
         spec_fixture.spec.add_path(path='/pet', view=pet_view)
         p = spec_fixture.spec._paths['/pet']
-        assert 'get' in p
         get = p['get']
-        assert 'parameters' in get
         for parameter in get['parameters']:
             assert 'schema' not in parameter
         post = p['post']
-        assert 'parameters' in post
         assert len(post['parameters']) == 1
         assert post['parameters'][0]['schema']['$ref'] == self.ref_path(spec_fixture.spec) + 'Pet'
 
-    def test_schema_in_request_body(self, spec_fixture):
+    @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
+    def test_schema_in_docstring_uses_ref_in_parameters_and_request_body_if_available_v3(self, spec_fixture):
+        spec_fixture.spec.definition('Pet', schema=PetSchema)
 
         def pet_view():
             """Not much to see here.
 
             ---
+            get:
+                parameters:
+                    - in: query
+                      schema: tests.schemas.PetSchema
             post:
                 requestBody:
                     content:
@@ -476,16 +506,18 @@ class TestOperationHelper:
                             schema: tests.schemas.PetSchema
             """
             return '...'
-        spec_fixture.spec.definition('Pet', schema=PetSchema)
+
         spec_fixture.spec.add_path(path='/pet', view=pet_view)
         p = spec_fixture.spec._paths['/pet']
-        assert 'post' in p
+        get = p['get']
+        for parameter in get['parameters']:
+            assert 'schema' not in parameter
         post = p['post']
         schema_ref = post['requestBody']['content']['application/json']['schema']
         assert schema_ref == {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'}
 
     @pytest.mark.parametrize('spec_fixture', ('2.0.0', ), indirect=True)
-    def test_schema_array_in_docstring_uses_ref_if_available(self, spec_fixture):
+    def test_schema_array_in_docstring_uses_ref_if_available_v2(self, spec_fixture):
         spec_fixture.spec.definition('Pet', schema=PetSchema)
 
         def pet_view():
@@ -559,7 +591,8 @@ class TestOperationHelper:
         response_schema = op['responses'][200]['content']['application/json']['schema']
         assert response_schema == resolved_schema
 
-    def test_schema_partially_in_docstring(self, spec_fixture):
+    @pytest.mark.parametrize('spec_fixture', ('2.0.0', ), indirect=True)
+    def test_schema_partially_in_docstring_v2(self, spec_fixture):
         spec_fixture.spec.definition('Pet', schema=PetSchema)
 
         def pet_parents_view():
@@ -581,6 +614,38 @@ class TestOperationHelper:
         p = spec_fixture.spec._paths['/parents']
         op = p['get']
         assert op['responses'][200]['schema'] == {
+            'type': 'object',
+            'properties': {
+                'mother': {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'},
+                'father': {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'},
+            },
+        }
+
+    @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
+    def test_schema_partially_in_docstring_v3(self, spec_fixture):
+        spec_fixture.spec.definition('Pet', schema=PetSchema)
+
+        def pet_parents_view():
+            """Not much to see here.
+
+            ---
+            get:
+                responses:
+                    200:
+                        content:
+                            application/json:
+                                schema:
+                                    type: object
+                                    properties:
+                                        mother: tests.schemas.PetSchema
+                                        father: tests.schemas.PetSchema
+            """
+            return '...'
+
+        spec_fixture.spec.add_path(path='/parents', view=pet_parents_view)
+        p = spec_fixture.spec._paths['/parents']
+        op = p['get']
+        assert op['responses'][200]['content']['application/json']['schema'] == {
             'type': 'object',
             'properties': {
                 'mother': {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'},

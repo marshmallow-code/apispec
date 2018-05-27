@@ -69,6 +69,7 @@ class MarshmallowPlugin(object):
     """
 
     def __init__(self, spec=None, openapi_version='2.0.0', schema_name_resolver=None):
+        self.openapi_version = openapi_version
         self.swagger = Swagger(openapi_version=openapi_version)
         self.schema_name_resolver = schema_name_resolver
         if spec is not None:
@@ -76,7 +77,12 @@ class MarshmallowPlugin(object):
 
     def init_spec(self, spec):
         self.spec = spec
+        self.openapi_version = str(spec.openapi_version)
         self.swagger.openapi_version = str(spec.openapi_version)
+
+    @property
+    def openapi_major_version(self):
+        return int(self.openapi_version[0])
 
     def inspect_schema_for_auto_referencing(self, original_schema_instance):
         """Parse given schema instance and reference eventual nested schemas
@@ -136,12 +142,14 @@ class MarshmallowPlugin(object):
         :param APISpec spec: `APISpec` containing refs.
         :param dict data: the parameter or response dictionary that may contain a schema
         """
-        if 'schema' in data:  # OpenAPI 2
-            data['schema'] = self.swagger.resolve_schema_dict(data['schema'])
-        if 'content' in data:  # OpenAPI 3
-            for content_type in data['content']:
-                schema = data['content'][content_type]['schema']
-                data['content'][content_type]['schema'] = self.swagger.resolve_schema_dict(schema)
+        if self.openapi_major_version < 3:
+            if 'schema' in data:
+                data['schema'] = self.swagger.resolve_schema_dict(data['schema'])
+        else:
+            if 'content' in data:
+                for content_type in data['content']:
+                    schema = data['content'][content_type]['schema']
+                    data['content'][content_type]['schema'] = self.swagger.resolve_schema_dict(schema)
 
     def definition_helper(self, name, schema, **kwargs):
         """Definition helper that allows using a marshmallow
@@ -241,8 +249,9 @@ class MarshmallowPlugin(object):
                 continue
             if 'parameters' in operation:
                 operation['parameters'] = self.resolve_parameters(operation['parameters'])
-            if 'requestBody' in operation:  # OpenAPI 3
-                self.resolve_schema_in_request_body(operation['requestBody'])
+            if self.openapi_major_version >= 3:
+                if 'requestBody' in operation:
+                    self.resolve_schema_in_request_body(operation['requestBody'])
             for response in operation.get('responses', {}).values():
                 self.resolve_schema(response)
 
