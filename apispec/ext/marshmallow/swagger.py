@@ -543,7 +543,7 @@ def property2parameter(prop, name='body', required=False, multiple=False, locati
         elif openapi_major_version == 3:
             if multiple:
                 ret['explode'] = True
-                ret['style'] = dict(form='array')
+                ret['style'] = 'form'
             ret['schema'] = prop
     return ret
 
