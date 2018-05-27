@@ -17,6 +17,7 @@ from marshmallow.compat import iteritems
 from marshmallow.orderedset import OrderedSet
 
 from apispec.lazy_dict import LazyDict
+from apispec.utils import validate_openapi_version
 from .common import resolve_schema_cls
 
 ##### marshmallow #####
@@ -102,11 +103,13 @@ class OrderedLazyDict(LazyDict, OrderedDict):
 
 
 class Swagger(object):
+    """Converter generating OpenAPI specification from Marshmallow schemas and fields
 
+    :param str|LooseVersion openapi_version: The OpenAPI version to use.
+        Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
+    """
     def __init__(self, openapi_version):
-        # distutils.version.LooseVersion
-        # XXX: pass a string version? a major version only? a version tuple?
-        self.openapi_version = openapi_version
+        self.openapi_version = validate_openapi_version(openapi_version)
         # Schema references
         self.refs = {}
         # Field mappings
@@ -114,7 +117,7 @@ class Swagger(object):
 
     @property
     def openapi_major_version(self):
-        return int(self.openapi_version[0])
+        return self.openapi_version.version[0]
 
     @staticmethod
     def _observed_name(field, name):

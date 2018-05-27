@@ -2,13 +2,13 @@
 """Core apispec classes and functions."""
 import re
 from collections import OrderedDict
-from distutils import version as du_version
 
 import yaml
 
 from apispec.compat import iterkeys, iteritems, PY2, unicode
 from apispec.lazy_dict import LazyDict
 from .exceptions import PluginError, APISpecError
+from .utils import validate_openapi_version
 
 VALID_METHODS = [
     'get',
@@ -63,11 +63,9 @@ class Path(object):
     :param str method: The HTTP method.
     :param dict operation: The operation object, as a `dict`. See
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject
-    :param str openapi_version: The version of the OpenAPI standard to use.
-        Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI
-        standard.
+    :param str|LooseVersion openapi_version: The OpenAPI version to use.
+        Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
     """
-
     def __init__(self, path=None, operations=None, openapi_version='2.0'):
         self.path = path
         operations = operations or OrderedDict()
@@ -112,9 +110,8 @@ class APISpec(object):
             def schema_name_resolver(schema):
                 return schema.__name__
         This parameter is deprecated. Use new class-based plugin interface instead.
-    :param str openapi_version: The version of the OpenAPI standard to use.
-        Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI
-        standard.
+    :param str|LooseVersion openapi_version: The OpenAPI version to use.
+        Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
     :param dict options: Optional top-level keys
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
     """
@@ -220,7 +217,7 @@ class APISpec(object):
         else:
             path = Path(path=normalize_path(path),
                         operations=operations,
-                        openapi_version=self.openapi_version.vstring)
+                        openapi_version=self.openapi_version)
         # Execute plugins' helpers
         for plugin in (p for p in self.plugins if hasattr(p, 'path_helper')):
             try:
@@ -394,24 +391,6 @@ class APISpec(object):
         if method not in self._response_helpers:
             self._response_helpers[method] = {}
         self._response_helpers[method].setdefault(status_code, []).append(func)
-
-def validate_openapi_version(openapi_version_str):
-    """Function to validate the version of the OpenAPI passed into APISpec
-
-    :param str openapi_version_str: the string version of the desired OpenAPI
-        version used in the output
-    """
-    min_inclusive_version = du_version.LooseVersion('2.0')
-    max_exclusive_version = du_version.LooseVersion('4.0')
-
-    openapi_version = du_version.LooseVersion(openapi_version_str)
-
-    if not min_inclusive_version <= openapi_version < max_exclusive_version:
-        raise APISpecError(
-            'Not a valid OpenAPI version number: {}'.format(openapi_version)
-        )
-
-    return openapi_version
 
 
 class YAMLDumper(yaml.Dumper):

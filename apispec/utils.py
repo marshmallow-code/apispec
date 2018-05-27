@@ -8,6 +8,8 @@ import json
 import tempfile
 import subprocess
 
+from distutils import version
+
 import yaml
 
 from apispec.compat import iteritems
@@ -103,3 +105,24 @@ def validate_swagger(spec):
             )
         except subprocess.CalledProcessError as error:
             raise exceptions.SwaggerError(error.output.decode('utf-8'))
+
+def validate_openapi_version(openapi_version):
+    """Validate OpenAPI version
+
+    :param str|LooseVersion openapi_version: OpenAPI version
+
+    This function checks the OpenAPI version is supported by APISpec and
+    returns it as LooseVersion object.
+    """
+    min_inclusive_version = version.LooseVersion('2.0')
+    max_exclusive_version = version.LooseVersion('4.0')
+
+    if not isinstance(openapi_version, version.LooseVersion):
+        openapi_version = version.LooseVersion(openapi_version)
+
+    if not min_inclusive_version <= openapi_version < max_exclusive_version:
+        raise exceptions.APISpecError(
+            'Not a valid OpenAPI version number: {}'.format(openapi_version)
+        )
+
+    return openapi_version
