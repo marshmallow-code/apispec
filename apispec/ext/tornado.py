@@ -39,10 +39,6 @@ from apispec import utils
 from apispec.exceptions import APISpecError
 
 
-def setup(spec):
-    """Setup for the plugin."""
-    spec.register_path_helper(path_from_urlspec)
-
 def path_from_urlspec(spec, urlspec, operations, **kwargs):
     """Path helper that allows passing a Tornado URLSpec or tuple."""
     if not isinstance(urlspec, URLSpec):
@@ -105,3 +101,16 @@ def _extensions_from_handler(handler_class):
     """
     extensions = utils.load_yaml_from_docstring(handler_class.__doc__) or {}
     return extensions
+
+
+class TornadoPlugin(object):
+
+    def __init__(self, spec=None):
+        if spec is not None:
+            self.init_spec(spec)
+
+    def init_spec(self, spec):
+        self.spec = spec
+
+    def path_helper(self, urlspec, **kwargs):
+        return path_from_urlspec(self.spec, urlspec, **kwargs)

@@ -1,11 +1,17 @@
 # -*- coding: utf-8 -*-
-from apispec import APISpec
 from bottle import route
 from flask import Flask
 from flask.views import MethodView
 from tornado.web import RequestHandler
+from apispec import APISpec
+from apispec.ext.bottle import BottlePlugin
+from apispec.ext.flask import FlaskPlugin
+from apispec.ext.tornado import TornadoPlugin
+from apispec.ext.marshmallow import MarshmallowPlugin
 
-def create_spec(ext_list):
+from . import schemas
+
+def create_spec(plugins):
     return APISpec(
         title='Swagger Petstore',
         version='1.0.0',
@@ -13,11 +19,11 @@ def create_spec(ext_list):
         'about Swagger at <a href=\"http://swagger.wordnik.com\">http://swagger.wordnik.com</a> '
         'or on irc.freenode.net, #swagger.  For this sample, you can use the api '
         'key \"special-key\" to test the authorization filters',
-        plugins=['apispec.ext.' + name for name in ext_list]
+        plugins=plugins
     )
 
-def confirm_ext_order_independency(web_framework, **kwargs_for_add_path):
-    extensions = [web_framework, 'marshmallow']
+def confirm_ext_order_independency(web_framework_plugin, **kwargs_for_add_path):
+    extensions = [web_framework_plugin(), MarshmallowPlugin()]
     specs = []
     for reverse in (False, True):
         if reverse:
@@ -47,7 +53,7 @@ class TestExtOrder:
             """
             return 'hi'
 
-        confirm_ext_order_independency('bottle', view=hello)
+        confirm_ext_order_independency(BottlePlugin, view=hello)
 
     def test_flask(self):
         app = Flask(__name__)
@@ -67,7 +73,7 @@ class TestExtOrder:
             return 'hi'
 
         with app.test_request_context():
-            confirm_ext_order_independency('flask', view=hello)
+            confirm_ext_order_independency(FlaskPlugin, view=hello)
 
     def test_flask_method_view(self):
         app = Flask(__name__)
@@ -88,7 +94,7 @@ class TestExtOrder:
         method_view = HelloApi.as_view('hi')
         app.add_url_rule('/hello', view_func=method_view)
         with app.test_request_context():
-            confirm_ext_order_independency('flask', view=method_view)
+            confirm_ext_order_independency(FlaskPlugin, view=method_view)
 
     def test_tornado(self):
         class TornadoHelloHandler(RequestHandler):
@@ -105,4 +111,4 @@ class TestExtOrder:
                 self_.write('hi')
 
         urlspec = (r'/hello', TornadoHelloHandler)
-        confirm_ext_order_independency('tornado', urlspec=urlspec)
+        confirm_ext_order_independency(TornadoPlugin, urlspec=urlspec)

@@ -5,10 +5,9 @@ from pytest import mark
 
 from marshmallow import fields, Schema, validate
 
-from apispec.ext.marshmallow import swagger
+from apispec.ext.marshmallow import swagger, MarshmallowPlugin
 from apispec import exceptions, utils, APISpec
 from apispec.ext.marshmallow.swagger import field2parameter
-
 
 class TestMarshmallowFieldToSwagger:
 
@@ -206,7 +205,7 @@ class TestMarshmallowFieldToSwagger:
         spec = APISpec(
             title='Pets',
             version='0.1',
-            plugins=['apispec.ext.marshmallow'],
+            plugins=(MarshmallowPlugin(), ),
             openapi_version='3.0.0'
         )
         field = fields.Str(allow_none=True)
@@ -391,7 +390,7 @@ class TestMarshmallowSchemaToModelDefinition:
         spec = APISpec(
             title='Pets',
             version='0.1',
-            plugins=['apispec.ext.marshmallow'],
+            plugins=(MarshmallowPlugin(), ),
             openapi_version=openapi_version
         )
 
@@ -560,7 +559,7 @@ class TestNesting:
         return APISpec(
             title='Pets',
             version='0.1',
-            plugins=['apispec.ext.marshmallow'],
+            plugins=(MarshmallowPlugin(), ),
         )
 
     def test_field2property_nested_spec_metadatas(self, spec):
@@ -706,7 +705,7 @@ def test_swagger_tools_validate():
     spec = APISpec(
         title='Pets',
         version='0.1',
-        plugins=['apispec.ext.marshmallow'],
+        plugins=(MarshmallowPlugin(), ),
     )
 
     spec.definition('Category', schema=CategorySchema)
@@ -761,7 +760,7 @@ def test_validate_v3():
     spec = APISpec(
         title='Pets',
         version='0.1',
-        plugins=['apispec.ext.marshmallow'],
+        plugins=(MarshmallowPlugin(), ),
         openapi_version='3.0.0'
     )
 
@@ -858,7 +857,7 @@ class TestFieldValidation:
         return APISpec(
             title='Validation',
             version='0.1',
-            plugins=['apispec.ext.marshmallow'],
+            plugins=(MarshmallowPlugin(), ),
         )
 
     def test_range(self, spec):

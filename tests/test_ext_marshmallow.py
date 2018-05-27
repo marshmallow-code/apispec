@@ -6,7 +6,7 @@ from marshmallow.fields import Field, DateTime, Dict, String
 from marshmallow import Schema
 
 from apispec import APISpec
-from apispec.ext.marshmallow import swagger
+from apispec.ext.marshmallow import swagger, MarshmallowPlugin
 from .schemas import PetSchema, AnalysisSchema, SampleSchema, RunSchema, \
     SelfReferencingSchema, OrderedSchema, PatternedObjectSchema, \
     DefaultCallableSchema, AnalysisWithListSchema
@@ -25,7 +25,7 @@ def spec():
         version='1.0.0',
         description=description,
         plugins=[
-            'apispec.ext.marshmallow'
+            MarshmallowPlugin()
         ]
     )
 
@@ -39,7 +39,7 @@ def spec_3():
         security=[{'apiKey': []}],
         openapi_version='3.0.0',
         plugins=[
-            'apispec.ext.marshmallow'
+            MarshmallowPlugin()
         ]
     )
 
@@ -64,7 +64,7 @@ class TestDefinitionHelper:
             version='2.0',
             description='Test auto-reference',
             plugins=(
-                'apispec.ext.marshmallow',
+                MarshmallowPlugin(),
             ),
             schema_name_resolver=resolver,
         )
@@ -98,7 +98,7 @@ class TestDefinitionHelper:
             version='2.0',
             description='Test auto-reference',
             plugins=(
-                'apispec.ext.marshmallow',
+                MarshmallowPlugin(),
             ),
             schema_name_resolver=resolver,
         )
@@ -134,7 +134,7 @@ class TestDefinitionHelper:
             version='2.0',
             description='Test auto-reference',
             plugins=(
-                'apispec.ext.marshmallow',
+                MarshmallowPlugin(),
             ),
             schema_name_resolver=resolver,
         )

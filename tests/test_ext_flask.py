@@ -4,6 +4,9 @@ import pytest
 from flask import Flask
 from flask.views import MethodView
 from apispec import APISpec
+from apispec.ext.flask import FlaskPlugin
+
+
 
 @pytest.fixture()
 def spec():
@@ -15,7 +18,7 @@ def spec():
         'or on irc.freenode.net, #swagger.  For this sample, you can use the api '
         'key \"special-key\" to test the authorization filters',
         plugins=[
-            'apispec.ext.flask'
+            FlaskPlugin()
         ]
     )
 

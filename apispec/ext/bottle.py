@@ -59,6 +59,14 @@ def path_from_router(spec, view, operations, **kwargs):
     return Path(path=bottle_path, operations=operations)
 
 
-def setup(spec):
-    """Setup for the plugin."""
-    spec.register_path_helper(path_from_router)
+class BottlePlugin(object):
+
+    def __init__(self, spec=None):
+        if spec is not None:
+            self.init_spec(spec)
+
+    def init_spec(self, spec):
+        self.spec = spec
+
+    def path_helper(self, view, operations, **kwargs):
+        return path_from_router(self.spec, view, operations, **kwargs)

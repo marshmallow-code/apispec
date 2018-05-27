@@ -31,7 +31,7 @@ from apispec.core import Path
 from apispec.utils import load_operations_from_docstring
 from . import swagger
 
-NAME = 'apispec.ext.marshmallow'
+NAME = 'MarshmallowPlugin'
 
 
 def get_schema_instance(schema):
@@ -269,8 +269,20 @@ def resolve_schema_cls(schema):
     return marshmallow.class_registry.get_class(schema)
 
 
-def setup(spec):
-    """Setup for the marshmallow plugin."""
-    spec.register_definition_helper(schema_definition_helper)
-    spec.register_path_helper(schema_path_helper)
-    spec.register_operation_helper(schema_operation_resolver)
+class MarshmallowPlugin(object):
+
+    def __init__(self, spec=None):
+        if spec is not None:
+            self.init_spec(spec)
+
+    def init_spec(self, spec):
+        self.spec = spec
+
+    def definition_helper(self, name, schema, **kwargs):
+        return schema_definition_helper(self.spec, name, schema, **kwargs)
+
+    def path_helper(self, view=None, **kwargs):
+        return schema_path_helper(self.spec, view=view, **kwargs)
+
+    def operation_helper(self, operations, **kwargs):
+        return schema_operation_resolver(self.spec, operations, **kwargs)

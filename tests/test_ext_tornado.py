@@ -2,6 +2,7 @@
 import pytest
 
 from apispec import APISpec
+from apispec.ext.tornado import TornadoPlugin
 from tornado.web import RequestHandler
 import tornado.gen
 
@@ -16,7 +17,7 @@ def spec():
         'For this sample, you can use the api key \"special-key\" to test the'
         'authorization filters',
         plugins=[
-            'apispec.ext.tornado'
+            TornadoPlugin()
         ]
     )
 
