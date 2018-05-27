@@ -29,7 +29,7 @@ import marshmallow
 
 from apispec.core import Path
 from apispec.utils import load_operations_from_docstring
-from . import swagger
+from .swagger import Swagger
 
 
 def get_schema_instance(schema):
@@ -69,7 +69,7 @@ class MarshmallowPlugin(object):
     """
 
     def __init__(self, spec=None, schema_name_resolver=None):
-        self.swagger = swagger.Swagger()
+        self.swagger = Swagger()
         self.schema_name_resolver = schema_name_resolver
         if spec is not None:
             self.init_spec(spec)
@@ -248,3 +248,11 @@ class MarshmallowPlugin(object):
                 self.resolve_schema_in_request_body(operation['requestBody'])
             for response in operation.get('responses', {}).values():
                 self.resolve_schema(response)
+
+
+# Deprecated interface
+def setup(spec):
+    """Setup for the plugin."""
+    plugin = MarshmallowPlugin(schema_name_resolver=spec.schema_name_resolver)
+    plugin.init_spec(spec)
+    spec.plugins.append(plugin)

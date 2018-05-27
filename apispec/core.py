@@ -103,6 +103,15 @@ class APISpec(object):
     :param tuple plugins: Import paths to plugins.
     :param dict info: Optional dict to add to `info`
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#infoObject
+    :param callable schema_name_resolver: Callable to generate the
+        schema definition name. Receives the `Schema` class and returns the name to be used in
+        refs within the generated spec.
+
+        Example: ::
+
+            def schema_name_resolver(schema):
+                return schema.__name__
+        This parameter is deprecated. Use new class-based plugin interface instead.
     :param str openapi_version: The version of the OpenAPI standard to use.
         Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI
         standard.
@@ -110,7 +119,7 @@ class APISpec(object):
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
     """
     def __init__(self, title, version, plugins=(), info=None,
-                 openapi_version='2.0', **options):
+                 schema_name_resolver=None, openapi_version='2.0', **options):
         self.info = {
             'title': title,
             'version': version,
@@ -120,6 +129,7 @@ class APISpec(object):
         self.openapi_version = validate_openapi_version(openapi_version)
 
         self.options = options
+        self.schema_name_resolver = schema_name_resolver
         # Metadata
         self._definitions = {}
         self._parameters = {}
