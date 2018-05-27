@@ -126,20 +126,16 @@ class APISpec(object):
         self._tags = []
         self._paths = OrderedDict()
         # Plugin and helpers
-        self.plugins = {}
-        self.plugin_objects = list(plugins)
+        self.plugins = list(plugins)
+        # Deprecated interface
         self._definition_helpers = []
         self._path_helpers = []
         self._operation_helpers = []
         # {'get': {200: [my_helper]}}
         self._response_helpers = {}
-        self._plugin_definition_helpers = []
-        self._plugin_path_helpers = []
-        self._plugin_operation_helpers = []
-        self._plugin_response_helpers = []
 
-        for plugin in self.plugin_objects:
-            self.setup_plugin(plugin)
+        for plugin in self.plugins:
+            plugin.init_spec(self)
 
     def to_dict(self):
         ret = {
@@ -208,9 +204,9 @@ class APISpec(object):
                         operations=operations,
                         openapi_version=self.openapi_version.vstring)
         # Execute plugins' helpers
-        for func in self._plugin_path_helpers:
+        for plugin in (p for p in self.plugins if hasattr(p, 'path_helper')):
             try:
-                ret = func(path=path, operations=operations, **kwargs)
+                ret = plugin.path_helper(path=path, operations=operations, **kwargs)
             except TypeError:
                 continue
             if isinstance(ret, Path):
@@ -230,8 +226,8 @@ class APISpec(object):
                 path.update(ret)
                 operations = ret.operations
         if operations:
-            for func in self._plugin_operation_helpers:
-                func(path=path, operations=operations, **kwargs)
+            for plugin in (p for p in self.plugins if hasattr(p, 'operation_helper')):
+                plugin.operation_helper(path=path, operations=operations, **kwargs)
             # Deprecated interface
             for func in self._operation_helpers:
                 func(self, path=path, operations=operations, **kwargs)
@@ -244,8 +240,8 @@ class APISpec(object):
         for method, operation in iteritems(path.operations):
             if method in VALID_METHODS and 'responses' in operation:
                 for status_code, response in iteritems(operation['responses']):
-                    for func in self._plugin_response_helpers:
-                        response.update(func(method, status_code, **kwargs))
+                    for plugin in (p for p in self.plugins if hasattr(p, 'response_helper')):
+                        response.update(plugin.response_helper(method, status_code, **kwargs))
         # Deprecated interface
         # Rule is that method + http status exist in both operations and helpers
         methods = set(iterkeys(path.operations)) & set(iterkeys(self._response_helpers))
@@ -277,9 +273,9 @@ class APISpec(object):
         """
         ret = {}
         # Execute all helpers from plugins
-        for func in self._plugin_definition_helpers:
+        for plugin in (p for p in self.plugins if hasattr(p, 'definition_helper')):
             try:
-                ret.update(func(name, definition=ret, **kwargs))
+                ret.update(plugin.definition_helper(name, definition=ret, **kwargs))
             except TypeError:
                 continue
         # Deprecated interface
@@ -298,18 +294,7 @@ class APISpec(object):
             ret.update(extra_fields)
         self._definitions[name] = ret
 
-    # PLUGIN INTERFACE
-
-    def setup_plugin(self, plugin):
-        plugin.init_spec(self)
-        if hasattr(plugin, 'definition_helper'):
-            self._plugin_definition_helpers.append(plugin.definition_helper)
-        if hasattr(plugin, 'path_helper'):
-            self._plugin_path_helpers.append(plugin.path_helper)
-        if hasattr(plugin, 'operation_helper'):
-            self._plugin_operation_helpers.append(plugin.operation_helper)
-        if hasattr(plugin, 'response_helper'):
-            self._plugin_response_helpers.append(plugin.response_helper)
+    # Deprecated helpers interface
 
     def register_definition_helper(self, func):
         """Register a new definition helper. The helper **must** meet the following conditions:
