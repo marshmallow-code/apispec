@@ -9,8 +9,6 @@ from apispec.ext.flask import FlaskPlugin
 from apispec.ext.tornado import TornadoPlugin
 from apispec.ext.marshmallow import MarshmallowPlugin
 
-from . import schemas
-
 def create_spec(plugins):
     return APISpec(
         title='Swagger Petstore',

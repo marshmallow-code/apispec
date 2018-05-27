@@ -334,31 +334,31 @@ class TestPath:
 
 class TestPlugins:
 
-#     DUMMY_PLUGIN = 'tests.plugins.dummy_plugin'
-# 
-#     @mock.patch(DUMMY_PLUGIN + '.setup', autospec=True)
-#     def test_setup_plugin(self, mock_setup, spec):
-#         spec.setup_plugin(self.DUMMY_PLUGIN)
-#         assert self.DUMMY_PLUGIN in spec.plugins
-#         mock_setup.assert_called_once_with(spec)
-#         spec.setup_plugin(self.DUMMY_PLUGIN)
-#         assert mock_setup.call_count == 1
-# 
-#     def test_setup_can_modify_plugin_dict(self, spec):
-#         spec.setup_plugin(self.DUMMY_PLUGIN)
-#         spec.plugins[self.DUMMY_PLUGIN]['foo'] == 42
-# 
-#     def test_setup_plugin_doesnt_exist(self, spec):
-#         with pytest.raises(PluginError):
-#             spec.setup_plugin('plugin.doesnt.exist')
-# 
-#     def test_setup_plugin_with_no_setup_function_raises_error(self, spec):
-#         plugin_path = 'tests.plugins.dummy_plugin_no_setup'
-#         with pytest.raises(PluginError) as excinfo:
-#             spec.setup_plugin(plugin_path)
-#         msg = excinfo.value.args[0]
-#         assert msg == 'Plugin "{0}" has no setup(spec) function'.format(plugin_path)
-# 
+    DUMMY_PLUGIN = 'tests.plugins.dummy_plugin'
+
+    @mock.patch(DUMMY_PLUGIN + '.setup', autospec=True)
+    def test_setup_plugin(self, mock_setup, spec):
+        spec.setup_plugin(self.DUMMY_PLUGIN)
+        assert self.DUMMY_PLUGIN in spec.old_plugins
+        mock_setup.assert_called_once_with(spec)
+        spec.setup_plugin(self.DUMMY_PLUGIN)
+        assert mock_setup.call_count == 1
+
+    def test_setup_can_modify_plugin_dict(self, spec):
+        spec.setup_plugin(self.DUMMY_PLUGIN)
+        spec.old_plugins[self.DUMMY_PLUGIN]['foo'] == 42
+
+    def test_setup_plugin_doesnt_exist(self, spec):
+        with pytest.raises(PluginError):
+            spec.setup_plugin('plugin.doesnt.exist')
+
+    def test_setup_plugin_with_no_setup_function_raises_error(self, spec):
+        plugin_path = 'tests.plugins.dummy_plugin_no_setup'
+        with pytest.raises(PluginError) as excinfo:
+            spec.setup_plugin(plugin_path)
+        msg = excinfo.value.args[0]
+        assert msg == 'Plugin "{0}" has no setup(spec) function'.format(plugin_path)
+
     def test_register_definition_helper(self, spec):
         def my_definition_helper(name, schema, **kwargs):
             pass
