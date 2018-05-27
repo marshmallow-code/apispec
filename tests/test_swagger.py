@@ -5,8 +5,12 @@ from pytest import mark
 
 from marshmallow import fields, Schema, validate
 
-from apispec.ext.marshmallow import swagger, MarshmallowPlugin
+from apispec.ext.marshmallow import MarshmallowPlugin
+from apispec.ext.marshmallow.swagger import MARSHMALLOW_VERSION_INFO, Swagger
 from apispec import exceptions, utils, APISpec
+
+swagger = Swagger()
+
 
 class TestMarshmallowFieldToSwagger:
 
@@ -235,7 +239,7 @@ class TestMarshmallowSchemaToModelDefinition:
         assert props['email']['format'] == 'email'
         assert props['email']['description'] == 'email address of the user'
 
-    @pytest.mark.skipif(swagger.MARSHMALLOW_VERSION_INFO[0] >= 3,
+    @pytest.mark.skipif(MARSHMALLOW_VERSION_INFO[0] >= 3,
                         reason='Behaviour changed in marshmallow 3')
     def test_schema2jsonschema_override_name_ma2(self):
         class ExampleSchema(Schema):
@@ -260,7 +264,7 @@ class TestMarshmallowSchemaToModelDefinition:
         # `_global` excluded correctly
         assert '_global' not in props and 'global' not in props
 
-    @pytest.mark.skipif(swagger.MARSHMALLOW_VERSION_INFO[0] < 3,
+    @pytest.mark.skipif(MARSHMALLOW_VERSION_INFO[0] < 3,
                         reason='Behaviour changed in marshmallow 3')
     def test_schema2jsonschema_override_name_ma3(self):
         class ExampleSchema(Schema):
@@ -343,7 +347,7 @@ class TestMarshmallowSchemaToModelDefinition:
         assert issubclass(warning.category, UserWarning)
 
     def test_observed_field_name_for_required_field(self):
-        if swagger.MARSHMALLOW_VERSION_INFO[0] < 3:
+        if MARSHMALLOW_VERSION_INFO[0] < 3:
             fields_dict = {
                 'user_id': fields.Int(load_from='id', dump_to='id', required=True)
             }

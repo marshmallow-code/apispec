@@ -58,37 +58,6 @@ def resolve_schema_cls(schema):
     return marshmallow.class_registry.get_class(schema)
 
 
-def resolve_schema_dict(spec, schema, dump=True, use_instances=False):
-    if isinstance(schema, dict):
-        if schema.get('type') == 'array' and 'items' in schema:
-            schema['items'] = resolve_schema_dict(
-                spec, schema['items'], use_instances=use_instances)
-        if schema.get('type') == 'object' and 'properties' in schema:
-            schema['properties'] = {
-                k: resolve_schema_dict(spec, v, dump=dump, use_instances=use_instances)
-                for k, v in schema['properties'].items()}
-        return schema
-    plug = spec.plugins[NAME] if spec else {}
-    if isinstance(schema, marshmallow.Schema) and use_instances:
-        schema_cls = schema
-    else:
-        schema_cls = resolve_schema_cls(schema)
-
-    if schema_cls in plug.get('refs', {}):
-        ref_path = swagger.get_ref_path(spec.openapi_version.version[0])
-        ref_schema = {'$ref': '#/{0}/{1}'.format(ref_path,
-                                                 plug['refs'][schema_cls])}
-        if getattr(schema, 'many', False):
-            return {
-                'type': 'array',
-                'items': ref_schema,
-            }
-        return ref_schema
-    if not isinstance(schema, marshmallow.Schema):
-        schema = schema_cls
-    return swagger.schema2jsonschema(schema, spec=spec, dump=dump)
-
-
 class MarshmallowPlugin(object):
     """
     :param callable schema_name_resolver: Callable to generate the
@@ -102,6 +71,7 @@ class MarshmallowPlugin(object):
     """
 
     def __init__(self, spec=None, schema_name_resolver=None):
+        self.swagger = swagger.Swagger()
         self.schema_name_resolver = schema_name_resolver
         if spec is not None:
             self.init_spec(spec)
@@ -148,7 +118,7 @@ class MarshmallowPlugin(object):
                 schema_cls = resolve_schema_cls(parameter['schema'])
                 if issubclass(schema_cls, marshmallow.Schema) and 'in' in parameter:
                     del parameter['schema']
-                    resolved += swagger.schema2parameters(
+                    resolved += self.swagger.schema2parameters(
                         schema_cls,
                         default_in=parameter.pop('in'), spec=self.spec, **parameter)
                     continue
@@ -165,7 +135,7 @@ class MarshmallowPlugin(object):
         content = request_body['content']
         for content_type in content:
             schema = content[content_type]['schema']
-            content[content_type]['schema'] = resolve_schema_dict(self.spec, schema)
+            content[content_type]['schema'] = self.swagger.resolve_schema_dict(self.spec, schema)
 
     def resolve_schema(self, data):
         """Function to resolve a schema in a parameter or response - modifies the
@@ -175,11 +145,12 @@ class MarshmallowPlugin(object):
         :param dict data: the parameter or response dictionary that may contain a schema
         """
         if 'schema' in data:  # OpenAPI 2
-            data['schema'] = resolve_schema_dict(self.spec, data['schema'])
+            data['schema'] = self.swagger.resolve_schema_dict(self.spec, data['schema'])
         if 'content' in data:  # OpenAPI 3
             for content_type in data['content']:
                 schema = data['content'][content_type]['schema']
-                data['content'][content_type]['schema'] = resolve_schema_dict(self.spec, schema)
+                data['content'][content_type]['schema'] = self.swagger.resolve_schema_dict(
+                    self.spec, schema)
 
     def definition_helper(self, name, schema, **kwargs):
         """Definition helper that allows using a marshmallow
@@ -198,7 +169,7 @@ class MarshmallowPlugin(object):
             plug['refs'] = {}
         plug['refs'][schema_cls] = name
 
-        json_schema = swagger.schema2jsonschema(schema_instance, spec=self.spec, name=name)
+        json_schema = self.swagger.schema2jsonschema(schema_instance, spec=self.spec, name=name)
 
         # Auto reference schema if schema_name_resolver
         if self.schema_name_resolver:

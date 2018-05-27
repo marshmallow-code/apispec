@@ -203,6 +203,10 @@ class TestCustomField:
         assert props_b['name']['type'] == 'integer'
         assert props_b['name']['format'] == 'int32'
 
+
+swagger_obj = swagger.Swagger()
+
+
 class TestOperationHelper:
 
     def test_schema(self, spec):
@@ -224,7 +228,7 @@ class TestOperationHelper:
         assert 'get' in p
         op = p['get']
         assert 'responses' in op
-        assert op['responses'][200]['schema'] == swagger.schema2jsonschema(PetSchema)
+        assert op['responses'][200]['schema'] == swagger_obj.schema2jsonschema(PetSchema)
 
     def test_schema_v3(self, spec_3):
         def pet_view():
@@ -253,7 +257,7 @@ class TestOperationHelper:
         assert 'responses' in op
 
         resolved_schema = op['responses'][200]['content']['application/json']['schema']
-        assert resolved_schema == swagger.schema2jsonschema(PetSchema)
+        assert resolved_schema == swagger_obj.schema2jsonschema(PetSchema)
 
     def test_schema_in_docstring(self, spec):
 
@@ -279,11 +283,11 @@ class TestOperationHelper:
         assert 'get' in p
         get = p['get']
         assert 'responses' in get
-        assert get['responses'][200]['schema'] == swagger.schema2jsonschema(PetSchema)
+        assert get['responses'][200]['schema'] == swagger_obj.schema2jsonschema(PetSchema)
         assert get['responses'][200]['description'] == 'successful operation'
         post = p['post']
         assert 'responses' in post
-        assert post['responses'][201]['schema'] == swagger.schema2jsonschema(PetSchema)
+        assert post['responses'][201]['schema'] == swagger_obj.schema2jsonschema(PetSchema)
         assert post['responses'][201]['description'] == 'successful operation'
 
     def test_schema_in_docstring_v3(self, spec_3):
@@ -316,14 +320,14 @@ class TestOperationHelper:
         assert 'responses' in get
 
         resolved_schema = get['responses'][200]['content']['application/json']['schema']
-        assert resolved_schema == swagger.schema2jsonschema(PetSchema)
+        assert resolved_schema == swagger_obj.schema2jsonschema(PetSchema)
 
         assert get['responses'][200]['description'] == 'successful operation'
         post = p['post']
         assert 'responses' in post
 
         resolved_schema = post['responses'][201]['content']['application/json']['schema']
-        assert resolved_schema == swagger.schema2jsonschema(PetSchema)
+        assert resolved_schema == swagger_obj.schema2jsonschema(PetSchema)
         assert post['responses'][201]['description'] == 'successful operation'
 
     def test_schema_in_docstring_expand_parameters(self, spec):
@@ -351,11 +355,12 @@ class TestOperationHelper:
         assert 'get' in p
         get = p['get']
         assert 'parameters' in get
-        assert get['parameters'] == swagger.schema2parameters(PetSchema, default_in='query')
+        assert get['parameters'] == swagger_obj.schema2parameters(PetSchema, default_in='query')
         post = p['post']
         assert 'parameters' in post
-        assert post['parameters'] == swagger.schema2parameters(PetSchema, default_in='body', required=True,
-                                                               name='pet', description='a pet schema')
+        assert post['parameters'] == swagger_obj.schema2parameters(
+            PetSchema, default_in='body', required=True,
+            name='pet', description='a pet schema')
 
     def test_schema_in_docstring_uses_ref_if_available(self, spec):
         spec.definition('Pet', schema=PetSchema)
@@ -464,6 +469,8 @@ class TestOperationHelper:
         assert op['responses'][200]['schema'] == resolved_schema
 
     def test_schema_array_in_docstring_uses_ref_if_available_v3(self, spec_3):
+        spec_3.definition('Pet', schema=PetSchema)
+
         def pet_view():
             """Not much to see here.
 
@@ -492,7 +499,7 @@ class TestOperationHelper:
         op = p['get']
         resolved_schema = {
             'type': 'array',
-            'items': swagger.schema2jsonschema(PetSchema),
+            'items': {'$ref': '#/components/schemas/Pet'}
         }
         request_schema = op['parameters'][0]['content']['application/json']['schema']
         assert request_schema == resolved_schema
@@ -556,13 +563,13 @@ class TestOperationHelper:
 
     def test_schema_global_state_untouched_2json(self):
         assert RunSchema._declared_fields['sample']._Nested__schema is None
-        data = swagger.schema2jsonschema(RunSchema)
+        data = swagger_obj.schema2jsonschema(RunSchema)
         json.dumps(data)
         assert RunSchema._declared_fields['sample']._Nested__schema is None
 
     def test_schema_global_state_untouched_2parameters(self):
         assert RunSchema._declared_fields['sample']._Nested__schema is None
-        data = swagger.schema2parameters(RunSchema)
+        data = swagger_obj.schema2parameters(RunSchema)
         json.dumps(data)
         assert RunSchema._declared_fields['sample']._Nested__schema is None
 
