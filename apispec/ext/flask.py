@@ -133,3 +133,11 @@ class FlaskPlugin(object):
                     operations[method_name] = docstring_yaml or dict()
             path.operations.update(operations)
         return path
+
+
+# Deprecated interface
+def setup(spec):
+    """Setup for the plugin."""
+    plugin = FlaskPlugin()
+    plugin.init_spec(spec)
+    spec.plugins.append(plugin)

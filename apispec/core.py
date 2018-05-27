@@ -8,7 +8,7 @@ import yaml
 
 from apispec.compat import iterkeys, iteritems, PY2, unicode
 from apispec.lazy_dict import LazyDict
-from .exceptions import APISpecError
+from .exceptions import PluginError, APISpecError
 
 VALID_METHODS = [
     'get',
@@ -125,17 +125,25 @@ class APISpec(object):
         self._parameters = {}
         self._tags = []
         self._paths = OrderedDict()
-        # Plugin and helpers
-        self.plugins = list(plugins)
+
+        # Plugins
+        plugins = list(plugins)  # Cast to list in case a generator is passed
+        # Backward compatibility: plugins can be passed as objects or strings
+        self.plugins = list(p for p in plugins if not isinstance(p, str))
+        for plugin in self.plugins:
+            plugin.init_spec(self)
+
         # Deprecated interface
+        # Plugins and helpers
+        self.old_plugins = {}
         self._definition_helpers = []
         self._path_helpers = []
         self._operation_helpers = []
         # {'get': {200: [my_helper]}}
         self._response_helpers = {}
-
-        for plugin in self.plugins:
-            plugin.init_spec(self)
+        old_plugins = list(p for p in plugins if isinstance(p, str))
+        for plugin_path in old_plugins:
+            self.setup_plugin(plugin_path)
 
     def to_dict(self):
         ret = {
@@ -293,6 +301,33 @@ class APISpec(object):
         if extra_fields:
             ret.update(extra_fields)
         self._definitions[name] = ret
+
+    # Deprecated PLUGIN INTERFACE
+
+    # adapted from Sphinx
+    def setup_plugin(self, path):
+        """Import and setup a plugin. No-op if called twice
+        for the same plugin.
+
+        :param str path: Import path to the plugin.
+        :raise: PluginError if the given plugin is invalid.
+        """
+        if path in self.old_plugins:
+            return
+        try:
+            mod = __import__(
+                path, globals=None, locals=None, fromlist=('setup', )
+            )
+        except ImportError as err:
+            raise PluginError(
+                'Could not import plugin "{0}"\n\n{1}'.format(path, err)
+            )
+        if not hasattr(mod, 'setup'):
+            raise PluginError('Plugin "{0}" has no setup(spec) function'.format(path))
+        else:
+            # Each plugin gets a dict to store arbitrary data
+            self.old_plugins[path] = {}
+            mod.setup(self)
 
     # Deprecated helpers interface
 

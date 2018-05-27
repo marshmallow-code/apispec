@@ -113,3 +113,11 @@ class TornadoPlugin(object):
         extensions = self._extensions_from_handler(urlspec.handler_class)
         operations.update(extensions)
         return Path(path=path, operations=operations)
+
+
+# Deprecated interface
+def setup(spec):
+    """Setup for the plugin."""
+    plugin = TornadoPlugin()
+    plugin.init_spec(spec)
+    spec.plugins.append(plugin)

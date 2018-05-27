@@ -67,3 +67,11 @@ class BottlePlugin(object):
         route = self._route_for_view(app, view)
         bottle_path = self.bottle_path_to_swagger(route.rule)
         return Path(path=bottle_path, operations=operations)
+
+
+# Deprecated interface
+def setup(spec):
+    """Setup for the plugin."""
+    plugin = BottlePlugin()
+    plugin.init_spec(spec)
+    spec.plugins.append(plugin)
