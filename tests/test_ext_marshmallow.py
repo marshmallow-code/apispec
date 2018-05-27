@@ -360,6 +360,37 @@ class TestOperationHelper:
         assert post['parameters'] == swagger.schema2parameters(PetSchema, default_in='body', required=True,
                                                                name='pet', description='a pet schema')
 
+    def test_schema_in_docstring_expand_parameters_v3(self, spec_3):
+        def pet_view():
+            """Not much to see here.
+
+            ---
+            get:
+                parameters:
+                    - in: query
+                      schema: tests.schemas.PetSchema
+            post:
+                parameters:
+                    - in: body
+                      description: "a pet schema"
+                      required: true
+                      name: pet
+                      schema: tests.schemas.PetSchema
+            """
+            return '...'
+
+        spec_3.add_path(path='/pet', view=pet_view)
+        p = spec_3._paths['/pet']
+        assert 'get' in p
+        get = p['get']
+        assert 'parameters' in get
+        assert get['parameters'] == swagger.schema2parameters(PetSchema, default_in='query', spec=spec_3)
+        post = p['post']
+        assert 'parameters' in post
+        post_parameters = swagger.schema2parameters(PetSchema, default_in='body', required=True,
+                                                     name='pet', description='a pet schema', spec=spec_3)
+        assert post['parameters'] == post_parameters
+
     def test_schema_in_docstring_uses_ref_if_available(self, spec):
         spec.definition('Pet', schema=PetSchema)
 
