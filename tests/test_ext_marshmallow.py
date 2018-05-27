@@ -243,7 +243,7 @@ class TestCustomField:
         assert props_b['name']['format'] == 'int32'
 
 
-swagger_obj = swagger.Swagger()
+swagger_obj = swagger.Swagger(openapi_version='2.0.0')
 
 
 class TestOperationHelper:

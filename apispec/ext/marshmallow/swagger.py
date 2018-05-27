@@ -136,7 +136,11 @@ def map_to_swagger_type(*args):
 
 class Swagger(object):
 
-    def __init__(self):
+    def __init__(self, openapi_version):
+        # distutils.version.LooseVersion
+        # XXX: pass a string version? a major version only? a version tuple?
+        self.openapi_version = openapi_version
+        self.openapi_major_version = int(self.openapi_version[0])
         # Schema references
         self.refs = {}
 
@@ -155,7 +159,6 @@ class Swagger(object):
             return dump_to or load_from or name
         return field.data_key or name
 
-
     @staticmethod
     def _get_json_type_for_field(field):
         if hasattr(field, CUSTOM_FIELD_MAPPING_ATTR):
@@ -164,9 +167,7 @@ class Swagger(object):
             json_type, fmt = FIELD_MAPPING.get(type(field), ('string', None))
         return json_type, fmt
 
-
-    @staticmethod
-    def field2choices(field, **kwargs):
+    def field2choices(self, field, **kwargs):
         """Return the dictionary of swagger field attributes for valid choices definition
 
         :param Field field: A marshmallow field.
@@ -190,9 +191,7 @@ class Swagger(object):
 
         return attributes
 
-
-    @staticmethod
-    def field2read_only(field, **kwargs):
+    def field2read_only(self, field, **kwargs):
         """Return the dictionary of swagger field attributes for a dump_only field.
 
         :param Field field: A marshmallow field.
@@ -203,22 +202,18 @@ class Swagger(object):
             attributes['readOnly'] = True
         return attributes
 
-
-    @staticmethod
-    def field2write_only(field, **kwargs):
+    def field2write_only(self, field, **kwargs):
         """Return the dictionary of swagger field attributes for a load_only field.
 
         :param Field field: A marshmallow field.
         :rtype: dict
         """
         attributes = {}
-        if field.load_only and kwargs['openapi_major_version'] >= 3:
+        if field.load_only and self.openapi_major_version >= 3:
             attributes['writeOnly'] = True
         return attributes
 
-
-    @staticmethod
-    def field2nullable(field, **kwargs):
+    def field2nullable(self, field, **kwargs):
         """Return the dictionary of swagger field attributes for a nullable field.
 
         :param Field field: A marshmallow field.
@@ -226,13 +221,10 @@ class Swagger(object):
         """
         attributes = {}
         if field.allow_none:
-            omv = kwargs['openapi_major_version']
-            attributes['x-nullable' if omv < 3 else 'nullable'] = True
+            attributes['x-nullable' if self.openapi_major_version < 3 else 'nullable'] = True
         return attributes
 
-
-    @staticmethod
-    def field2range(field, **kwargs):
+    def field2range(self, field, **kwargs):
         """Return the dictionary of swagger field attributes for a set of
         :class:`Range <marshmallow.validators.Range>` validators.
 
@@ -268,8 +260,7 @@ class Swagger(object):
                     attributes['maximum'] = validator.max
         return attributes
 
-    @staticmethod
-    def field2length(field, **kwargs):
+    def field2length(self, field, **kwargs):
         """Return the dictionary of swagger field attributes for a set of
         :class:`Length <marshmallow.validators.Length>` validators.
 
@@ -316,8 +307,7 @@ class Swagger(object):
                 attributes[max_attr] = validator.equal
         return attributes
 
-
-    def field2property(self, field, spec=None, use_refs=True, dump=True, name=None):
+    def field2property(self, field, use_refs=True, dump=True, name=None):
         """Return the JSON Schema property definition given a marshmallow
         :class:`Field <marshmallow.fields.Field>`.
 
@@ -327,17 +317,11 @@ class Swagger(object):
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
 
         :param Field field: A marshmallow field.
-        :param APISpec spec: Optional `APISpec` containing refs.
         :param bool use_refs: Use JSONSchema ``refs``.
         :param bool dump: Introspect dump logic.
         :param str name: The definition name, if applicable, used to construct the $ref value.
         :rtype: dict, a Property Object
         """
-        if spec:
-            openapi_major_version = spec.openapi_version.version[0]
-        else:
-            # Default to 2 for backward compatibility
-            openapi_major_version = 2
 
         type_, fmt = self._get_json_type_for_field(field)
 
@@ -363,8 +347,7 @@ class Swagger(object):
                 self.field2range,
                 self.field2length,
         ):
-            ret.update(attr_func(
-                field, openapi_major_version=openapi_major_version))
+            ret.update(attr_func(field))
 
         if isinstance(field, marshmallow.fields.Nested):
             del ret['type']
@@ -381,7 +364,7 @@ class Swagger(object):
                             'Must pass `name` argument for self-referencing Nested fields.')
                     # We need to use the `name` argument when the field is self-referencing and
                     # unbound (doesn't have `parent` set) because we can't access field.schema
-                    ref_path = self.get_ref_path(openapi_major_version)
+                    ref_path = self.get_ref_path()
                     ref_name = '#/{ref_path}/{name}'.format(ref_path=ref_path, name=name)
                 ref_schema = {'$ref': ref_name}
                 if field.many:
@@ -392,22 +375,20 @@ class Swagger(object):
                         ret.update({'allOf': [ref_schema]})
                     else:
                         ret.update(ref_schema)
-            elif spec:
-                schema_dict = self.resolve_schema_dict(spec, field.schema, dump=dump)
+            else:
+                schema_dict = self.resolve_schema_dict(field.schema, dump=dump)
                 if ret and '$ref' in schema_dict:
                     ret.update({'allOf': [schema_dict]})
                 else:
                     ret.update(schema_dict)
-            else:
-                ret.update(self.schema2jsonschema(field.schema, dump=dump))
         elif isinstance(field, marshmallow.fields.List):
             ret['items'] = self.field2property(
-                field.container, spec=spec, use_refs=use_refs, dump=dump)
+                field.container, use_refs=use_refs, dump=dump)
         elif isinstance(field, marshmallow.fields.Dict):
             if MARSHMALLOW_VERSION_INFO[0] >= 3:
                 if field.value_container:
                     ret['additionalProperties'] = self.field2property(
-                        field.value_container, spec=spec, use_refs=use_refs, dump=dump)
+                        field.value_container, use_refs=use_refs, dump=dump)
 
         # Dasherize metadata that starts with x_
         metadata = {
@@ -443,7 +424,7 @@ class Swagger(object):
         return self.fields2parameters(fields, schema, **kwargs)
 
 
-    def fields2parameters(self, fields, schema=None, spec=None, use_refs=True,
+    def fields2parameters(self, fields, schema=None, use_refs=True,
                           default_in='body', name='body', required=False,
                           use_instances=False, description=None, **kwargs):
         """Return an array of OpenAPI parameters given a mapping between field names and
@@ -456,9 +437,9 @@ class Swagger(object):
         swagger_default_in = __location_map__.get(default_in, default_in)
         if swagger_default_in == 'body':
             if schema is not None:
-                prop = self.resolve_schema_dict(spec, schema, dump=False, use_instances=use_instances)
+                prop = self.resolve_schema_dict(schema, dump=False, use_instances=use_instances)
             else:
-                prop = self.fields2jsonschema(fields, spec=spec, use_refs=use_refs, dump=False)
+                prop = self.fields2jsonschema(fields, use_refs=use_refs, dump=False)
 
             param = {
                 'in': swagger_default_in,
@@ -485,7 +466,6 @@ class Swagger(object):
                 continue
             param = self.field2parameter(field_obj,
                                          name=self._observed_name(field_obj, field_name),
-                                         spec=spec,
                                          use_refs=use_refs,
                                          default_in=default_in)
             if param['in'] == 'body' and body_param is not None:
@@ -500,14 +480,14 @@ class Swagger(object):
         return parameters
 
 
-    def field2parameter(self, field, name='body', spec=None, use_refs=True, default_in='body'):
+    def field2parameter(self, field, name='body', use_refs=True, default_in='body'):
         """Return an OpenAPI parameter as a `dict`, given a marshmallow
         :class:`Field <marshmallow.Field>`.
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
         """
         location = field.metadata.get('location', None)
-        prop = self.field2property(field, spec=spec, use_refs=use_refs, dump=False)
+        prop = self.field2property(field, use_refs=use_refs, dump=False)
         return self.property2parameter(
             prop,
             name=name,
@@ -518,9 +498,8 @@ class Swagger(object):
         )
 
 
-    @staticmethod
-    def property2parameter(prop, name='body', required=False, multiple=False, location=None,
-                           default_in='body'):
+    def property2parameter(self, prop, name='body', required=False, multiple=False,
+                           location=None, default_in='body'):
         """Return the Parameter Object definition for a JSON Schema property.
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
@@ -558,7 +537,7 @@ class Swagger(object):
         return ret
 
 
-    def schema2jsonschema(self, schema, spec=None, use_refs=True, dump=True, name=None):
+    def schema2jsonschema(self, schema, use_refs=True, dump=True, name=None):
         if hasattr(schema, 'fields'):
             fields = schema.fields
         elif hasattr(schema, '_declared_fields'):
@@ -569,10 +548,10 @@ class Swagger(object):
             )
 
         return self.fields2jsonschema(
-            fields, schema, spec=spec, use_refs=use_refs, dump=dump, name=name)
+            fields, schema, use_refs=use_refs, dump=dump, name=name)
 
 
-    def fields2jsonschema(self, fields, schema=None, spec=None, use_refs=True, dump=True, name=None):
+    def fields2jsonschema(self, fields, schema=None, use_refs=True, dump=True, name=None):
         """Return the JSON Schema Object for a given marshmallow
         :class:`Schema <marshmallow.Schema>`. Schema may optionally provide the ``title`` and
         ``description`` class Meta options.
@@ -634,7 +613,7 @@ class Swagger(object):
 
             observed_field_name = self._observed_name(field_obj, field_name)
             prop_func = lambda field_obj=field_obj: self.field2property(  # flake8: noqa
-                field_obj, spec=spec, use_refs=use_refs, dump=dump, name=name)
+                field_obj, use_refs=use_refs, dump=dump, name=name)
             jsonschema['properties'][observed_field_name] = prop_func
 
             partial = getattr(schema, 'partial', None)
@@ -660,8 +639,7 @@ class Swagger(object):
         return jsonschema
 
 
-    @staticmethod
-    def get_ref_path(openapi_major_version):
+    def get_ref_path(self):
         """Return the path for references based on the openapi version
 
         :param int openapi_major_version: The major version of the OpenAPI standard
@@ -669,16 +647,16 @@ class Swagger(object):
         """
         ref_paths = {2: 'definitions',
                      3: 'components/schemas'}
-        return ref_paths[openapi_major_version]
+        return ref_paths[self.openapi_major_version]
 
-    def resolve_schema_dict(self, spec, schema, dump=True, use_instances=False):
+    def resolve_schema_dict(self, schema, dump=True, use_instances=False):
         if isinstance(schema, dict):
             if schema.get('type') == 'array' and 'items' in schema:
                 schema['items'] = self.resolve_schema_dict(
-                    spec, schema['items'], use_instances=use_instances)
+                    schema['items'], use_instances=use_instances)
             if schema.get('type') == 'object' and 'properties' in schema:
                 schema['properties'] = {
-                    k: self.resolve_schema_dict(spec, v, dump=dump, use_instances=use_instances)
+                    k: self.resolve_schema_dict(v, dump=dump, use_instances=use_instances)
                     for k, v in schema['properties'].items()}
             return schema
         if isinstance(schema, marshmallow.Schema) and use_instances:
@@ -688,7 +666,7 @@ class Swagger(object):
             schema_cls = resolve_schema_cls(schema)
 
         if schema_cls in self.refs:
-            ref_path = self.get_ref_path(spec.openapi_version.version[0])
+            ref_path = self.get_ref_path()
             ref_schema = {'$ref': '#/{0}/{1}'.format(ref_path, self.refs[schema_cls])}
             if getattr(schema, 'many', False):
                 return {
@@ -698,4 +676,4 @@ class Swagger(object):
             return ref_schema
         if not isinstance(schema, marshmallow.Schema):
             schema = schema_cls
-        return self.schema2jsonschema(schema, spec=spec, dump=dump)
+        return self.schema2jsonschema(schema, dump=dump)

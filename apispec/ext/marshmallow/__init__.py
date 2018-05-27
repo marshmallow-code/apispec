@@ -68,18 +68,18 @@ class MarshmallowPlugin(object):
                 return schema.__name__
     """
 
-    def __init__(self, spec=None, schema_name_resolver=None):
-        self.swagger = Swagger()
+    def __init__(self, spec=None, openapi_version='2.0.0', schema_name_resolver=None):
+        self.swagger = Swagger(openapi_version=openapi_version)
         self.schema_name_resolver = schema_name_resolver
         if spec is not None:
             self.init_spec(spec)
 
     def init_spec(self, spec):
         self.spec = spec
+        self.swagger.openapi_version = str(spec.openapi_version)
 
     def inspect_schema_for_auto_referencing(self, original_schema_instance):
         """Parse given schema instance and reference eventual nested schemas
-        :param spec: apispec.core.APISpec instance
         :param original_schema_instance: schema to parse
         """
         # schema_name_resolver must be provided to use this function
@@ -114,7 +114,7 @@ class MarshmallowPlugin(object):
                     del parameter['schema']
                     resolved += self.swagger.schema2parameters(
                         schema_cls,
-                        default_in=parameter.pop('in'), spec=self.spec, **parameter)
+                        default_in=parameter.pop('in'), **parameter)
                     continue
             self.resolve_schema(parameter)
             resolved.append(parameter)
@@ -123,13 +123,11 @@ class MarshmallowPlugin(object):
     def resolve_schema_in_request_body(self, request_body):
         """Function to resolve a schema in a requestBody object - modifies then
         response dict to convert Marshmallow Schema object or class into dict
-
-        :param APISpec spec: `APISpec` containing refs.
         """
         content = request_body['content']
         for content_type in content:
             schema = content[content_type]['schema']
-            content[content_type]['schema'] = self.swagger.resolve_schema_dict(self.spec, schema)
+            content[content_type]['schema'] = self.swagger.resolve_schema_dict(schema)
 
     def resolve_schema(self, data):
         """Function to resolve a schema in a parameter or response - modifies the
@@ -139,12 +137,11 @@ class MarshmallowPlugin(object):
         :param dict data: the parameter or response dictionary that may contain a schema
         """
         if 'schema' in data:  # OpenAPI 2
-            data['schema'] = self.swagger.resolve_schema_dict(self.spec, data['schema'])
+            data['schema'] = self.swagger.resolve_schema_dict(data['schema'])
         if 'content' in data:  # OpenAPI 3
             for content_type in data['content']:
                 schema = data['content'][content_type]['schema']
-                data['content'][content_type]['schema'] = self.swagger.resolve_schema_dict(
-                    self.spec, schema)
+                data['content'][content_type]['schema'] = self.swagger.resolve_schema_dict(schema)
 
     def definition_helper(self, name, schema, **kwargs):
         """Definition helper that allows using a marshmallow
@@ -160,7 +157,7 @@ class MarshmallowPlugin(object):
         # Store registered refs, keyed by Schema class
         self.swagger.refs[schema_cls] = name
 
-        json_schema = self.swagger.schema2jsonschema(schema_instance, spec=self.spec, name=name)
+        json_schema = self.swagger.schema2jsonschema(schema_instance, name=name)
 
         # Auto reference schema if schema_name_resolver
         if self.schema_name_resolver:

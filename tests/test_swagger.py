@@ -9,7 +9,8 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec.ext.marshmallow.swagger import MARSHMALLOW_VERSION_INFO, Swagger
 from apispec import exceptions, utils, APISpec
 
-swagger = Swagger()
+swagger = Swagger(openapi_version='2.0.0')
+swagger3 = Swagger(openapi_version='3.0.0')
 
 
 class TestMarshmallowFieldToSwagger:
@@ -205,14 +206,8 @@ class TestMarshmallowFieldToSwagger:
         assert res['x-nullable'] is True
 
     def test_field_with_allow_none_v3(self):
-        spec = APISpec(
-            title='Pets',
-            version='0.1',
-            plugins=(MarshmallowPlugin(), ),
-            openapi_version='3.0.0'
-        )
         field = fields.Str(allow_none=True)
-        res = swagger.field2property(field, spec)
+        res = swagger3.field2property(field)
         assert res['nullable'] is True
 
 class TestMarshmallowSchemaToModelDefinition:
@@ -388,21 +383,14 @@ class TestMarshmallowSchemaToModelDefinition:
         assert excinfo.value.args[0] == ("{0!r} doesn't have either `fields` "
                                          'or `_declared_fields`'.format(NotASchema))
 
-    @pytest.mark.parametrize('openapi_version', ['2.0.0', '3.0.0'])
-    def test_dump_only_load_only_fields(self, openapi_version):
-        spec = APISpec(
-            title='Pets',
-            version='0.1',
-            plugins=(MarshmallowPlugin(), ),
-            openapi_version=openapi_version
-        )
-
+    @pytest.mark.parametrize('swagger_obj', (swagger, swagger3))
+    def test_dump_only_load_only_fields(self, swagger_obj):
         class UserSchema(Schema):
             _id = fields.Str(dump_only=True)
             name = fields.Str()
             password = fields.Str(load_only=True)
 
-        res = swagger.schema2jsonschema(UserSchema(), spec)
+        res = swagger_obj.schema2jsonschema(UserSchema())
         props = res['properties']
         assert 'name' in props
         # dump_only field appears with readOnly attribute
@@ -410,7 +398,7 @@ class TestMarshmallowSchemaToModelDefinition:
         assert 'readOnly' in props['_id']
         # load_only field appears (writeOnly attribute does not exist)
         assert 'password' in props
-        if openapi_version == '2.0.0':
+        if swagger_obj is swagger:
             assert 'writeOnly' not in props['password']
         else:
             assert 'writeOnly' in props['password']
