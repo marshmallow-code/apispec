@@ -55,7 +55,7 @@ class TestDefinitionHelper:
         if deprecated_interface:
             spec = APISpec(
                 title='Test auto-reference',
-                version='2.0',
+                version='0.1',
                 description='Test auto-reference',
                 plugins=(
                     'apispec.ext.marshmallow',
@@ -65,7 +65,7 @@ class TestDefinitionHelper:
         else:
             spec = APISpec(
                 title='Test auto-reference',
-                version='2.0',
+                version='0.1',
                 description='Test auto-reference',
                 plugins=(
                     MarshmallowPlugin(schema_name_resolver=resolver),
@@ -100,7 +100,7 @@ class TestDefinitionHelper:
         if deprecated_interface:
             spec = APISpec(
                 title='Test auto-reference',
-                version='2.0',
+                version='0.1',
                 description='Test auto-reference',
                 plugins=(
                     'apispec.ext.marshmallow',
@@ -110,7 +110,7 @@ class TestDefinitionHelper:
         else:
             spec = APISpec(
                 title='Test auto-reference',
-                version='2.0',
+                version='0.1',
                 description='Test auto-reference',
                 plugins=(
                     MarshmallowPlugin(schema_name_resolver=resolver,),
@@ -146,7 +146,7 @@ class TestDefinitionHelper:
         if deprecated_interface:
             spec = APISpec(
                 title='Test auto-reference',
-                version='2.0',
+                version='0.1',
                 description='Test auto-reference',
                 plugins=(
                     'apispec.ext.marshmallow',
@@ -156,7 +156,7 @@ class TestDefinitionHelper:
         else:
             spec = APISpec(
                 title='Test auto-reference',
-                version='2.0',
+                version='0.1',
                 description='Test auto-reference',
                 plugins=(
                     MarshmallowPlugin(schema_name_resolver=resolver,),
@@ -233,7 +233,7 @@ class TestCustomField:
 
 class TestOperationHelper:
 
-    @pytest.fixture(params=('2.0.0', '3.0.0'))
+    @pytest.fixture(params=('2.0', '3.0.0'))
     def spec_fixture(self, request):
         ma_plugin = MarshmallowPlugin()
         spec = APISpec(
@@ -252,7 +252,7 @@ class TestOperationHelper:
             return '#/definitions/'
         return '#/components/schemas/'
 
-    @pytest.mark.parametrize('spec_fixture', ('2.0.0', ), indirect=True)
+    @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
     def test_schema_v2(self, spec_fixture):
         def pet_view():
             return '...'
@@ -306,7 +306,7 @@ class TestOperationHelper:
         resolved_schema = op['responses'][200]['content']['application/json']['schema']
         assert resolved_schema == spec_fixture.swagger.schema2jsonschema(PetSchema)
 
-    @pytest.mark.parametrize('spec_fixture', ('2.0.0', ), indirect=True)
+    @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
     def test_schema_in_docstring(self, spec_fixture):
 
         def pet_view():
@@ -412,7 +412,7 @@ class TestOperationHelper:
             PetSchema, default_in='body', required=True,
             name='pet', description='a pet schema')
 
-    @pytest.mark.parametrize('spec_fixture', ('2.0.0', ), indirect=True)
+    @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
     def test_schema_in_docstring_uses_ref_if_available_v2(self, spec_fixture):
         spec_fixture.spec.definition('Pet', schema=PetSchema)
 
@@ -459,7 +459,7 @@ class TestOperationHelper:
         assert op['responses'][200]['content']['application/json']['schema']['$ref'] == self.ref_path(
             spec_fixture.spec) + 'Pet'
 
-    @pytest.mark.parametrize('spec_fixture', ('2.0.0', ), indirect=True)
+    @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
     def test_schema_in_docstring_uses_ref_in_parameters_and_request_body_if_available_v2(self, spec_fixture):
         spec_fixture.spec.definition('Pet', schema=PetSchema)
 
@@ -516,7 +516,7 @@ class TestOperationHelper:
         schema_ref = post['requestBody']['content']['application/json']['schema']
         assert schema_ref == {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'}
 
-    @pytest.mark.parametrize('spec_fixture', ('2.0.0', ), indirect=True)
+    @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
     def test_schema_array_in_docstring_uses_ref_if_available_v2(self, spec_fixture):
         spec_fixture.spec.definition('Pet', schema=PetSchema)
 
@@ -591,7 +591,7 @@ class TestOperationHelper:
         response_schema = op['responses'][200]['content']['application/json']['schema']
         assert response_schema == resolved_schema
 
-    @pytest.mark.parametrize('spec_fixture', ('2.0.0', ), indirect=True)
+    @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
     def test_schema_partially_in_docstring_v2(self, spec_fixture):
         spec_fixture.spec.definition('Pet', schema=PetSchema)
 

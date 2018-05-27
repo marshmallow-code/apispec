@@ -68,7 +68,7 @@ class MarshmallowPlugin(object):
                 return schema.__name__
     """
 
-    def __init__(self, spec=None, openapi_version='2.0.0', schema_name_resolver=None):
+    def __init__(self, spec=None, openapi_version='2.0', schema_name_resolver=None):
         self.openapi_version = openapi_version
         self.swagger = Swagger(openapi_version=openapi_version)
         self.schema_name_resolver = schema_name_resolver

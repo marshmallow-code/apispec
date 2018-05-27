@@ -11,7 +11,7 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec.ext.marshmallow.swagger import MARSHMALLOW_VERSION_INFO, Swagger
 from apispec import exceptions, utils, APISpec
 
-@pytest.fixture(params=('2.0.0', '3.0.0'))
+@pytest.fixture(params=('2.0', '3.0.0'))
 def swagger(request):
     return Swagger(openapi_version=request.param)
 
@@ -551,7 +551,7 @@ class TestNesting:
             return '#/definitions/'
         return '#/components/schemas/'
 
-    @pytest.fixture(params=('2.0.0', '3.0.0'))
+    @pytest.fixture(params=('2.0', '3.0.0'))
     def spec_fixture(self, request):
         ma_plugin = MarshmallowPlugin()
         spec = APISpec(
@@ -721,7 +721,7 @@ def test_swagger_tools_validate_v2():
         title='Pets',
         version='0.1',
         plugins=(ma_plugin, ),
-        openapi_version='2.0.0'
+        openapi_version='2.0'
     )
     swagger = ma_plugin.swagger
 
