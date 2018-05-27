@@ -140,9 +140,12 @@ class Swagger(object):
         # distutils.version.LooseVersion
         # XXX: pass a string version? a major version only? a version tuple?
         self.openapi_version = openapi_version
-        self.openapi_major_version = int(self.openapi_version[0])
         # Schema references
         self.refs = {}
+
+    @property
+    def openapi_major_version(self):
+        return int(self.openapi_version[0])
 
     @staticmethod
     def _observed_name(field, name):

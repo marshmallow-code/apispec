@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from collections import namedtuple
+
 import pytest
 from pytest import mark
 
@@ -9,13 +11,14 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec.ext.marshmallow.swagger import MARSHMALLOW_VERSION_INFO, Swagger
 from apispec import exceptions, utils, APISpec
 
-swagger = Swagger(openapi_version='2.0.0')
-swagger3 = Swagger(openapi_version='3.0.0')
+@pytest.fixture(params=('2.0.0', '3.0.0'))
+def swagger(request):
+    return Swagger(openapi_version=request.param)
 
 
 class TestMarshmallowFieldToSwagger:
 
-    def test_field2choices_preserving_order(self):
+    def test_field2choices_preserving_order(self, swagger):
         choices = ['a', 'b', 'c', 'aa', '0', 'cc']
         field = fields.String(validate=validate.OneOf(choices))
         assert swagger.field2choices(field) == {'enum': choices}
@@ -38,12 +41,12 @@ class TestMarshmallowFieldToSwagger:
         (fields.Field, 'string'),
         (fields.Raw, 'string'),
     ])
-    def test_field2property_type(self, FieldClass, jsontype):
+    def test_field2property_type(self, FieldClass, jsontype, swagger):
         field = FieldClass()
         res = swagger.field2property(field)
         assert res['type'] == jsontype
 
-    def test_formatted_field_translates_to_array(self):
+    def test_formatted_field_translates_to_array(self, swagger):
         field = fields.List(fields.String)
         res = swagger.field2property(field)
         assert res['type'] == 'array'
@@ -58,47 +61,47 @@ class TestMarshmallowFieldToSwagger:
         (fields.Email, 'email'),
         (fields.URL, 'url'),
     ])
-    def test_field2property_formats(self, FieldClass, expected_format):
+    def test_field2property_formats(self, FieldClass, expected_format, swagger):
         field = FieldClass()
         res = swagger.field2property(field)
         assert res['format'] == expected_format
 
-    def test_field_with_description(self):
+    def test_field_with_description(self, swagger):
         field = fields.Str(description='a username')
         res = swagger.field2property(field)
         assert res['description'] == 'a username'
 
-    def test_field_with_missing(self):
+    def test_field_with_missing(self, swagger):
         field = fields.Str(default='foo', missing='bar')
         res = swagger.field2property(field)
         assert res['default'] == 'bar'
 
-    def test_field_with_boolean_false_missing(self):
+    def test_field_with_boolean_false_missing(self, swagger):
         field = fields.Boolean(default=None, missing=False)
         res = swagger.field2property(field)
         assert res['default'] is False
 
-    def test_field_with_missing_load(self):
+    def test_field_with_missing_load(self, swagger):
         field = fields.Str(default='foo', missing='bar')
         res = swagger.field2property(field, dump=False)
         assert res['default'] == 'bar'
 
-    def test_field_with_boolean_false_missing_load(self):
+    def test_field_with_boolean_false_missing_load(self, swagger):
         field = fields.Boolean(default=None, missing=False)
         res = swagger.field2property(field, dump=False)
         assert res['default'] is False
 
-    def test_fields_with_missing_load(self):
+    def test_fields_with_missing_load(self, swagger):
         field_dict = {'field': fields.Str(default='foo', missing='bar')}
         res = swagger.fields2parameters(field_dict, default_in='query')
         assert res[0]['default'] == 'bar'
 
-    def test_fields_with_location(self):
+    def test_fields_with_location(self, swagger):
         field_dict = {'field': fields.Str(location='querystring')}
         res = swagger.fields2parameters(field_dict, default_in='headers')
         assert res[0]['in'] == 'query'
 
-    def test_fields_with_multiple_json_locations(self):
+    def test_fields_with_multiple_json_locations(self, swagger):
         field_dict = {'field1': fields.Str(location='json', required=True),
                       'field2': fields.Str(location='json', required=True),
                       'field3': fields.Str(location='json')}
@@ -114,7 +117,7 @@ class TestMarshmallowFieldToSwagger:
         assert 'field1' in res[0]['schema']['required']
         assert 'field2' in res[0]['schema']['required']
 
-    def test_fields2parameters_does_not_modify_metadata(self):
+    def test_fields2parameters_does_not_modify_metadata(self, swagger):
         field_dict = {'field': fields.Str(location='querystring')}
         res = swagger.fields2parameters(field_dict, default_in='headers')
         assert res[0]['in'] == 'query'
@@ -122,17 +125,17 @@ class TestMarshmallowFieldToSwagger:
         res = swagger.fields2parameters(field_dict, default_in='headers')
         assert res[0]['in'] == 'query'
 
-    def test_fields_location_mapping(self):
+    def test_fields_location_mapping(self, swagger):
         field_dict = {'field': fields.Str(location='cookies')}
         res = swagger.fields2parameters(field_dict, default_in='headers')
         assert res[0]['in'] == 'cookie'
 
-    def test_fields_default_location_mapping(self):
+    def test_fields_default_location_mapping(self, swagger):
         field_dict = {'field': fields.Str()}
         res = swagger.fields2parameters(field_dict, default_in='headers')
         assert res[0]['in'] == 'header'
 
-    def test_fields_default_location_mapping_if_schema_many(self):
+    def test_fields_default_location_mapping_if_schema_many(self, swagger):
 
         class ExampleSchema(Schema):
             id = fields.Int()
@@ -141,7 +144,7 @@ class TestMarshmallowFieldToSwagger:
         res = swagger.fields2parameters(schema.fields, schema=schema, default_in='json')
         assert res[0]['in'] == 'body'
 
-    def test_fields_with_dump_only(self):
+    def test_fields_with_dump_only(self, swagger):
         class UserSchema(Schema):
             name = fields.Str(dump_only=True)
         res = swagger.fields2parameters(UserSchema._declared_fields, default_in='query')
@@ -161,17 +164,17 @@ class TestMarshmallowFieldToSwagger:
             UserSchema().fields, schema=UserSchema, default_in='query')
         assert len(res) == 0
 
-    def test_field_with_choices(self):
+    def test_field_with_choices(self, swagger):
         field = fields.Str(validate=validate.OneOf(['freddie', 'brian', 'john']))
         res = swagger.field2property(field)
         assert set(res['enum']) == {'freddie', 'brian', 'john'}
 
-    def test_field_with_equal(self):
+    def test_field_with_equal(self, swagger):
         field = fields.Str(validate=validate.Equal('only choice'))
         res = swagger.field2property(field)
         assert res['enum'] == ['only choice']
 
-    def test_only_allows_valid_properties_in_metadata(self):
+    def test_only_allows_valid_properties_in_metadata(self, swagger):
         field = fields.Str(
             missing='foo',
             description='foo',
@@ -186,7 +189,7 @@ class TestMarshmallowFieldToSwagger:
         assert 'allOf' in res
         assert 'not_valid' not in res
 
-    def test_field_with_choices_multiple(self):
+    def test_field_with_choices_multiple(self, swagger):
         field = fields.Str(validate=[
             validate.OneOf(['freddie', 'brian', 'john']),
             validate.OneOf(['brian', 'john', 'roger'])
@@ -194,29 +197,27 @@ class TestMarshmallowFieldToSwagger:
         res = swagger.field2property(field)
         assert set(res['enum']) == {'brian', 'john'}
 
-    def test_field_with_additional_metadata(self):
+    def test_field_with_additional_metadata(self, swagger):
         field = fields.Str(minLength=6, maxLength=100)
         res = swagger.field2property(field)
         assert res['maxLength'] == 100
         assert res['minLength'] == 6
 
-    def test_field_with_allow_none(self):
+    def test_field_with_allow_none(self, swagger):
         field = fields.Str(allow_none=True)
         res = swagger.field2property(field)
-        assert res['x-nullable'] is True
-
-    def test_field_with_allow_none_v3(self):
-        field = fields.Str(allow_none=True)
-        res = swagger3.field2property(field)
-        assert res['nullable'] is True
+        if swagger.openapi_major_version < 3:
+            assert res['x-nullable'] is True
+        else:
+            assert res['nullable'] is True
 
 class TestMarshmallowSchemaToModelDefinition:
 
-    def test_invalid_schema(self):
+    def test_invalid_schema(self, swagger):
         with pytest.raises(ValueError):
             swagger.schema2jsonschema(None)
 
-    def test_schema2jsonschema_with_explicit_fields(self):
+    def test_schema2jsonschema_with_explicit_fields(self, swagger):
         class UserSchema(Schema):
             _id = fields.Int()
             email = fields.Email(description='email address of the user')
@@ -236,7 +237,7 @@ class TestMarshmallowSchemaToModelDefinition:
 
     @pytest.mark.skipif(MARSHMALLOW_VERSION_INFO[0] >= 3,
                         reason='Behaviour changed in marshmallow 3')
-    def test_schema2jsonschema_override_name_ma2(self):
+    def test_schema2jsonschema_override_name_ma2(self, swagger):
         class ExampleSchema(Schema):
             _id = fields.Int(load_from='id', dump_to='id')
             _dt = fields.Int(load_from='lf_no_match', dump_to='dt')
@@ -261,7 +262,7 @@ class TestMarshmallowSchemaToModelDefinition:
 
     @pytest.mark.skipif(MARSHMALLOW_VERSION_INFO[0] < 3,
                         reason='Behaviour changed in marshmallow 3')
-    def test_schema2jsonschema_override_name_ma3(self):
+    def test_schema2jsonschema_override_name_ma3(self, swagger):
         class ExampleSchema(Schema):
             _id = fields.Int(data_key='id')
             _global = fields.Int(data_key='global')
@@ -277,14 +278,14 @@ class TestMarshmallowSchemaToModelDefinition:
         # `_global` excluded correctly
         assert '_global' not in props and 'global' not in props
 
-    def test_required_fields(self):
+    def test_required_fields(self, swagger):
         class BandSchema(Schema):
             drummer = fields.Str(required=True)
             bassist = fields.Str()
         res = swagger.schema2jsonschema(BandSchema)
         assert res['required'] == ['drummer']
 
-    def test_partial(self):
+    def test_partial(self, swagger):
         class BandSchema(Schema):
             drummer = fields.Str(required=True)
             bassist = fields.Str(required=True)
@@ -295,14 +296,14 @@ class TestMarshmallowSchemaToModelDefinition:
         res = swagger.schema2jsonschema(BandSchema(partial=('drummer', )))
         assert res['required'] == ['bassist']
 
-    def test_no_required_fields(self):
+    def test_no_required_fields(self, swagger):
         class BandSchema(Schema):
             drummer = fields.Str()
             bassist = fields.Str()
         res = swagger.schema2jsonschema(BandSchema)
         assert 'required' not in res
 
-    def test_title_and_description_may_be_added(self):
+    def test_title_and_description_may_be_added(self, swagger):
         class UserSchema(Schema):
             class Meta:
                 title = 'User'
@@ -312,7 +313,7 @@ class TestMarshmallowSchemaToModelDefinition:
         assert res['description'] == 'A registered user'
         assert res['title'] == 'User'
 
-    def test_excluded_fields(self):
+    def test_excluded_fields(self, swagger):
         class WhiteStripesSchema(Schema):
             class Meta:
                 exclude = ('bassist', )
@@ -323,7 +324,7 @@ class TestMarshmallowSchemaToModelDefinition:
         res = swagger.schema2jsonschema(WhiteStripesSchema)
         assert set(res['properties'].keys()) == set(['guitarist', 'drummer'])
 
-    def test_only_explicitly_declared_fields_are_translated(self, recwarn):
+    def test_only_explicitly_declared_fields_are_translated(self, recwarn, swagger):
         class UserSchema(Schema):
             _id = fields.Int()
 
@@ -341,7 +342,7 @@ class TestMarshmallowSchemaToModelDefinition:
         assert expected_msg in str(warning.message)
         assert issubclass(warning.category, UserWarning)
 
-    def test_observed_field_name_for_required_field(self):
+    def test_observed_field_name_for_required_field(self, swagger):
         if MARSHMALLOW_VERSION_INFO[0] < 3:
             fields_dict = {
                 'user_id': fields.Int(load_from='id', dump_to='id', required=True)
@@ -354,7 +355,7 @@ class TestMarshmallowSchemaToModelDefinition:
         res = swagger.fields2jsonschema(fields_dict)
         assert res['required'] == ['id']
 
-    def test_schema_instance_inspection(self):
+    def test_schema_instance_inspection(self, swagger):
         class UserSchema(Schema):
             _id = fields.Int()
 
@@ -363,7 +364,7 @@ class TestMarshmallowSchemaToModelDefinition:
         props = res['properties']
         assert '_id' in props
 
-    def test_schema_instance_inspection_with_many(self):
+    def test_schema_instance_inspection_with_many(self, swagger):
         class UserSchema(Schema):
             _id = fields.Int()
 
@@ -373,7 +374,7 @@ class TestMarshmallowSchemaToModelDefinition:
         props = res['items']['properties']
         assert '_id' in props
 
-    def test_raises_error_if_no_declared_fields(self):
+    def test_raises_error_if_no_declared_fields(self, swagger):
         class NotASchema(object):
             pass
 
@@ -383,14 +384,13 @@ class TestMarshmallowSchemaToModelDefinition:
         assert excinfo.value.args[0] == ("{0!r} doesn't have either `fields` "
                                          'or `_declared_fields`'.format(NotASchema))
 
-    @pytest.mark.parametrize('swagger_obj', (swagger, swagger3))
-    def test_dump_only_load_only_fields(self, swagger_obj):
+    def test_dump_only_load_only_fields(self, swagger):
         class UserSchema(Schema):
             _id = fields.Str(dump_only=True)
             name = fields.Str()
             password = fields.Str(load_only=True)
 
-        res = swagger_obj.schema2jsonschema(UserSchema())
+        res = swagger.schema2jsonschema(UserSchema())
         props = res['properties']
         assert 'name' in props
         # dump_only field appears with readOnly attribute
@@ -398,7 +398,7 @@ class TestMarshmallowSchemaToModelDefinition:
         assert 'readOnly' in props['_id']
         # load_only field appears (writeOnly attribute does not exist)
         assert 'password' in props
-        if swagger_obj is swagger:
+        if swagger.openapi_major_version < 3:
             assert 'writeOnly' not in props['password']
         else:
             assert 'writeOnly' in props['password']
@@ -406,7 +406,7 @@ class TestMarshmallowSchemaToModelDefinition:
 
 class TestMarshmallowSchemaToParameters:
 
-    def test_field_multiple(self):
+    def test_field_multiple(self, swagger):
         field = fields.List(fields.Str, location='querystring')
         res = swagger.field2parameter(field, name='field')
         assert res['in'] == 'query'
@@ -414,16 +414,16 @@ class TestMarshmallowSchemaToParameters:
         assert res['items']['type'] == 'string'
         assert res['collectionFormat'] == 'multi'
 
-    def test_field_required(self):
+    def test_field_required(self, swagger):
         field = fields.Str(required=True, location='query')
         res = swagger.field2parameter(field, name='field')
         assert res['required'] is True
 
-    def test_invalid_schema(self):
+    def test_invalid_schema(self, swagger):
         with pytest.raises(ValueError):
             swagger.schema2parameters(None)
 
-    def test_schema_body(self):
+    def test_schema_body(self, swagger):
         class UserSchema(Schema):
             name = fields.Str()
             email = fields.Email()
@@ -434,7 +434,7 @@ class TestMarshmallowSchemaToParameters:
         assert param['in'] == 'body'
         assert param['schema'] == swagger.schema2jsonschema(UserSchema)
 
-    def test_schema_body_with_dump_only(self):
+    def test_schema_body_with_dump_only(self, swagger):
         class UserSchema(Schema):
             name = fields.Str()
             email = fields.Email(dump_only=True)
@@ -446,7 +446,7 @@ class TestMarshmallowSchemaToParameters:
         assert param['schema'] == swagger.schema2jsonschema(UserSchema, dump=False)
         assert set(param['schema']['properties'].keys()) == {'name'}
 
-    def test_schema_body_many(self):
+    def test_schema_body_many(self, swagger):
         class UserSchema(Schema):
             name = fields.Str()
             email = fields.Email()
@@ -459,7 +459,7 @@ class TestMarshmallowSchemaToParameters:
         assert param['schema']['items']['type'] == 'object'
         assert param['schema']['items'] == swagger.schema2jsonschema(UserSchema)
 
-    def test_schema_query(self):
+    def test_schema_query(self, swagger):
         class UserSchema(Schema):
             name = fields.Str()
             email = fields.Email()
@@ -472,7 +472,7 @@ class TestMarshmallowSchemaToParameters:
         assert res[1]['name'] == 'name'
         assert res[1]['in'] == 'query'
 
-    def test_schema_query_instance(self):
+    def test_schema_query_instance(self, swagger):
         class UserSchema(Schema):
             name = fields.Str()
             email = fields.Email()
@@ -485,7 +485,7 @@ class TestMarshmallowSchemaToParameters:
         assert res[1]['name'] == 'name'
         assert res[1]['in'] == 'query'
 
-    def test_schema_query_instance_many_should_raise_exception(self):
+    def test_schema_query_instance_many_should_raise_exception(self, swagger):
         class UserSchema(Schema):
             name = fields.Str()
             email = fields.Email()
@@ -493,7 +493,7 @@ class TestMarshmallowSchemaToParameters:
         with pytest.raises(AssertionError):
             swagger.schema2parameters(UserSchema(many=True), default_in='query')
 
-    def test_fields_default_in_body(self):
+    def test_fields_default_in_body(self, swagger):
         field_dict = {
             'name': fields.Str(),
             'email': fields.Email(),
@@ -502,7 +502,7 @@ class TestMarshmallowSchemaToParameters:
         assert len(res) == 1
         assert set(res[0]['schema']['properties'].keys()) == {'name', 'email'}
 
-    def test_fields_query(self):
+    def test_fields_query(self, swagger):
         field_dict = {
             'name': fields.Str(),
             'email': fields.Email(),
@@ -515,7 +515,7 @@ class TestMarshmallowSchemaToParameters:
         assert res[1]['name'] == 'name'
         assert res[1]['in'] == 'query'
 
-    def test_raises_error_if_not_a_schema(self):
+    def test_raises_error_if_not_a_schema(self, swagger):
         class NotASchema(object):
             pass
 
@@ -545,40 +545,53 @@ class PetSchemaV3(Schema):
 
 class TestNesting:
 
-    @pytest.fixture()
-    def spec(self):
-        return APISpec(
-            title='Pets',
+    @staticmethod
+    def ref_path(spec):
+        if spec.openapi_version.version[0] < 3:
+            return '#/definitions/'
+        return '#/components/schemas/'
+
+    @pytest.fixture(params=('2.0.0', '3.0.0'))
+    def spec_fixture(self, request):
+        ma_plugin = MarshmallowPlugin()
+        spec = APISpec(
+            title='Validation',
             version='0.1',
-            plugins=(MarshmallowPlugin(), ),
+            plugins=(ma_plugin, ),
+            openapi_version=request.param
         )
+        return namedtuple(
+            'Spec', ('spec', 'marshmallow_plugin', 'swagger'))(
+                spec, ma_plugin, ma_plugin.swagger)
 
-    def test_field2property_nested_spec_metadatas(self, spec):
-        spec.definition('Category', schema=CategorySchema)
+    def test_field2property_nested_spec_metadatas(self, spec_fixture):
+        spec_fixture.spec.definition('Category', schema=CategorySchema)
         category = fields.Nested(CategorySchema, description='A category')
-        result = swagger.field2property(category, spec=spec)
-        assert result == {'$ref': '#/definitions/Category', 'description': 'A category'}
+        result = spec_fixture.swagger.field2property(category)
+        assert result == {'$ref': self.ref_path(spec_fixture.spec) + 'Category',
+                          'description': 'A category'}
 
-    def test_field2property_nested_spec(self, spec):
-        spec.definition('Category', schema=CategorySchema)
+    def test_field2property_nested_spec(self, spec_fixture):
+        spec_fixture.spec.definition('Category', schema=CategorySchema)
         category = fields.Nested(CategorySchema)
-        assert swagger.field2property(category, spec=spec) == {'$ref': '#/definitions/Category'}
+        assert spec_fixture.swagger.field2property(category) == {
+            '$ref': self.ref_path(spec_fixture.spec) + 'Category'}
 
-    def test_field2property_nested_many_spec(self, spec):
-        spec.definition('Category', schema=CategorySchema)
+    def test_field2property_nested_many_spec(self, spec_fixture):
+        spec_fixture.spec.definition('Category', schema=CategorySchema)
         category = fields.Nested(CategorySchema, many=True)
-        ret = swagger.field2property(category, spec=spec)
+        ret = spec_fixture.swagger.field2property(category)
         assert ret['type'] == 'array'
-        assert ret['items'] == {'$ref': '#/definitions/Category'}
+        assert ret['items'] == {'$ref': self.ref_path(spec_fixture.spec) + 'Category'}
 
-    def test_field2property_nested_ref(self, spec):
+    def test_field2property_nested_ref(self, swagger):
         category = fields.Nested(CategorySchema)
         assert swagger.field2property(category) == swagger.schema2jsonschema(CategorySchema)
 
         cat_with_ref = fields.Nested(CategorySchema, ref='Category')
         assert swagger.field2property(cat_with_ref) == {'$ref': 'Category'}
 
-    def test_field2property_nested_ref_with_meta(self, spec):
+    def test_field2property_nested_ref_with_meta(self, swagger):
         category = fields.Nested(CategorySchema)
         assert swagger.field2property(category) == swagger.schema2jsonschema(CategorySchema)
 
@@ -586,7 +599,7 @@ class TestNesting:
         result = swagger.field2property(cat_with_ref)
         assert result == {'$ref': 'Category', 'description': 'A category'}
 
-    def test_field2property_nested_many(self, spec):
+    def test_field2property_nested_many(self, swagger):
         categories = fields.Nested(CategorySchema, many=True)
         res = swagger.field2property(categories)
         assert res['type'] == 'array'
@@ -597,22 +610,28 @@ class TestNesting:
         assert res['type'] == 'array'
         assert res['items'] == {'$ref': 'Category'}
 
-    def test_field2property_nested_self_without_name_raises_error(self, spec):
+    def test_field2property_nested_self_without_name_raises_error(self, swagger):
         self_nesting = fields.Nested('self')
         with pytest.raises(ValueError):
             swagger.field2property(self_nesting)
 
-    def test_field2property_nested_self(self, spec):
+    def test_field2property_nested_self(self, swagger):
         self_nesting = fields.Nested('self')
-        res = swagger.field2property(self_nesting, spec=spec, name='Foo')
-        assert res == {'$ref': '#/definitions/Foo'}
+        res = swagger.field2property(self_nesting, name='Foo')
+        if swagger.openapi_major_version < 3:
+            assert res == {'$ref': '#/definitions/Foo'}
+        else:
+            assert res == {'$ref': '#/components/schemas/Foo'}
 
-    def test_field2property_nested_self_many(self, spec):
+    def test_field2property_nested_self_many(self, swagger):
         self_nesting = fields.Nested('self', many=True)
-        res = swagger.field2property(self_nesting, spec=spec, name='Foo')
-        assert res == {'type': 'array', 'items': {'$ref': '#/definitions/Foo'}}
+        res = swagger.field2property(self_nesting, name='Foo')
+        if swagger.openapi_major_version < 3:
+            assert res == {'type': 'array', 'items': {'$ref': '#/definitions/Foo'}}
+        else:
+            assert res == {'type': 'array', 'items': {'$ref': '#/components/schemas/Foo'}}
 
-    def test_field2property_nested_self_ref_with_meta(self, spec):
+    def test_field2property_nested_self_ref_with_meta(self, swagger):
         self_nesting = fields.Nested('self', ref='#/definitions/Bar')
         res = swagger.field2property(self_nesting)
         assert res == {'$ref': '#/definitions/Bar'}
@@ -622,24 +641,24 @@ class TestNesting:
         res = swagger.field2property(self_nesting2, name='Foo')
         assert res == {'$ref': '#/definitions/Bar'}
 
-    def test_field2property_nested_dump_only(self, spec):
+    def test_field2property_nested_dump_only(self, swagger):
         category = fields.Nested(CategorySchema)
         res = swagger.field2property(category, name='Foo', dump=False)
         props = res['properties']
         assert 'breed' not in props
 
-    def test_field2property_nested_dump_only_with_spec(self, spec):
+    def test_field2property_nested_dump_only_with_spec(self, swagger):
         category = fields.Nested(CategorySchema)
-        res = swagger.field2property(category, spec=spec, name='Foo', dump=False)
+        res = swagger.field2property(category, name='Foo', dump=False)
         props = res['properties']
         assert 'breed' not in props
 
-    def test_schema2jsonschema_with_nested_fields(self):
+    def test_schema2jsonschema_with_nested_fields(self, swagger):
         res = swagger.schema2jsonschema(PetSchema, use_refs=False)
         props = res['properties']
         assert props['category']['items'] == swagger.schema2jsonschema(CategorySchema)
 
-    def test_schema2jsonschema_with_nested_fields_with_adhoc_changes(self, spec):
+    def test_schema2jsonschema_with_nested_fields_with_adhoc_changes(self, swagger):
         category_schema = CategorySchema(many=True)
         category_schema.fields['id'].required = True
 
@@ -655,7 +674,7 @@ class TestNesting:
         props['category']['items']['required'] = ['name']
         assert props['category']['items'] == swagger.schema2jsonschema(CategorySchema)
 
-    def test_schema2jsonschema_with_nested_excluded_fields(self, spec):
+    def test_schema2jsonschema_with_nested_excluded_fields(self, swagger):
         category_schema = CategorySchema(exclude=('breed', ))
 
         class PetSchema(Schema):
@@ -665,39 +684,46 @@ class TestNesting:
         category_props = res['properties']['category']['properties']
         assert 'breed' not in category_props
 
-    def test_nested_field_with_property(self, spec):
-        category_1 = fields.Nested(CategorySchema)
-        category_2 = fields.Nested(CategorySchema, ref='#/definitions/Category')
-        category_3 = fields.Nested(CategorySchema, dump_only=True)
-        category_4 = fields.Nested(CategorySchema, dump_only=True, ref='#/definitions/Category')
-        category_5 = fields.Nested(CategorySchema, many=True)
-        category_6 = fields.Nested(CategorySchema, many=True, ref='#/definitions/Category')
-        category_7 = fields.Nested(CategorySchema, many=True, dump_only=True)
-        category_8 = fields.Nested(CategorySchema, many=True, dump_only=True, ref='#/definitions/Category')
-        spec.definition('Category', schema=CategorySchema)
+    def test_nested_field_with_property(self, spec_fixture):
+        ref_path = self.ref_path(spec_fixture.spec)
 
-        assert swagger.field2property(category_1, spec=spec) == {'$ref': '#/definitions/Category'}
-        assert swagger.field2property(category_2, spec=spec) == {'$ref': '#/definitions/Category'}
-        assert swagger.field2property(category_3, spec=spec) == {
-            'allOf': [{'$ref': '#/definitions/Category'}], 'readOnly': True}
-        assert swagger.field2property(category_4, spec=spec) == {
-            'allOf': [{'$ref': '#/definitions/Category'}], 'readOnly': True}
-        assert swagger.field2property(category_5, spec=spec) == {
-            'items': {'$ref': '#/definitions/Category'}, 'type': 'array'}
-        assert swagger.field2property(category_6, spec=spec) == {
-            'items': {'$ref': '#/definitions/Category'}, 'type': 'array'}
-        assert swagger.field2property(category_7, spec=spec) == {
-            'items': {'$ref': '#/definitions/Category'}, 'readOnly': True, 'type': 'array'}
-        assert swagger.field2property(category_8, spec=spec) == {
-            'items': {'$ref': '#/definitions/Category'}, 'readOnly': True, 'type': 'array'}
+        category_1 = fields.Nested(CategorySchema)
+        category_2 = fields.Nested(CategorySchema, ref=ref_path + 'Category')
+        category_3 = fields.Nested(CategorySchema, dump_only=True)
+        category_4 = fields.Nested(CategorySchema, dump_only=True, ref=ref_path + 'Category')
+        category_5 = fields.Nested(CategorySchema, many=True)
+        category_6 = fields.Nested(CategorySchema, many=True, ref=ref_path + 'Category')
+        category_7 = fields.Nested(CategorySchema, many=True, dump_only=True)
+        category_8 = fields.Nested(CategorySchema, many=True, dump_only=True, ref=ref_path + 'Category')
+        spec_fixture.spec.definition('Category', schema=CategorySchema)
+
+        assert spec_fixture.swagger.field2property(category_1) == {
+            '$ref': ref_path + 'Category'}
+        assert spec_fixture.swagger.field2property(category_2) == {
+            '$ref': ref_path + 'Category'}
+        assert spec_fixture.swagger.field2property(category_3) == {
+            'allOf': [{'$ref': ref_path + 'Category'}], 'readOnly': True}
+        assert spec_fixture.swagger.field2property(category_4) == {
+            'allOf': [{'$ref': ref_path + 'Category'}], 'readOnly': True}
+        assert spec_fixture.swagger.field2property(category_5) == {
+            'items': {'$ref': ref_path + 'Category'}, 'type': 'array'}
+        assert spec_fixture.swagger.field2property(category_6) == {
+            'items': {'$ref': ref_path + 'Category'}, 'type': 'array'}
+        assert spec_fixture.swagger.field2property(category_7) == {
+            'items': {'$ref': ref_path + 'Category'}, 'readOnly': True, 'type': 'array'}
+        assert spec_fixture.swagger.field2property(category_8) == {
+            'items': {'$ref': ref_path + 'Category'}, 'readOnly': True, 'type': 'array'}
 
 @pytest.mark.nodetest
-def test_swagger_tools_validate():
+def test_swagger_tools_validate_v2():
+    ma_plugin = MarshmallowPlugin()
     spec = APISpec(
         title='Pets',
         version='0.1',
-        plugins=(MarshmallowPlugin(), ),
+        plugins=(ma_plugin, ),
+        openapi_version='2.0.0'
     )
+    swagger = ma_plugin.swagger
 
     spec.definition('Category', schema=CategorySchema)
     spec.definition('Pet', schema=PetSchema, extra_fields={'discriminator': 'name'})
@@ -730,7 +756,7 @@ def test_swagger_tools_validate():
             'post': {
                 'parameters': (
                     [{'name': 'category_id', 'in': 'path', 'required': True, 'type': 'string'}] +
-                    swagger.schema2parameters(CategorySchema, spec=spec, default_in='body')
+                    swagger.schema2parameters(CategorySchema, default_in='body')
                 ),
                 'responses': {
                     201: {
@@ -747,13 +773,15 @@ def test_swagger_tools_validate():
         pytest.fail(str(error))
 
 @pytest.mark.nodetest
-def test_validate_v3():
+def test_swagger_tools_validate_v3():
+    ma_plugin = MarshmallowPlugin()
     spec = APISpec(
         title='Pets',
         version='0.1',
-        plugins=(MarshmallowPlugin(), ),
+        plugins=(ma_plugin, ),
         openapi_version='3.0.0'
     )
+    #swagger = ma_plugin.swagger
 
     spec.definition('Category', schema=CategorySchema)
     spec.definition('Pet', schema=PetSchemaV3)
