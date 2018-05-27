@@ -79,48 +79,9 @@ from apispec import Path
 from apispec.exceptions import APISpecError
 from apispec import utils
 
-def _rule_for_view(view):
-    view_funcs = current_app.view_functions
-    endpoint = None
-    for ept, view_func in iteritems(view_funcs):
-        if view_func == view:
-            endpoint = ept
-    if not endpoint:
-        raise APISpecError('Could not find endpoint for view {0}'.format(view))
-
-    # WARNING: Assume 1 rule per view function for now
-    rule = current_app.url_map._rules_by_endpoint[endpoint][0]
-    return rule
-
 
 # from flask-restplus
 RE_URL = re.compile(r'<(?:[^:<>]+:)?([^<>]+)>')
-
-def flaskpath2swagger(path):
-    """Convert a Flask URL rule to an OpenAPI-compliant path.
-
-    :param str path: Flask path template.
-    """
-    return RE_URL.sub(r'{\1}', path)
-
-def path_from_view(spec, view, **kwargs):
-    """Path helper that allows passing a Flask view function."""
-    rule = _rule_for_view(view)
-    path = flaskpath2swagger(rule.rule)
-    app_root = current_app.config['APPLICATION_ROOT'] or '/'
-    path = urljoin(app_root.rstrip('/') + '/', path.lstrip('/'))
-    operations = utils.load_operations_from_docstring(view.__doc__)
-    path = Path(path=path, operations=operations)
-    if hasattr(view, 'view_class') and issubclass(view.view_class, MethodView):
-        operations = {}
-        for method in view.methods:
-            if method in rule.methods:
-                method_name = method.lower()
-                method = getattr(view.view_class, method_name)
-                docstring_yaml = utils.load_yaml_from_docstring(method.__doc__)
-                operations[method_name] = docstring_yaml or dict()
-        path.operations.update(operations)
-    return path
 
 
 class FlaskPlugin(object):
@@ -132,5 +93,43 @@ class FlaskPlugin(object):
     def init_spec(self, spec):
         self.spec = spec
 
+    @staticmethod
+    def flaskpath2swagger(path):
+        """Convert a Flask URL rule to an OpenAPI-compliant path.
+
+        :param str path: Flask path template.
+        """
+        return RE_URL.sub(r'{\1}', path)
+
+    @staticmethod
+    def _rule_for_view(view):
+        view_funcs = current_app.view_functions
+        endpoint = None
+        for ept, view_func in iteritems(view_funcs):
+            if view_func == view:
+                endpoint = ept
+        if not endpoint:
+            raise APISpecError('Could not find endpoint for view {0}'.format(view))
+
+        # WARNING: Assume 1 rule per view function for now
+        rule = current_app.url_map._rules_by_endpoint[endpoint][0]
+        return rule
+
     def path_helper(self, view, **kwargs):
-        return path_from_view(self.spec, view, **kwargs)
+        """Path helper that allows passing a Flask view function."""
+        rule = self._rule_for_view(view)
+        path = self.flaskpath2swagger(rule.rule)
+        app_root = current_app.config['APPLICATION_ROOT'] or '/'
+        path = urljoin(app_root.rstrip('/') + '/', path.lstrip('/'))
+        operations = utils.load_operations_from_docstring(view.__doc__)
+        path = Path(path=path, operations=operations)
+        if hasattr(view, 'view_class') and issubclass(view.view_class, MethodView):
+            operations = {}
+            for method in view.methods:
+                if method in rule.methods:
+                    method_name = method.lower()
+                    method = getattr(view.view_class, method_name)
+                    docstring_yaml = utils.load_yaml_from_docstring(method.__doc__)
+                    operations[method_name] = docstring_yaml or dict()
+            path.operations.update(operations)
+        return path

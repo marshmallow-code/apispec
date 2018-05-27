@@ -35,29 +35,6 @@ RE_URL = re.compile(r'<(?:[^:<>]+:)?([^<>]+)>')
 
 _default_app = default_app()
 
-def bottle_path_to_swagger(path):
-    return RE_URL.sub(r'{\1}', path)
-
-
-def _route_for_view(app, view):
-    endpoint = None
-    for route in app.routes:
-        if route._context['callback'] == view:
-            endpoint = route
-            break
-    if not endpoint:
-        raise APISpecError('Could not find endpoint for route {0}'.format(view))
-    return endpoint
-
-
-def path_from_router(spec, view, operations, **kwargs):
-    """Path helper that allows passing a bottle view function."""
-    operations = utils.load_operations_from_docstring(view.__doc__)
-    app = kwargs.get('app', _default_app)
-    route = _route_for_view(app, view)
-    bottle_path = bottle_path_to_swagger(route.rule)
-    return Path(path=bottle_path, operations=operations)
-
 
 class BottlePlugin(object):
 
@@ -68,5 +45,25 @@ class BottlePlugin(object):
     def init_spec(self, spec):
         self.spec = spec
 
+    @staticmethod
+    def bottle_path_to_swagger(path):
+        return RE_URL.sub(r'{\1}', path)
+
+    @staticmethod
+    def _route_for_view(app, view):
+        endpoint = None
+        for route in app.routes:
+            if route._context['callback'] == view:
+                endpoint = route
+                break
+        if not endpoint:
+            raise APISpecError('Could not find endpoint for route {0}'.format(view))
+        return endpoint
+
     def path_helper(self, view, operations, **kwargs):
-        return path_from_router(self.spec, view, operations, **kwargs)
+        """Path helper that allows passing a bottle view function."""
+        operations = utils.load_operations_from_docstring(view.__doc__)
+        app = kwargs.get('app', _default_app)
+        route = self._route_for_view(app, view)
+        bottle_path = self.bottle_path_to_swagger(route.rule)
+        return Path(path=bottle_path, operations=operations)
