@@ -85,12 +85,19 @@ RE_URL = re.compile(r'<(?:[^:<>]+:)?([^<>]+)>')
 
 
 class FlaskPlugin(object):
+    """APISpec plugin for Flask
 
+    :param APISpec spec: APISpec object this plugin instance is attached to
+    """
     def __init__(self, spec=None):
         if spec is not None:
             self.init_spec(spec)
 
     def init_spec(self, spec):
+        """Initialize plugin with APISpec object
+
+        :param APISpec spec: APISpec object this plugin instance is attached to
+        """
         self.spec = spec
 
     @staticmethod

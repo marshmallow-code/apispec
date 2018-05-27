@@ -37,12 +37,19 @@ _default_app = default_app()
 
 
 class BottlePlugin(object):
+    """APISpec plugin for Bottle
 
+    :param APISpec spec: APISpec object this plugin instance is attached to
+    """
     def __init__(self, spec=None):
         if spec is not None:
             self.init_spec(spec)
 
     def init_spec(self, spec):
+        """Initialize plugin with APISpec object
+
+        :param APISpec spec: APISpec object this plugin instance is attached to
+        """
         self.spec = spec
 
     @staticmethod

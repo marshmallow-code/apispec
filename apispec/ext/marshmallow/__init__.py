@@ -28,7 +28,7 @@ from __future__ import absolute_import
 import marshmallow
 
 from apispec.core import Path
-from apispec.utils import load_operations_from_docstring, OpenAPIVersion
+from apispec.utils import load_operations_from_docstring
 from .common import resolve_schema_cls, resolve_schema_instance
 from .swagger import Swagger
 
@@ -36,8 +36,7 @@ from .swagger import Swagger
 class MarshmallowPlugin(object):
     """APISpec plugin handling marshmallow schemas
 
-    :param str|OpenAPIVersion openapi_version: The OpenAPI version to use.
-        Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
+    :param APISpec spec: APISpec object this plugin instance is attached to
     :param callable schema_name_resolver: Callable to generate the
         schema definition name. Receives the `Schema` class and returns the name to be used in
         refs within the generated spec.
@@ -47,18 +46,19 @@ class MarshmallowPlugin(object):
             def schema_name_resolver(schema):
                 return schema.__name__
     """
-
-    def __init__(self, spec=None, openapi_version='2.0', schema_name_resolver=None):
-        self.openapi_version = OpenAPIVersion(openapi_version)
-        self.swagger = Swagger(openapi_version=openapi_version)
+    def __init__(self, spec=None, schema_name_resolver=None):
         self.schema_name_resolver = schema_name_resolver
         if spec is not None:
             self.init_spec(spec)
 
     def init_spec(self, spec):
+        """Initialize plugin with APISpec object
+
+        :param APISpec spec: APISpec object this plugin instance is attached to
+        """
         self.spec = spec
         self.openapi_version = spec.openapi_version
-        self.swagger.openapi_version = spec.openapi_version
+        self.swagger = Swagger(openapi_version=spec.openapi_version)
 
     def inspect_schema_for_auto_referencing(self, original_schema_instance):
         """Parse given schema instance and reference eventual nested schemas
