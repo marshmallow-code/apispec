@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from collections import namedtuple
+import json
 
 import pytest
-import json
 
 from marshmallow.fields import Field, DateTime, Dict, String
 from marshmallow import Schema
@@ -17,23 +16,10 @@ from .schemas import (
     DefaultCallableSchema, AnalysisWithListSchema)
 
 
-description = 'This is a sample Petstore server.  You can find out more '
-'about Swagger at <a href=\"http://swagger.wordnik.com\">http://swagger.wordnik.com</a> '
-'or on irc.freenode.net, #swagger.  For this sample, you can use the api '
-'key \"special-key\" to test the authorization filters'
-
-
-@pytest.fixture(params=(True, False))
-def spec(request):
-    return APISpec(
-        title='Swagger Petstore',
-        version='1.0.0',
-        description=description,
-        plugins=[
-            # Test both plugin class and deprecated interface
-            MarshmallowPlugin() if request.param else 'apispec.ext.marshmallow',
-        ]
-    )
+def ref_path(spec):
+    if spec.openapi_version.version[0] < 3:
+        return '#/definitions/'
+    return '#/components/schemas/'
 
 
 class TestDefinitionHelper:
@@ -192,19 +178,6 @@ class TestDefinitionHelper:
 
 class TestCustomField:
 
-    @pytest.fixture(params=('2.0', '3.0.0'))
-    def spec_fixture(self, request):
-        ma_plugin = MarshmallowPlugin()
-        spec = APISpec(
-            title='Validation',
-            version='0.1',
-            plugins=(ma_plugin, ),
-            openapi_version=request.param
-        )
-        return namedtuple(
-            'Spec', ('spec', 'marshmallow_plugin', 'swagger'))(
-                spec, ma_plugin, ma_plugin.swagger)
-
     def test_can_use_custom_field_decorator(self, spec_fixture):
 
         @spec_fixture.swagger.map_to_swagger_type(DateTime)
@@ -245,19 +218,6 @@ class TestCustomField:
 
 
 class TestOperationHelper:
-
-    @pytest.fixture(params=('2.0', '3.0.0'))
-    def spec_fixture(self, request):
-        ma_plugin = MarshmallowPlugin()
-        spec = APISpec(
-            title='Validation',
-            version='0.1',
-            plugins=(ma_plugin, ),
-            openapi_version=request.param
-        )
-        return namedtuple(
-            'Spec', ('spec', 'marshmallow_plugin', 'swagger'))(
-                spec, ma_plugin, ma_plugin.swagger)
 
     @staticmethod
     def ref_path(spec):
@@ -711,7 +671,7 @@ class TestCircularReference:
         spec.definition('Sample', schema=SampleSchema)
         spec.definition('Run', schema=RunSchema)
         ref = spec._definitions['Analysis']['properties']['sample']['$ref']
-        assert ref == '#/definitions/Sample'
+        assert ref == ref_path(spec) + 'Sample'
 
 # Regression tests for issue #55
 class TestSelfReference:
@@ -719,23 +679,25 @@ class TestSelfReference:
     def test_self_referencing_field_single(self, spec):
         spec.definition('SelfReference', schema=SelfReferencingSchema)
         ref = spec._definitions['SelfReference']['properties']['single']['$ref']
-        assert ref == '#/definitions/SelfReference'
+        assert ref == ref_path(spec) + 'SelfReference'
 
     def test_self_referencing_field_many(self, spec):
         spec.definition('SelfReference', schema=SelfReferencingSchema)
         result = spec._definitions['SelfReference']['properties']['many']
         assert result == {
             'type': 'array',
-            'items': {'$ref': '#/definitions/SelfReference'}
+            'items': {'$ref': ref_path(spec) + 'SelfReference'}
         }
 
     def test_self_referencing_with_ref(self, spec):
+        version = 'v2' if spec.openapi_version.version[0] < 3 else 'v3'
         spec.definition('SelfReference', schema=SelfReferencingSchema)
-        result = spec._definitions['SelfReference']['properties']['single_with_ref']
-        assert result == {'$ref': '#/definitions/Self'}
-
-        result = spec._definitions['SelfReference']['properties']['many_with_ref']
-        assert result == {'type': 'array', 'items': {'$ref': '#/definitions/Selves'}}
+        result = spec._definitions['SelfReference']['properties'][
+            'single_with_ref_{}'.format(version)]
+        assert result == {'$ref': ref_path(spec) + 'Self'}
+        result = spec._definitions['SelfReference']['properties'][
+            'many_with_ref_{}'.format(version)]
+        assert result == {'type': 'array', 'items': {'$ref': ref_path(spec) + 'Selves'}}
 
 
 class TestOrderedSchema:

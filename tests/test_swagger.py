@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import warnings
-from collections import namedtuple
 
 import pytest
 from pytest import mark
@@ -554,19 +553,6 @@ class TestNesting:
             return '#/definitions/'
         return '#/components/schemas/'
 
-    @pytest.fixture(params=('2.0', '3.0.0'))
-    def spec_fixture(self, request):
-        ma_plugin = MarshmallowPlugin()
-        spec = APISpec(
-            title='Validation',
-            version='0.1',
-            plugins=(ma_plugin, ),
-            openapi_version=request.param
-        )
-        return namedtuple(
-            'Spec', ('spec', 'marshmallow_plugin', 'swagger'))(
-                spec, ma_plugin, ma_plugin.swagger)
-
     def test_field2property_nested_spec_metadatas(self, spec_fixture):
         spec_fixture.spec.definition('Category', schema=CategorySchema)
         category = fields.Nested(CategorySchema, description='A category')
@@ -873,14 +859,6 @@ class ValidationSchema(Schema):
     ])
 
 class TestFieldValidation:
-
-    @pytest.fixture()
-    def spec(self):
-        return APISpec(
-            title='Validation',
-            version='0.1',
-            plugins=(MarshmallowPlugin(), ),
-        )
 
     def test_range(self, spec):
         spec.definition('Validation', schema=ValidationSchema)

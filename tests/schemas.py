@@ -32,9 +32,11 @@ class PatternedObjectSchema(Schema):
 class SelfReferencingSchema(Schema):
     id = fields.Int()
     single = fields.Nested('self')
-    single_with_ref = fields.Nested('self', ref='#/definitions/Self')
+    single_with_ref_v2 = fields.Nested('self', ref='#/definitions/Self')
+    single_with_ref_v3 = fields.Nested('self', ref='#/components/schemas/Self')
     many = fields.Nested('self', many=True)
-    many_with_ref = fields.Nested('self', many=True, ref='#/definitions/Selves')
+    many_with_ref_v2 = fields.Nested('self', many=True, ref='#/definitions/Selves')
+    many_with_ref_v3 = fields.Nested('self', many=True, ref='#/components/schemas/Selves')
 
 
 class OrderedSchema(Schema):
