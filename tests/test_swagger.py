@@ -7,7 +7,6 @@ from marshmallow import fields, Schema, validate
 
 from apispec.ext.marshmallow import swagger, MarshmallowPlugin
 from apispec import exceptions, utils, APISpec
-from apispec.ext.marshmallow.swagger import field2parameter
 
 class TestMarshmallowFieldToSwagger:
 
@@ -719,7 +718,7 @@ def test_swagger_tools_validate():
                 'parameters': [
                     {'name': 'q', 'in': 'query', 'type': 'string'},
                     {'name': 'category_id', 'in': 'path', 'required': True, 'type': 'string'},
-                    field2parameter(
+                    swagger.field2parameter(
                         field=fields.List(
                             fields.Str(),
                             validate=validate.OneOf(['freddie', 'roger']),
