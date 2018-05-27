@@ -135,7 +135,6 @@ class APISpec(object):
         self._response_helpers = []
 
         for plugin in self.plugin_objects:
-            self.plugins[plugin.__class__.__name__] = {}
             self.setup_plugin(plugin)
 
     def to_dict(self):

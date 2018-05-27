@@ -136,6 +136,10 @@ def map_to_swagger_type(*args):
 
 class Swagger(object):
 
+    def __init__(self):
+        # Schema references
+        self.refs = {}
+
     @staticmethod
     def _observed_name(field, name):
         """Adjust field name to reflect `dump_to` and `load_from` attributes.
@@ -677,17 +681,15 @@ class Swagger(object):
                     k: self.resolve_schema_dict(spec, v, dump=dump, use_instances=use_instances)
                     for k, v in schema['properties'].items()}
             return schema
-        from apispec.ext.marshmallow import NAME, resolve_schema_cls
-        plug = spec.plugins[NAME] if spec else {}
         if isinstance(schema, marshmallow.Schema) and use_instances:
             schema_cls = schema
         else:
+            from apispec.ext.marshmallow import resolve_schema_cls
             schema_cls = resolve_schema_cls(schema)
 
-        if schema_cls in plug.get('refs', {}):
+        if schema_cls in self.refs:
             ref_path = self.get_ref_path(spec.openapi_version.version[0])
-            ref_schema = {'$ref': '#/{0}/{1}'.format(ref_path,
-                                                     plug['refs'][schema_cls])}
+            ref_schema = {'$ref': '#/{0}/{1}'.format(ref_path, self.refs[schema_cls])}
             if getattr(schema, 'many', False):
                 return {
                     'type': 'array',

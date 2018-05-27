@@ -31,8 +31,6 @@ from apispec.core import Path
 from apispec.utils import load_operations_from_docstring
 from . import swagger
 
-NAME = 'MarshmallowPlugin'
-
 
 def get_schema_instance(schema):
     """Return schema instance for given schema (instance or class)
@@ -87,10 +85,6 @@ class MarshmallowPlugin(object):
         # schema_name_resolver must be provided to use this function
         assert self.schema_name_resolver
 
-        plug = self.spec.plugins[NAME]
-        if 'refs' not in plug:
-            plug['refs'] = {}
-
         for field in original_schema_instance.fields.values():
             nested_schema_class = None
 
@@ -101,7 +95,7 @@ class MarshmallowPlugin(object):
                     and isinstance(field.container, marshmallow.fields.Nested):
                 nested_schema_class = get_schema_class(field.container.schema)
 
-            if nested_schema_class and nested_schema_class not in plug['refs']:
+            if nested_schema_class and nested_schema_class not in self.swagger.refs:
                 definition_name = self.schema_name_resolver(
                     nested_schema_class,
                 )
@@ -164,10 +158,7 @@ class MarshmallowPlugin(object):
         schema_instance = get_schema_instance(schema)
 
         # Store registered refs, keyed by Schema class
-        plug = self.spec.plugins[NAME]
-        if 'refs' not in plug:
-            plug['refs'] = {}
-        plug['refs'][schema_cls] = name
+        self.swagger.refs[schema_cls] = name
 
         json_schema = self.swagger.schema2jsonschema(schema_instance, spec=self.spec, name=name)
 
