@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import warnings
 from collections import namedtuple
 
 import pytest
@@ -332,15 +333,17 @@ class TestMarshmallowSchemaToModelDefinition:
                 title = 'User'
                 fields = ('_id', 'email', )
 
-        res = swagger.schema2jsonschema(UserSchema)
-        assert res['type'] == 'object'
-        props = res['properties']
-        assert '_id' in props
-        assert 'email' not in props
-        warning = recwarn.pop()
-        expected_msg = 'Only explicitly-declared fields will be included in the Schema Object.'
-        assert expected_msg in str(warning.message)
-        assert issubclass(warning.category, UserWarning)
+        with warnings.catch_warnings():
+            warnings.simplefilter('always')
+            res = swagger.schema2jsonschema(UserSchema)
+            assert res['type'] == 'object'
+            props = res['properties']
+            assert '_id' in props
+            assert 'email' not in props
+            warning = recwarn.pop()
+            expected_msg = 'Only explicitly-declared fields will be included in the Schema Object.'
+            assert expected_msg in str(warning.message)
+            assert issubclass(warning.category, UserWarning)
 
     def test_observed_field_name_for_required_field(self, swagger):
         if MARSHMALLOW_VERSION_INFO[0] < 3:
