@@ -10,7 +10,7 @@ from marshmallow import Schema
 
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
-from apispec.ext.marshmallow.swagger import MARSHMALLOW_VERSION_INFO, map_to_swagger_type
+from apispec.ext.marshmallow.swagger import MARSHMALLOW_VERSION_INFO
 from .schemas import (
     PetSchema, AnalysisSchema, SampleSchema, RunSchema,
     SelfReferencingSchema, OrderedSchema, PatternedObjectSchema,
@@ -192,18 +192,31 @@ class TestDefinitionHelper:
 
 class TestCustomField:
 
-    def test_can_use_custom_field_decorator(self, spec):
+    @pytest.fixture(params=('2.0', '3.0.0'))
+    def spec_fixture(self, request):
+        ma_plugin = MarshmallowPlugin()
+        spec = APISpec(
+            title='Validation',
+            version='0.1',
+            plugins=(ma_plugin, ),
+            openapi_version=request.param
+        )
+        return namedtuple(
+            'Spec', ('spec', 'marshmallow_plugin', 'swagger'))(
+                spec, ma_plugin, ma_plugin.swagger)
 
-        @map_to_swagger_type(DateTime)
+    def test_can_use_custom_field_decorator(self, spec_fixture):
+
+        @spec_fixture.swagger.map_to_swagger_type(DateTime)
         class CustomNameA(Field):
             pass
 
-        @map_to_swagger_type('integer', 'int32')
+        @spec_fixture.swagger.map_to_swagger_type('integer', 'int32')
         class CustomNameB(Field):
             pass
 
         with pytest.raises(TypeError):
-            @map_to_swagger_type('integer')
+            @spec_fixture.swagger.map_to_swagger_type('integer')
             class BadCustomField(Field):
                 pass
 
@@ -213,13 +226,13 @@ class TestCustomField:
         class CustomPetBSchema(PetSchema):
             name = CustomNameB()
 
-        spec.definition('Pet', schema=PetSchema)
-        spec.definition('CustomPetA', schema=CustomPetASchema)
-        spec.definition('CustomPetB', schema=CustomPetBSchema)
+        spec_fixture.spec.definition('Pet', schema=PetSchema)
+        spec_fixture.spec.definition('CustomPetA', schema=CustomPetASchema)
+        spec_fixture.spec.definition('CustomPetB', schema=CustomPetBSchema)
 
-        props_0 = spec._definitions['Pet']['properties']
-        props_a = spec._definitions['CustomPetA']['properties']
-        props_b = spec._definitions['CustomPetB']['properties']
+        props_0 = spec_fixture.spec._definitions['Pet']['properties']
+        props_a = spec_fixture.spec._definitions['CustomPetA']['properties']
+        props_b = spec_fixture.spec._definitions['CustomPetB']['properties']
 
         assert props_0['name']['type'] == 'string'
         assert 'format' not in props_0['name']

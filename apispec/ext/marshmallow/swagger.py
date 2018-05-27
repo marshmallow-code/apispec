@@ -26,7 +26,7 @@ MARSHMALLOW_VERSION_INFO = tuple(
 )
 
 # marshmallow field => (JSON Schema type, format)
-FIELD_MAPPING = {
+DEFAULT_FIELD_MAPPING = {
     marshmallow.fields.Integer: ('integer', 'int32'),
     marshmallow.fields.Number: ('number', None),
     marshmallow.fields.Float: ('number', 'float'),
@@ -101,40 +101,6 @@ class OrderedLazyDict(LazyDict, OrderedDict):
     pass
 
 
-def map_to_swagger_type(*args):
-    """
-    Decorator to set mapping for custom fields.
-
-    ``*args`` can be:
-
-    - a pair of the form ``(type, format)``
-    - a core marshmallow field type (in which case we reuse that type's mapping)
-
-    Examples: ::
-
-        @swagger.map_to_swagger_type('string', 'uuid')
-        class MyCustomField(Integer):
-            # ...
-
-        @swagger.map_to_swagger_type(Integer)  # will map to ('integer', 'int32')
-        class MyCustomFieldThatsKindaLikeAnInteger(Integer):
-            # ...
-    """
-    if len(args) == 1 and args[0] in FIELD_MAPPING:
-        swagger_type_field = FIELD_MAPPING[args[0]]
-    elif len(args) == 2:
-        swagger_type_field = args
-    else:
-        raise TypeError('Pass core marshmallow field type or (type, fmt) pair')
-
-    def inner(field_type):
-        setattr(field_type, CUSTOM_FIELD_MAPPING_ATTR, swagger_type_field)
-
-        return field_type
-
-    return inner
-
-
 class Swagger(object):
 
     def __init__(self, openapi_version):
@@ -143,6 +109,8 @@ class Swagger(object):
         self.openapi_version = openapi_version
         # Schema references
         self.refs = {}
+        # Field mappings
+        self.field_mapping = DEFAULT_FIELD_MAPPING
 
     @property
     def openapi_major_version(self):
@@ -163,13 +131,37 @@ class Swagger(object):
             return dump_to or load_from or name
         return field.data_key or name
 
-    @staticmethod
-    def _get_json_type_for_field(field):
-        if hasattr(field, CUSTOM_FIELD_MAPPING_ATTR):
-            json_type, fmt = getattr(field, CUSTOM_FIELD_MAPPING_ATTR)
+    def map_to_swagger_type(self, *args):
+        """
+        Decorator to set mapping for custom fields.
+
+        ``*args`` can be:
+
+        - a pair of the form ``(type, format)``
+        - a core marshmallow field type (in which case we reuse that type's mapping)
+
+        Examples: ::
+
+            @swagger.map_to_swagger_type('string', 'uuid')
+            class MyCustomField(Integer):
+                # ...
+
+            @swagger.map_to_swagger_type(Integer)  # will map to ('integer', 'int32')
+            class MyCustomFieldThatsKindaLikeAnInteger(Integer):
+                # ...
+        """
+        if len(args) == 1 and args[0] in self.field_mapping:
+            swagger_type_field = self.field_mapping[args[0]]
+        elif len(args) == 2:
+            swagger_type_field = args
         else:
-            json_type, fmt = FIELD_MAPPING.get(type(field), ('string', None))
-        return json_type, fmt
+            raise TypeError('Pass core marshmallow field type or (type, fmt) pair')
+
+        def inner(field_type):
+            self.field_mapping[field_type] = swagger_type_field
+            return field_type
+
+        return inner
 
     def field2choices(self, field, **kwargs):
         """Return the dictionary of swagger field attributes for valid choices definition
@@ -327,7 +319,7 @@ class Swagger(object):
         :rtype: dict, a Property Object
         """
 
-        type_, fmt = self._get_json_type_for_field(field)
+        type_, fmt = self.field_mapping.get(type(field), ('string', None))
 
         ret = {
             'type': type_,
