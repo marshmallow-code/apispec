@@ -10,11 +10,11 @@ from marshmallow import Schema
 
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
-from apispec.ext.marshmallow.swagger import (
-    MARSHMALLOW_VERSION_INFO, Swagger, map_to_swagger_type)
-from .schemas import PetSchema, AnalysisSchema, SampleSchema, RunSchema, \
-    SelfReferencingSchema, OrderedSchema, PatternedObjectSchema, \
-    DefaultCallableSchema, AnalysisWithListSchema
+from apispec.ext.marshmallow.swagger import MARSHMALLOW_VERSION_INFO, map_to_swagger_type
+from .schemas import (
+    PetSchema, AnalysisSchema, SampleSchema, RunSchema,
+    SelfReferencingSchema, OrderedSchema, PatternedObjectSchema,
+    DefaultCallableSchema, AnalysisWithListSchema)
 
 
 description = 'This is a sample Petstore server.  You can find out more '
