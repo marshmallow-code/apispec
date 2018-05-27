@@ -106,23 +106,32 @@ def validate_swagger(spec):
         except subprocess.CalledProcessError as error:
             raise exceptions.SwaggerError(error.output.decode('utf-8'))
 
-def validate_openapi_version(openapi_version):
-    """Validate OpenAPI version
+class OpenAPIVersion(version.LooseVersion, object):
+    """OpenAPI version
 
-    :param str|LooseVersion openapi_version: OpenAPI version
+    :param str|OpenAPIVersion openapi_version: OpenAPI version
 
-    This function checks the OpenAPI version is supported by APISpec and
-    returns it as LooseVersion object.
+    Parses an OpenAPI version expressed as string. Provides shortcut to digits.
     """
-    min_inclusive_version = version.LooseVersion('2.0')
-    max_exclusive_version = version.LooseVersion('4.0')
+    MIN_INCLUSIVE_VERSION = version.LooseVersion('2.0')
+    MAX_EXCLUSIVE_VERSION = version.LooseVersion('4.0')
 
-    if not isinstance(openapi_version, version.LooseVersion):
-        openapi_version = version.LooseVersion(openapi_version)
+    def __init__(self, openapi_version):
+        if isinstance(openapi_version, version.LooseVersion):
+            openapi_version = openapi_version.vstring
+        if not self.MIN_INCLUSIVE_VERSION <= openapi_version < self.MAX_EXCLUSIVE_VERSION:
+            raise exceptions.APISpecError(
+                'Not a valid OpenAPI version number: {}'.format(openapi_version))
+        super(OpenAPIVersion, self).__init__(openapi_version)
 
-    if not min_inclusive_version <= openapi_version < max_exclusive_version:
-        raise exceptions.APISpecError(
-            'Not a valid OpenAPI version number: {}'.format(openapi_version)
-        )
+    @property
+    def major(self):
+        return self.version[0]
 
-    return openapi_version
+    @property
+    def minor(self):
+        return self.version[1]
+
+    @property
+    def patch(self):
+        return self.version[2]

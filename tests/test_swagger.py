@@ -206,7 +206,7 @@ class TestMarshmallowFieldToSwagger:
     def test_field_with_allow_none(self, swagger):
         field = fields.Str(allow_none=True)
         res = swagger.field2property(field)
-        if swagger.openapi_major_version < 3:
+        if swagger.openapi_version.major < 3:
             assert res['x-nullable'] is True
         else:
             assert res['nullable'] is True
@@ -400,7 +400,7 @@ class TestMarshmallowSchemaToModelDefinition:
         assert 'readOnly' in props['_id']
         # load_only field appears (writeOnly attribute does not exist)
         assert 'password' in props
-        if swagger.openapi_major_version < 3:
+        if swagger.openapi_version.major < 3:
             assert 'writeOnly' not in props['password']
         else:
             assert 'writeOnly' in props['password']
@@ -607,7 +607,7 @@ class TestNesting:
     def test_field2property_nested_self(self, swagger):
         self_nesting = fields.Nested('self')
         res = swagger.field2property(self_nesting, name='Foo')
-        if swagger.openapi_major_version < 3:
+        if swagger.openapi_version.major < 3:
             assert res == {'$ref': '#/definitions/Foo'}
         else:
             assert res == {'$ref': '#/components/schemas/Foo'}
@@ -615,7 +615,7 @@ class TestNesting:
     def test_field2property_nested_self_many(self, swagger):
         self_nesting = fields.Nested('self', many=True)
         res = swagger.field2property(self_nesting, name='Foo')
-        if swagger.openapi_major_version < 3:
+        if swagger.openapi_version.major < 3:
             assert res == {'type': 'array', 'items': {'$ref': '#/definitions/Foo'}}
         else:
             assert res == {'type': 'array', 'items': {'$ref': '#/components/schemas/Foo'}}

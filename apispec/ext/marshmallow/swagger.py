@@ -17,7 +17,7 @@ from marshmallow.compat import iteritems
 from marshmallow.orderedset import OrderedSet
 
 from apispec.lazy_dict import LazyDict
-from apispec.utils import validate_openapi_version
+from apispec.utils import OpenAPIVersion
 from .common import resolve_schema_cls
 
 ##### marshmallow #####
@@ -105,19 +105,15 @@ class OrderedLazyDict(LazyDict, OrderedDict):
 class Swagger(object):
     """Converter generating OpenAPI specification from Marshmallow schemas and fields
 
-    :param str|LooseVersion openapi_version: The OpenAPI version to use.
+    :param str|OpenAPIVersion openapi_version: The OpenAPI version to use.
         Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
     """
     def __init__(self, openapi_version):
-        self.openapi_version = validate_openapi_version(openapi_version)
+        self.openapi_version = OpenAPIVersion(openapi_version)
         # Schema references
         self.refs = {}
         # Field mappings
         self.field_mapping = DEFAULT_FIELD_MAPPING
-
-    @property
-    def openapi_major_version(self):
-        return self.openapi_version.version[0]
 
     @staticmethod
     def _observed_name(field, name):
@@ -208,7 +204,7 @@ class Swagger(object):
         :rtype: dict
         """
         attributes = {}
-        if field.load_only and self.openapi_major_version >= 3:
+        if field.load_only and self.openapi_version.major >= 3:
             attributes['writeOnly'] = True
         return attributes
 
@@ -220,7 +216,7 @@ class Swagger(object):
         """
         attributes = {}
         if field.allow_none:
-            attributes['x-nullable' if self.openapi_major_version < 3 else 'nullable'] = True
+            attributes['x-nullable' if self.openapi_version.major < 3 else 'nullable'] = True
         return attributes
 
     def field2range(self, field, **kwargs):
@@ -641,12 +637,12 @@ class Swagger(object):
     def get_ref_path(self):
         """Return the path for references based on the openapi version
 
-        :param int openapi_major_version: The major version of the OpenAPI standard
+        :param int openapi_version.major: The major version of the OpenAPI standard
             to use. Supported values are 2 and 3.
         """
         ref_paths = {2: 'definitions',
                      3: 'components/schemas'}
-        return ref_paths[self.openapi_major_version]
+        return ref_paths[self.openapi_version.major]
 
     def resolve_schema_dict(self, schema, dump=True, use_instances=False):
         if isinstance(schema, dict):

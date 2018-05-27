@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
+
+import pytest
+
 from apispec import utils
+from apispec.exceptions import APISpecError
 
 def test_load_yaml_from_docstring():
     def f():
@@ -14,3 +18,21 @@ def test_load_yaml_from_docstring():
         """
     result = utils.load_yaml_from_docstring(f.__doc__)
     assert result == {'herp': 1, 'derp': 2}
+
+class TestOpenAPIVersion:
+
+    @pytest.mark.parametrize('version', ('1.0', '4.0'))
+    def test_openapi_version_invalid_version(self, version):
+        with pytest.raises(APISpecError) as excinfo:
+            utils.OpenAPIVersion(version)
+        assert 'Not a valid OpenAPI version number:' in str(excinfo)
+
+    @pytest.mark.parametrize('version', ('3.0.1', utils.OpenAPIVersion('3.0.1')))
+    def test_openapi_version_string_or_openapi_version_param(self, version):
+        assert utils.OpenAPIVersion(version) == utils.OpenAPIVersion('3.0.1')
+
+    def test_openapi_version_digits(self):
+        ver = utils.OpenAPIVersion('3.0.1')
+        assert ver.major == 3
+        assert ver.minor == 0
+        assert ver.patch == 1

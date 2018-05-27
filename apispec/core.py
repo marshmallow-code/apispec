@@ -8,7 +8,7 @@ import yaml
 from apispec.compat import iterkeys, iteritems, PY2, unicode
 from apispec.lazy_dict import LazyDict
 from .exceptions import PluginError, APISpecError
-from .utils import validate_openapi_version
+from .utils import OpenAPIVersion
 
 VALID_METHODS = [
     'get',
@@ -63,14 +63,14 @@ class Path(object):
     :param str method: The HTTP method.
     :param dict operation: The operation object, as a `dict`. See
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject
-    :param str|LooseVersion openapi_version: The OpenAPI version to use.
+    :param str|OpenAPIVersion openapi_version: The OpenAPI version to use.
         Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
     """
     def __init__(self, path=None, operations=None, openapi_version='2.0'):
         self.path = path
         operations = operations or OrderedDict()
-        openapi_version = validate_openapi_version(openapi_version)
-        clean_operations(operations, openapi_version.version[0])
+        openapi_version = OpenAPIVersion(openapi_version)
+        clean_operations(operations, openapi_version.major)
         invalid = {key for key in
                    set(iterkeys(operations)) - set(VALID_METHODS)
                    if not key.startswith('x-')}
@@ -110,7 +110,7 @@ class APISpec(object):
             def schema_name_resolver(schema):
                 return schema.__name__
         This parameter is deprecated. Use new class-based plugin interface instead.
-    :param str|LooseVersion openapi_version: The OpenAPI version to use.
+    :param str|OpenAPIVersion openapi_version: The OpenAPI version to use.
         Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
     :param dict options: Optional top-level keys
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
@@ -123,7 +123,7 @@ class APISpec(object):
         }
         self.info.update(info or {})
 
-        self.openapi_version = validate_openapi_version(openapi_version)
+        self.openapi_version = OpenAPIVersion(openapi_version)
 
         self.options = options
         self.schema_name_resolver = schema_name_resolver
@@ -159,12 +159,12 @@ class APISpec(object):
             'tags': self._tags
         }
 
-        if self.openapi_version.version[0] == 2:
+        if self.openapi_version.major == 2:
             ret['swagger'] = self.openapi_version.vstring
             ret['definitions'] = self._definitions
             ret['parameters'] = self._parameters
 
-        elif self.openapi_version.version[0] == 3:
+        elif self.openapi_version.major == 3:
             ret['openapi'] = self.openapi_version.vstring
             ret['components'] = {
                 'schemas': self._definitions,

@@ -28,7 +28,7 @@ from __future__ import absolute_import
 import marshmallow
 
 from apispec.core import Path
-from apispec.utils import load_operations_from_docstring, validate_openapi_version
+from apispec.utils import load_operations_from_docstring, OpenAPIVersion
 from .common import resolve_schema_cls, resolve_schema_instance
 from .swagger import Swagger
 
@@ -36,7 +36,7 @@ from .swagger import Swagger
 class MarshmallowPlugin(object):
     """APISpec plugin handling marshmallow schemas
 
-    :param str|LooseVersion openapi_version: The OpenAPI version to use.
+    :param str|OpenAPIVersion openapi_version: The OpenAPI version to use.
         Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
     :param callable schema_name_resolver: Callable to generate the
         schema definition name. Receives the `Schema` class and returns the name to be used in
@@ -49,7 +49,7 @@ class MarshmallowPlugin(object):
     """
 
     def __init__(self, spec=None, openapi_version='2.0', schema_name_resolver=None):
-        self.openapi_version = validate_openapi_version(openapi_version)
+        self.openapi_version = OpenAPIVersion(openapi_version)
         self.swagger = Swagger(openapi_version=openapi_version)
         self.schema_name_resolver = schema_name_resolver
         if spec is not None:
@@ -59,10 +59,6 @@ class MarshmallowPlugin(object):
         self.spec = spec
         self.openapi_version = spec.openapi_version
         self.swagger.openapi_version = spec.openapi_version
-
-    @property
-    def openapi_major_version(self):
-        return self.openapi_version.version[0]
 
     def inspect_schema_for_auto_referencing(self, original_schema_instance):
         """Parse given schema instance and reference eventual nested schemas
@@ -122,7 +118,7 @@ class MarshmallowPlugin(object):
         :param APISpec spec: `APISpec` containing refs.
         :param dict data: the parameter or response dictionary that may contain a schema
         """
-        if self.openapi_major_version < 3:
+        if self.openapi_version.major < 3:
             if 'schema' in data:
                 data['schema'] = self.swagger.resolve_schema_dict(data['schema'])
         else:
@@ -229,7 +225,7 @@ class MarshmallowPlugin(object):
                 continue
             if 'parameters' in operation:
                 operation['parameters'] = self.resolve_parameters(operation['parameters'])
-            if self.openapi_major_version >= 3:
+            if self.openapi_version.major >= 3:
                 if 'requestBody' in operation:
                     self.resolve_schema_in_request_body(operation['requestBody'])
             for response in operation.get('responses', {}).values():
