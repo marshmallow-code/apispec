@@ -26,8 +26,7 @@ import re
 
 from bottle import default_app
 
-from apispec import Path
-from apispec import utils
+from apispec import Path, BasePlugin, utils
 from apispec.exceptions import APISpecError
 
 
@@ -36,21 +35,11 @@ RE_URL = re.compile(r'<(?:[^:<>]+:)?([^<>]+)>')
 _default_app = default_app()
 
 
-class BottlePlugin(object):
+class BottlePlugin(BasePlugin):
     """APISpec plugin for Bottle
 
     :param APISpec spec: APISpec object this plugin instance is attached to
     """
-    def __init__(self, spec=None):
-        if spec is not None:
-            self.init_spec(spec)
-
-    def init_spec(self, spec):
-        """Initialize plugin with APISpec object
-
-        :param APISpec spec: APISpec object this plugin instance is attached to
-        """
-        self.spec = spec
 
     @staticmethod
     def bottle_path_to_swagger(path):

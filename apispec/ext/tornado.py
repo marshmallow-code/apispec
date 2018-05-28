@@ -34,26 +34,15 @@ import inspect
 import sys
 from tornado.web import URLSpec
 
-from apispec import Path
-from apispec import utils
+from apispec import Path, BasePlugin, utils
 from apispec.exceptions import APISpecError
 
 
-class TornadoPlugin(object):
+class TornadoPlugin(BasePlugin):
     """APISpec plugin for Tornado
 
     :param APISpec spec: APISpec object this plugin instance is attached to
     """
-    def __init__(self, spec=None):
-        if spec is not None:
-            self.init_spec(spec)
-
-    def init_spec(self, spec):
-        """Initialize plugin with APISpec object
-
-        :param APISpec spec: APISpec object this plugin instance is attached to
-        """
-        self.spec = spec
 
     @staticmethod
     def _operations_from_methods(handler_class):

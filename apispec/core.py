@@ -225,10 +225,10 @@ class APISpec(object):
                         operations=operations,
                         openapi_version=self.openapi_version)
         # Execute plugins' helpers
-        for plugin in (p for p in self.plugins if hasattr(p, 'path_helper')):
+        for plugin in self.plugins:
             try:
                 ret = plugin.path_helper(path=path, operations=operations, **kwargs)
-            except TypeError:
+            except (NotImplementedError, TypeError):
                 continue
             if isinstance(ret, Path):
                 ret.path = normalize_path(ret.path)
@@ -247,8 +247,11 @@ class APISpec(object):
                 path.update(ret)
                 operations = ret.operations
         if operations:
-            for plugin in (p for p in self.plugins if hasattr(p, 'operation_helper')):
-                plugin.operation_helper(path=path, operations=operations, **kwargs)
+            for plugin in self.plugins:
+                try:
+                    plugin.operation_helper(path=path, operations=operations, **kwargs)
+                except NotImplementedError:
+                    continue
             # Deprecated interface
             for func in self._operation_helpers:
                 func(self, path=path, operations=operations, **kwargs)
@@ -261,8 +264,11 @@ class APISpec(object):
         for method, operation in iteritems(path.operations):
             if method in VALID_METHODS and 'responses' in operation:
                 for status_code, response in iteritems(operation['responses']):
-                    for plugin in (p for p in self.plugins if hasattr(p, 'response_helper')):
-                        response.update(plugin.response_helper(method, status_code, **kwargs))
+                    for plugin in self.plugins:
+                        try:
+                            response.update(plugin.response_helper(method, status_code, **kwargs))
+                        except NotImplementedError:
+                            continue
         # Deprecated interface
         # Rule is that method + http status exist in both operations and helpers
         methods = set(iterkeys(path.operations)) & set(iterkeys(self._response_helpers))
@@ -294,10 +300,10 @@ class APISpec(object):
         """
         ret = {}
         # Execute all helpers from plugins
-        for plugin in (p for p in self.plugins if hasattr(p, 'definition_helper')):
+        for plugin in self.plugins:
             try:
                 ret.update(plugin.definition_helper(name, definition=ret, **kwargs))
-            except TypeError:
+            except (NotImplementedError, TypeError):
                 continue
         # Deprecated interface
         for func in self._definition_helpers:

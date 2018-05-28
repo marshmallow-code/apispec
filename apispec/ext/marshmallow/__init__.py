@@ -27,13 +27,12 @@ from __future__ import absolute_import
 
 import marshmallow
 
-from apispec.core import Path
-from apispec.utils import load_operations_from_docstring
+from apispec import Path, BasePlugin, utils
 from .common import resolve_schema_cls, resolve_schema_instance
 from .swagger import Swagger
 
 
-class MarshmallowPlugin(object):
+class MarshmallowPlugin(BasePlugin):
     """APISpec plugin handling marshmallow schemas
 
     :param APISpec spec: APISpec object this plugin instance is attached to
@@ -47,16 +46,15 @@ class MarshmallowPlugin(object):
                 return schema.__name__
     """
     def __init__(self, spec=None, schema_name_resolver=None):
+        super(MarshmallowPlugin, self).__init__(spec)
         self.schema_name_resolver = schema_name_resolver
-        if spec is not None:
-            self.init_spec(spec)
 
     def init_spec(self, spec):
         """Initialize plugin with APISpec object
 
         :param APISpec spec: APISpec object this plugin instance is attached to
         """
-        self.spec = spec
+        super(MarshmallowPlugin, self).init_spec(spec)
         self.openapi_version = spec.openapi_version
         self.swagger = Swagger(openapi_version=spec.openapi_version)
 
@@ -212,7 +210,7 @@ class MarshmallowPlugin(object):
         """
         operations = (
             kwargs.get('operations') or
-            (view and load_operations_from_docstring(view.__doc__))
+            (view and utils.load_operations_from_docstring(view.__doc__))
         )
         if not operations:
             return None

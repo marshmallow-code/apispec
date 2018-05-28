@@ -75,30 +75,19 @@ from flask import current_app
 from flask.views import MethodView
 
 from apispec.compat import iteritems
-from apispec import Path
+from apispec import Path, BasePlugin, utils
 from apispec.exceptions import APISpecError
-from apispec import utils
 
 
 # from flask-restplus
 RE_URL = re.compile(r'<(?:[^:<>]+:)?([^<>]+)>')
 
 
-class FlaskPlugin(object):
+class FlaskPlugin(BasePlugin):
     """APISpec plugin for Flask
 
     :param APISpec spec: APISpec object this plugin instance is attached to
     """
-    def __init__(self, spec=None):
-        if spec is not None:
-            self.init_spec(spec)
-
-    def init_spec(self, spec):
-        """Initialize plugin with APISpec object
-
-        :param APISpec spec: APISpec object this plugin instance is attached to
-        """
-        self.spec = spec
 
     @staticmethod
     def flaskpath2swagger(path):
