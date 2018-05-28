@@ -27,10 +27,10 @@ class TestPathHelpers:
         def hello():
             return 'hi'
         spec.add_path(view=hello,
-                      operations={'get': {'parameters': [], 'responses': {'200': '..params..'}}})
+                      operations={'get': {'parameters': [], 'responses': {'200': {}}}})
         assert '/hello' in spec._paths
         assert 'get' in spec._paths['/hello']
-        expected = {'parameters': [], 'responses': {'200': '..params..'}}
+        expected = {'parameters': [], 'responses': {'200': {}}}
         assert spec._paths['/hello']['get'] == expected
 
     def test_path_with_multiple_methods(self, spec):
@@ -40,8 +40,8 @@ class TestPathHelpers:
             return 'hi'
 
         spec.add_path(view=hello, operations=dict(
-            get={'description': 'get a greeting', 'responses': {'200': '..params..'}},
-            post={'description': 'post a greeting', 'responses': {'200': '..params..'}}
+            get={'description': 'get a greeting', 'responses': {'200': {}}},
+            post={'description': 'post a greeting', 'responses': {'200': {}}}
         ))
         get_op = spec._paths['/hello']['get']
         post_op = spec._paths['/hello']['post']
@@ -68,7 +68,7 @@ class TestPathHelpers:
                 description: post a greeting
                 responses:
                     200:
-                        description:some data
+                        description: some data
 
             foo:
                 description: not a valid operation

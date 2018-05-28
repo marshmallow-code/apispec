@@ -30,12 +30,12 @@ class TestPathHelpers:
 
         urlspec = (r'/hello', HelloHandler)
         operations = (
-            {'get': {'parameters': [], 'responses': {'200': '..params..'}}})
+            {'get': {'parameters': [], 'responses': {'200': {}}}})
 
         spec.add_path(urlspec=urlspec, operations=operations)
         assert '/hello' in spec._paths
         assert 'get' in spec._paths['/hello']
-        expected = {'parameters': [], 'responses': {'200': '..params..'}}
+        expected = {'parameters': [], 'responses': {'200': {}}}
         assert spec._paths['/hello']['get'] == expected
 
     def test_path_with_multiple_methods(self, spec):
@@ -51,11 +51,11 @@ class TestPathHelpers:
         operations = {
             'get': {
                 'description': 'get a greeting',
-                'responses': {'200': '..params..'}
+                'responses': {'200': {}}
             },
             'post': {
                 'description': 'post a greeting',
-                'responses': {'200': '..params..'}
+                'responses': {'200': {}}
             },
         }
         spec.add_path(urlspec=urlspec, operations=operations)
@@ -89,7 +89,7 @@ class TestPathHelpers:
                 description: post a greeting
                 responses:
                     200:
-                        description:some data
+                        description: some data
                 """
                 self.write('hello')
 
@@ -110,7 +110,7 @@ class TestPathHelpers:
 
         urlspec = (r'/hello/world/*', HelloHandler)
         operations = (
-            {'get': {'parameters': [], 'responses': {'200': '..params..'}}})
+            {'get': {'parameters': [], 'responses': {'200': {}}}})
 
         spec.add_path(urlspec=urlspec, operations=operations)
         assert '/hello/world' in spec._paths
@@ -132,11 +132,11 @@ class TestPathHelpers:
     def test_path_with_params(self, spec, Handler):
         urlspec = (r'/hello/([^/]+)/world/([^/]+)', Handler)
         operations = (
-            {'get': {'parameters': [], 'responses': {'200': '..params..'}}})
+            {'get': {'parameters': [], 'responses': {'200': {}}}})
 
         spec.add_path(urlspec=urlspec, operations=operations)
         path = '/hello/{param1}/world/{param2}'
         assert path in spec._paths
         assert 'get' in spec._paths[path]
-        expected = {'parameters': [], 'responses': {'200': '..params..'}}
+        expected = {'parameters': [], 'responses': {'200': {}}}
         assert spec._paths[path]['get'] == expected
