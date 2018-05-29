@@ -429,6 +429,11 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True,
     https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
     """
     swagger_default_in = __location_map__.get(default_in, default_in)
+    if spec is None:
+        openapi_major_version = 2
+    else:
+        openapi_major_version = spec.openapi_version.version[0]
+
     if swagger_default_in == 'body':
         if schema is not None:
             # Prevent circular import
@@ -464,7 +469,9 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True,
                                 name=_observed_name(field_obj, field_name),
                                 spec=spec,
                                 use_refs=use_refs,
-                                default_in=default_in)
+                                default_in=default_in,
+                                openapi_major_version=openapi_major_version
+                                )
         if param['in'] == 'body' and body_param is not None:
             body_param['schema']['properties'].update(param['schema']['properties'])
             required_fields = param['schema'].get('required', [])
@@ -477,7 +484,7 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True,
     return parameters
 
 
-def field2parameter(field, name='body', spec=None, use_refs=True, default_in='body'):
+def field2parameter(field, name='body', spec=None, use_refs=True, default_in='body', openapi_major_version=2):
     """Return an OpenAPI parameter as a `dict`, given a marshmallow
     :class:`Field <marshmallow.Field>`.
 
@@ -492,11 +499,12 @@ def field2parameter(field, name='body', spec=None, use_refs=True, default_in='bo
         multiple=isinstance(field, marshmallow.fields.List),
         location=location,
         default_in=default_in,
+        openapi_major_version=openapi_major_version
     )
 
 
 def property2parameter(prop, name='body', required=False, multiple=False, location=None,
-                       default_in='body'):
+                       default_in='body', openapi_major_version=2):
     """Return the Parameter Object definition for a JSON Schema property.
 
     https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
@@ -528,9 +536,15 @@ def property2parameter(prop, name='body', required=False, multiple=False, locati
             ret['schema']['required'] = [name]
     else:
         ret['required'] = required
-        if multiple:
-            ret['collectionFormat'] = 'multi'
-        ret.update(prop)
+        if openapi_major_version == 2:
+            if multiple:
+                ret['collectionFormat'] = 'multi'
+            ret.update(prop)
+        elif openapi_major_version == 3:
+            if multiple:
+                ret['explode'] = True
+                ret['style'] = 'form'
+            ret['schema'] = prop
     return ret
 
 
