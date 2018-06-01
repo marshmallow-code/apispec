@@ -544,6 +544,8 @@ def property2parameter(prop, name='body', required=False, multiple=False, locati
             if multiple:
                 ret['explode'] = True
                 ret['style'] = 'form'
+            if prop.get('description', None):
+                ret['description'] = prop.pop('description')
             ret['schema'] = prop
     return ret
 
