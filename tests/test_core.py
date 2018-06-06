@@ -26,11 +26,28 @@ def spec():
 
 @pytest.fixture()
 def spec_3():
+    components = {
+        'securitySchemes': {
+            'bearerAuth':
+                dict(type='http', scheme='bearer', bearerFormat='JWT')
+        },
+        'schemas': {
+            'ErrorResponse': {
+                'type': 'object',
+                'properties': {
+                    'ok': {
+                        'type': 'boolean', 'description': 'status indicator', 'example': False
+                    }
+                },
+                'required': ['ok']
+            }
+        }
+    }
     return APISpec(
         title='Swagger Petstore',
         version='1.0.0',
         info={'description': description},
-        security=[{'apiKey': []}],
+        components=components,
         openapi_version='3.0.0'
     )
 
@@ -63,6 +80,26 @@ class TestMetadata:
         assert metadata['info']['title'] == 'Swagger Petstore'
         assert metadata['info']['version'] == '1.0.0'
         assert metadata['info']['description'] == description
+
+    def test_swagger_metadata_v3(self, spec_3):
+        metadata = spec_3.to_dict()
+        security_schemes = {'bearerAuth': dict(type='http', scheme='bearer', bearerFormat='JWT')}
+        assert metadata['components']['securitySchemes'] == security_schemes
+        assert metadata['components']['schemas'].get('ErrorResponse', False)
+        assert metadata['info']['title'] == 'Swagger Petstore'
+        assert metadata['info']['version'] == '1.0.0'
+        assert metadata['info']['description'] == description
+
+    def test_swagger_metadata_merge_v3(self, spec_3):
+        properties = {
+            'ok': {
+                'type': 'boolean', 'description': 'property description', 'example': True
+            }
+        }
+        spec_3.definition('definition', properties=properties, description='definiton description')
+        metadata = spec_3.to_dict()
+        assert metadata['components']['schemas'].get('ErrorResponse', False)
+        assert metadata['components']['schemas'].get('definition', False)
 
 
 class TestTags:
