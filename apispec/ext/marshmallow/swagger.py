@@ -526,11 +526,16 @@ class Swagger(object):
                 ret['schema']['required'] = [name]
         else:
             ret['required'] = required
-            if multiple:
-                ret['collectionFormat'] = 'multi'
-            ret.update(prop)
+            if self.openapi_version.major < 3:
+                if multiple:
+                    ret['collectionFormat'] = 'multi'
+                ret.update(prop)
+            else:
+                if multiple:
+                    ret['explode'] = True
+                    ret['style'] = 'form'
+                ret['schema'] = prop
         return ret
-
 
     def schema2jsonschema(self, schema, use_refs=True, dump=True, name=None):
         if hasattr(schema, 'fields'):

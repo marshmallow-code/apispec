@@ -4,7 +4,7 @@
 from .core import APISpec, Path
 from .plugin import BasePlugin
 
-__version__ = '0.37.0'
+__version__ = '0.37.1'
 __author__ = 'Steven Loria, Josh Carp, and contributors'
 __license__ = 'MIT'
 

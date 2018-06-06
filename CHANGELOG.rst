@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+0.37.1 (2018-05-28)
++++++++++++++++++++
+
+Features:
+
+- [apispec.ext.marshmallow]: Fix OpenAPI 3 conversion of schemas in
+  parameters (:issue:`217`). Thanks :user:`Guoli-Lyu` for the PR.
+
 0.37.0 (2018-05-14)
 +++++++++++++++++++
 

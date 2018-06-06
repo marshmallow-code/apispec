@@ -50,3 +50,4 @@ Contributors (chronological)
 - Urban `@UrKr <https://github.com/UrKr>`_
 - Christina Long `@cvlong <https://github.com/cvlong>`_
 - Felix Yan `@felixonmars <https://github.com/felixonmars>`_
+- Guoli Lyu `@Guoli-Lyu <https://github.com/Guoli-Lyu>`_

@@ -94,7 +94,10 @@ class TestMarshmallowFieldToSwagger:
     def test_fields_with_missing_load(self, swagger):
         field_dict = {'field': fields.Str(default='foo', missing='bar')}
         res = swagger.fields2parameters(field_dict, default_in='query')
-        assert res[0]['default'] == 'bar'
+        if swagger.openapi_version.major < 3:
+            assert res[0]['default'] == 'bar'
+        else:
+            assert res[0]['schema']['default'] == 'bar'
 
     def test_fields_with_location(self, swagger):
         field_dict = {'field': fields.Str(location='querystring')}
@@ -412,9 +415,15 @@ class TestMarshmallowSchemaToParameters:
         field = fields.List(fields.Str, location='querystring')
         res = swagger.field2parameter(field, name='field')
         assert res['in'] == 'query'
-        assert res['type'] == 'array'
-        assert res['items']['type'] == 'string'
-        assert res['collectionFormat'] == 'multi'
+        if swagger.openapi_version.major < 3:
+            assert res['type'] == 'array'
+            assert res['items']['type'] == 'string'
+            assert res['collectionFormat'] == 'multi'
+        else:
+            assert res['schema']['type'] == 'array'
+            assert res['schema']['items']['type'] == 'string'
+            assert res['style'] == 'form'
+            assert res['explode'] is True
 
     def test_field_required(self, swagger):
         field = fields.Str(required=True, location='query')

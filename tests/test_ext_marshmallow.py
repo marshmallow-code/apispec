@@ -453,9 +453,7 @@ class TestOperationHelper:
 
         spec_fixture.spec.add_path(path='/pet', view=pet_view)
         p = spec_fixture.spec._paths['/pet']
-        get = p['get']
-        for parameter in get['parameters']:
-            assert 'schema' not in parameter
+        assert 'schema' not in p['get']['parameters'][0]
         post = p['post']
         assert len(post['parameters']) == 1
         assert post['parameters'][0]['schema']['$ref'] == self.ref_path(spec_fixture.spec) + 'Pet'
@@ -482,9 +480,7 @@ class TestOperationHelper:
 
         spec_fixture.spec.add_path(path='/pet', view=pet_view)
         p = spec_fixture.spec._paths['/pet']
-        get = p['get']
-        for parameter in get['parameters']:
-            assert 'schema' not in parameter
+        assert 'schema' in p['get']['parameters'][0]
         post = p['post']
         schema_ref = post['requestBody']['content']['application/json']['schema']
         assert schema_ref == {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'}
