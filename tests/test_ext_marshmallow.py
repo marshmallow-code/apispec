@@ -6,7 +6,7 @@ from marshmallow.fields import Field, DateTime, Dict, String
 from marshmallow import Schema
 
 from apispec import APISpec
-from apispec.ext.marshmallow import swagger
+from apispec.ext.marshmallow import swagger, resolve_schema_dict
 from .schemas import PetSchema, AnalysisSchema, SampleSchema, RunSchema, \
     SelfReferencingSchema, OrderedSchema, PatternedObjectSchema, \
     DefaultCallableSchema, AnalysisWithListSchema
@@ -369,27 +369,42 @@ class TestOperationHelper:
                 parameters:
                     - in: query
                       schema: tests.schemas.PetSchema
+                responses:
+                    201:
+                        description: successful operation
             post:
-                parameters:
-                    - in: body
-                      description: "a pet schema"
-                      required: true
-                      name: pet
-                      schema: tests.schemas.PetSchema
+                requestBody:
+                    description: "a pet schema"
+                    required: true
+                    content:
+                        application/json:
+                            schema: tests.schemas.PetSchema
+                responses:
+                    201:
+                        description: successful operation
             """
             return '...'
 
         spec_3.add_path(path='/pet', view=pet_view)
         p = spec_3._paths['/pet']
+
         assert 'get' in p
         get = p['get']
         assert 'parameters' in get
         assert get['parameters'] == swagger.schema2parameters(PetSchema, default_in='query', spec=spec_3)
+        for parameter in get['parameters']:
+            description = parameter.get('description', False)
+            assert description
+            name = parameter['name']
+            assert description == PetSchema.description[name]
+
+        assert 'post' in p
         post = p['post']
-        assert 'parameters' in post
-        post_parameters = swagger.schema2parameters(PetSchema, default_in='body', required=True,
-                                                     name='pet', description='a pet schema', spec=spec_3)
-        assert post['parameters'] == post_parameters
+        assert 'requestBody' in post
+        post_schema = resolve_schema_dict(spec_3, PetSchema)
+        assert post['requestBody']['content']['application/json']['schema'] == post_schema
+        assert post['requestBody']['description'] == 'a pet schema'
+        assert post['requestBody']['required']
 
     def test_schema_in_docstring_uses_ref_if_available(self, spec):
         spec.definition('Pet', schema=PetSchema)
