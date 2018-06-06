@@ -15,23 +15,14 @@ description = 'This is a sample Petstore server.  You can find out more '
 'key \"special-key\" to test the authorization filters'
 
 
-@pytest.fixture()
-def spec():
+@pytest.fixture(params=('2.0', '3.0.0'))
+def spec(request):
     return APISpec(
         title='Swagger Petstore',
         version='1.0.0',
         info={'description': description},
         security=[{'apiKey': []}],
-    )
-
-@pytest.fixture()
-def spec_3():
-    return APISpec(
-        title='Swagger Petstore',
-        version='1.0.0',
-        info={'description': description},
-        security=[{'apiKey': []}],
-        openapi_version='3.0.0'
+        openapi_version=request.param
     )
 
 
@@ -51,18 +42,16 @@ class TestAPISpecInit:
 
 class TestMetadata:
 
-    def test_swagger_version(self, spec):
-        assert spec.to_dict()['swagger'] == '2.0'
-
-    def test_openapi_version_3(self, spec_3):
-        assert spec_3.to_dict()['openapi'] == '3.0.0'
-
     def test_swagger_metadata(self, spec):
         metadata = spec.to_dict()
         assert metadata['security'] == [{'apiKey': []}]
         assert metadata['info']['title'] == 'Swagger Petstore'
         assert metadata['info']['version'] == '1.0.0'
         assert metadata['info']['description'] == description
+        if spec.openapi_version.major < 3:
+            assert metadata['swagger'] == spec.openapi_version.vstring
+        else:
+            assert metadata['openapi'] == spec.openapi_version.vstring
 
 
 class TestTags:
@@ -87,21 +76,21 @@ class TestDefinitions:
 
     def test_definition(self, spec):
         spec.definition('Pet', properties=self.properties)
-        defs_json = spec.to_dict()['definitions']
-        assert 'Pet' in defs_json
-        assert defs_json['Pet']['properties'] == self.properties
-
-    def test_definition_3(self, spec_3):
-        spec_3.definition('Pet', properties=self.properties)
-        schemas = spec_3.to_dict()['components']['schemas']
-        assert 'Pet' in schemas
-        assert schemas['Pet']['properties'] == self.properties
+        if spec.openapi_version.major < 3:
+            defs = spec.to_dict()['definitions']
+        else:
+            defs = spec.to_dict()['components']['schemas']
+        assert 'Pet' in defs
+        assert defs['Pet']['properties'] == self.properties
 
     def test_definition_description(self, spec):
         model_description = 'An animal which lives with humans.'
         spec.definition('Pet', properties=self.properties, description=model_description)
-        defs_json = spec.to_dict()['definitions']
-        assert defs_json['Pet']['description'] == model_description
+        if spec.openapi_version.major < 3:
+            defs = spec.to_dict()['definitions']
+        else:
+            defs = spec.to_dict()['components']['schemas']
+        assert defs['Pet']['description'] == model_description
 
     def test_definition_stores_enum(self, spec):
         enum = ['name', 'photoUrls']
@@ -110,14 +99,20 @@ class TestDefinitions:
             properties=self.properties,
             enum=enum
         )
-        defs_json = spec.to_dict()['definitions']
-        assert defs_json['Pet']['enum'] == enum
+        if spec.openapi_version.major < 3:
+            defs = spec.to_dict()['definitions']
+        else:
+            defs = spec.to_dict()['components']['schemas']
+        assert defs['Pet']['enum'] == enum
 
     def test_definition_extra_fields(self, spec):
         extra_fields = {'discriminator': 'name'}
         spec.definition('Pet', properties=self.properties, extra_fields=extra_fields)
-        defs_json = spec.to_dict()['definitions']
-        assert defs_json['Pet']['discriminator'] == 'name'
+        if spec.openapi_version.major < 3:
+            defs = spec.to_dict()['definitions']
+        else:
+            defs = spec.to_dict()['components']['schemas']
+        assert defs['Pet']['discriminator'] == 'name'
 
     def test_pass_definition_to_plugins(self, spec):
         def def_helper(spec, name, **kwargs):
@@ -129,9 +124,12 @@ class TestDefinitions:
         spec.register_definition_helper(def_helper)
         spec.definition('Pet', properties=self.properties)
 
-        defs_json = spec.to_dict()['definitions']
+        if spec.openapi_version.major < 3:
+            defs = spec.to_dict()['definitions']
+        else:
+            defs = spec.to_dict()['components']['schemas']
 
-        assert defs_json['Pet']['available']
+        assert defs['Pet']['available']
 
     def test_to_yaml(self, spec):
         enum = ['name', 'photoUrls']
@@ -309,28 +307,13 @@ class TestPath:
         metadata = spec.to_dict()
         p = spec._paths['/pet/{petId}']['get']
 
-        assert p['parameters'][0] == {'$ref': '#/parameters/test_parameter'}
-        assert route_spec['parameters'][0] == metadata['parameters']['test_parameter']
+        if spec.openapi_version.major < 3:
+            assert p['parameters'][0] == {'$ref': '#/parameters/test_parameter'}
+            assert route_spec['parameters'][0] == metadata['parameters']['test_parameter']
+        else:
+            assert p['parameters'][0] == {'$ref': '#/components/parameters/test_parameter'}
+            assert route_spec['parameters'][0] == metadata['components']['parameters']['test_parameter']
 
-    def test_add_parameters_3(self, spec_3):
-        route_spec = self.paths['/pet/{petId}']['get']
-
-        spec_3.add_parameter('test_parameter', 'path', **route_spec['parameters'][0])
-
-        spec_3.add_path(
-            path='/pet/{petId}',
-            operations=dict(
-                get=dict(
-                    parameters=['test_parameter'],
-                )
-            )
-        )
-
-        metadata = spec_3.to_dict()
-        p = spec_3._paths['/pet/{petId}']['get']
-
-        assert p['parameters'][0] == {'$ref': '#/components/parameters/test_parameter'}
-        assert route_spec['parameters'][0] == metadata['components']['parameters']['test_parameter']
 
 class TestPlugins:
 
