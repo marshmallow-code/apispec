@@ -16,10 +16,10 @@ class BasePlugin(object):
     def definition_helper(self, name, definition, **kwargs):
         raise NotImplementedError
 
-    def path_helper(self, path, operations, **kwargs):
+    def path_helper(self, path=None, operations=None, **kwargs):
         raise NotImplementedError
 
-    def operation_helper(self, path, operations, **kwargs):
+    def operation_helper(self, path=None, operations=None, **kwargs):
         raise NotImplementedError
 
     def response_helper(self, method, status_code, **kwargs):
