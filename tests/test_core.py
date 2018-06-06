@@ -5,7 +5,7 @@ import pytest
 import mock
 import yaml
 
-from apispec import APISpec, Path
+from apispec import APISpec, BasePlugin, Path
 from apispec.exceptions import PluginError, APISpecError
 
 
@@ -316,6 +316,18 @@ class TestPath:
 
 
 class TestPlugins:
+
+    def test_plugin_init_spec(self):
+        plugin = BasePlugin()
+        spec = APISpec(
+            title='Swagger Petstore',
+            version='1.0.0',
+            plugins=(plugin, )
+        )
+        assert plugin.spec == spec
+
+
+class TestOldPlugins:
 
     DUMMY_PLUGIN = 'tests.plugins.dummy_plugin'
 
