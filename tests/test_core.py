@@ -317,6 +317,25 @@ class TestPath:
 
 class TestPlugins:
 
+    class TestPlugin(BasePlugin):
+        def definition_helper(self, name, definition, **kwargs):
+            return {'properties': {'name': {'type': 'string'}}}
+
+        def path_helper(self, path, **kwargs):
+            if path.path == '/path_1':
+                return Path(
+                    path='/path_1_modified',
+                    operations={'get': {'responses': {'200': {}}}}
+                )
+
+        def operation_helper(self, path, operations, **kwargs):
+            if path.path == '/path_2':
+                operations['post'] = {'responses': {'201': {}}}
+
+        def response_helper(self, method, status_code, **kwargs):
+            if method == 'delete':
+                return {'description': 'Clever description'}
+
     def test_plugin_init_spec(self):
         plugin = BasePlugin()
         spec = APISpec(
@@ -325,6 +344,46 @@ class TestPlugins:
             plugins=(plugin, )
         )
         assert plugin.spec == spec
+
+    def test_plugin_definition_helper_is_used(self):
+        spec = APISpec(
+            title='Swagger Petstore',
+            version='1.0.0',
+            plugins=(self.TestPlugin(), )
+        )
+        spec.definition('Pet', {})
+        assert spec._definitions['Pet'] == {'properties': {'name': {'type': 'string'}}}
+
+    def test_plugin_path_helper_is_used(self):
+        spec = APISpec(
+            title='Swagger Petstore',
+            version='1.0.0',
+            plugins=(self.TestPlugin(), )
+        )
+        spec.add_path('/path_1')
+        assert len(spec._paths) == 1
+        assert spec._paths['/path_1_modified'] == {'get': {'responses': {'200': {}}}}
+
+    def test_plugin_operation_helper_is_used(self):
+        spec = APISpec(
+            title='Swagger Petstore',
+            version='1.0.0',
+            plugins=(self.TestPlugin(), )
+        )
+        spec.add_path('/path_2', operations={'post': {'responses': {'200': {}}}})
+        assert len(spec._paths) == 1
+        assert spec._paths['/path_2'] == {'post': {'responses': {'201': {}}}}
+
+    def test_plugin_response_helper_is_used(self, spec):
+        spec = APISpec(
+            title='Swagger Petstore',
+            version='1.0.0',
+            plugins=(self.TestPlugin(), )
+        )
+        spec.add_path('/path_3', operations={'delete': {'responses': {'204': {'content': {}}}}})
+        assert len(spec._paths) == 1
+        assert spec._paths['/path_3'] == {'delete': {'responses': {'204': {
+            'content': {}, 'description': 'Clever description'}}}}
 
 
 class TestOldPlugins:

@@ -215,58 +215,59 @@ class APISpec(object):
             if path and 'basePath' in self.options:
                 pattern = '^{0}'.format(re.escape(self.options['basePath']))
                 path = re.sub(pattern, '', path)
-
             return path
 
         if isinstance(path, Path):
             path.path = normalize_path(path.path)
+            if operations:
+                path.operations.update(operations)
         else:
             path = Path(path=normalize_path(path),
                         operations=operations,
                         openapi_version=self.openapi_version)
-        # Execute plugins' helpers
+
+        # Execute path helpers
         for plugin in self.plugins:
             try:
-                ret = plugin.path_helper(path=path, operations=operations, **kwargs)
+                ret = plugin.path_helper(path=path, operations=path.operations, **kwargs)
             except (NotImplementedError, TypeError):
                 continue
             if isinstance(ret, Path):
                 ret.path = normalize_path(ret.path)
                 path.update(ret)
-                operations = ret.operations
         # Deprecated interface
         for func in self._path_helpers:
             try:
                 ret = func(
-                    self, path=path, operations=operations, **kwargs
+                    self, path=path, operations=path.operations, **kwargs
                 )
             except TypeError:
                 continue
             if isinstance(ret, Path):
                 ret.path = normalize_path(ret.path)
                 path.update(ret)
-                operations = ret.operations
-        if operations:
-            for plugin in self.plugins:
-                try:
-                    plugin.operation_helper(path=path, operations=operations, **kwargs)
-                except NotImplementedError:
-                    continue
-            # Deprecated interface
-            for func in self._operation_helpers:
-                func(self, path=path, operations=operations, **kwargs)
+
+        # Execute operation helpers
+        for plugin in self.plugins:
+            try:
+                plugin.operation_helper(path=path, operations=path.operations, **kwargs)
+            except NotImplementedError:
+                continue
+        # Deprecated interface
+        for func in self._operation_helpers:
+            func(self, path=path, operations=path.operations, **kwargs)
 
         if not path.path:
             raise APISpecError('Path template is not specified')
 
-        # Process response helpers for any path operations defined.
-        # TODO: optimize this?
+        # Execute response helpers
+        # TODO: cache response helpers output for each (method, status_code) couple
         for method, operation in iteritems(path.operations):
             if method in VALID_METHODS and 'responses' in operation:
                 for status_code, response in iteritems(operation['responses']):
                     for plugin in self.plugins:
                         try:
-                            response.update(plugin.response_helper(method, status_code, **kwargs))
+                            response.update(plugin.response_helper(method, status_code, **kwargs) or {})
                         except NotImplementedError:
                             continue
         # Deprecated interface
