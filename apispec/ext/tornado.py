@@ -97,7 +97,7 @@ class TornadoPlugin(BasePlugin):
         """Path helper that allows passing a Tornado URLSpec or tuple."""
         if not isinstance(urlspec, URLSpec):
             urlspec = URLSpec(*urlspec)
-        if operations is None:
+        if not operations:
             operations = {}
             for operation in self._operations_from_methods(urlspec.handler_class):
                 operations.update(operation)
