@@ -246,6 +246,8 @@ class APISpec(object):
             if isinstance(ret, Path):
                 ret.path = normalize_path(ret.path)
                 path.update(ret)
+        if not path.path:
+            raise APISpecError('Path template is not specified')
 
         # Execute operation helpers
         for plugin in self.plugins:
@@ -256,9 +258,6 @@ class APISpec(object):
         # Deprecated interface
         for func in self._operation_helpers:
             func(self, path=path, operations=path.operations, **kwargs)
-
-        if not path.path:
-            raise APISpecError('Path template is not specified')
 
         # Execute response helpers
         # TODO: cache response helpers output for each (method, status_code) couple
