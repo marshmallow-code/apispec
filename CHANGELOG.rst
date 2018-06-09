@@ -1,6 +1,21 @@
 Changelog
 ---------
 
+0.38.0 (unreleased)
++++++++++++++++++++
+
+Features:
+
+- [apispec.ext.marshmallow]: Deep update components instead of
+  overwriting components for OpenAPI 3 (:issue:`222`). Thanks
+  :user:`Guoli-Lyu`.
+
+Bug fixes:
+
+- [apispec.ext.marshmallow]: Fix description for parameters in OpenAPI 3
+  (:issue:`223`). Thanks again :user:`Guoli-Lyu`.
+
+
 0.37.1 (2018-05-28)
 +++++++++++++++++++
 
