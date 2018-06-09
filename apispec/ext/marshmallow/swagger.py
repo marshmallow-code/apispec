@@ -428,12 +428,13 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True,
 
     https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
 
-    For OpenAPI 3, only "query", "header", "path" or "cookie" is allowed for the location
-    of parameters. In OpenAPI 3, Request Body Object is used when parameters is in body.
-    So this function always return an array of a parameter for each included field in
-    the :class:`Schema <marshmallow.Schema>`.
+    In OpenAPI3, only "query", "header", "path" or "cookie" are allowed for the location
+    of parameters. In OpenAPI 3, "requestBody" is used when fields are in the body.
 
-    https://swagger.io/specification/#parameterObject
+    This function always returns a list, with a parameter 
+    for each included field in the :class:`Schema <marshmallow.Schema>`.
+
+    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#parameterObject
     """
     swagger_default_in = __location_map__.get(default_in, default_in)
     if spec is None:
