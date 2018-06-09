@@ -1,6 +1,6 @@
 marshmallow==2.15.3
 Flask==1.0.2
-tornado
+tornado==5.0.2
 bottle
 pyyaml==3.12
 sphinx
