@@ -1,4 +1,4 @@
-invoke>=0.13.0
+invoke==1.0.0
 pyyaml==3.12
 
 # Syntax checking
@@ -12,6 +12,6 @@ tornado==5.0.2
 bottle==0.12.13
 
 # testing
-pytest>=2.8.0
-tox>=1.5.0
+pytest==3.6.1
+tox==3.0.0
 mock==2.0.0
