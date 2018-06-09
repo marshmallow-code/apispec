@@ -1,4 +1,4 @@
-marshmallow
+marshmallow==2.15.3
 Flask==1.0.2
 tornado
 bottle
