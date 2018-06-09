@@ -15,7 +15,3 @@ bottle==0.12.13
 pytest>=2.8.0
 tox>=1.5.0
 mock==2.0.0
-
-# packaging
-wheel==0.31.1
-twine==1.11.0
