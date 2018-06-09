@@ -9,6 +9,10 @@ Features:
 - [apispec.ext.marshmallow]: Deep update components instead of
   overwriting components for OpenAPI 3 (:issue:`222`). Thanks
   :user:`Guoli-Lyu`.
+- [apispec.core]: ``apispec.utils.validate_swagger`` no longer relies on
+  the ``check_api`` NPM module. ``prance`` and
+  ``openapi-spec-validator`` are required for validation, and can be
+  installed using ``pip install 'apispec[validation]'`` (:issue:`224`).
 
 Bug fixes:
 

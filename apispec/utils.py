@@ -2,11 +2,8 @@
 """Various utilities for parsing OpenAPI operations from docstrings and validating against
 the OpenAPI spec.
 """
-import os
 import re
 import json
-import tempfile
-import subprocess
 
 import yaml
 
@@ -87,19 +84,18 @@ def load_operations_from_docstring(docstring):
 
 def validate_swagger(spec):
     """Validate the output of an :class:`APISpec` object.
-    Note: Requires installing the node package `check_api`.
+    Note: Requires installing apispec with the ``[validation]`` extras.
+    ::
+
+        pip install 'apispec[validation]'
 
     :raise: SwaggerError if validation fails.
     """
-    with tempfile.NamedTemporaryFile(mode='w') as fp:
-        json.dump(spec.to_dict(), fp)
-        fp.seek(0)
-        shell = os.name == 'nt'  # Set shell to true if running on Windows
-        try:
-            subprocess.check_output(
-                ['check_api', fp.name],
-                stderr=subprocess.STDOUT,
-                shell=shell,
-            )
-        except subprocess.CalledProcessError as error:
-            raise exceptions.SwaggerError(error.output.decode('utf-8'))
+    import prance
+    parser_kwargs = {}
+    if spec.openapi_version.version[0] == 3:
+        parser_kwargs['backend'] = 'openapi-spec-validator'
+    try:
+        prance.BaseParser(spec_string=json.dumps(spec.to_dict()), **parser_kwargs)
+    except prance.ValidationError as err:
+        raise exceptions.SwaggerError(*err.args)
