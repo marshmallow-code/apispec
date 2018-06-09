@@ -17,6 +17,7 @@ from marshmallow.compat import iteritems
 from marshmallow.orderedset import OrderedSet
 
 from apispec.lazy_dict import LazyDict
+from . import polymorphic
 
 ##### marshmallow #####
 
@@ -560,6 +561,8 @@ def property2parameter(prop, name='body', required=False, multiple=False, locati
 
 
 def schema2jsonschema(schema, spec=None, use_refs=True, dump=True, name=None):
+    if is_v3(spec) and polymorphic.is_oneof(schema):
+        return polymorphic.oneof_schema_2_schema_object(spec, schema)
     if hasattr(schema, 'fields'):
         fields = schema.fields
     elif hasattr(schema, '_declared_fields'):
@@ -658,6 +661,10 @@ def fields2jsonschema(fields, schema=None, spec=None, use_refs=True, dump=True, 
         }
 
     return jsonschema
+
+
+def is_v3(spec):
+    return spec and spec.openapi_version.version[0] == 3
 
 
 def get_ref_path(openapi_major_version):
