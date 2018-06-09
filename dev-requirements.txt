@@ -7,7 +7,7 @@ flake8-quotes==1.0.0
 
 # soft dependencies
 Flask==1.0.2
-marshmallow
+marshmallow==2.15.3
 tornado
 bottle
 
