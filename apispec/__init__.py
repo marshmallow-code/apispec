@@ -4,7 +4,7 @@
 from .core import APISpec, Path
 
 __version__ = '0.38.0.dev0'
-__author__ = 'Steven Loria, Josh Carp, and contributors'
+__author__ = 'Steven Loria, Jérôme Lafréchoux, and contributors'
 __license__ = 'MIT'
 
 

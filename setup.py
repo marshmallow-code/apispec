@@ -40,7 +40,7 @@ setup(
     description='A pluggable API specification generator. Currently supports the '
                 'OpenAPI specification (f.k.a. the Swagger specification).',
     long_description=read('README.rst'),
-    author='Steven Loria, Josh Carp',
+    author='Steven Loria',
     author_email='sloria1@gmail.com',
     url='https://github.com/marshmallow-code/apispec',
     packages=find_packages(exclude=('test*', )),
