@@ -1,17 +1,17 @@
 invoke>=0.13.0
-pyyaml
+pyyaml==3.12
 
 # Syntax checking
 flake8==3.5.0
 flake8-quotes==1.0.0
 
 # soft dependencies
-Flask
-marshmallow
-tornado
-bottle
+Flask==1.0.2
+marshmallow==2.15.3
+tornado==5.0.2
+bottle==0.12.13
 
 # testing
 pytest>=2.8.0
 tox>=1.5.0
-mock
+mock==2.0.0
