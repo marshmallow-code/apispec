@@ -1,5 +1,5 @@
 marshmallow
-Flask
+Flask==1.0.2
 tornado
 bottle
 pyyaml==3.12
