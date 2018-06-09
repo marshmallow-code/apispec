@@ -2,7 +2,7 @@ marshmallow
 Flask
 tornado
 bottle
-pyyaml
+pyyaml==3.12
 sphinx
 sphinx-issues==0.2.0
 sphinx-rtd-theme
