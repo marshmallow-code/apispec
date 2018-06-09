@@ -427,6 +427,14 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True,
     the :class:`Schema <marshmallow.Schema>`.
 
     https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
+
+    In OpenAPI3, only "query", "header", "path" or "cookie" are allowed for the location
+    of parameters. In OpenAPI 3, "requestBody" is used when fields are in the body.
+
+    This function always returns a list, with a parameter 
+    for each included field in the :class:`Schema <marshmallow.Schema>`.
+
+    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#parameterObject
     """
     swagger_default_in = __location_map__.get(default_in, default_in)
     if spec is None:
@@ -434,7 +442,7 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True,
     else:
         openapi_major_version = spec.openapi_version.version[0]
 
-    if swagger_default_in == 'body':
+    if openapi_major_version == 2 and swagger_default_in == 'body':
         if schema is not None:
             # Prevent circular import
             from apispec.ext.marshmallow import resolve_schema_dict
@@ -472,15 +480,16 @@ def fields2parameters(fields, schema=None, spec=None, use_refs=True,
                                 default_in=default_in,
                                 openapi_major_version=openapi_major_version
                                 )
-        if param['in'] == 'body' and body_param is not None:
-            body_param['schema']['properties'].update(param['schema']['properties'])
-            required_fields = param['schema'].get('required', [])
-            if required_fields:
-                body_param['schema'].setdefault('required', []).extend(required_fields)
-        else:
-            if param['in'] == 'body':
-                body_param = param
-            parameters.append(param)
+        if openapi_major_version == 2:
+            if param['in'] == 'body' and body_param is not None:
+                body_param['schema']['properties'].update(param['schema']['properties'])
+                required_fields = param['schema'].get('required', [])
+                if required_fields:
+                    body_param['schema'].setdefault('required', []).extend(required_fields)
+            else:
+                if param['in'] == 'body':
+                    body_param = param
+                parameters.append(param)
     return parameters
 
 
@@ -544,6 +553,8 @@ def property2parameter(prop, name='body', required=False, multiple=False, locati
             if multiple:
                 ret['explode'] = True
                 ret['style'] = 'form'
+            if prop.get('description', None):
+                ret['description'] = prop.pop('description')
             ret['schema'] = prop
     return ret
 
