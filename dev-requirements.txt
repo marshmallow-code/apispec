@@ -6,7 +6,7 @@ flake8==3.5.0
 flake8-quotes==1.0.0
 
 # soft dependencies
-Flask
+Flask==1.0.2
 marshmallow
 tornado
 bottle
