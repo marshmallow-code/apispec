@@ -15,6 +15,11 @@ Bug fixes:
 - [apispec.ext.marshmallow]: Fix description for parameters in OpenAPI 3
   (:issue:`223`). Thanks again :user:`Guoli-Lyu`.
 
+Other changes:
+
+- Drop official support for Python 3.4. Only Python 2.7 and >=3.5 are
+  supported.
+
 
 0.37.1 (2018-05-28)
 +++++++++++++++++++

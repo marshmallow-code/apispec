@@ -1,7 +1,7 @@
 Install
 =======
 
-**apispec** requires Python >= 2.7 or >= 3.4.
+**apispec** requires Python >= 2.7 or >= 3.5.
 
 From the PyPI
 -------------
