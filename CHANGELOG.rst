@@ -6,6 +6,14 @@ Changelog
 
 Features:
 
+- [apispec.core]: *Backwards-incompatible*: Rename ``apispec.utils.validate_swagger``
+  to ``apispec.utils.validate_spec`` and
+  ``apispec.exceptions.SwaggerError`` to ``apispec.exceptions.OpenAPIError``. 
+  Using ``validate_swagger`` will raise a ``DeprecationWarning`` (:issue:`224`).
+- [apispec.core]: ``apispec.utils.validate_spec`` no longer relies on
+  the ``check_api`` NPM module. ``prance`` and
+  ``openapi-spec-validator`` are required for validation, and can be
+  installed using ``pip install 'apispec[validation]'`` (:issue:`224`).
 - [apispec.ext.marshmallow]: Deep update components instead of
   overwriting components for OpenAPI 3 (:issue:`222`). Thanks
   :user:`Guoli-Lyu`.

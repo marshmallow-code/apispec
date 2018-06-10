@@ -47,6 +47,11 @@ setup(
     package_dir={'apispec': 'apispec'},
     include_package_data=True,
     install_requires=REQUIRES,
+    extras_require={
+        'validation': [
+            'prance[osv]>=0.11',
+        ],
+    },
     license='MIT',
     zip_safe=False,
     keywords='apispec swagger openapi specification documentation spec rest api',

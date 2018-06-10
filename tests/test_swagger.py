@@ -701,7 +701,6 @@ class TestNesting:
         assert swagger.field2property(category_8, spec=spec) == {
             'items': {'$ref': '#/definitions/Category'}, 'readOnly': True, 'type': 'array'}
 
-@pytest.mark.nodetest
 def test_swagger_tools_validate():
     spec = APISpec(
         title='Pets',
@@ -752,11 +751,10 @@ def test_swagger_tools_validate():
         },
     )
     try:
-        utils.validate_swagger(spec)
+        utils.validate_spec(spec)
     except exceptions.SwaggerError as error:
         pytest.fail(str(error))
 
-@pytest.mark.nodetest
 def test_validate_v3():
     spec = APISpec(
         title='Pets',
@@ -825,7 +823,7 @@ def test_validate_v3():
         },
     )
     try:
-        utils.validate_swagger(spec)
+        utils.validate_spec(spec)
     except exceptions.SwaggerError as error:
         pytest.fail(str(error))
 
