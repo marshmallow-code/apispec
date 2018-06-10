@@ -91,7 +91,15 @@ def validate_swagger(spec):
 
     :raise: SwaggerError if validation fails.
     """
-    import prance
+    try:
+        import prance
+    except ImportError as error:  # re-raise with a more verbose message
+        exc_class = type(error)
+        raise exc_class(
+            'validate_swagger requires prance to be installed. '
+            'You can install all validation requirements using:\n'
+            "    pip install 'apispec[validation]'"
+        )
     parser_kwargs = {}
     if spec.openapi_version.version[0] == 3:
         parser_kwargs['backend'] = 'openapi-spec-validator'
