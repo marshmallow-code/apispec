@@ -751,7 +751,7 @@ def test_swagger_tools_validate():
         },
     )
     try:
-        utils.validate_swagger(spec)
+        utils.validate_spec(spec)
     except exceptions.SwaggerError as error:
         pytest.fail(str(error))
 
@@ -823,7 +823,7 @@ def test_validate_v3():
         },
     )
     try:
-        utils.validate_swagger(spec)
+        utils.validate_spec(spec)
     except exceptions.SwaggerError as error:
         pytest.fail(str(error))
 
