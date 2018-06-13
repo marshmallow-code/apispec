@@ -3,6 +3,7 @@
 import re
 import warnings
 from collections import OrderedDict
+import copy
 
 import yaml
 
@@ -169,15 +170,26 @@ class APISpec(object):
             ret['swagger'] = self.openapi_version.vstring
             ret['definitions'] = self._definitions
             ret['parameters'] = self._parameters
+            ret.update(self.options)
 
         elif self.openapi_version.major == 3:
             ret['openapi'] = self.openapi_version.vstring
-            ret['components'] = {
-                'schemas': self._definitions,
-                'parameters': self._parameters,
-            }
+            options = copy.deepcopy(self.options)
+            components = options.pop('components', {})
 
-        ret.update(self.options)
+            # deep update components object
+            definitions = components.pop('schemas', {})
+            definitions.update(self._definitions)
+            parameters = components.pop('parameters', {})
+            parameters.update(self._parameters)
+
+            ret['components'] = dict(
+                schemas=definitions,
+                parameters=parameters,
+                **components
+            )
+            ret.update(options)
+
         return ret
 
     def to_yaml(self):

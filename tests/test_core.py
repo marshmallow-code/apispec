@@ -17,12 +17,37 @@ description = 'This is a sample Petstore server.  You can find out more '
 
 @pytest.fixture(params=('2.0', '3.0.0'))
 def spec(request):
+    openapi_version = request.param
+    if openapi_version == '2.0':
+        security_kwargs = {
+            'security': [{'apiKey': []}]
+        }
+    else:
+        security_kwargs = {
+            'components': {
+                'securitySchemes': {
+                    'bearerAuth':
+                        dict(type='http', scheme='bearer', bearerFormat='JWT')
+                },
+                'schemas': {
+                    'ErrorResponse': {
+                        'type': 'object',
+                        'properties': {
+                            'ok': {
+                                'type': 'boolean', 'description': 'status indicator', 'example': False
+                            }
+                        },
+                        'required': ['ok']
+                    }
+                }
+            }
+        }
     return APISpec(
         title='Swagger Petstore',
         version='1.0.0',
         info={'description': description},
-        security=[{'apiKey': []}],
-        openapi_version=request.param
+        openapi_version=openapi_version,
+        **security_kwargs
     )
 
 
@@ -44,14 +69,32 @@ class TestMetadata:
 
     def test_swagger_metadata(self, spec):
         metadata = spec.to_dict()
-        assert metadata['security'] == [{'apiKey': []}]
         assert metadata['info']['title'] == 'Swagger Petstore'
         assert metadata['info']['version'] == '1.0.0'
         assert metadata['info']['description'] == description
         if spec.openapi_version.major < 3:
             assert metadata['swagger'] == spec.openapi_version.vstring
+            assert metadata['security'] == [{'apiKey': []}]
         else:
             assert metadata['openapi'] == spec.openapi_version.vstring
+            security_schemes = {'bearerAuth': dict(type='http', scheme='bearer', bearerFormat='JWT')}
+            assert metadata['components']['securitySchemes'] == security_schemes
+            assert metadata['components']['schemas'].get('ErrorResponse', False)
+            assert metadata['info']['title'] == 'Swagger Petstore'
+            assert metadata['info']['version'] == '1.0.0'
+            assert metadata['info']['description'] == description
+
+    @pytest.mark.parametrize('spec', ('3.0.0', ), indirect=True)
+    def test_swagger_metadata_merge_v3(self, spec):
+        properties = {
+            'ok': {
+                'type': 'boolean', 'description': 'property description', 'example': True
+            }
+        }
+        spec.definition('definition', properties=properties, description='definiton description')
+        metadata = spec.to_dict()
+        assert metadata['components']['schemas'].get('ErrorResponse', False)
+        assert metadata['components']['schemas'].get('definition', False)
 
 
 class TestTags:
