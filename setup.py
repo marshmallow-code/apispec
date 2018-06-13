@@ -40,13 +40,18 @@ setup(
     description='A pluggable API specification generator. Currently supports the '
                 'OpenAPI specification (f.k.a. the Swagger specification).',
     long_description=read('README.rst'),
-    author='Steven Loria, Josh Carp',
+    author='Steven Loria',
     author_email='sloria1@gmail.com',
     url='https://github.com/marshmallow-code/apispec',
     packages=find_packages(exclude=('test*', )),
     package_dir={'apispec': 'apispec'},
     include_package_data=True,
     install_requires=REQUIRES,
+    extras_require={
+        'validation': [
+            'prance[osv]>=0.11',
+        ],
+    },
     license='MIT',
     zip_safe=False,
     keywords='apispec swagger openapi specification documentation spec rest api',
@@ -58,7 +63,6 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],

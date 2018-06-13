@@ -32,11 +32,6 @@ Setting Up for Local Development
 
     # After activating your virtualenv
     $ pip install -r dev-requirements.txt
-    $ npm install -g check_api
-
-3. Install apispec in develop mode. ::
-
-   $ pip install -e .
 
 Git Branch Structure
 ++++++++++++++++++++
@@ -87,7 +82,7 @@ To run all tests: ::
 
     $ invoke test
 
-To run tests on Python 2.7, 3.4, and 3.5 virtual environments (must have each interpreter installed): ::
+To run tests on Python 2.7, 3.5, and 3.6 virtual environments (must have each interpreter installed): ::
 
     $ tox
 

@@ -1,9 +1,9 @@
 sudo: false
+cache: pip
 language: python
 python:
 - '3.6'
 - '3.5'
-- '3.4'
 - '2.7'
 - pypy
 
@@ -14,8 +14,6 @@ env:
   - MARSHMALLOW_VERSION=""
 
 install:
-- travis_retry pip install -U .
-- travis_retry npm install -g check_api
 - travis_retry pip install -r dev-requirements.txt
 - travis_retry pip install -U marshmallow"$MARSHMALLOW_VERSION" --pre
 script: invoke test

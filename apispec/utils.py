@@ -2,11 +2,9 @@
 """Various utilities for parsing OpenAPI operations from docstrings and validating against
 the OpenAPI spec.
 """
-import os
 import re
 import json
-import tempfile
-import subprocess
+import warnings
 
 from distutils import version
 
@@ -87,24 +85,47 @@ def load_operations_from_docstring(docstring):
     else:
         return None
 
-def validate_swagger(spec):
-    """Validate the output of an :class:`APISpec` object.
-    Note: Requires installing the node package `check_api`.
+def validate_spec(spec):
+    """Validate the output of an :class:`APISpec` object against the
+    OpenAPI specification.
 
-    :raise: SwaggerError if validation fails.
+    Note: Requires installing apispec with the ``[validation]`` extras.
+    ::
+
+        pip install 'apispec[validation]'
+
+    :raise: apispec.exceptions.OpenAPIError if validation fails.
     """
-    with tempfile.NamedTemporaryFile(mode='w') as fp:
-        json.dump(spec.to_dict(), fp)
-        fp.seek(0)
-        shell = os.name == 'nt'  # Set shell to true if running on Windows
-        try:
-            subprocess.check_output(
-                ['check_api', fp.name],
-                stderr=subprocess.STDOUT,
-                shell=shell,
-            )
-        except subprocess.CalledProcessError as error:
-            raise exceptions.SwaggerError(error.output.decode('utf-8'))
+    try:
+        import prance
+    except ImportError as error:  # re-raise with a more verbose message
+        exc_class = type(error)
+        raise exc_class(
+            'validate_swagger requires prance to be installed. '
+            'You can install all validation requirements using:\n'
+            "    pip install 'apispec[validation]'"
+        )
+    parser_kwargs = {}
+    if spec.openapi_version.version[0] == 3:
+        parser_kwargs['backend'] = 'openapi-spec-validator'
+    try:
+        prance.BaseParser(spec_string=json.dumps(spec.to_dict()), **parser_kwargs)
+    except prance.ValidationError as err:
+        raise exceptions.OpenAPIError(*err.args)
+    else:
+        return True
+
+def validate_swagger(spec):
+    """
+    .. deprecated:: 0.38.0
+        Use `apispec.utils.validate_spec` instead.
+    """
+    warnings.warn(
+        'apispec.utils.validate_swagger is deprecated. Use apispec.utils.validate_spec instead.',
+        DeprecationWarning
+    )
+    return validate_spec(spec)
+
 
 class OpenAPIVersion(version.LooseVersion, object):
     """OpenAPI version
