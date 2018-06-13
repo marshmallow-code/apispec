@@ -2,8 +2,9 @@ from marshmallow import Schema, fields
 
 
 class PetSchema(Schema):
-    id = fields.Int(dump_only=True)
-    name = fields.Str()
+    description = dict(id='Pet id', name='Pet name')
+    id = fields.Int(dump_only=True, description=description['id'])
+    name = fields.Str(description=description['name'], required=True, deprecated=False, allowEmptyValue=False)
 
 
 class SampleSchema(Schema):

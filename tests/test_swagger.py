@@ -104,6 +104,8 @@ class TestMarshmallowFieldToSwagger:
         res = swagger.fields2parameters(field_dict, default_in='headers')
         assert res[0]['in'] == 'query'
 
+    # json/body is invalid for OpenAPI 3
+    @pytest.mark.parametrize('swagger', ('2.0', ), indirect=True)
     def test_fields_with_multiple_json_locations(self, swagger):
         field_dict = {'field1': fields.Str(location='json', required=True),
                       'field2': fields.Str(location='json', required=True),
@@ -138,6 +140,8 @@ class TestMarshmallowFieldToSwagger:
         res = swagger.fields2parameters(field_dict, default_in='headers')
         assert res[0]['in'] == 'header'
 
+    # json/body is invalid for OpenAPI 3
+    @pytest.mark.parametrize('swagger', ('2.0', ), indirect=True)
     def test_fields_default_location_mapping_if_schema_many(self, swagger):
 
         class ExampleSchema(Schema):
@@ -434,6 +438,8 @@ class TestMarshmallowSchemaToParameters:
         with pytest.raises(ValueError):
             swagger.schema2parameters(None)
 
+    # json/body is invalid for OpenAPI 3
+    @pytest.mark.parametrize('swagger', ('2.0', ), indirect=True)
     def test_schema_body(self, swagger):
         class UserSchema(Schema):
             name = fields.Str()
@@ -457,6 +463,8 @@ class TestMarshmallowSchemaToParameters:
         assert param['schema'] == swagger.schema2jsonschema(UserSchema, dump=False)
         assert set(param['schema']['properties'].keys()) == {'name'}
 
+    # json/body is invalid for OpenAPI 3
+    @pytest.mark.parametrize('swagger', ('2.0', ), indirect=True)
     def test_schema_body_many(self, swagger):
         class UserSchema(Schema):
             name = fields.Str()
@@ -504,6 +512,8 @@ class TestMarshmallowSchemaToParameters:
         with pytest.raises(AssertionError):
             swagger.schema2parameters(UserSchema(many=True), default_in='query')
 
+    # json/body is invalid for OpenAPI 3
+    @pytest.mark.parametrize('swagger', ('2.0', ), indirect=True)
     def test_fields_default_in_body(self, swagger):
         field_dict = {
             'name': fields.Str(),

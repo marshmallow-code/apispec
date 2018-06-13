@@ -352,7 +352,8 @@ class TestOperationHelper:
         assert resolved_schema == spec_fixture.swagger.schema2jsonschema(PetSchema)
         assert post['responses'][201]['description'] == 'successful operation'
 
-    def test_schema_in_docstring_expand_parameters(self, spec_fixture):
+    @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
+    def test_schema_in_docstring_expand_parameters_v2(self, spec_fixture):
 
         def pet_view():
             """Not much to see here.
@@ -384,6 +385,53 @@ class TestOperationHelper:
         assert post['parameters'] == spec_fixture.swagger.schema2parameters(
             PetSchema, default_in='body', required=True,
             name='pet', description='a pet schema')
+
+    @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
+    def test_schema_in_docstring_expand_parameters_v3(self, spec_fixture):
+
+        def pet_view():
+            """Not much to see here.
+
+            ---
+            get:
+                parameters:
+                    - in: query
+                      schema: tests.schemas.PetSchema
+                responses:
+                    201:
+                        description: successful operation
+            post:
+                requestBody:
+                    description: "a pet schema"
+                    required: true
+                    content:
+                        application/json:
+                            schema: tests.schemas.PetSchema
+                responses:
+                    201:
+                        description: successful operation
+            """
+            return '...'
+
+        spec_fixture.spec.add_path(path='/pet', view=pet_view)
+        p = spec_fixture.spec._paths['/pet']
+        assert 'get' in p
+        get = p['get']
+        assert 'parameters' in get
+        assert get['parameters'] == spec_fixture.swagger.schema2parameters(
+            PetSchema, default_in='query')
+        for parameter in get['parameters']:
+            description = parameter.get('description', False)
+            assert description
+            name = parameter['name']
+            assert description == PetSchema.description[name]
+        assert 'post' in p
+        post = p['post']
+        assert 'requestBody' in post
+        post_schema = spec_fixture.swagger.resolve_schema_dict(PetSchema)
+        assert post['requestBody']['content']['application/json']['schema'] == post_schema
+        assert post['requestBody']['description'] == 'a pet schema'
+        assert post['requestBody']['required']
 
     @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
     def test_schema_in_docstring_uses_ref_if_available_v2(self, spec_fixture):

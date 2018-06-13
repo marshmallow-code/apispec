@@ -428,9 +428,17 @@ class Swagger(object):
         the :class:`Schema <marshmallow.Schema>`.
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
+
+        In OpenAPI3, only "query", "header", "path" or "cookie" are allowed for the location
+        of parameters. In OpenAPI 3, "requestBody" is used when fields are in the body.
+
+        This function always returns a list, with a parameter 
+        for each included field in the :class:`Schema <marshmallow.Schema>`.
+
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#parameterObject
         """
         swagger_default_in = __location_map__.get(default_in, default_in)
-        if swagger_default_in == 'body':
+        if self.openapi_version.major < 3 and swagger_default_in == 'body':
             if schema is not None:
                 prop = self.resolve_schema_dict(schema, dump=False, use_instances=use_instances)
             else:
@@ -463,13 +471,13 @@ class Swagger(object):
                                          name=self._observed_name(field_obj, field_name),
                                          use_refs=use_refs,
                                          default_in=default_in)
-            if param['in'] == 'body' and body_param is not None:
+            if self.openapi_version.major < 3 and param['in'] == 'body' and body_param is not None:
                 body_param['schema']['properties'].update(param['schema']['properties'])
                 required_fields = param['schema'].get('required', [])
                 if required_fields:
                     body_param['schema'].setdefault('required', []).extend(required_fields)
             else:
-                if param['in'] == 'body':
+                if self.openapi_version.major < 3 and param['in'] == 'body':
                     body_param = param
                 parameters.append(param)
         return parameters
@@ -534,6 +542,8 @@ class Swagger(object):
                 if multiple:
                     ret['explode'] = True
                     ret['style'] = 'form'
+                if prop.get('description', None):
+                    ret['description'] = prop.pop('description')
                 ret['schema'] = prop
         return ret
 
