@@ -9,7 +9,7 @@ import yaml
 
 from apispec.compat import iterkeys, iteritems, PY2, unicode
 from apispec.lazy_dict import LazyDict
-from .exceptions import PluginError, APISpecError
+from .exceptions import PluginError, APISpecError, PluginMethodNotImplementedError
 from .utils import OpenAPIVersion
 
 VALID_METHODS = [
@@ -239,7 +239,7 @@ class APISpec(object):
         for plugin in self.plugins:
             try:
                 ret = plugin.path_helper(path=path, operations=path.operations, **kwargs)
-            except (NotImplementedError, TypeError):
+            except PluginMethodNotImplementedError:
                 continue
             if isinstance(ret, Path):
                 ret.path = normalize_path(ret.path)
@@ -262,7 +262,7 @@ class APISpec(object):
         for plugin in self.plugins:
             try:
                 plugin.operation_helper(path=path, operations=path.operations, **kwargs)
-            except NotImplementedError:
+            except PluginMethodNotImplementedError:
                 continue
         # Deprecated interface
         for func in self._operation_helpers:
@@ -276,7 +276,7 @@ class APISpec(object):
                     for plugin in self.plugins:
                         try:
                             response.update(plugin.response_helper(method, status_code, **kwargs) or {})
-                        except NotImplementedError:
+                        except PluginMethodNotImplementedError:
                             continue
         # Deprecated interface
         # Rule is that method + http status exist in both operations and helpers
@@ -312,7 +312,7 @@ class APISpec(object):
         for plugin in self.plugins:
             try:
                 ret.update(plugin.definition_helper(name, definition=ret, **kwargs))
-            except (NotImplementedError, TypeError):
+            except PluginMethodNotImplementedError:
                 continue
         # Deprecated interface
         for func in self._definition_helpers:
