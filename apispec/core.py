@@ -153,9 +153,6 @@ class APISpec(object):
         # {'get': {200: [my_helper]}}
         self._response_helpers = {}
         old_plugins = list(p for p in plugins if isinstance(p, str))
-        if old_plugins:
-            warnings.warn(
-                'Old style plugins are deprecated. Use classes instead.', DeprecationWarning)
         for plugin_path in old_plugins:
             self.setup_plugin(plugin_path)
 
@@ -343,6 +340,8 @@ class APISpec(object):
         :param str path: Import path to the plugin.
         :raise: PluginError if the given plugin is invalid.
         """
+        warnings.warn(
+            'Old style plugins are deprecated. Use classes instead.', DeprecationWarning)
         if path in self.old_plugins:
             return
         try:

@@ -594,8 +594,12 @@ def test_schema_name_resolver_deprecation_warning(recwarn):
             title='Swagger Petstore', version='1.0.0',
             schema_name_resolver=lambda x: x)
 
-def test_plugins_as_string_deprecation_warning(spec, recwarn):
+def test_plugins_as_string_deprecation_warning(recwarn):
     with pytest.deprecated_call():
         APISpec(
             title='Swagger Petstore', version='1.0.0',
             plugins=('tests.plugins.dummy_plugin', ))
+
+def test_setup_plugin_deprecation_warning(spec, recwarn):
+    with pytest.deprecated_call():
+        spec.setup_plugin('tests.plugins.dummy_plugin', )
