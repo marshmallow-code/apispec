@@ -9,7 +9,7 @@ from marshmallow import Schema
 
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
-from apispec.ext.marshmallow.swagger import MARSHMALLOW_VERSION_INFO
+from apispec.ext.marshmallow.openapi import MARSHMALLOW_VERSION_INFO
 from .schemas import (
     PetSchema, AnalysisSchema, SampleSchema, RunSchema,
     SelfReferencingSchema, OrderedSchema, PatternedObjectSchema,
@@ -180,16 +180,16 @@ class TestCustomField:
 
     def test_can_use_custom_field_decorator(self, spec_fixture):
 
-        @spec_fixture.swagger.map_to_swagger_type(DateTime)
+        @spec_fixture.openapi.map_to_openapi_type(DateTime)
         class CustomNameA(Field):
             pass
 
-        @spec_fixture.swagger.map_to_swagger_type('integer', 'int32')
+        @spec_fixture.openapi.map_to_openapi_type('integer', 'int32')
         class CustomNameB(Field):
             pass
 
         with pytest.raises(TypeError):
-            @spec_fixture.swagger.map_to_swagger_type('integer')
+            @spec_fixture.openapi.map_to_openapi_type('integer')
             class BadCustomField(Field):
                 pass
 
@@ -247,7 +247,7 @@ class TestOperationHelper:
         assert 'responses' in op
 
         resolved_schema = op['responses'][200]['schema']
-        assert resolved_schema == spec_fixture.swagger.schema2jsonschema(PetSchema)
+        assert resolved_schema == spec_fixture.openapi.schema2jsonschema(PetSchema)
 
     @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
     def test_schema_v3(self, spec_fixture):
@@ -277,7 +277,7 @@ class TestOperationHelper:
         assert 'responses' in op
 
         resolved_schema = op['responses'][200]['content']['application/json']['schema']
-        assert resolved_schema == spec_fixture.swagger.schema2jsonschema(PetSchema)
+        assert resolved_schema == spec_fixture.openapi.schema2jsonschema(PetSchema)
 
     @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
     def test_schema_in_docstring(self, spec_fixture):
@@ -304,11 +304,11 @@ class TestOperationHelper:
         assert 'get' in p
         get = p['get']
         assert 'responses' in get
-        assert get['responses'][200]['schema'] == spec_fixture.swagger.schema2jsonschema(PetSchema)
+        assert get['responses'][200]['schema'] == spec_fixture.openapi.schema2jsonschema(PetSchema)
         assert get['responses'][200]['description'] == 'successful operation'
         post = p['post']
         assert 'responses' in post
-        assert post['responses'][201]['schema'] == spec_fixture.swagger.schema2jsonschema(PetSchema)
+        assert post['responses'][201]['schema'] == spec_fixture.openapi.schema2jsonschema(PetSchema)
         assert post['responses'][201]['description'] == 'successful operation'
 
     @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
@@ -342,14 +342,14 @@ class TestOperationHelper:
         assert 'responses' in get
 
         resolved_schema = get['responses'][200]['content']['application/json']['schema']
-        assert resolved_schema == spec_fixture.swagger.schema2jsonschema(PetSchema)
+        assert resolved_schema == spec_fixture.openapi.schema2jsonschema(PetSchema)
 
         assert get['responses'][200]['description'] == 'successful operation'
         post = p['post']
         assert 'responses' in post
 
         resolved_schema = post['responses'][201]['content']['application/json']['schema']
-        assert resolved_schema == spec_fixture.swagger.schema2jsonschema(PetSchema)
+        assert resolved_schema == spec_fixture.openapi.schema2jsonschema(PetSchema)
         assert post['responses'][201]['description'] == 'successful operation'
 
     @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
@@ -378,11 +378,11 @@ class TestOperationHelper:
         assert 'get' in p
         get = p['get']
         assert 'parameters' in get
-        assert get['parameters'] == spec_fixture.swagger.schema2parameters(
+        assert get['parameters'] == spec_fixture.openapi.schema2parameters(
             PetSchema, default_in='query')
         post = p['post']
         assert 'parameters' in post
-        assert post['parameters'] == spec_fixture.swagger.schema2parameters(
+        assert post['parameters'] == spec_fixture.openapi.schema2parameters(
             PetSchema, default_in='body', required=True,
             name='pet', description='a pet schema')
 
@@ -418,7 +418,7 @@ class TestOperationHelper:
         assert 'get' in p
         get = p['get']
         assert 'parameters' in get
-        assert get['parameters'] == spec_fixture.swagger.schema2parameters(
+        assert get['parameters'] == spec_fixture.openapi.schema2parameters(
             PetSchema, default_in='query')
         for parameter in get['parameters']:
             description = parameter.get('description', False)
@@ -428,7 +428,7 @@ class TestOperationHelper:
         assert 'post' in p
         post = p['post']
         assert 'requestBody' in post
-        post_schema = spec_fixture.swagger.resolve_schema_dict(PetSchema)
+        post_schema = spec_fixture.openapi.resolve_schema_dict(PetSchema)
         assert post['requestBody']['content']['application/json']['schema'] == post_schema
         assert post['requestBody']['description'] == 'a pet schema'
         assert post['requestBody']['required']
@@ -698,13 +698,13 @@ class TestOperationHelper:
 
     def test_schema_global_state_untouched_2json(self, spec_fixture):
         assert RunSchema._declared_fields['sample']._Nested__schema is None
-        data = spec_fixture.swagger.schema2jsonschema(RunSchema)
+        data = spec_fixture.openapi.schema2jsonschema(RunSchema)
         json.dumps(data)
         assert RunSchema._declared_fields['sample']._Nested__schema is None
 
     def test_schema_global_state_untouched_2parameters(self, spec_fixture):
         assert RunSchema._declared_fields['sample']._Nested__schema is None
-        data = spec_fixture.swagger.schema2parameters(RunSchema)
+        data = spec_fixture.openapi.schema2parameters(RunSchema)
         json.dumps(data)
         assert RunSchema._declared_fields['sample']._Nested__schema is None
 

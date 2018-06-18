@@ -75,7 +75,7 @@ PATH_KEYS = set([
 ])
 
 def load_operations_from_docstring(docstring):
-    """Return a dictionary of Swagger operations parsed from a
+    """Return a dictionary of OpenAPI operations parsed from a
     a docstring.
     """
     doc_data = load_yaml_from_docstring(docstring)
@@ -101,7 +101,7 @@ def validate_spec(spec):
     except ImportError as error:  # re-raise with a more verbose message
         exc_class = type(error)
         raise exc_class(
-            'validate_swagger requires prance to be installed. '
+            'validate_spec requires prance to be installed. '
             'You can install all validation requirements using:\n'
             "    pip install 'apispec[validation]'"
         )

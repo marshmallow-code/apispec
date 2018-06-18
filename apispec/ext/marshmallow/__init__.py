@@ -29,7 +29,7 @@ import marshmallow
 
 from apispec import Path, BasePlugin, utils
 from .common import resolve_schema_cls, resolve_schema_instance
-from .swagger import Swagger
+from .openapi import OpenAPIConverter
 
 
 class MarshmallowPlugin(BasePlugin):
@@ -56,7 +56,7 @@ class MarshmallowPlugin(BasePlugin):
         """
         super(MarshmallowPlugin, self).init_spec(spec)
         self.openapi_version = spec.openapi_version
-        self.swagger = Swagger(openapi_version=spec.openapi_version)
+        self.openapi = OpenAPIConverter(openapi_version=spec.openapi_version)
 
     def inspect_schema_for_auto_referencing(self, original_schema_instance):
         """Parse given schema instance and reference eventual nested schemas
@@ -75,7 +75,7 @@ class MarshmallowPlugin(BasePlugin):
                     and isinstance(field.container, marshmallow.fields.Nested):
                 nested_schema_class = resolve_schema_cls(field.container.schema)
 
-            if nested_schema_class and nested_schema_class not in self.swagger.refs:
+            if nested_schema_class and nested_schema_class not in self.openapi.refs:
                 definition_name = self.schema_name_resolver(
                     nested_schema_class,
                 )
@@ -92,7 +92,7 @@ class MarshmallowPlugin(BasePlugin):
                 schema_cls = resolve_schema_cls(parameter['schema'])
                 if issubclass(schema_cls, marshmallow.Schema) and 'in' in parameter:
                     del parameter['schema']
-                    resolved += self.swagger.schema2parameters(
+                    resolved += self.openapi.schema2parameters(
                         schema_cls,
                         default_in=parameter.pop('in'), **parameter)
                     continue
@@ -107,7 +107,7 @@ class MarshmallowPlugin(BasePlugin):
         content = request_body['content']
         for content_type in content:
             schema = content[content_type]['schema']
-            content[content_type]['schema'] = self.swagger.resolve_schema_dict(schema)
+            content[content_type]['schema'] = self.openapi.resolve_schema_dict(schema)
 
     def resolve_schema(self, data):
         """Function to resolve a schema in a parameter or response - modifies the
@@ -118,12 +118,12 @@ class MarshmallowPlugin(BasePlugin):
         """
         if self.openapi_version.major < 3:
             if 'schema' in data:
-                data['schema'] = self.swagger.resolve_schema_dict(data['schema'])
+                data['schema'] = self.openapi.resolve_schema_dict(data['schema'])
         else:
             if 'content' in data:
                 for content_type in data['content']:
                     schema = data['content'][content_type]['schema']
-                    data['content'][content_type]['schema'] = self.swagger.resolve_schema_dict(schema)
+                    data['content'][content_type]['schema'] = self.openapi.resolve_schema_dict(schema)
 
     def definition_helper(self, name, schema, **kwargs):
         """Definition helper that allows using a marshmallow
@@ -137,9 +137,9 @@ class MarshmallowPlugin(BasePlugin):
         schema_instance = resolve_schema_instance(schema)
 
         # Store registered refs, keyed by Schema class
-        self.swagger.refs[schema_cls] = name
+        self.openapi.refs[schema_cls] = name
 
-        json_schema = self.swagger.schema2jsonschema(schema_instance, name=name)
+        json_schema = self.openapi.schema2jsonschema(schema_instance, name=name)
 
         # Auto reference schema if schema_name_resolver
         if self.schema_name_resolver:

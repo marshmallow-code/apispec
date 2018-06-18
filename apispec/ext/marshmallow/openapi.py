@@ -100,7 +100,7 @@ class OrderedLazyDict(LazyDict, OrderedDict):
     pass
 
 
-class Swagger(object):
+class OpenAPIConverter(object):
     """Converter generating OpenAPI specification from Marshmallow schemas and fields
 
     :param str|OpenAPIVersion openapi_version: The OpenAPI version to use.
@@ -128,7 +128,7 @@ class Swagger(object):
             return dump_to or load_from or name
         return field.data_key or name
 
-    def map_to_swagger_type(self, *args):
+    def map_to_openapi_type(self, *args):
         """
         Decorator to set mapping for custom fields.
 
@@ -139,29 +139,29 @@ class Swagger(object):
 
         Examples: ::
 
-            @swagger.map_to_swagger_type('string', 'uuid')
+            @ma_plugin.openapi.map_to_openapi_type('string', 'uuid')
             class MyCustomField(Integer):
                 # ...
 
-            @swagger.map_to_swagger_type(Integer)  # will map to ('integer', 'int32')
+            @ma_plugin.openapi.map_to_openapi_type(Integer)  # will map to ('integer', 'int32')
             class MyCustomFieldThatsKindaLikeAnInteger(Integer):
                 # ...
         """
         if len(args) == 1 and args[0] in self.field_mapping:
-            swagger_type_field = self.field_mapping[args[0]]
+            openapi_type_field = self.field_mapping[args[0]]
         elif len(args) == 2:
-            swagger_type_field = args
+            openapi_type_field = args
         else:
             raise TypeError('Pass core marshmallow field type or (type, fmt) pair')
 
         def inner(field_type):
-            self.field_mapping[field_type] = swagger_type_field
+            self.field_mapping[field_type] = openapi_type_field
             return field_type
 
         return inner
 
     def field2choices(self, field, **kwargs):
-        """Return the dictionary of swagger field attributes for valid choices definition
+        """Return the dictionary of OpenAPI field attributes for valid choices definition
 
         :param Field field: A marshmallow field.
         :rtype: dict
@@ -185,7 +185,7 @@ class Swagger(object):
         return attributes
 
     def field2read_only(self, field, **kwargs):
-        """Return the dictionary of swagger field attributes for a dump_only field.
+        """Return the dictionary of OpenAPI field attributes for a dump_only field.
 
         :param Field field: A marshmallow field.
         :rtype: dict
@@ -196,7 +196,7 @@ class Swagger(object):
         return attributes
 
     def field2write_only(self, field, **kwargs):
-        """Return the dictionary of swagger field attributes for a load_only field.
+        """Return the dictionary of OpenAPI field attributes for a load_only field.
 
         :param Field field: A marshmallow field.
         :rtype: dict
@@ -207,7 +207,7 @@ class Swagger(object):
         return attributes
 
     def field2nullable(self, field, **kwargs):
-        """Return the dictionary of swagger field attributes for a nullable field.
+        """Return the dictionary of OpenAPI field attributes for a nullable field.
 
         :param Field field: A marshmallow field.
         :rtype: dict
@@ -218,7 +218,7 @@ class Swagger(object):
         return attributes
 
     def field2range(self, field, **kwargs):
-        """Return the dictionary of swagger field attributes for a set of
+        """Return the dictionary of OpenAPI field attributes for a set of
         :class:`Range <marshmallow.validators.Range>` validators.
 
         :param Field field: A marshmallow field.
@@ -254,7 +254,7 @@ class Swagger(object):
         return attributes
 
     def field2length(self, field, **kwargs):
-        """Return the dictionary of swagger field attributes for a set of
+        """Return the dictionary of OpenAPI field attributes for a set of
         :class:`Length <marshmallow.validators.Length>` validators.
 
         :param Field field: A marshmallow field.
@@ -435,15 +435,15 @@ class Swagger(object):
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#parameterObject
         """
-        swagger_default_in = __location_map__.get(default_in, default_in)
-        if self.openapi_version.major < 3 and swagger_default_in == 'body':
+        openapi_default_in = __location_map__.get(default_in, default_in)
+        if self.openapi_version.major < 3 and openapi_default_in == 'body':
             if schema is not None:
                 prop = self.resolve_schema_dict(schema, dump=False, use_instances=use_instances)
             else:
                 prop = self.fields2jsonschema(fields, use_refs=use_refs, dump=False)
 
             param = {
-                'in': swagger_default_in,
+                'in': openapi_default_in,
                 'required': required,
                 'name': name,
                 'schema': prop,
@@ -514,14 +514,14 @@ class Swagger(object):
         :raise: TranslationError if arg object cannot be translated to a Parameter Object schema.
         :rtype: dict, a Parameter Object
         """
-        swagger_default_in = __location_map__.get(default_in, default_in)
-        swagger_location = __location_map__.get(location, swagger_default_in)
+        openapi_default_in = __location_map__.get(default_in, default_in)
+        openapi_location = __location_map__.get(location, openapi_default_in)
         ret = {
-            'in': swagger_location,
+            'in': openapi_location,
             'name': name,
         }
 
-        if swagger_location == 'body':
+        if openapi_location == 'body':
             ret['required'] = False
             ret['name'] = 'body'
             ret['schema'] = {
@@ -577,7 +577,7 @@ class Swagger(object):
                     title = 'User'
                     description = 'A registered user'
 
-            Swagger.schema2jsonschema(UserSchema)
+            OpenAPI.schema2jsonschema(UserSchema)
             # {
             #     'title': 'User', 'description': 'A registered user',
             #     'properties': {

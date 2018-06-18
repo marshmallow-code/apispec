@@ -59,7 +59,7 @@ class TornadoPlugin(BasePlugin):
                 yield operation
 
     @staticmethod
-    def tornadopath2swagger(urlspec, method):
+    def tornadopath2openapi(urlspec, method):
         """Convert Tornado URLSpec to OpenAPI-compliant path.
 
         :param urlspec:
@@ -105,7 +105,7 @@ class TornadoPlugin(BasePlugin):
             raise APISpecError(
                 'Could not find endpoint for urlspec {0}'.format(urlspec))
         params_method = getattr(urlspec.handler_class, list(operations.keys())[0])
-        path = self.tornadopath2swagger(urlspec, params_method)
+        path = self.tornadopath2openapi(urlspec, params_method)
         extensions = self._extensions_from_handler(urlspec.handler_class)
         operations.update(extensions)
         return Path(path=path, operations=operations)

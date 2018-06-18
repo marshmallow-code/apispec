@@ -90,7 +90,7 @@ class FlaskPlugin(BasePlugin):
     """
 
     @staticmethod
-    def flaskpath2swagger(path):
+    def flaskpath2openapi(path):
         """Convert a Flask URL rule to an OpenAPI-compliant path.
 
         :param str path: Flask path template.
@@ -114,7 +114,7 @@ class FlaskPlugin(BasePlugin):
     def path_helper(self, view, **kwargs):
         """Path helper that allows passing a Flask view function."""
         rule = self._rule_for_view(view)
-        path = self.flaskpath2swagger(rule.rule)
+        path = self.flaskpath2openapi(rule.rule)
         app_root = current_app.config['APPLICATION_ROOT'] or '/'
         path = urljoin(app_root.rstrip('/') + '/', path.lstrip('/'))
         operations = utils.load_operations_from_docstring(view.__doc__)

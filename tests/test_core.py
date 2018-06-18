@@ -67,7 +67,7 @@ class TestAPISpecInit:
 
 class TestMetadata:
 
-    def test_swagger_metadata(self, spec):
+    def test_openapi_metadata(self, spec):
         metadata = spec.to_dict()
         assert metadata['info']['title'] == 'Swagger Petstore'
         assert metadata['info']['version'] == '1.0.0'
@@ -85,7 +85,7 @@ class TestMetadata:
             assert metadata['info']['description'] == description
 
     @pytest.mark.parametrize('spec', ('3.0.0', ), indirect=True)
-    def test_swagger_metadata_merge_v3(self, spec):
+    def test_openapi_metadata_merge_v3(self, spec):
         properties = {
             'ok': {
                 'type': 'boolean', 'description': 'property description', 'example': True

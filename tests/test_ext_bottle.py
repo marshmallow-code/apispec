@@ -89,7 +89,7 @@ class TestPathHelpers:
         assert 'foo' not in spec._paths['/hello']
         assert extension == 'value'
 
-    def test_path_is_translated_to_swagger_template(self, spec):
+    def test_path_is_translated_to_openapi_template(self, spec):
 
         @route('/pet/<pet_id>')
         def get_pet(pet_id):

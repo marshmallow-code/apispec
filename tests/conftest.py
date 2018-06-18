@@ -37,5 +37,5 @@ def spec_fixture(request):
         openapi_version=request.param
     )
     return namedtuple(
-        'Spec', ('spec', 'marshmallow_plugin', 'swagger'))(
-            spec, ma_plugin, ma_plugin.swagger)
+        'Spec', ('spec', 'marshmallow_plugin', 'openapi'))(
+            spec, ma_plugin, ma_plugin.openapi)

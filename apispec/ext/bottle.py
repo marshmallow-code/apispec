@@ -42,7 +42,7 @@ class BottlePlugin(BasePlugin):
     """
 
     @staticmethod
-    def bottle_path_to_swagger(path):
+    def bottle_path_to_openapi(path):
         return RE_URL.sub(r'{\1}', path)
 
     @staticmethod
@@ -61,7 +61,7 @@ class BottlePlugin(BasePlugin):
         operations = utils.load_operations_from_docstring(view.__doc__)
         app = kwargs.get('app', _default_app)
         route = self._route_for_view(app, view)
-        bottle_path = self.bottle_path_to_swagger(route.rule)
+        bottle_path = self.bottle_path_to_openapi(route.rule)
         return Path(path=bottle_path, operations=operations)
 
 
