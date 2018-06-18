@@ -47,8 +47,6 @@ DEFAULT_FIELD_MAPPING = {
     marshmallow.fields.List: ('array', None),
 }
 
-CUSTOM_FIELD_MAPPING_ATTR = '__swagger_field_mapping'
-
 
 __location_map__ = {
     'query': 'query',
