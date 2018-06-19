@@ -9,6 +9,12 @@ apispec
 .. automodule:: apispec
     :members:
 
+apispec.plugin
+--------------
+
+.. automodule:: apispec.plugin
+    :members:
+
 apispec.exceptions
 ------------------
 

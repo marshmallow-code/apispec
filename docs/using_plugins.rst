@@ -13,41 +13,39 @@ A plugin may modify the behavior of `APISpec <apispec.APISpec>` methods so that 
 Enabling Plugins
 ----------------
 
-To enable a plugin, pass its import path to the constructor of `APISpec <apispec.APISpec>`.
+To enable a plugin, pass an instance to the constructor of `APISpec <apispec.APISpec>`.
 
 .. code-block:: python
-    :emphasize-lines: 9
+    :emphasize-lines: 11
 
     from apispec import APISpec
+    from apispec.ext.marshmallow import MarshmallowPlugin
 
     spec = APISpec(
         title='Gisty',
         version='1.0.0',
+        openapi_version='2.0',
         info=dict(
             description='A minimal gist API'
         ),
-        plugins=['apispec.ext.marshmallow']
+        plugins=[MarshmallowPlugin()]
     )
 
-
-Alternatively, you can use `setup_plugin <apispec.APISpec.setup_plugin>`.
-
-.. code-block:: python
-
-    spec.setup_plugin('apispec.ext.marshmallow')
 
 Example: Flask and Marshmallow Plugins
 --------------------------------------
 
-The bundled marshmallow plugin (`apispec.ext.marshmallow`) provides helpers for generating OpenAPI schema and parameter objects from `marshmallow <https://marshmallow.readthedocs.io/en/latest/>`_ schemas and fields.
+The bundled marshmallow plugin (`apispec.ext.marshmallow.MarshmallowPlugin`) provides helpers for generating OpenAPI schema and parameter objects from `marshmallow <https://marshmallow.readthedocs.io/en/latest/>`_ schemas and fields.
 
-The bundled Flask plugin (`apispec.ext.flask`) provides helpers for generating path objects from view functions.
+The bundled Flask plugin (`apispec.ext.flask.FlaskPlugin`) provides helpers for generating path objects from view functions.
 
 Let's recreate the spec from the :ref:`Quickstart guide <quickstart>` using these two plugins.
 
 .. code-block:: python
 
     from apispec import APISpec
+    from apispec.ext.flask import FlaskPlugin
+    from apispec.ext.marshmallow import MarshmallowPlugin
 
     spec = APISpec(
         title='Gisty',
@@ -56,8 +54,8 @@ Let's recreate the spec from the :ref:`Quickstart guide <quickstart>` using thes
             description='A minimal gist API'
         ),
         plugins=[
-            'apispec.ext.flask',
-            'apispec.ext.marshmallow'
+            FlaskPlugin(),
+            MarshmallowPlugin(),
         ]
     )
 
@@ -86,7 +84,7 @@ The marshmallow plugin allows us to pass this `Schema` to `spec.definition <apis
 The definition is now added to the spec.
 
 .. code-block:: python
-    :emphasize-lines: 4,5
+    :emphasize-lines: 4,5,6,7
 
     from pprint import pprint
 
@@ -195,18 +193,33 @@ If your API uses `method-based dispatching <http://flask.pocoo.org/docs/0.12/vie
 By default, apispec only knows how to set the type of
 built-in marshmallow fields. If you want to generate definitions for
 schemas with custom fields, use the
-`apispec.ext.marshmallow.swagger.map_to_swagger_type` decorator:
+`apispec.ext.marshmallow.openapi.OpenAPIConverter.map_to_swagger_type` decorator
+accessible through the marshmallow plugin instance:
 
 .. code-block:: python
 
-    from apispec.ext.marshmallow import swagger
+    from apispec import APISpec
+    from apispec.ext.marshmallow import MarshmallowPlugin
     from marshmallow.fields import Integer
 
-    @swagger.map_to_swagger_type('string', 'uuid')
+    ma_plugin = MarshmallowPlugin()
+
+    spec = APISpec(
+        title='Gisty',
+        version='1.0.0',
+        openapi_version='2.0',
+        info=dict(
+            description='A minimal gist API'
+        ),
+        plugins=[ma_plugin]
+    )
+
+
+    @ma_plugin.openapi.map_to_swagger_type('string', 'uuid')
     class MyCustomField(Integer):
         # ...
 
-    @swagger.map_to_swagger_type(Integer)  # will map to ('integer', 'int32')
+    @ma_plugin.openapi.map_to_swagger_type(Integer)  # will map to ('integer', 'int32')
     class MyCustomFieldThatsKindaLikeAnInteger(Integer):
         # ...
 
@@ -215,4 +228,4 @@ schemas with custom fields, use the
 Next Steps
 ----------
 
-You now know how to use plugins. The next section will show you how to write plugins: :ref:`Writing Plugins <writing_plugins>`
+You now know how to use plugins. The next section will show you how to write plugins: :ref:`Writing Plugins <writing_plugins>`.

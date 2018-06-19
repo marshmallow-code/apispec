@@ -103,15 +103,8 @@ class APISpec(object):
     :param tuple plugins: Import paths to plugins.
     :param dict info: Optional dict to add to `info`
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#infoObject
-    :param callable schema_name_resolver: Callable to generate the
-        schema definition name. Receives the `Schema` class and returns the name to be used in
-        refs within the generated spec.
-
-        Example: ::
-
-            def schema_name_resolver(schema):
-                return schema.__name__
-        This parameter is deprecated. Use new class-based plugin interface instead.
+    :param callable schema_name_resolver: Callable to generate the schema definition name.
+        This parameter is deprecated. It is now a parameter of MarshmallowPlugin.
     :param str|OpenAPIVersion openapi_version: The OpenAPI version to use.
         Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
     :param dict options: Optional top-level keys
@@ -129,7 +122,10 @@ class APISpec(object):
 
         self.options = options
         if schema_name_resolver is not None:
-            warnings.warn('schema_name_resolver parameter is deprecated.', DeprecationWarning)
+            warnings.warn(
+                'schema_name_resolver parameter is deprecated. '
+                'It is now a parameter of MarshmallowPlugin.',
+                DeprecationWarning)
         self.schema_name_resolver = schema_name_resolver
         # Metadata
         self._definitions = {}
@@ -341,7 +337,9 @@ class APISpec(object):
         :raise: PluginError if the given plugin is invalid.
         """
         warnings.warn(
-            'Old style plugins are deprecated. Use classes instead.', DeprecationWarning)
+            'Old style plugins are deprecated. Use classes instead. '
+            'See https://apispec.readthedocs.io/en/latest/writing_plugins.html.',
+            DeprecationWarning)
         if path in self.old_plugins:
             return
         try:
@@ -378,7 +376,9 @@ class APISpec(object):
         :param callable func: The definition helper function.
         """
         warnings.warn(
-            'Helper functions are deprecated. Use plugin classes.', DeprecationWarning)
+            'Helper functions are deprecated. Use plugin classes. '
+            'See https://apispec.readthedocs.io/en/latest/writing_plugins.html.',
+            DeprecationWarning)
         self._definition_helpers.append(func)
 
     def register_path_helper(self, func):
@@ -391,7 +391,9 @@ class APISpec(object):
         The helper may define any named arguments in its signature.
         """
         warnings.warn(
-            'Helper functions are deprecated. Use plugin classes.', DeprecationWarning)
+            'Helper functions are deprecated. Use plugin classes. '
+            'See https://apispec.readthedocs.io/en/latest/writing_plugins.html.',
+            DeprecationWarning)
         self._path_helpers.append(func)
 
     def register_operation_helper(self, func):
@@ -404,7 +406,9 @@ class APISpec(object):
         The helper may define any named arguments in its signature.
         """
         warnings.warn(
-            'Helper functions are deprecated. Use plugin classes.', DeprecationWarning)
+            'Helper functions are deprecated. Use plugin classes. '
+            'See https://apispec.readthedocs.io/en/latest/writing_plugins.html.',
+            DeprecationWarning)
         self._operation_helpers.append(func)
 
     def register_response_helper(self, func, method, status_code):
@@ -417,7 +421,9 @@ class APISpec(object):
         The helper may define any named arguments in its signature.
         """
         warnings.warn(
-            'Helper functions are deprecated. Use plugin classes.', DeprecationWarning)
+            'Helper functions are deprecated. Use plugin classes. '
+            'See https://apispec.readthedocs.io/en/latest/writing_plugins.html.',
+            DeprecationWarning)
         method = method.lower()
         if method not in self._response_helpers:
             self._response_helpers[method] = {}

@@ -45,3 +45,5 @@ class TestOpenAPIVersion:
         assert ver.major == 3
         assert ver.minor == 0
         assert ver.patch == 1
+        assert ver.vstring == '3.0.1'
+        assert str(ver) == '3.0.1'

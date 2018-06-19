@@ -5,10 +5,7 @@
 from .exceptions import PluginMethodNotImplementedError
 
 class BasePlugin(object):
-    """Base class for APISpec plugin
-
-    :param APISpec spec: APISpec object this plugin instance is attached to
-    """
+    """Base class for APISpec plugin classes."""
     def init_spec(self, spec):
         """Initialize plugin with APISpec object
 

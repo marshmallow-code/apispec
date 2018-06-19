@@ -35,10 +35,9 @@ from .openapi import OpenAPIConverter
 class MarshmallowPlugin(BasePlugin):
     """APISpec plugin handling marshmallow schemas
 
-    :param APISpec spec: APISpec object this plugin instance is attached to
-    :param callable schema_name_resolver: Callable to generate the
-        schema definition name. Receives the `Schema` class and returns the name to be used in
-        refs within the generated spec.
+    :param callable schema_name_resolver: Callable to generate the schema definition name.
+        Receives the `Schema` class and returns the name to be used in refs within
+        the generated spec.
 
         Example: ::
 

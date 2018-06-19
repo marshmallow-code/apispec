@@ -56,6 +56,7 @@ Here is an example that includes a `Security Scheme Object <https://github.com/O
 
     import yaml
     from apispec import APISpec
+    from apispec.ext.marshmallow import MarshmallowPlugin
     from apispec.utils import validate_swagger
 
     OPENAPI_SPEC = """
@@ -92,7 +93,7 @@ Here is an example that includes a `Security Scheme Object <https://github.com/O
         version=spec_version,
         openapi_version=openapi_version,
         plugins=(
-            'apispec.ext.marshmallow',
+            MarshmallowPlugin(),
         ),
         **settings
     )

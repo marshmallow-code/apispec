@@ -15,6 +15,7 @@ First, create an `APISpec <apispec.APISpec>` object, passing basic information a
     spec = APISpec(
         title='Gisty',
         version='1.0.0',
+        openapi_version='2.0',
         info=dict(
             description='A minimal gist API'
         )
@@ -94,4 +95,4 @@ Next Steps
 
 We've learned how to programmatically construct an OpenAPI spec, but defining our entities was verbose.
 
-In the next section, we'll learn how to let plugins do the dirty work: :ref:`Using Plugins <using_plugins>`
+In the next section, we'll learn how to let plugins do the dirty work: :ref:`Using Plugins <using_plugins>`.

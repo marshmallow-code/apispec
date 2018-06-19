@@ -36,10 +36,7 @@ _default_app = default_app()
 
 
 class BottlePlugin(BasePlugin):
-    """APISpec plugin for Bottle
-
-    :param APISpec spec: APISpec object this plugin instance is attached to
-    """
+    """APISpec plugin for Bottle"""
 
     @staticmethod
     def bottle_path_to_openapi(path):

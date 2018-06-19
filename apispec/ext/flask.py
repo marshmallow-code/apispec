@@ -84,10 +84,7 @@ RE_URL = re.compile(r'<(?:[^:<>]+:)?([^<>]+)>')
 
 
 class FlaskPlugin(BasePlugin):
-    """APISpec plugin for Flask
-
-    :param APISpec spec: APISpec object this plugin instance is attached to
-    """
+    """APISpec plugin for Flask"""
 
     @staticmethod
     def flaskpath2openapi(path):

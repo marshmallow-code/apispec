@@ -132,7 +132,17 @@ class OpenAPIVersion(version.LooseVersion, object):
 
     :param str|OpenAPIVersion openapi_version: OpenAPI version
 
-    Parses an OpenAPI version expressed as string. Provides shortcut to digits.
+    Parses an OpenAPI version expressed as string. Provides shortcut to digits
+    as properties: major, minor, patch.
+
+        Example: ::
+
+            ver = OpenAPIVersion('3.0.1')
+            assert ver.major == 3
+            assert ver.minor == 0
+            assert ver.patch == 1
+            assert ver.vstring == '3.0.1'
+            assert str(ver) == '3.0.1'
     """
     MIN_INCLUSIVE_VERSION = version.LooseVersion('2.0')
     MAX_EXCLUSIVE_VERSION = version.LooseVersion('4.0')

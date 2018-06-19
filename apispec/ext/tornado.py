@@ -39,10 +39,7 @@ from apispec.exceptions import APISpecError
 
 
 class TornadoPlugin(BasePlugin):
-    """APISpec plugin for Tornado
-
-    :param APISpec spec: APISpec object this plugin instance is attached to
-    """
+    """APISpec plugin for Tornado"""
 
     @staticmethod
     def _operations_from_methods(handler_class):
