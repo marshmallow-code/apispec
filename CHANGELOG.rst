@@ -1,6 +1,20 @@
 Changelog
 ---------
 
+Features:
+
+- [apispec.core]: *Backwards-incompatible*: Change plugin interface. Plugins are
+  now child classes of ``apispec.BasePlugin``. Built-in plugins are still usable
+  with the deprecated legacy interface. However, the new class interface is
+  mandatory to pass parameters to plugins or to access specific methods that used to be
+  accessed as module level functions (typically in ``apispec.ext.marshmallow.swagger``).
+  Also, ``schema_name_resolver`` is now a parameter of
+  ``apispec.ext.marshmallow.MarshmallowPlugin``. It can still be passed to ``APISpec``
+  while using the legacy interface. (:issue:`207`)
+- [apispec.core]: *Backwards-incompatible*: ``APISpec.openapi_version`` is now an
+  ``apispec.utils.OpenAPIVersion`` instance.
+
+
 0.38.0 (2018-06-10)
 +++++++++++++++++++
 
@@ -8,15 +22,14 @@ Features:
 
 - [apispec.core]: *Backwards-incompatible*: Rename ``apispec.utils.validate_swagger``
   to ``apispec.utils.validate_spec`` and
-  ``apispec.exceptions.SwaggerError`` to ``apispec.exceptions.OpenAPIError``. 
+  ``apispec.exceptions.SwaggerError`` to ``apispec.exceptions.OpenAPIError``.
   Using ``validate_swagger`` will raise a ``DeprecationWarning`` (:issue:`224`).
 - [apispec.core]: ``apispec.utils.validate_spec`` no longer relies on
   the ``check_api`` NPM module. ``prance`` and
   ``openapi-spec-validator`` are required for validation, and can be
   installed using ``pip install 'apispec[validation]'`` (:issue:`224`).
-- [apispec.ext.marshmallow]: Deep update components instead of
-  overwriting components for OpenAPI 3 (:issue:`222`). Thanks
-  :user:`Guoli-Lyu`.
+- [apispec.core]: Deep update components instead of overwriting components
+  for OpenAPI 3 (:issue:`222`). Thanks :user:`Guoli-Lyu`.
 
 Bug fixes:
 
