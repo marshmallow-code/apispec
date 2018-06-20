@@ -11,7 +11,6 @@ class BasePlugin(object):
 
         :param APISpec spec: APISpec object this plugin instance is attached to
         """
-        self.spec = spec
 
     def definition_helper(self, name, definition, **kwargs):
         """Must return definition as a dict."""

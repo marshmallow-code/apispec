@@ -379,15 +379,6 @@ class TestPlugins:
             if method == 'delete':
                 return {'description': 'Clever description'}
 
-    def test_plugin_init_spec(self):
-        plugin = BasePlugin()
-        spec = APISpec(
-            title='Swagger Petstore',
-            version='1.0.0',
-            plugins=(plugin, )
-        )
-        assert plugin.spec == spec
-
     def test_plugin_definition_helper_is_used(self):
         spec = APISpec(
             title='Swagger Petstore',

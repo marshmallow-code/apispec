@@ -47,13 +47,13 @@ class MarshmallowPlugin(BasePlugin):
     def __init__(self, schema_name_resolver=None):
         super(MarshmallowPlugin, self).__init__()
         self.schema_name_resolver = schema_name_resolver
+        self.spec = None
+        self.openapi_version = None
+        self.openapi = None
 
     def init_spec(self, spec):
-        """Initialize plugin with APISpec object
-
-        :param APISpec spec: APISpec object this plugin instance is attached to
-        """
         super(MarshmallowPlugin, self).init_spec(spec)
+        self.spec = spec
         self.openapi_version = spec.openapi_version
         self.openapi = OpenAPIConverter(openapi_version=spec.openapi_version)
 
