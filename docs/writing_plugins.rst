@@ -3,7 +3,7 @@
 Writing Plugins
 ===============
 
-A plugins is a child class of `apispec.plugin.BasePlugin`.
+A plugins is a subclass of `apispec.plugin.BasePlugin`.
 
 
 Helper Methods
@@ -41,11 +41,11 @@ A plugin with a path helper function may look something like this:
 The ``init_spec`` Method
 ------------------------
 
-`BasePlugin` has an `init_spec` method that is called by the `APISpec` object at initialization.
+`BasePlugin` has an `init_spec` method that `APISpec` calls on each plugin at initialization with the spec object itself as parameter. It is no-op by default, but a plugin may override it to access and store useful information from the spec object.
 
-This method stores the APISpec object as attribute `spec` of the plugin object, so that every helper method has access to the spec object.
+A typical use case is conditional code depending on the OpenAPI version, which is stored as ``openapi_version`` attribute of the spec object. See source code for `apispec.ext.marshmallow.MarshmallowPlugin </_modules/apispec/ext/marshmallow.html>`_ for an example.
 
-A typical use case is for conditional code depending on the OpenAPI version, which is stored in `spec` as an `apispec.utils.OpenAPIVersion` object providing shortcuts to version digits.
+Note that the OpenAPI version is stored in the spec object as an `apispec.utils.OpenAPIVersion`. An ``OpenAPIVersion`` instance provides the version as string as well as shortcuts to version digits.
 
 
 Example: Docstring-parsing Plugin
@@ -62,14 +62,17 @@ Here's a plugin example involving conditional processing depending on the OpenAP
 
     class DocPlugin(BasePlugin):
 
+        def init_spec(self, spec):
+            super(DocPlugin, self).init_spec(spec)
+            self.openapi_major_version = spec.openapi_version.major
+
         def path_helper(self, path, func, **kwargs):
             """Path helper that parses docstrings for operations. Adds a
             ``func`` parameter to `apispec.APISpec.add_path`.
             """
-            openapi_major_version = self.spec.openapi_version.major
             operations = load_operations_from_docstring(func.__doc__)
             # Apply conditional processing
-            if openapi_major_version < 3:
+            if self.openapi_major_version < 3:
                 [...]
             else:
                 [...]

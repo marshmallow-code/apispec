@@ -110,7 +110,11 @@ class TornadoPlugin(BasePlugin):
 
 # Deprecated interface
 def setup(spec):
-    """Setup for the plugin."""
+    """Setup for the plugin.
+
+    .. deprecated:: 0.39.0
+        Use TornadoPlugin class.
+    """
     plugin = TornadoPlugin()
     plugin.init_spec(spec)
     spec.plugins.append(plugin)

@@ -133,7 +133,7 @@ class OpenAPIVersion(version.LooseVersion, object):
     :param str|OpenAPIVersion openapi_version: OpenAPI version
 
     Parses an OpenAPI version expressed as string. Provides shortcut to digits
-    as properties: major, minor, patch.
+    (major, minor, patch).
 
         Example: ::
 

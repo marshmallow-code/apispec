@@ -231,7 +231,11 @@ class MarshmallowPlugin(BasePlugin):
 
 # Deprecated interface
 def setup(spec):
-    """Setup for the plugin."""
+    """Setup for the plugin.
+
+    .. deprecated:: 0.39.0
+        Use MarshmallowPlugin class.
+    """
     plugin = MarshmallowPlugin(schema_name_resolver=spec.schema_name_resolver)
     plugin.init_spec(spec)
     spec.plugins.append(plugin)

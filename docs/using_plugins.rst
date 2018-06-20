@@ -6,7 +6,7 @@ Using Plugins
 What is an apispec "plugin"?
 ----------------------------
 
-An apispec *plugin* is a Python module that provides helpers for generating OpenAPI entities from objects in your application.
+An apispec *plugin* is an object that provides helper methods for generating OpenAPI entities from objects in your application.
 
 A plugin may modify the behavior of `APISpec <apispec.APISpec>` methods so that they can take your application's objects as input.
 

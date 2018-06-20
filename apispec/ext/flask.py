@@ -130,7 +130,11 @@ class FlaskPlugin(BasePlugin):
 
 # Deprecated interface
 def setup(spec):
-    """Setup for the plugin."""
+    """Setup for the plugin.
+
+    .. deprecated:: 0.39.0
+        Use FlaskPlugin class.
+    """
     plugin = FlaskPlugin()
     plugin.init_spec(spec)
     spec.plugins.append(plugin)
