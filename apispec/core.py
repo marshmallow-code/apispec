@@ -6,6 +6,8 @@ from distutils import version as du_version
 
 import yaml
 
+from apispec.auto_ref_strategy import default_schema_name_resolver
+from apispec.auto_ref_strategy import default_schema_class_resolver
 from apispec.compat import iterkeys, PY2, unicode
 from apispec.lazy_dict import LazyDict
 from .exceptions import APISpecError, PluginError
@@ -103,9 +105,14 @@ class APISpec(object):
     :param tuple plugins: Import paths to plugins.
     :param dict info: Optional dict to add to `info`
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#infoObject
+    :param boolean auto_referencing: Active or disable auto_referencing of
+         nested class.
+    :param callable schema_class_resolver: Callable to return the convenient
+         class 'Schema' for definition. Receive the schema class/instance and
+         return a 'Schema' class. Need auto_referencing on.
     :param callable schema_name_resolver: Callable to generate the
         schema definition name. Receives the `Schema` class and returns the name to be used in
-        refs within the generated spec.
+        refs within the generated spec. Need auto_referencing on.
 
         Example: ::
 
@@ -117,8 +124,19 @@ class APISpec(object):
     :param dict options: Optional top-level keys
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
     """
-    def __init__(self, title, version, plugins=(), info=None,
-                 schema_name_resolver=None, openapi_version='2.0', **options):
+
+    def __init__(
+        self,
+        title,
+        version,
+        plugins=(),
+        info=None,
+        schema_name_resolver=default_schema_name_resolver,
+        openapi_version='2.0',
+        auto_referencing=False,
+        schema_class_resolver=default_schema_class_resolver,
+        **options
+    ):
         self.info = {
             'title': title,
             'version': version,
@@ -128,7 +146,11 @@ class APISpec(object):
         self.openapi_version = validate_openapi_version(openapi_version)
 
         self.options = options
+        # auto_ref
+        self.auto_referencing = auto_referencing
         self.schema_name_resolver = schema_name_resolver
+        self.schema_class_resolver = schema_class_resolver
+        self.auto_generated_schemas = {}
         # Metadata
         self._definitions = {}
         self._parameters = {}

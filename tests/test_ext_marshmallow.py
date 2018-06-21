@@ -59,6 +59,13 @@ class TestDefinitionHelper:
     def test_resolve_schema_dict_auto_reference(self, schema):
         def resolver(schema):
             return schema.__name__
+
+        def class_resolver(spec, schema):
+            if isinstance(schema, type):
+                return schema
+            else:
+                return type(schema)
+
         spec = APISpec(
             title='Test auto-reference',
             version='2.0',
@@ -66,7 +73,9 @@ class TestDefinitionHelper:
             plugins=(
                 'apispec.ext.marshmallow',
             ),
+            auto_referencing=True,
             schema_name_resolver=resolver,
+            schema_class_resolver=class_resolver,
         )
         assert {} == spec._definitions
 
@@ -93,6 +102,13 @@ class TestDefinitionHelper:
     def test_resolve_schema_dict_auto_reference_in_list(self, schema):
         def resolver(schema):
             return schema.__name__
+
+        def class_resolver(spec, schema):
+            if isinstance(schema, type):
+                return schema
+            else:
+                return type(schema)
+
         spec = APISpec(
             title='Test auto-reference',
             version='2.0',
@@ -101,6 +117,8 @@ class TestDefinitionHelper:
                 'apispec.ext.marshmallow',
             ),
             schema_name_resolver=resolver,
+            schema_class_resolver=class_resolver,
+            auto_referencing=True,
         )
         assert {} == spec._definitions
 
@@ -129,6 +147,12 @@ class TestDefinitionHelper:
         def resolver(schema):
             return None
 
+        def class_resolver(spec, schema):
+            if isinstance(schema, type):
+                return schema
+            else:
+                return type(schema)
+
         spec = APISpec(
             title='Test auto-reference',
             version='2.0',
@@ -137,6 +161,8 @@ class TestDefinitionHelper:
                 'apispec.ext.marshmallow',
             ),
             schema_name_resolver=resolver,
+            schema_class_resolver=class_resolver,
+            auto_referencing=True,
         )
         assert {} == spec._definitions
 
@@ -164,6 +190,69 @@ class TestDefinitionHelper:
         json.dumps(spec_dict)
         # Other shema still not referenced
         assert 1 == len(spec._definitions)
+
+    @pytest.mark.parametrize('schema', [AnalysisSchema, AnalysisSchema()])
+    def test_resolve_schema_dict_auto_reference_custom_schema_resolver(self, schema):
+        def resolver(schema):
+            if getattr(schema, '_schema_name', None):
+                return schema._schema_name
+            else:
+                return schema.__name__
+
+        def class_resolver_handle_exclude(spec, schema):
+            if isinstance(schema, type):
+                return schema
+            else:
+                if getattr(schema, 'exclude', ()):
+                    exclude = set(getattr(schema, 'exclude', ()))
+                    str_exclude = ''
+                    for elem in exclude:
+                        str_exclude += '_{}'.format(elem)
+                    cls_schema = type(schema)
+
+                    class NewSchema(cls_schema):
+                        pass
+
+                    NewSchema.opts.exclude = exclude
+                    NewSchema.__name__ = cls_schema.__name__
+                    NewSchema._schema_name = '{}-{}'.format(
+                        cls_schema.__name__,
+                        str_exclude,
+                    )
+                    return NewSchema
+                else:
+                    return type(schema)
+
+        spec = APISpec(
+            title='Test auto-reference',
+            version='2.0',
+            description='Test auto-reference',
+            plugins=(
+                'apispec.ext.marshmallow',
+            ),
+            schema_name_resolver=resolver,
+            schema_class_resolver=class_resolver_handle_exclude,
+            auto_referencing=True,
+        )
+        assert {} == spec._definitions
+
+        spec.definition('analysis', schema=schema)
+        spec.add_path('/test', operations={
+            'get': {
+                'responses': {
+                    '200': {
+                        'schema': {
+                            '$ref': '#/definitions/analysis'
+                        }
+                    }
+                }
+            }
+        })
+        assert 3 == len(spec._definitions)
+
+        assert 'analysis' in spec._definitions
+        assert 'SampleSchema' in spec._definitions
+        assert 'RunSchema-_sample' in spec._definitions
 
 
 class TestCustomField:
