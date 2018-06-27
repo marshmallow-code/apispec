@@ -1,5 +1,5 @@
 invoke==1.0.0
-pyyaml==3.12
+pyyaml==4.1
 
 # Syntax checking
 flake8==3.5.0
