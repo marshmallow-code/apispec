@@ -4,16 +4,15 @@ import warnings
 
 class APISpecError(Exception):
     """Base class for all apispec-related errors."""
-    pass
 
 class PluginError(APISpecError):
     """Raised when a plugin cannot be found or is invalid."""
-    pass
+
+class PluginMethodNotImplementedError(APISpecError, NotImplementedError):
+    """Raised when calling an unimplemented helper method in a plugin"""
 
 class OpenAPIError(APISpecError):
     """Raised when a OpenAPI spec validation fails."""
-    pass
-
 
 class SwaggerError(OpenAPIError):
     """

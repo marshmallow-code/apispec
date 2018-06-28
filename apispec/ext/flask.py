@@ -75,53 +75,66 @@ from flask import current_app
 from flask.views import MethodView
 
 from apispec.compat import iteritems
-from apispec import Path
+from apispec import Path, BasePlugin, utils
 from apispec.exceptions import APISpecError
-from apispec import utils
-
-def _rule_for_view(view):
-    view_funcs = current_app.view_functions
-    endpoint = None
-    for ept, view_func in iteritems(view_funcs):
-        if view_func == view:
-            endpoint = ept
-    if not endpoint:
-        raise APISpecError('Could not find endpoint for view {0}'.format(view))
-
-    # WARNING: Assume 1 rule per view function for now
-    rule = current_app.url_map._rules_by_endpoint[endpoint][0]
-    return rule
 
 
 # from flask-restplus
 RE_URL = re.compile(r'<(?:[^:<>]+:)?([^<>]+)>')
 
-def flaskpath2swagger(path):
-    """Convert a Flask URL rule to an OpenAPI-compliant path.
 
-    :param str path: Flask path template.
-    """
-    return RE_URL.sub(r'{\1}', path)
+class FlaskPlugin(BasePlugin):
+    """APISpec plugin for Flask"""
 
-def path_from_view(spec, view, **kwargs):
-    """Path helper that allows passing a Flask view function."""
-    rule = _rule_for_view(view)
-    path = flaskpath2swagger(rule.rule)
-    app_root = current_app.config['APPLICATION_ROOT'] or '/'
-    path = urljoin(app_root.rstrip('/') + '/', path.lstrip('/'))
-    operations = utils.load_operations_from_docstring(view.__doc__)
-    path = Path(path=path, operations=operations)
-    if hasattr(view, 'view_class') and issubclass(view.view_class, MethodView):
-        operations = {}
-        for method in view.methods:
-            if method in rule.methods:
-                method_name = method.lower()
-                method = getattr(view.view_class, method_name)
-                docstring_yaml = utils.load_yaml_from_docstring(method.__doc__)
-                operations[method_name] = docstring_yaml or dict()
-        path.operations.update(operations)
-    return path
+    @staticmethod
+    def flaskpath2openapi(path):
+        """Convert a Flask URL rule to an OpenAPI-compliant path.
 
+        :param str path: Flask path template.
+        """
+        return RE_URL.sub(r'{\1}', path)
+
+    @staticmethod
+    def _rule_for_view(view):
+        view_funcs = current_app.view_functions
+        endpoint = None
+        for ept, view_func in iteritems(view_funcs):
+            if view_func == view:
+                endpoint = ept
+        if not endpoint:
+            raise APISpecError('Could not find endpoint for view {0}'.format(view))
+
+        # WARNING: Assume 1 rule per view function for now
+        rule = current_app.url_map._rules_by_endpoint[endpoint][0]
+        return rule
+
+    def path_helper(self, view, **kwargs):
+        """Path helper that allows passing a Flask view function."""
+        rule = self._rule_for_view(view)
+        path = self.flaskpath2openapi(rule.rule)
+        app_root = current_app.config['APPLICATION_ROOT'] or '/'
+        path = urljoin(app_root.rstrip('/') + '/', path.lstrip('/'))
+        operations = utils.load_operations_from_docstring(view.__doc__)
+        path = Path(path=path, operations=operations)
+        if hasattr(view, 'view_class') and issubclass(view.view_class, MethodView):
+            operations = {}
+            for method in view.methods:
+                if method in rule.methods:
+                    method_name = method.lower()
+                    method = getattr(view.view_class, method_name)
+                    docstring_yaml = utils.load_yaml_from_docstring(method.__doc__)
+                    operations[method_name] = docstring_yaml or dict()
+            path.operations.update(operations)
+        return path
+
+
+# Deprecated interface
 def setup(spec):
-    """Setup for the plugin."""
-    spec.register_path_helper(path_from_view)
+    """Setup for the plugin.
+
+    .. deprecated:: 0.39.0
+        Use FlaskPlugin class.
+    """
+    plugin = FlaskPlugin()
+    plugin.init_spec(spec)
+    spec.plugins.append(plugin)

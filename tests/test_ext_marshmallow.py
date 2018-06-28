@@ -1,53 +1,31 @@
 # -*- coding: utf-8 -*-
-import pytest
+
 import json
+
+import pytest
 
 from marshmallow.fields import Field, DateTime, Dict, String
 from marshmallow import Schema
 
 from apispec import APISpec
-from apispec.ext.marshmallow import swagger, resolve_schema_dict
-from .schemas import PetSchema, AnalysisSchema, SampleSchema, RunSchema, \
-    SelfReferencingSchema, OrderedSchema, PatternedObjectSchema, \
-    DefaultCallableSchema, AnalysisWithListSchema
+from apispec.ext.marshmallow import MarshmallowPlugin
+from apispec.ext.marshmallow.openapi import MARSHMALLOW_VERSION_INFO
+from .schemas import (
+    PetSchema, AnalysisSchema, SampleSchema, RunSchema,
+    SelfReferencingSchema, OrderedSchema, PatternedObjectSchema,
+    DefaultCallableSchema, AnalysisWithListSchema)
 
 
-description = 'This is a sample Petstore server.  You can find out more '
-'about Swagger at <a href=\"http://swagger.wordnik.com\">http://swagger.wordnik.com</a> '
-'or on irc.freenode.net, #swagger.  For this sample, you can use the api '
-'key \"special-key\" to test the authorization filters'
-
-
-@pytest.fixture()
-def spec():
-    return APISpec(
-        title='Swagger Petstore',
-        version='1.0.0',
-        description=description,
-        plugins=[
-            'apispec.ext.marshmallow'
-        ]
-    )
-
-
-@pytest.fixture()
-def spec_3():
-    return APISpec(
-        title='Swagger Petstore',
-        version='1.0.0',
-        info={'description': description},
-        security=[{'apiKey': []}],
-        openapi_version='3.0.0',
-        plugins=[
-            'apispec.ext.marshmallow'
-        ]
-    )
+def ref_path(spec):
+    if spec.openapi_version.version[0] < 3:
+        return '#/definitions/'
+    return '#/components/schemas/'
 
 
 class TestDefinitionHelper:
 
     @pytest.mark.parametrize('schema', [PetSchema, PetSchema()])
-    def test_can_use_schema_as_as_definition(self, spec, schema):
+    def test_can_use_schema_as_definition(self, spec, schema):
         spec.definition('Pet', schema=schema)
         assert 'Pet' in spec._definitions
         props = spec._definitions['Pet']['properties']
@@ -55,19 +33,30 @@ class TestDefinitionHelper:
         assert props['id']['type'] == 'integer'
         assert props['name']['type'] == 'string'
 
+    @pytest.mark.parametrize('deprecated_interface', (True, False))
     @pytest.mark.parametrize('schema', [AnalysisSchema, AnalysisSchema()])
-    def test_resolve_schema_dict_auto_reference(self, schema):
+    def test_resolve_schema_dict_auto_reference(self, schema, deprecated_interface):
         def resolver(schema):
             return schema.__name__
-        spec = APISpec(
-            title='Test auto-reference',
-            version='2.0',
-            description='Test auto-reference',
-            plugins=(
-                'apispec.ext.marshmallow',
-            ),
-            schema_name_resolver=resolver,
-        )
+        if deprecated_interface:
+            spec = APISpec(
+                title='Test auto-reference',
+                version='0.1',
+                description='Test auto-reference',
+                plugins=(
+                    'apispec.ext.marshmallow',
+                ),
+                schema_name_resolver=resolver,
+            )
+        else:
+            spec = APISpec(
+                title='Test auto-reference',
+                version='0.1',
+                description='Test auto-reference',
+                plugins=(
+                    MarshmallowPlugin(schema_name_resolver=resolver),
+                ),
+            )
         assert {} == spec._definitions
 
         spec.definition('analysis', schema=schema)
@@ -89,19 +78,30 @@ class TestDefinitionHelper:
         assert 'SampleSchema' in spec._definitions
         assert 'RunSchema' in spec._definitions
 
+    @pytest.mark.parametrize('deprecated_interface', (True, False))
     @pytest.mark.parametrize('schema', [AnalysisWithListSchema, AnalysisWithListSchema()])
-    def test_resolve_schema_dict_auto_reference_in_list(self, schema):
+    def test_resolve_schema_dict_auto_reference_in_list(self, schema, deprecated_interface):
         def resolver(schema):
             return schema.__name__
-        spec = APISpec(
-            title='Test auto-reference',
-            version='2.0',
-            description='Test auto-reference',
-            plugins=(
-                'apispec.ext.marshmallow',
-            ),
-            schema_name_resolver=resolver,
-        )
+        if deprecated_interface:
+            spec = APISpec(
+                title='Test auto-reference',
+                version='0.1',
+                description='Test auto-reference',
+                plugins=(
+                    'apispec.ext.marshmallow',
+                ),
+                schema_name_resolver=resolver,
+            )
+        else:
+            spec = APISpec(
+                title='Test auto-reference',
+                version='0.1',
+                description='Test auto-reference',
+                plugins=(
+                    MarshmallowPlugin(schema_name_resolver=resolver,),
+                ),
+            )
         assert {} == spec._definitions
 
         spec.definition('analysis', schema=schema)
@@ -123,21 +123,31 @@ class TestDefinitionHelper:
         assert 'SampleSchema' in spec._definitions
         assert 'RunSchema' in spec._definitions
 
+    @pytest.mark.parametrize('deprecated_interface', (True, False))
     @pytest.mark.parametrize('schema', [AnalysisSchema, AnalysisSchema()])
-    def test_resolve_schema_dict_auto_reference_return_none(self, schema):
+    def test_resolve_schema_dict_auto_reference_return_none(self, schema, deprecated_interface):
         # this resolver return None
         def resolver(schema):
             return None
-
-        spec = APISpec(
-            title='Test auto-reference',
-            version='2.0',
-            description='Test auto-reference',
-            plugins=(
-                'apispec.ext.marshmallow',
-            ),
-            schema_name_resolver=resolver,
-        )
+        if deprecated_interface:
+            spec = APISpec(
+                title='Test auto-reference',
+                version='0.1',
+                description='Test auto-reference',
+                plugins=(
+                    'apispec.ext.marshmallow',
+                ),
+                schema_name_resolver=resolver,
+            )
+        else:
+            spec = APISpec(
+                title='Test auto-reference',
+                version='0.1',
+                description='Test auto-reference',
+                plugins=(
+                    MarshmallowPlugin(schema_name_resolver=resolver,),
+                ),
+            )
         assert {} == spec._definitions
 
         spec.definition('analysis', schema=schema)
@@ -168,18 +178,18 @@ class TestDefinitionHelper:
 
 class TestCustomField:
 
-    def test_can_use_custom_field_decorator(self, spec):
+    def test_can_use_custom_field_decorator(self, spec_fixture):
 
-        @swagger.map_to_swagger_type(DateTime)
+        @spec_fixture.marshmallow_plugin.map_to_openapi_type(DateTime)
         class CustomNameA(Field):
             pass
 
-        @swagger.map_to_swagger_type('integer', 'int32')
+        @spec_fixture.marshmallow_plugin.map_to_openapi_type('integer', 'int32')
         class CustomNameB(Field):
             pass
 
         with pytest.raises(TypeError):
-            @swagger.map_to_swagger_type('integer')
+            @spec_fixture.marshmallow_plugin.map_to_openapi_type('integer')
             class BadCustomField(Field):
                 pass
 
@@ -189,13 +199,13 @@ class TestCustomField:
         class CustomPetBSchema(PetSchema):
             name = CustomNameB()
 
-        spec.definition('Pet', schema=PetSchema)
-        spec.definition('CustomPetA', schema=CustomPetASchema)
-        spec.definition('CustomPetB', schema=CustomPetBSchema)
+        spec_fixture.spec.definition('Pet', schema=PetSchema)
+        spec_fixture.spec.definition('CustomPetA', schema=CustomPetASchema)
+        spec_fixture.spec.definition('CustomPetB', schema=CustomPetBSchema)
 
-        props_0 = spec._definitions['Pet']['properties']
-        props_a = spec._definitions['CustomPetA']['properties']
-        props_b = spec._definitions['CustomPetB']['properties']
+        props_0 = spec_fixture.spec._definitions['Pet']['properties']
+        props_a = spec_fixture.spec._definitions['CustomPetA']['properties']
+        props_b = spec_fixture.spec._definitions['CustomPetB']['properties']
 
         assert props_0['name']['type'] == 'string'
         assert 'format' not in props_0['name']
@@ -206,13 +216,21 @@ class TestCustomField:
         assert props_b['name']['type'] == 'integer'
         assert props_b['name']['format'] == 'int32'
 
+
 class TestOperationHelper:
 
-    def test_schema(self, spec):
+    @staticmethod
+    def ref_path(spec):
+        if spec.openapi_version.version[0] < 3:
+            return '#/definitions/'
+        return '#/components/schemas/'
+
+    @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
+    def test_schema_v2(self, spec_fixture):
         def pet_view():
             return '...'
 
-        spec.add_path(
+        spec_fixture.spec.add_path(
             path='/pet',
             view=pet_view,
             operations={
@@ -223,17 +241,20 @@ class TestOperationHelper:
                 }
             }
         )
-        p = spec._paths['/pet']
+        p = spec_fixture.spec._paths['/pet']
         assert 'get' in p
         op = p['get']
         assert 'responses' in op
-        assert op['responses'][200]['schema'] == swagger.schema2jsonschema(PetSchema)
 
-    def test_schema_v3(self, spec_3):
+        resolved_schema = op['responses'][200]['schema']
+        assert resolved_schema == spec_fixture.openapi.schema2jsonschema(PetSchema)
+
+    @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
+    def test_schema_v3(self, spec_fixture):
         def pet_view():
             return '...'
 
-        spec_3.add_path(
+        spec_fixture.spec.add_path(
             path='/pet',
             view=pet_view,
             operations={
@@ -250,15 +271,16 @@ class TestOperationHelper:
                 }
             }
         )
-        p = spec_3._paths['/pet']
+        p = spec_fixture.spec._paths['/pet']
         assert 'get' in p
         op = p['get']
         assert 'responses' in op
 
         resolved_schema = op['responses'][200]['content']['application/json']['schema']
-        assert resolved_schema == swagger.schema2jsonschema(PetSchema)
+        assert resolved_schema == spec_fixture.openapi.schema2jsonschema(PetSchema)
 
-    def test_schema_in_docstring(self, spec):
+    @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
+    def test_schema_in_docstring(self, spec_fixture):
 
         def pet_view():
             """Not much to see here.
@@ -277,19 +299,20 @@ class TestOperationHelper:
             """
             return '...'
 
-        spec.add_path(path='/pet', view=pet_view)
-        p = spec._paths['/pet']
+        spec_fixture.spec.add_path(path='/pet', view=pet_view)
+        p = spec_fixture.spec._paths['/pet']
         assert 'get' in p
         get = p['get']
         assert 'responses' in get
-        assert get['responses'][200]['schema'] == swagger.schema2jsonschema(PetSchema)
+        assert get['responses'][200]['schema'] == spec_fixture.openapi.schema2jsonschema(PetSchema)
         assert get['responses'][200]['description'] == 'successful operation'
         post = p['post']
         assert 'responses' in post
-        assert post['responses'][201]['schema'] == swagger.schema2jsonschema(PetSchema)
+        assert post['responses'][201]['schema'] == spec_fixture.openapi.schema2jsonschema(PetSchema)
         assert post['responses'][201]['description'] == 'successful operation'
 
-    def test_schema_in_docstring_v3(self, spec_3):
+    @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
+    def test_schema_in_docstring_v3(self, spec_fixture):
 
         def pet_view():
             """Not much to see here.
@@ -312,24 +335,25 @@ class TestOperationHelper:
             """
             return '...'
 
-        spec_3.add_path(path='/pet', view=pet_view)
-        p = spec_3._paths['/pet']
+        spec_fixture.spec.add_path(path='/pet', view=pet_view)
+        p = spec_fixture.spec._paths['/pet']
         assert 'get' in p
         get = p['get']
         assert 'responses' in get
 
         resolved_schema = get['responses'][200]['content']['application/json']['schema']
-        assert resolved_schema == swagger.schema2jsonschema(PetSchema)
+        assert resolved_schema == spec_fixture.openapi.schema2jsonschema(PetSchema)
 
         assert get['responses'][200]['description'] == 'successful operation'
         post = p['post']
         assert 'responses' in post
 
         resolved_schema = post['responses'][201]['content']['application/json']['schema']
-        assert resolved_schema == swagger.schema2jsonschema(PetSchema)
+        assert resolved_schema == spec_fixture.openapi.schema2jsonschema(PetSchema)
         assert post['responses'][201]['description'] == 'successful operation'
 
-    def test_schema_in_docstring_expand_parameters(self, spec):
+    @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
+    def test_schema_in_docstring_expand_parameters_v2(self, spec_fixture):
 
         def pet_view():
             """Not much to see here.
@@ -349,18 +373,22 @@ class TestOperationHelper:
             """
             return '...'
 
-        spec.add_path(path='/pet', view=pet_view)
-        p = spec._paths['/pet']
+        spec_fixture.spec.add_path(path='/pet', view=pet_view)
+        p = spec_fixture.spec._paths['/pet']
         assert 'get' in p
         get = p['get']
         assert 'parameters' in get
-        assert get['parameters'] == swagger.schema2parameters(PetSchema, default_in='query')
+        assert get['parameters'] == spec_fixture.openapi.schema2parameters(
+            PetSchema, default_in='query')
         post = p['post']
         assert 'parameters' in post
-        assert post['parameters'] == swagger.schema2parameters(PetSchema, default_in='body', required=True,
-                                                               name='pet', description='a pet schema')
+        assert post['parameters'] == spec_fixture.openapi.schema2parameters(
+            PetSchema, default_in='body', required=True,
+            name='pet', description='a pet schema')
 
-    def test_schema_in_docstring_expand_parameters_v3(self, spec_3):
+    @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
+    def test_schema_in_docstring_expand_parameters_v3(self, spec_fixture):
+
         def pet_view():
             """Not much to see here.
 
@@ -385,29 +413,29 @@ class TestOperationHelper:
             """
             return '...'
 
-        spec_3.add_path(path='/pet', view=pet_view)
-        p = spec_3._paths['/pet']
-
+        spec_fixture.spec.add_path(path='/pet', view=pet_view)
+        p = spec_fixture.spec._paths['/pet']
         assert 'get' in p
         get = p['get']
         assert 'parameters' in get
-        assert get['parameters'] == swagger.schema2parameters(PetSchema, default_in='query', spec=spec_3)
+        assert get['parameters'] == spec_fixture.openapi.schema2parameters(
+            PetSchema, default_in='query')
         for parameter in get['parameters']:
             description = parameter.get('description', False)
             assert description
             name = parameter['name']
             assert description == PetSchema.description[name]
-
         assert 'post' in p
         post = p['post']
         assert 'requestBody' in post
-        post_schema = resolve_schema_dict(spec_3, PetSchema)
+        post_schema = spec_fixture.openapi.resolve_schema_dict(PetSchema)
         assert post['requestBody']['content']['application/json']['schema'] == post_schema
         assert post['requestBody']['description'] == 'a pet schema'
         assert post['requestBody']['required']
 
-    def test_schema_in_docstring_uses_ref_if_available(self, spec):
-        spec.definition('Pet', schema=PetSchema)
+    @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
+    def test_schema_in_docstring_uses_ref_if_available_v2(self, spec_fixture):
+        spec_fixture.spec.definition('Pet', schema=PetSchema)
 
         def pet_view():
             """Not much to see here.
@@ -420,15 +448,41 @@ class TestOperationHelper:
             """
             return '...'
 
-        spec.add_path(path='/pet', view=pet_view)
-        p = spec._paths['/pet']
+        spec_fixture.spec.add_path(path='/pet', view=pet_view)
+        p = spec_fixture.spec._paths['/pet']
         assert 'get' in p
         op = p['get']
         assert 'responses' in op
-        assert op['responses'][200]['schema']['$ref'] == '#/definitions/Pet'
+        assert op['responses'][200]['schema']['$ref'] == self.ref_path(spec_fixture.spec) + 'Pet'
 
-    def test_schema_in_docstring_uses_ref_in_parameters_if_available(self, spec):
-        spec.definition('Pet', schema=PetSchema)
+    @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
+    def test_schema_in_docstring_uses_ref_if_available_v3(self, spec_fixture):
+        spec_fixture.spec.definition('Pet', schema=PetSchema)
+
+        def pet_view():
+            """Not much to see here.
+
+            ---
+            get:
+                responses:
+                    200:
+                        content:
+                            application/json:
+                                schema: tests.schemas.PetSchema
+            """
+            return '...'
+
+        spec_fixture.spec.add_path(path='/pet', view=pet_view)
+        p = spec_fixture.spec._paths['/pet']
+        assert 'get' in p
+        op = p['get']
+        assert 'responses' in op
+        assert op['responses'][200]['content']['application/json']['schema']['$ref'] == self.ref_path(
+            spec_fixture.spec) + 'Pet'
+
+    @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
+    def test_schema_in_docstring_uses_ref_in_parameters_and_request_body_if_available_v2(self, spec_fixture):
+        spec_fixture.spec.definition('Pet', schema=PetSchema)
 
         def pet_view():
             """Not much to see here.
@@ -445,23 +499,25 @@ class TestOperationHelper:
             """
             return '...'
 
-        spec.add_path(path='/pet', view=pet_view)
-        p = spec._paths['/pet']
-        assert 'get' in p
-        get = p['get']
-        assert 'parameters' in get
-        for parameter in get['parameters']:
-            assert 'schema' not in parameter
+        spec_fixture.spec.add_path(path='/pet', view=pet_view)
+        p = spec_fixture.spec._paths['/pet']
+        assert 'schema' not in p['get']['parameters'][0]
         post = p['post']
-        assert 'parameters' in post
         assert len(post['parameters']) == 1
-        assert post['parameters'][0]['schema']['$ref'] == '#/definitions/Pet'
+        assert post['parameters'][0]['schema']['$ref'] == self.ref_path(spec_fixture.spec) + 'Pet'
 
-    def test_schema_in_request_body(self, spec_3):
+    @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
+    def test_schema_in_docstring_uses_ref_in_parameters_and_request_body_if_available_v3(self, spec_fixture):
+        spec_fixture.spec.definition('Pet', schema=PetSchema)
+
         def pet_view():
             """Not much to see here.
 
             ---
+            get:
+                parameters:
+                    - in: query
+                      schema: tests.schemas.PetSchema
             post:
                 requestBody:
                     content:
@@ -469,16 +525,17 @@ class TestOperationHelper:
                             schema: tests.schemas.PetSchema
             """
             return '...'
-        spec_3.definition('Pet', schema=PetSchema)
-        spec_3.add_path(path='/pet', view=pet_view)
-        p = spec_3._paths['/pet']
-        assert 'post' in p
+
+        spec_fixture.spec.add_path(path='/pet', view=pet_view)
+        p = spec_fixture.spec._paths['/pet']
+        assert 'schema' in p['get']['parameters'][0]
         post = p['post']
         schema_ref = post['requestBody']['content']['application/json']['schema']
-        assert schema_ref == {'$ref': '#/components/schemas/Pet'}
+        assert schema_ref == {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'}
 
-    def test_schema_array_in_docstring_uses_ref_if_available(self, spec):
-        spec.definition('Pet', schema=PetSchema)
+    @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
+    def test_schema_array_in_docstring_uses_ref_if_available_v2(self, spec_fixture):
+        spec_fixture.spec.definition('Pet', schema=PetSchema)
 
         def pet_view():
             """Not much to see here.
@@ -498,8 +555,8 @@ class TestOperationHelper:
             """
             return '...'
 
-        spec.add_path(path='/pet', view=pet_view)
-        p = spec._paths['/pet']
+        spec_fixture.spec.add_path(path='/pet', view=pet_view)
+        p = spec_fixture.spec._paths['/pet']
         assert 'get' in p
         op = p['get']
         assert 'parameters' in op
@@ -507,12 +564,15 @@ class TestOperationHelper:
         assert 'responses' in op
         resolved_schema = {
             'type': 'array',
-            'items': {'$ref': '#/definitions/Pet'}
+            'items': {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'}
         }
         assert op['parameters'][0]['schema'] == resolved_schema
         assert op['responses'][200]['schema'] == resolved_schema
 
-    def test_schema_array_in_docstring_uses_ref_if_available_v3(self, spec_3):
+    @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
+    def test_schema_array_in_docstring_uses_ref_if_available_v3(self, spec_fixture):
+        spec_fixture.spec.definition('Pet', schema=PetSchema)
+
         def pet_view():
             """Not much to see here.
 
@@ -535,21 +595,22 @@ class TestOperationHelper:
             """
             return '...'
 
-        spec_3.add_path(path='/pet', view=pet_view)
-        p = spec_3._paths['/pet']
+        spec_fixture.spec.add_path(path='/pet', view=pet_view)
+        p = spec_fixture.spec._paths['/pet']
         assert 'get' in p
         op = p['get']
         resolved_schema = {
             'type': 'array',
-            'items': swagger.schema2jsonschema(PetSchema),
+            'items': {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'}
         }
         request_schema = op['parameters'][0]['content']['application/json']['schema']
         assert request_schema == resolved_schema
         response_schema = op['responses'][200]['content']['application/json']['schema']
         assert response_schema == resolved_schema
 
-    def test_schema_partially_in_docstring(self, spec):
-        spec.definition('Pet', schema=PetSchema)
+    @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
+    def test_schema_partially_in_docstring_v2(self, spec_fixture):
+        spec_fixture.spec.definition('Pet', schema=PetSchema)
 
         def pet_parents_view():
             """Not much to see here.
@@ -566,18 +627,50 @@ class TestOperationHelper:
             """
             return '...'
 
-        spec.add_path(path='/parents', view=pet_parents_view)
-        p = spec._paths['/parents']
+        spec_fixture.spec.add_path(path='/parents', view=pet_parents_view)
+        p = spec_fixture.spec._paths['/parents']
         op = p['get']
         assert op['responses'][200]['schema'] == {
             'type': 'object',
             'properties': {
-                'mother': {'$ref': '#/definitions/Pet'},
-                'father': {'$ref': '#/definitions/Pet'},
+                'mother': {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'},
+                'father': {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'},
             },
         }
 
-    def test_other_than_http_method_in_docstring(self, spec):
+    @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
+    def test_schema_partially_in_docstring_v3(self, spec_fixture):
+        spec_fixture.spec.definition('Pet', schema=PetSchema)
+
+        def pet_parents_view():
+            """Not much to see here.
+
+            ---
+            get:
+                responses:
+                    200:
+                        content:
+                            application/json:
+                                schema:
+                                    type: object
+                                    properties:
+                                        mother: tests.schemas.PetSchema
+                                        father: tests.schemas.PetSchema
+            """
+            return '...'
+
+        spec_fixture.spec.add_path(path='/parents', view=pet_parents_view)
+        p = spec_fixture.spec._paths['/parents']
+        op = p['get']
+        assert op['responses'][200]['content']['application/json']['schema'] == {
+            'type': 'object',
+            'properties': {
+                'mother': {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'},
+                'father': {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'},
+            },
+        }
+
+    def test_other_than_http_method_in_docstring(self, spec_fixture):
         def pet_view():
             """Not much to see here.
 
@@ -597,21 +690,21 @@ class TestOperationHelper:
             """
             return '...'
 
-        spec.add_path(path='/pet', view=pet_view)
-        p = spec._paths['/pet']
+        spec_fixture.spec.add_path(path='/pet', view=pet_view)
+        p = spec_fixture.spec._paths['/pet']
         assert 'get' in p
         assert 'x-extension' in p
         assert 'foo' not in p
 
-    def test_schema_global_state_untouched_2json(self):
+    def test_schema_global_state_untouched_2json(self, spec_fixture):
         assert RunSchema._declared_fields['sample']._Nested__schema is None
-        data = swagger.schema2jsonschema(RunSchema)
+        data = spec_fixture.openapi.schema2jsonschema(RunSchema)
         json.dumps(data)
         assert RunSchema._declared_fields['sample']._Nested__schema is None
 
-    def test_schema_global_state_untouched_2parameters(self):
+    def test_schema_global_state_untouched_2parameters(self, spec_fixture):
         assert RunSchema._declared_fields['sample']._Nested__schema is None
-        data = swagger.schema2parameters(RunSchema)
+        data = spec_fixture.openapi.schema2parameters(RunSchema)
         json.dumps(data)
         assert RunSchema._declared_fields['sample']._Nested__schema is None
 
@@ -622,7 +715,7 @@ class TestCircularReference:
         spec.definition('Sample', schema=SampleSchema)
         spec.definition('Run', schema=RunSchema)
         ref = spec._definitions['Analysis']['properties']['sample']['$ref']
-        assert ref == '#/definitions/Sample'
+        assert ref == ref_path(spec) + 'Sample'
 
 # Regression tests for issue #55
 class TestSelfReference:
@@ -630,23 +723,25 @@ class TestSelfReference:
     def test_self_referencing_field_single(self, spec):
         spec.definition('SelfReference', schema=SelfReferencingSchema)
         ref = spec._definitions['SelfReference']['properties']['single']['$ref']
-        assert ref == '#/definitions/SelfReference'
+        assert ref == ref_path(spec) + 'SelfReference'
 
     def test_self_referencing_field_many(self, spec):
         spec.definition('SelfReference', schema=SelfReferencingSchema)
         result = spec._definitions['SelfReference']['properties']['many']
         assert result == {
             'type': 'array',
-            'items': {'$ref': '#/definitions/SelfReference'}
+            'items': {'$ref': ref_path(spec) + 'SelfReference'}
         }
 
     def test_self_referencing_with_ref(self, spec):
+        version = 'v2' if spec.openapi_version.version[0] < 3 else 'v3'
         spec.definition('SelfReference', schema=SelfReferencingSchema)
-        result = spec._definitions['SelfReference']['properties']['single_with_ref']
-        assert result == {'$ref': '#/definitions/Self'}
-
-        result = spec._definitions['SelfReference']['properties']['many_with_ref']
-        assert result == {'type': 'array', 'items': {'$ref': '#/definitions/Selves'}}
+        result = spec._definitions['SelfReference']['properties'][
+            'single_with_ref_{}'.format(version)]
+        assert result == {'$ref': ref_path(spec) + 'Self'}
+        result = spec._definitions['SelfReference']['properties'][
+            'many_with_ref_{}'.format(version)]
+        assert result == {'type': 'array', 'items': {'$ref': ref_path(spec) + 'Selves'}}
 
 
 class TestOrderedSchema:
@@ -678,7 +773,7 @@ class TestDefaultCanBeCallable:
         assert result['default'] == []
 
 
-@pytest.mark.skipif(swagger.MARSHMALLOW_VERSION_INFO[0] < 3,
+@pytest.mark.skipif(MARSHMALLOW_VERSION_INFO[0] < 3,
                     reason='Values ignored in marshmallow 2')
 class TestDictValues:
     def test_dict_values_resolve_to_additional_properties(self, spec):

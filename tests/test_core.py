@@ -5,7 +5,7 @@ import pytest
 import mock
 import yaml
 
-from apispec import APISpec, Path
+from apispec import APISpec, BasePlugin, Path
 from apispec.exceptions import PluginError, APISpecError
 
 
@@ -15,40 +15,39 @@ description = 'This is a sample Petstore server.  You can find out more '
 'key \"special-key\" to test the authorization filters'
 
 
-@pytest.fixture()
-def spec():
-    return APISpec(
-        title='Swagger Petstore',
-        version='1.0.0',
-        info={'description': description},
-        security=[{'apiKey': []}],
-    )
-
-@pytest.fixture()
-def spec_3():
-    components = {
-        'securitySchemes': {
-            'bearerAuth':
-                dict(type='http', scheme='bearer', bearerFormat='JWT')
-        },
-        'schemas': {
-            'ErrorResponse': {
-                'type': 'object',
-                'properties': {
-                    'ok': {
-                        'type': 'boolean', 'description': 'status indicator', 'example': False
-                    }
+@pytest.fixture(params=('2.0', '3.0.0'))
+def spec(request):
+    openapi_version = request.param
+    if openapi_version == '2.0':
+        security_kwargs = {
+            'security': [{'apiKey': []}]
+        }
+    else:
+        security_kwargs = {
+            'components': {
+                'securitySchemes': {
+                    'bearerAuth':
+                        dict(type='http', scheme='bearer', bearerFormat='JWT')
                 },
-                'required': ['ok']
+                'schemas': {
+                    'ErrorResponse': {
+                        'type': 'object',
+                        'properties': {
+                            'ok': {
+                                'type': 'boolean', 'description': 'status indicator', 'example': False
+                            }
+                        },
+                        'required': ['ok']
+                    }
+                }
             }
         }
-    }
     return APISpec(
         title='Swagger Petstore',
         version='1.0.0',
         info={'description': description},
-        components=components,
-        openapi_version='3.0.0'
+        openapi_version=openapi_version,
+        **security_kwargs
     )
 
 
@@ -68,36 +67,32 @@ class TestAPISpecInit:
 
 class TestMetadata:
 
-    def test_swagger_version(self, spec):
-        assert spec.to_dict()['swagger'] == '2.0'
-
-    def test_openapi_version_3(self, spec_3):
-        assert spec_3.to_dict()['openapi'] == '3.0.0'
-
-    def test_swagger_metadata(self, spec):
+    def test_openapi_metadata(self, spec):
         metadata = spec.to_dict()
-        assert metadata['security'] == [{'apiKey': []}]
         assert metadata['info']['title'] == 'Swagger Petstore'
         assert metadata['info']['version'] == '1.0.0'
         assert metadata['info']['description'] == description
+        if spec.openapi_version.major < 3:
+            assert metadata['swagger'] == spec.openapi_version.vstring
+            assert metadata['security'] == [{'apiKey': []}]
+        else:
+            assert metadata['openapi'] == spec.openapi_version.vstring
+            security_schemes = {'bearerAuth': dict(type='http', scheme='bearer', bearerFormat='JWT')}
+            assert metadata['components']['securitySchemes'] == security_schemes
+            assert metadata['components']['schemas'].get('ErrorResponse', False)
+            assert metadata['info']['title'] == 'Swagger Petstore'
+            assert metadata['info']['version'] == '1.0.0'
+            assert metadata['info']['description'] == description
 
-    def test_swagger_metadata_v3(self, spec_3):
-        metadata = spec_3.to_dict()
-        security_schemes = {'bearerAuth': dict(type='http', scheme='bearer', bearerFormat='JWT')}
-        assert metadata['components']['securitySchemes'] == security_schemes
-        assert metadata['components']['schemas'].get('ErrorResponse', False)
-        assert metadata['info']['title'] == 'Swagger Petstore'
-        assert metadata['info']['version'] == '1.0.0'
-        assert metadata['info']['description'] == description
-
-    def test_swagger_metadata_merge_v3(self, spec_3):
+    @pytest.mark.parametrize('spec', ('3.0.0', ), indirect=True)
+    def test_openapi_metadata_merge_v3(self, spec):
         properties = {
             'ok': {
                 'type': 'boolean', 'description': 'property description', 'example': True
             }
         }
-        spec_3.definition('definition', properties=properties, description='definiton description')
-        metadata = spec_3.to_dict()
+        spec.definition('definition', properties=properties, description='definiton description')
+        metadata = spec.to_dict()
         assert metadata['components']['schemas'].get('ErrorResponse', False)
         assert metadata['components']['schemas'].get('definition', False)
 
@@ -124,21 +119,21 @@ class TestDefinitions:
 
     def test_definition(self, spec):
         spec.definition('Pet', properties=self.properties)
-        defs_json = spec.to_dict()['definitions']
-        assert 'Pet' in defs_json
-        assert defs_json['Pet']['properties'] == self.properties
-
-    def test_definition_3(self, spec_3):
-        spec_3.definition('Pet', properties=self.properties)
-        schemas = spec_3.to_dict()['components']['schemas']
-        assert 'Pet' in schemas
-        assert schemas['Pet']['properties'] == self.properties
+        if spec.openapi_version.major < 3:
+            defs = spec.to_dict()['definitions']
+        else:
+            defs = spec.to_dict()['components']['schemas']
+        assert 'Pet' in defs
+        assert defs['Pet']['properties'] == self.properties
 
     def test_definition_description(self, spec):
         model_description = 'An animal which lives with humans.'
         spec.definition('Pet', properties=self.properties, description=model_description)
-        defs_json = spec.to_dict()['definitions']
-        assert defs_json['Pet']['description'] == model_description
+        if spec.openapi_version.major < 3:
+            defs = spec.to_dict()['definitions']
+        else:
+            defs = spec.to_dict()['components']['schemas']
+        assert defs['Pet']['description'] == model_description
 
     def test_definition_stores_enum(self, spec):
         enum = ['name', 'photoUrls']
@@ -147,14 +142,20 @@ class TestDefinitions:
             properties=self.properties,
             enum=enum
         )
-        defs_json = spec.to_dict()['definitions']
-        assert defs_json['Pet']['enum'] == enum
+        if spec.openapi_version.major < 3:
+            defs = spec.to_dict()['definitions']
+        else:
+            defs = spec.to_dict()['components']['schemas']
+        assert defs['Pet']['enum'] == enum
 
     def test_definition_extra_fields(self, spec):
         extra_fields = {'discriminator': 'name'}
         spec.definition('Pet', properties=self.properties, extra_fields=extra_fields)
-        defs_json = spec.to_dict()['definitions']
-        assert defs_json['Pet']['discriminator'] == 'name'
+        if spec.openapi_version.major < 3:
+            defs = spec.to_dict()['definitions']
+        else:
+            defs = spec.to_dict()['components']['schemas']
+        assert defs['Pet']['discriminator'] == 'name'
 
     def test_pass_definition_to_plugins(self, spec):
         def def_helper(spec, name, **kwargs):
@@ -166,9 +167,12 @@ class TestDefinitions:
         spec.register_definition_helper(def_helper)
         spec.definition('Pet', properties=self.properties)
 
-        defs_json = spec.to_dict()['definitions']
+        if spec.openapi_version.major < 3:
+            defs = spec.to_dict()['definitions']
+        else:
+            defs = spec.to_dict()['components']['schemas']
 
-        assert defs_json['Pet']['available']
+        assert defs['Pet']['available']
 
     def test_to_yaml(self, spec):
         enum = ['name', 'photoUrls']
@@ -346,44 +350,91 @@ class TestPath:
         metadata = spec.to_dict()
         p = spec._paths['/pet/{petId}']['get']
 
-        assert p['parameters'][0] == {'$ref': '#/parameters/test_parameter'}
-        assert route_spec['parameters'][0] == metadata['parameters']['test_parameter']
+        if spec.openapi_version.major < 3:
+            assert p['parameters'][0] == {'$ref': '#/parameters/test_parameter'}
+            assert route_spec['parameters'][0] == metadata['parameters']['test_parameter']
+        else:
+            assert p['parameters'][0] == {'$ref': '#/components/parameters/test_parameter'}
+            assert route_spec['parameters'][0] == metadata['components']['parameters']['test_parameter']
 
-    def test_add_parameters_3(self, spec_3):
-        route_spec = self.paths['/pet/{petId}']['get']
-
-        spec_3.add_parameter('test_parameter', 'path', **route_spec['parameters'][0])
-
-        spec_3.add_path(
-            path='/pet/{petId}',
-            operations=dict(
-                get=dict(
-                    parameters=['test_parameter'],
-                )
-            )
-        )
-
-        metadata = spec_3.to_dict()
-        p = spec_3._paths['/pet/{petId}']['get']
-
-        assert p['parameters'][0] == {'$ref': '#/components/parameters/test_parameter'}
-        assert route_spec['parameters'][0] == metadata['components']['parameters']['test_parameter']
 
 class TestPlugins:
+
+    class TestPlugin(BasePlugin):
+        def definition_helper(self, name, definition, **kwargs):
+            return {'properties': {'name': {'type': 'string'}}}
+
+        def path_helper(self, path, **kwargs):
+            if path.path == '/path_1':
+                return Path(
+                    path='/path_1_modified',
+                    operations={'get': {'responses': {'200': {}}}}
+                )
+
+        def operation_helper(self, path, operations, **kwargs):
+            if path.path == '/path_2':
+                operations['post'] = {'responses': {'201': {}}}
+
+        def response_helper(self, method, status_code, **kwargs):
+            if method == 'delete':
+                return {'description': 'Clever description'}
+
+    def test_plugin_definition_helper_is_used(self):
+        spec = APISpec(
+            title='Swagger Petstore',
+            version='1.0.0',
+            plugins=(self.TestPlugin(), )
+        )
+        spec.definition('Pet', {})
+        assert spec._definitions['Pet'] == {'properties': {'name': {'type': 'string'}}}
+
+    def test_plugin_path_helper_is_used(self):
+        spec = APISpec(
+            title='Swagger Petstore',
+            version='1.0.0',
+            plugins=(self.TestPlugin(), )
+        )
+        spec.add_path('/path_1')
+        assert len(spec._paths) == 1
+        assert spec._paths['/path_1_modified'] == {'get': {'responses': {'200': {}}}}
+
+    def test_plugin_operation_helper_is_used(self):
+        spec = APISpec(
+            title='Swagger Petstore',
+            version='1.0.0',
+            plugins=(self.TestPlugin(), )
+        )
+        spec.add_path('/path_2', operations={'post': {'responses': {'200': {}}}})
+        assert len(spec._paths) == 1
+        assert spec._paths['/path_2'] == {'post': {'responses': {'201': {}}}}
+
+    def test_plugin_response_helper_is_used(self, spec):
+        spec = APISpec(
+            title='Swagger Petstore',
+            version='1.0.0',
+            plugins=(self.TestPlugin(), )
+        )
+        spec.add_path('/path_3', operations={'delete': {'responses': {'204': {'content': {}}}}})
+        assert len(spec._paths) == 1
+        assert spec._paths['/path_3'] == {'delete': {'responses': {'204': {
+            'content': {}, 'description': 'Clever description'}}}}
+
+
+class TestOldPlugins:
 
     DUMMY_PLUGIN = 'tests.plugins.dummy_plugin'
 
     @mock.patch(DUMMY_PLUGIN + '.setup', autospec=True)
     def test_setup_plugin(self, mock_setup, spec):
         spec.setup_plugin(self.DUMMY_PLUGIN)
-        assert self.DUMMY_PLUGIN in spec.plugins
+        assert self.DUMMY_PLUGIN in spec.old_plugins
         mock_setup.assert_called_once_with(spec)
         spec.setup_plugin(self.DUMMY_PLUGIN)
         assert mock_setup.call_count == 1
 
     def test_setup_can_modify_plugin_dict(self, spec):
         spec.setup_plugin(self.DUMMY_PLUGIN)
-        spec.plugins[self.DUMMY_PLUGIN]['foo'] == 42
+        spec.old_plugins[self.DUMMY_PLUGIN]['foo'] == 42
 
     def test_setup_plugin_doesnt_exist(self, spec):
         with pytest.raises(PluginError):
@@ -516,3 +567,30 @@ class TestResponseHelpers:
         resp_obj = spec._paths['/pet/{petId}']['get']['responses'][200]
         assert resp_obj['schema'] == {'$ref': 'Pet'}
         assert resp_obj['description'] == 'success!'
+
+
+def test_helper_functions_deprecation_warning(spec, recwarn):
+    with pytest.deprecated_call():
+        spec.register_definition_helper(lambda x: x)
+    with pytest.deprecated_call():
+        spec.register_path_helper(lambda x: x)
+    with pytest.deprecated_call():
+        spec.register_operation_helper(lambda x: x)
+    with pytest.deprecated_call():
+        spec.register_response_helper(lambda x: x, 'GET', 200)
+
+def test_schema_name_resolver_deprecation_warning(recwarn):
+    with pytest.deprecated_call():
+        APISpec(
+            title='Swagger Petstore', version='1.0.0',
+            schema_name_resolver=lambda x: x)
+
+def test_plugins_as_string_deprecation_warning(recwarn):
+    with pytest.deprecated_call():
+        APISpec(
+            title='Swagger Petstore', version='1.0.0',
+            plugins=('tests.plugins.dummy_plugin', ))
+
+def test_setup_plugin_deprecation_warning(spec, recwarn):
+    with pytest.deprecated_call():
+        spec.setup_plugin('tests.plugins.dummy_plugin', )
