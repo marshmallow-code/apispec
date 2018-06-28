@@ -129,23 +129,12 @@ class OpenAPIConverter(object):
         return field.data_key or name
 
     def map_to_openapi_type(self, *args):
-        """
-        Decorator to set mapping for custom fields.
+        """Decorator to set mapping for custom fields.
 
         ``*args`` can be:
 
         - a pair of the form ``(type, format)``
         - a core marshmallow field type (in which case we reuse that type's mapping)
-
-        Examples: ::
-
-            @ma_plugin.openapi.map_to_openapi_type('string', 'uuid')
-            class MyCustomField(Integer):
-                # ...
-
-            @ma_plugin.openapi.map_to_openapi_type(Integer)  # will map to ('integer', 'int32')
-            class MyCustomFieldThatsKindaLikeAnInteger(Integer):
-                # ...
         """
         if len(args) == 1 and args[0] in self.field_mapping:
             openapi_type_field = self.field_mapping[args[0]]

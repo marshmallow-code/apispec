@@ -124,6 +124,26 @@ class MarshmallowPlugin(BasePlugin):
                     schema = data['content'][content_type]['schema']
                     data['content'][content_type]['schema'] = self.openapi.resolve_schema_dict(schema)
 
+    def map_to_openapi_type(self, *args):
+        """Decorator to set mapping for custom fields.
+
+        ``*args`` can be:
+
+        - a pair of the form ``(type, format)``
+        - a core marshmallow field type (in which case we reuse that type's mapping)
+
+        Examples: ::
+
+            @ma_plugin.map_to_openapi_type('string', 'uuid')
+            class MyCustomField(Integer):
+                # ...
+
+            @ma_plugin.map_to_openapi_type(Integer)  # will map to ('integer', 'int32')
+            class MyCustomFieldThatsKindaLikeAnInteger(Integer):
+                # ...
+        """
+        return self.openapi.map_to_openapi_type(*args)
+
     def definition_helper(self, name, schema, **kwargs):
         """Definition helper that allows using a marshmallow
         :class:`Schema <marshmallow.Schema>` to provide OpenAPI

@@ -180,16 +180,16 @@ class TestCustomField:
 
     def test_can_use_custom_field_decorator(self, spec_fixture):
 
-        @spec_fixture.openapi.map_to_openapi_type(DateTime)
+        @spec_fixture.marshmallow_plugin.map_to_openapi_type(DateTime)
         class CustomNameA(Field):
             pass
 
-        @spec_fixture.openapi.map_to_openapi_type('integer', 'int32')
+        @spec_fixture.marshmallow_plugin.map_to_openapi_type('integer', 'int32')
         class CustomNameB(Field):
             pass
 
         with pytest.raises(TypeError):
-            @spec_fixture.openapi.map_to_openapi_type('integer')
+            @spec_fixture.marshmallow_plugin.map_to_openapi_type('integer')
             class BadCustomField(Field):
                 pass
 

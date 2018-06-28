@@ -193,8 +193,7 @@ If your API uses `method-based dispatching <http://flask.pocoo.org/docs/0.12/vie
 By default, apispec only knows how to set the type of
 built-in marshmallow fields. If you want to generate definitions for
 schemas with custom fields, use the
-`apispec.ext.marshmallow.openapi.OpenAPIConverter.map_to_swagger_type` decorator
-accessible through the marshmallow plugin instance:
+`apispec.ext.marshmallow.MarshmallowPlugin.map_to_openapi_type` decorator.
 
 .. code-block:: python
 
@@ -215,11 +214,11 @@ accessible through the marshmallow plugin instance:
     )
 
 
-    @ma_plugin.openapi.map_to_swagger_type('string', 'uuid')
+    @ma_plugin.map_to_openapi_type('string', 'uuid')
     class MyCustomField(Integer):
         # ...
 
-    @ma_plugin.openapi.map_to_swagger_type(Integer)  # will map to ('integer', 'int32')
+    @ma_plugin.map_to_openapi_type(Integer)  # will map to ('integer', 'int32')
     class MyCustomFieldThatsKindaLikeAnInteger(Integer):
         # ...
 
