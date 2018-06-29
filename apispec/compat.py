@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# flake8: noqa
 import sys
 
 PY2 = int(sys.version[0]) == 2
