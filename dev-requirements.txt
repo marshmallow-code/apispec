@@ -3,7 +3,6 @@ pyyaml==3.12  # pyup: <4.0
 
 # Syntax checking
 flake8==3.5.0
-flake8-quotes==1.0.0
 
 # soft dependencies
 Flask==1.0.2
@@ -15,6 +14,9 @@ bottle==0.12.13
 pytest==3.6.2
 tox==3.0.0
 mock==2.0.0
+
+# Pre-commit hooks
+pre-commit==1.10.2
 
 # Install this package in development mode with validation requirements
 -e '.[validation]'
