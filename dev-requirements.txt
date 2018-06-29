@@ -1,5 +1,5 @@
 invoke==1.0.0
-pyyaml==4.1
+pyyaml==3.12  # pyup: <4.0
 
 # Syntax checking
 flake8==3.5.0
