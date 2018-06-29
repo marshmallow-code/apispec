@@ -23,7 +23,7 @@ def spec(request):
             # Test both plugin class and deprecated interface
             MarshmallowPlugin() if request.param[1] else 'apispec.ext.marshmallow',
         ),
-        openapi_version=request.param[0]
+        openapi_version=request.param[0],
     )
 
 
@@ -34,8 +34,10 @@ def spec_fixture(request):
         title='Validation',
         version='0.1',
         plugins=(ma_plugin, ),
-        openapi_version=request.param
+        openapi_version=request.param,
     )
     return namedtuple(
-        'Spec', ('spec', 'marshmallow_plugin', 'openapi'))(
-            spec, ma_plugin, ma_plugin.openapi)
+        'Spec', ('spec', 'marshmallow_plugin', 'openapi'),
+    )(
+        spec, ma_plugin, ma_plugin.openapi,
+    )

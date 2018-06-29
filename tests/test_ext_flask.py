@@ -19,7 +19,7 @@ def spec(request):
         plugins=[
             # Test both plugin class and deprecated interface
             FlaskPlugin() if request.param else 'apispec.ext.flask',
-        ]
+        ],
     )
 
 
@@ -39,8 +39,10 @@ class TestPathHelpers:
         def hello():
             return 'hi'
 
-        spec.add_path(view=hello,
-            operations={'get': {'parameters': [], 'responses': {'200': {}}}})
+        spec.add_path(
+            view=hello,
+            operations={'get': {'parameters': [], 'responses': {'200': {}}}},
+        )
         assert '/hello' in spec._paths
         assert 'get' in spec._paths['/hello']
         expected = {'parameters': [], 'responses': {'200': {}}}
@@ -68,8 +70,10 @@ class TestPathHelpers:
         method_view = HelloApi.as_view('hi')
         app.add_url_rule('/hi', view_func=method_view, methods=('GET', 'POST'))
         spec.add_path(view=method_view)
-        expected = {'description': 'get a greeting',
-                    'responses': {200: {'description': 'said hi'}}}
+        expected = {
+            'description': 'get a greeting',
+            'responses': {200: {'description': 'said hi'}},
+        }
         assert spec._paths['/hi']['get'] == expected
         assert spec._paths['/hi']['post'] == {}
         assert spec._paths['/hi']['x-extension'] == 'global metadata'
@@ -80,10 +84,12 @@ class TestPathHelpers:
         def hello():
             return 'hi'
 
-        spec.add_path(view=hello, operations=dict(
-            get={'description': 'get a greeting', 'responses': {'200': {}}},
-            post={'description': 'post a greeting', 'responses': {'200': {}}}
-        ))
+        spec.add_path(
+            view=hello, operations=dict(
+                get={'description': 'get a greeting', 'responses': {'200': {}}},
+                post={'description': 'post a greeting', 'responses': {'200': {}}},
+            ),
+        )
         get_op = spec._paths['/hello']['get']
         post_op = spec._paths['/hello']['post']
         assert get_op['description'] == 'get a greeting'

@@ -13,7 +13,8 @@ from apispec.ext.marshmallow.openapi import MARSHMALLOW_VERSION_INFO
 from .schemas import (
     PetSchema, AnalysisSchema, SampleSchema, RunSchema,
     SelfReferencingSchema, OrderedSchema, PatternedObjectSchema,
-    DefaultCallableSchema, AnalysisWithListSchema)
+    DefaultCallableSchema, AnalysisWithListSchema
+)
 
 
 def ref_path(spec):
@@ -60,17 +61,19 @@ class TestDefinitionHelper:
         assert {} == spec._definitions
 
         spec.definition('analysis', schema=schema)
-        spec.add_path('/test', operations={
-            'get': {
-                'responses': {
-                    '200': {
-                        'schema': {
-                            '$ref': '#/definitions/analysis'
-                        }
-                    }
-                }
-            }
-        })
+        spec.add_path(
+            '/test', operations={
+                'get': {
+                    'responses': {
+                        '200': {
+                            'schema': {
+                                '$ref': '#/definitions/analysis',
+                            },
+                        },
+                    },
+                },
+            },
+        )
 
         assert 3 == len(spec._definitions)
 
@@ -105,17 +108,19 @@ class TestDefinitionHelper:
         assert {} == spec._definitions
 
         spec.definition('analysis', schema=schema)
-        spec.add_path('/test', operations={
-            'get': {
-                'responses': {
-                    '200': {
-                        'schema': {
-                            '$ref': '#/definitions/analysis'
-                        }
-                    }
-                }
-            }
-        })
+        spec.add_path(
+            '/test', operations={
+                'get': {
+                    'responses': {
+                        '200': {
+                            'schema': {
+                                '$ref': '#/definitions/analysis',
+                            },
+                        },
+                    },
+                },
+            },
+        )
 
         assert 3 == len(spec._definitions)
 
@@ -151,17 +156,19 @@ class TestDefinitionHelper:
         assert {} == spec._definitions
 
         spec.definition('analysis', schema=schema)
-        spec.add_path('/test', operations={
-            'get': {
-                'responses': {
-                    '200': {
-                        'schema': {
-                            '$ref': '#/definitions/analysis'
-                        }
-                    }
-                }
-            }
-        })
+        spec.add_path(
+            '/test', operations={
+                'get': {
+                    'responses': {
+                        '200': {
+                            'schema': {
+                                '$ref': '#/definitions/analysis',
+                            },
+                        },
+                    },
+                },
+            },
+        )
 
         # Other shemas not yet referenced
         assert 1 == len(spec._definitions)
@@ -236,10 +243,10 @@ class TestOperationHelper:
             operations={
                 'get': {
                     'responses': {
-                        200: {'schema': PetSchema}
-                    }
-                }
-            }
+                        200: {'schema': PetSchema},
+                    },
+                },
+            },
         )
         p = spec_fixture.spec._paths['/pet']
         assert 'get' in p
@@ -263,13 +270,13 @@ class TestOperationHelper:
                         200: {
                             'content': {
                                 'application/json': {
-                                    'schema': PetSchema
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+                                    'schema': PetSchema,
+                                },
+                            },
+                        },
+                    },
+                },
+            },
         )
         p = spec_fixture.spec._paths['/pet']
         assert 'get' in p
@@ -379,12 +386,14 @@ class TestOperationHelper:
         get = p['get']
         assert 'parameters' in get
         assert get['parameters'] == spec_fixture.openapi.schema2parameters(
-            PetSchema, default_in='query')
+            PetSchema, default_in='query',
+        )
         post = p['post']
         assert 'parameters' in post
         assert post['parameters'] == spec_fixture.openapi.schema2parameters(
             PetSchema, default_in='body', required=True,
-            name='pet', description='a pet schema')
+            name='pet', description='a pet schema',
+        )
 
     @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
     def test_schema_in_docstring_expand_parameters_v3(self, spec_fixture):
@@ -419,7 +428,8 @@ class TestOperationHelper:
         get = p['get']
         assert 'parameters' in get
         assert get['parameters'] == spec_fixture.openapi.schema2parameters(
-            PetSchema, default_in='query')
+            PetSchema, default_in='query',
+        )
         for parameter in get['parameters']:
             description = parameter.get('description', False)
             assert description
@@ -478,7 +488,8 @@ class TestOperationHelper:
         op = p['get']
         assert 'responses' in op
         assert op['responses'][200]['content']['application/json']['schema']['$ref'] == self.ref_path(
-            spec_fixture.spec) + 'Pet'
+            spec_fixture.spec,
+        ) + 'Pet'
 
     @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
     def test_schema_in_docstring_uses_ref_in_parameters_and_request_body_if_available_v2(self, spec_fixture):
@@ -564,7 +575,7 @@ class TestOperationHelper:
         assert 'responses' in op
         resolved_schema = {
             'type': 'array',
-            'items': {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'}
+            'items': {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'},
         }
         assert op['parameters'][0]['schema'] == resolved_schema
         assert op['responses'][200]['schema'] == resolved_schema
@@ -601,7 +612,7 @@ class TestOperationHelper:
         op = p['get']
         resolved_schema = {
             'type': 'array',
-            'items': {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'}
+            'items': {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'},
         }
         request_schema = op['parameters'][0]['content']['application/json']['schema']
         assert request_schema == resolved_schema
@@ -730,17 +741,19 @@ class TestSelfReference:
         result = spec._definitions['SelfReference']['properties']['many']
         assert result == {
             'type': 'array',
-            'items': {'$ref': ref_path(spec) + 'SelfReference'}
+            'items': {'$ref': ref_path(spec) + 'SelfReference'},
         }
 
     def test_self_referencing_with_ref(self, spec):
         version = 'v2' if spec.openapi_version.version[0] < 3 else 'v3'
         spec.definition('SelfReference', schema=SelfReferencingSchema)
         result = spec._definitions['SelfReference']['properties'][
-            'single_with_ref_{}'.format(version)]
+            'single_with_ref_{}'.format(version)
+        ]
         assert result == {'$ref': ref_path(spec) + 'Self'}
         result = spec._definitions['SelfReference']['properties'][
-            'many_with_ref_{}'.format(version)]
+            'many_with_ref_{}'.format(version)
+        ]
         assert result == {'type': 'array', 'items': {'$ref': ref_path(spec) + 'Selves'}}
 
 
@@ -773,8 +786,10 @@ class TestDefaultCanBeCallable:
         assert result['default'] == []
 
 
-@pytest.mark.skipif(MARSHMALLOW_VERSION_INFO[0] < 3,
-                    reason='Values ignored in marshmallow 2')
+@pytest.mark.skipif(
+    MARSHMALLOW_VERSION_INFO[0] < 3,
+    reason='Values ignored in marshmallow 2',
+)
 class TestDictValues:
     def test_dict_values_resolve_to_additional_properties(self, spec):
 

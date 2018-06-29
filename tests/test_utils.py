@@ -22,7 +22,7 @@ def test_validate_swagger_is_deprecated():
     spec = APISpec(
         title='Pets',
         version='0.1',
-        openapi_version='3.0.0'
+        openapi_version='3.0.0',
     )
     with pytest.warns(DeprecationWarning, match='validate_spec'):
         utils.validate_swagger(spec)

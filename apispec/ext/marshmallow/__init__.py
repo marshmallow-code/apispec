@@ -93,7 +93,8 @@ class MarshmallowPlugin(BasePlugin):
                     del parameter['schema']
                     resolved += self.openapi.schema2parameters(
                         schema_cls,
-                        default_in=parameter.pop('in'), **parameter)
+                        default_in=parameter.pop('in'), **parameter
+                    )
                     continue
             self.resolve_schema(parameter)
             resolved.append(parameter)

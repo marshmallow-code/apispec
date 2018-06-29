@@ -17,7 +17,7 @@ def create_spec(plugins):
         'about Swagger at <a href=\"http://swagger.wordnik.com\">http://swagger.wordnik.com</a> '
         'or on irc.freenode.net, #swagger.  For this sample, you can use the api '
         'key \"special-key\" to test the authorization filters',
-        plugins=plugins
+        plugins=plugins,
     )
 
 def confirm_ext_order_independency(web_framework_plugin, **kwargs_for_add_path):

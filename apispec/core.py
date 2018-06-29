@@ -49,11 +49,15 @@ def clean_operations(operations, openapi_major_version):
         if 'parameters' in operation:
             parameters = operation.get('parameters')
             for parameter in parameters:
-                if (isinstance(parameter, dict) and
-                        'in' in parameter and parameter['in'] == 'path'):
+                if (
+                    isinstance(parameter, dict) and
+                    'in' in parameter and parameter['in'] == 'path'
+                ):
                     parameter['required'] = True
-            operation['parameters'] = [get_ref(p, openapi_major_version)
-                                       for p in parameters]
+            operation['parameters'] = [
+                get_ref(p, openapi_major_version)
+                for p in parameters
+            ]
 
 
 class Path(object):
@@ -78,7 +82,7 @@ class Path(object):
                    if not key.startswith('x-')}
         if invalid:
             raise APISpecError(
-                'One or more HTTP methods are invalid: {0}'.format(', '.join(invalid))
+                'One or more HTTP methods are invalid: {0}'.format(', '.join(invalid)),
             )
         self.operations = operations
 
@@ -86,7 +90,7 @@ class Path(object):
         if not self.path:
             raise APISpecError('Path template is not specified')
         return {
-            self.path: self.operations
+            self.path: self.operations,
         }
 
     def update(self, path):
@@ -110,8 +114,10 @@ class APISpec(object):
     :param dict options: Optional top-level keys
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
     """
-    def __init__(self, title, version, plugins=(), info=None,
-                 schema_name_resolver=None, openapi_version='2.0', **options):
+    def __init__(
+        self, title, version, plugins=(), info=None,
+        schema_name_resolver=None, openapi_version='2.0', **options
+    ):
         self.info = {
             'title': title,
             'version': version,
@@ -125,7 +131,8 @@ class APISpec(object):
             warnings.warn(
                 'schema_name_resolver parameter is deprecated. '
                 'It is now a parameter of MarshmallowPlugin.',
-                DeprecationWarning)
+                DeprecationWarning,
+            )
         self.schema_name_resolver = schema_name_resolver
         # Metadata
         self._definitions = {}
@@ -156,7 +163,7 @@ class APISpec(object):
         ret = {
             'info': self.info,
             'paths': self._paths,
-            'tags': self._tags
+            'tags': self._tags,
         }
 
         if self.openapi_version.major == 2:
@@ -227,9 +234,11 @@ class APISpec(object):
             if operations:
                 path.operations.update(operations)
         else:
-            path = Path(path=normalize_path(path),
-                        operations=operations,
-                        openapi_version=self.openapi_version)
+            path = Path(
+                path=normalize_path(path),
+                operations=operations,
+                openapi_version=self.openapi_version,
+            )
 
         # Execute path helpers
         for plugin in self.plugins:
@@ -283,13 +292,15 @@ class APISpec(object):
             for status_code in statuses:
                 for func in self._response_helpers[method][status_code]:
                     responses[status_code].update(
-                        func(self, **kwargs)
+                        func(self, **kwargs),
                     )
 
         self._paths.setdefault(path.path, path.operations).update(path.operations)
 
-    def definition(self, name, properties=None, enum=None, description=None, extra_fields=None,
-                   **kwargs):
+    def definition(
+        self, name, properties=None, enum=None, description=None, extra_fields=None,
+        **kwargs
+    ):
         """Add a new definition to the spec.
 
         .. note::
@@ -339,16 +350,17 @@ class APISpec(object):
         warnings.warn(
             'Old style plugins are deprecated. Use classes instead. '
             'See https://apispec.readthedocs.io/en/latest/writing_plugins.html.',
-            DeprecationWarning)
+            DeprecationWarning,
+        )
         if path in self.old_plugins:
             return
         try:
             mod = __import__(
-                path, globals=None, locals=None, fromlist=('setup', )
+                path, globals=None, locals=None, fromlist=('setup', ),
             )
         except ImportError as err:
             raise PluginError(
-                'Could not import plugin "{0}"\n\n{1}'.format(path, err)
+                'Could not import plugin "{0}"\n\n{1}'.format(path, err),
             )
         if not hasattr(mod, 'setup'):
             raise PluginError('Plugin "{0}" has no setup(spec) function'.format(path))
@@ -378,7 +390,8 @@ class APISpec(object):
         warnings.warn(
             'Helper functions are deprecated. Use plugin classes. '
             'See https://apispec.readthedocs.io/en/latest/writing_plugins.html.',
-            DeprecationWarning)
+            DeprecationWarning,
+        )
         self._definition_helpers.append(func)
 
     def register_path_helper(self, func):
@@ -393,7 +406,8 @@ class APISpec(object):
         warnings.warn(
             'Helper functions are deprecated. Use plugin classes. '
             'See https://apispec.readthedocs.io/en/latest/writing_plugins.html.',
-            DeprecationWarning)
+            DeprecationWarning,
+        )
         self._path_helpers.append(func)
 
     def register_operation_helper(self, func):
@@ -408,7 +422,8 @@ class APISpec(object):
         warnings.warn(
             'Helper functions are deprecated. Use plugin classes. '
             'See https://apispec.readthedocs.io/en/latest/writing_plugins.html.',
-            DeprecationWarning)
+            DeprecationWarning,
+        )
         self._operation_helpers.append(func)
 
     def register_response_helper(self, func, method, status_code):
@@ -423,7 +438,8 @@ class APISpec(object):
         warnings.warn(
             'Helper functions are deprecated. Use plugin classes. '
             'See https://apispec.readthedocs.io/en/latest/writing_plugins.html.',
-            DeprecationWarning)
+            DeprecationWarning,
+        )
         method = method.lower()
         if method not in self._response_helpers:
             self._response_helpers[method] = {}
