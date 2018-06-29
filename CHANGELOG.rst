@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+0.39.0 (2018-06-28)
++++++++++++++++++++
+
 Features:
 
 - [apispec.core]: *Backwards-incompatible*: Change plugin interface. Plugins are
