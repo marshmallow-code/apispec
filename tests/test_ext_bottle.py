@@ -17,7 +17,7 @@ def spec(request):
         plugins=(
             # Test both plugin class and deprecated interface
             BottlePlugin() if request.param else 'apispec.ext.bottle',
-        )
+        ),
     )
 
 
@@ -27,8 +27,10 @@ class TestPathHelpers:
         @route('/hello')
         def hello():
             return 'hi'
-        spec.add_path(view=hello,
-                      operations={'get': {'parameters': [], 'responses': {'200': {}}}})
+        spec.add_path(
+            view=hello,
+            operations={'get': {'parameters': [], 'responses': {'200': {}}}},
+        )
         assert '/hello' in spec._paths
         assert 'get' in spec._paths['/hello']
         expected = {'parameters': [], 'responses': {'200': {}}}
@@ -40,10 +42,12 @@ class TestPathHelpers:
         def hello():
             return 'hi'
 
-        spec.add_path(view=hello, operations=dict(
-            get={'description': 'get a greeting', 'responses': {'200': {}}},
-            post={'description': 'post a greeting', 'responses': {'200': {}}}
-        ))
+        spec.add_path(
+            view=hello, operations=dict(
+                get={'description': 'get a greeting', 'responses': {'200': {}}},
+                post={'description': 'post a greeting', 'responses': {'200': {}}},
+            ),
+        )
         get_op = spec._paths['/hello']['get']
         post_op = spec._paths['/hello']['post']
         assert get_op['description'] == 'get a greeting'

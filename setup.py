@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 
 REQUIRES = [
-    'PyYAML>=3.10'
+    'PyYAML>=3.10',
 ]
 
 
@@ -70,5 +70,5 @@ setup(
     project_urls={
         'Bug Reports': 'https://github.com/marshmallow-code/apispec/issues',
         'Funding': 'https://opencollective.com/marshmallow',
-    }
+    },
 )

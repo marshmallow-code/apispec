@@ -80,8 +80,10 @@ def load_operations_from_docstring(docstring):
     """
     doc_data = load_yaml_from_docstring(docstring)
     if doc_data:
-        return {key: val for key, val in iteritems(doc_data)
-                        if key in PATH_KEYS or key.startswith('x-')}
+        return {
+            key: val for key, val in iteritems(doc_data)
+            if key in PATH_KEYS or key.startswith('x-')
+        }
     else:
         return None
 
@@ -103,7 +105,7 @@ def validate_spec(spec):
         raise exc_class(
             'validate_spec requires prance to be installed. '
             'You can install all validation requirements using:\n'
-            "    pip install 'apispec[validation]'"
+            "    pip install 'apispec[validation]'",
         )
     parser_kwargs = {}
     if spec.openapi_version.version[0] == 3:
@@ -122,7 +124,7 @@ def validate_swagger(spec):
     """
     warnings.warn(
         'apispec.utils.validate_swagger is deprecated. Use apispec.utils.validate_spec instead.',
-        DeprecationWarning
+        DeprecationWarning,
     )
     return validate_spec(spec)
 
@@ -152,7 +154,8 @@ class OpenAPIVersion(version.LooseVersion, object):
             openapi_version = openapi_version.vstring
         if not self.MIN_INCLUSIVE_VERSION <= openapi_version < self.MAX_EXCLUSIVE_VERSION:
             raise exceptions.APISpecError(
-                'Not a valid OpenAPI version number: {}'.format(openapi_version))
+                'Not a valid OpenAPI version number: {}'.format(openapi_version),
+            )
         super(OpenAPIVersion, self).__init__(openapi_version)
 
     @property

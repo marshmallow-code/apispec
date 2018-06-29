@@ -20,27 +20,27 @@ def spec(request):
     openapi_version = request.param
     if openapi_version == '2.0':
         security_kwargs = {
-            'security': [{'apiKey': []}]
+            'security': [{'apiKey': []}],
         }
     else:
         security_kwargs = {
             'components': {
                 'securitySchemes': {
                     'bearerAuth':
-                        dict(type='http', scheme='bearer', bearerFormat='JWT')
+                        dict(type='http', scheme='bearer', bearerFormat='JWT'),
                 },
                 'schemas': {
                     'ErrorResponse': {
                         'type': 'object',
                         'properties': {
                             'ok': {
-                                'type': 'boolean', 'description': 'status indicator', 'example': False
-                            }
+                                'type': 'boolean', 'description': 'status indicator', 'example': False,
+                            },
                         },
-                        'required': ['ok']
-                    }
-                }
-            }
+                        'required': ['ok'],
+                    },
+                },
+            },
         }
     return APISpec(
         title='Swagger Petstore',
@@ -60,7 +60,7 @@ class TestAPISpecInit:
                 version='1.0.0',
                 info={'description': description},
                 security=[{'apiKey': []}],
-                openapi_version='4.0'  # 4.0 is not supported
+                openapi_version='4.0',  # 4.0 is not supported
             )
         assert 'Not a valid OpenAPI version number:' in str(excinfo)
 
@@ -88,8 +88,8 @@ class TestMetadata:
     def test_openapi_metadata_merge_v3(self, spec):
         properties = {
             'ok': {
-                'type': 'boolean', 'description': 'property description', 'example': True
-            }
+                'type': 'boolean', 'description': 'property description', 'example': True,
+            },
         }
         spec.definition('definition', properties=properties, description='definiton description')
         metadata = spec.to_dict()
@@ -101,7 +101,7 @@ class TestTags:
 
     tag = {
         'name': 'MyTag',
-        'description': 'This tag gathers all API endpoints which are mine.'
+        'description': 'This tag gathers all API endpoints which are mine.',
     }
 
     def test_tag(self, spec):
@@ -140,7 +140,7 @@ class TestDefinitions:
         spec.definition(
             'Pet',
             properties=self.properties,
-            enum=enum
+            enum=enum,
         )
         if spec.openapi_version.major < 3:
             defs = spec.to_dict()['definitions']
@@ -179,7 +179,7 @@ class TestDefinitions:
         spec.definition(
             'Pet',
             properties=self.properties,
-            enum=enum
+            enum=enum,
         )
         assert spec.to_dict() == yaml.load(spec.to_yaml())
 
@@ -194,32 +194,34 @@ class TestPath:
                         'name': 'petId',
                         'in': 'path',
                         'type': 'integer',
-                        'description': 'ID of pet that needs to be fetched'
-                    }
+                        'description': 'ID of pet that needs to be fetched',
+                    },
                 ],
                 'responses': {
                     '200': {
                         'schema': {'$ref': '#/definitions/Pet'},
-                        'description': 'successful operation'
+                        'description': 'successful operation',
                     },
                     '400': {
-                        'description': 'Invalid ID supplied'
+                        'description': 'Invalid ID supplied',
                     },
                     '404': {
-                        'description': 'Pet not found'
-                    }
+                        'description': 'Pet not found',
+                    },
                 },
                 'produces': [
                     'application/json',
-                    'application/xml'
+                    'application/xml',
                 ],
                 'operationId': 'getPetById',
                 'summary': 'Find pet by ID',
-                'description': ('Returns a pet when ID < 10.  '
-                            'ID > 10 or nonintegers will simulate API error conditions'),
-                'tags': ['pet']
-            }
-        }
+                'description': (
+                    'Returns a pet when ID < 10.  '
+                    'ID > 10 or nonintegers will simulate API error conditions'
+                ),
+                'tags': ['pet'],
+            },
+        },
     }
 
     def test_add_path(self, spec):
@@ -234,9 +236,9 @@ class TestPath:
                     operationId=route_spec['operationId'],
                     summary=route_spec['summary'],
                     description=route_spec['description'],
-                    tags=route_spec['tags']
-                )
-            )
+                    tags=route_spec['tags'],
+                ),
+            ),
         )
 
         p = spec._paths['/pet/{petId}']['get']
@@ -268,8 +270,8 @@ class TestPath:
         spec.add_path(
             path=path,
             operations=dict(
-                get=route_spec
-            )
+                get=route_spec,
+            ),
         )
         spec.add_path(
             path=path,
@@ -281,9 +283,9 @@ class TestPath:
                     operationId='updatePet',
                     summary='Updates an existing Pet',
                     description='Use this method to make changes to Pet `petId`',
-                    tags=route_spec['tags']
-                )
-            )
+                    tags=route_spec['tags'],
+                ),
+            ),
         )
 
         p = spec._paths[path]
@@ -299,9 +301,9 @@ class TestPath:
                     parameters=[{
                         'name': 'petId',
                         'in': 'path',
-                    }]
-                )
-            )
+                    }],
+                ),
+            ),
         )
         assert spec._paths[path]['put']['parameters'][0]['required'] is True
 
@@ -343,8 +345,8 @@ class TestPath:
             operations=dict(
                 get=dict(
                     parameters=['test_parameter'],
-                )
-            )
+                ),
+            ),
         )
 
         metadata = spec.to_dict()
@@ -368,7 +370,7 @@ class TestPlugins:
             if path.path == '/path_1':
                 return Path(
                     path='/path_1_modified',
-                    operations={'get': {'responses': {'200': {}}}}
+                    operations={'get': {'responses': {'200': {}}}},
                 )
 
         def operation_helper(self, path, operations, **kwargs):
@@ -383,7 +385,7 @@ class TestPlugins:
         spec = APISpec(
             title='Swagger Petstore',
             version='1.0.0',
-            plugins=(self.TestPlugin(), )
+            plugins=(self.TestPlugin(), ),
         )
         spec.definition('Pet', {})
         assert spec._definitions['Pet'] == {'properties': {'name': {'type': 'string'}}}
@@ -392,7 +394,7 @@ class TestPlugins:
         spec = APISpec(
             title='Swagger Petstore',
             version='1.0.0',
-            plugins=(self.TestPlugin(), )
+            plugins=(self.TestPlugin(), ),
         )
         spec.add_path('/path_1')
         assert len(spec._paths) == 1
@@ -402,7 +404,7 @@ class TestPlugins:
         spec = APISpec(
             title='Swagger Petstore',
             version='1.0.0',
-            plugins=(self.TestPlugin(), )
+            plugins=(self.TestPlugin(), ),
         )
         spec.add_path('/path_2', operations={'post': {'responses': {'200': {}}}})
         assert len(spec._paths) == 1
@@ -412,12 +414,13 @@ class TestPlugins:
         spec = APISpec(
             title='Swagger Petstore',
             version='1.0.0',
-            plugins=(self.TestPlugin(), )
+            plugins=(self.TestPlugin(), ),
         )
         spec.add_path('/path_3', operations={'delete': {'responses': {'204': {'content': {}}}}})
         assert len(spec._paths) == 1
         assert spec._paths['/path_3'] == {'delete': {'responses': {'204': {
-            'content': {}, 'description': 'Clever description'}}}}
+            'content': {}, 'description': 'Clever description',
+        }}}}
 
 
 class TestOldPlugins:
@@ -525,11 +528,11 @@ class TestPathHelpers:
                     responses={
                         '200': {
                             'schema': {'$ref': '#/definitions/Pet'},
-                            'description': 'successful operation'
-                        }
-                    }
-                )
-            )
+                            'description': 'successful operation',
+                        },
+                    },
+                ),
+            ),
         )
         expected = {
             '/pet/{petId}': {
@@ -539,10 +542,10 @@ class TestPathHelpers:
                         '200': {
                             'schema': {'$ref': '#/definitions/Pet'},
                             'description': 'successful operation',
-                        }
-                    }
-                }
-            }
+                        },
+                    },
+                },
+            },
         }
 
         assert spec._paths == expected
@@ -554,15 +557,17 @@ class TestResponseHelpers:
             return {'description': success_description}
 
         spec.register_response_helper(success_helper, 'get', 200)
-        spec.add_path('/pet/{petId}', success_description='success!', operations={
-            'get': {
-                'responses': {
-                    200: {
-                        'schema': {'$ref': 'Pet'}
-                    }
-                }
-            }
-        })
+        spec.add_path(
+            '/pet/{petId}', success_description='success!', operations={
+                'get': {
+                    'responses': {
+                        200: {
+                            'schema': {'$ref': 'Pet'},
+                        },
+                    },
+                },
+            },
+        )
 
         resp_obj = spec._paths['/pet/{petId}']['get']['responses'][200]
         assert resp_obj['schema'] == {'$ref': 'Pet'}
@@ -583,13 +588,15 @@ def test_schema_name_resolver_deprecation_warning(recwarn):
     with pytest.deprecated_call():
         APISpec(
             title='Swagger Petstore', version='1.0.0',
-            schema_name_resolver=lambda x: x)
+            schema_name_resolver=lambda x: x,
+        )
 
 def test_plugins_as_string_deprecation_warning(recwarn):
     with pytest.deprecated_call():
         APISpec(
             title='Swagger Petstore', version='1.0.0',
-            plugins=('tests.plugins.dummy_plugin', ))
+            plugins=('tests.plugins.dummy_plugin', ),
+        )
 
 def test_setup_plugin_deprecation_warning(spec, recwarn):
     with pytest.deprecated_call():

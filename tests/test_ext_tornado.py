@@ -19,7 +19,7 @@ def spec(request):
         plugins=[
             # Test both plugin class and deprecated interface
             TornadoPlugin() if request.param else 'apispec.ext.tornado',
-        ]
+        ],
     )
 
 
@@ -32,7 +32,8 @@ class TestPathHelpers:
 
         urlspec = (r'/hello', HelloHandler)
         operations = (
-            {'get': {'parameters': [], 'responses': {'200': {}}}})
+            {'get': {'parameters': [], 'responses': {'200': {}}}}
+        )
 
         spec.add_path(urlspec=urlspec, operations=operations)
         assert '/hello' in spec._paths
@@ -53,11 +54,11 @@ class TestPathHelpers:
         operations = {
             'get': {
                 'description': 'get a greeting',
-                'responses': {'200': {}}
+                'responses': {'200': {}},
             },
             'post': {
                 'description': 'post a greeting',
-                'responses': {'200': {}}
+                'responses': {'200': {}},
             },
         }
         spec.add_path(urlspec=urlspec, operations=operations)
@@ -112,7 +113,8 @@ class TestPathHelpers:
 
         urlspec = (r'/hello/world/*', HelloHandler)
         operations = (
-            {'get': {'parameters': [], 'responses': {'200': {}}}})
+            {'get': {'parameters': [], 'responses': {'200': {}}}}
+        )
 
         spec.add_path(urlspec=urlspec, operations=operations)
         assert '/hello/world' in spec._paths
@@ -126,15 +128,18 @@ class TestPathHelpers:
         def get(self, param1, param2):
             self.write('hello')
 
-    @pytest.mark.parametrize('Handler',
-    [
-        HelloWorldHandler,
-        HelloWorldHandler2,
-    ])
+    @pytest.mark.parametrize(
+        'Handler',
+        [
+            HelloWorldHandler,
+            HelloWorldHandler2,
+        ],
+    )
     def test_path_with_params(self, spec, Handler):
         urlspec = (r'/hello/([^/]+)/world/([^/]+)', Handler)
         operations = (
-            {'get': {'parameters': [], 'responses': {'200': {}}}})
+            {'get': {'parameters': [], 'responses': {'200': {}}}}
+        )
 
         spec.add_path(urlspec=urlspec, operations=operations)
         path = '/hello/{param1}/world/{param2}'

@@ -100,7 +100,8 @@ class TornadoPlugin(BasePlugin):
                 operations.update(operation)
         if not operations:
             raise APISpecError(
-                'Could not find endpoint for urlspec {0}'.format(urlspec))
+                'Could not find endpoint for urlspec {0}'.format(urlspec),
+            )
         params_method = getattr(urlspec.handler_class, list(operations.keys())[0])
         path = self.tornadopath2openapi(urlspec, params_method)
         extensions = self._extensions_from_handler(urlspec.handler_class)

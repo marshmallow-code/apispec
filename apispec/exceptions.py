@@ -22,6 +22,6 @@ class SwaggerError(OpenAPIError):
     def __init__(self, *args, **kwargs):
         warnings.warn(
             'SwaggerError is deprecated. Use OpenAPIError instead.',
-            DeprecationWarning
+            DeprecationWarning,
         )
         super(SwaggerError, self).__init__(*args, **kwargs)

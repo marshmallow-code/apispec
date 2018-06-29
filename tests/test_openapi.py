@@ -23,24 +23,26 @@ class TestMarshmallowFieldToOpenAPI:
         field = fields.String(validate=validate.OneOf(choices))
         assert openapi.field2choices(field) == {'enum': choices}
 
-    @mark.parametrize(('FieldClass', 'jsontype'), [
-        (fields.Integer, 'integer'),
-        (fields.Number, 'number'),
-        (fields.Float, 'number'),
-        (fields.String, 'string'),
-        (fields.Str, 'string'),
-        (fields.Boolean, 'boolean'),
-        (fields.Bool, 'boolean'),
-        (fields.UUID, 'string'),
-        (fields.DateTime, 'string'),
-        (fields.Date, 'string'),
-        (fields.Time, 'string'),
-        (fields.Email, 'string'),
-        (fields.URL, 'string'),
-        # Assume base Field and Raw are strings
-        (fields.Field, 'string'),
-        (fields.Raw, 'string'),
-    ])
+    @mark.parametrize(
+        ('FieldClass', 'jsontype'), [
+            (fields.Integer, 'integer'),
+            (fields.Number, 'number'),
+            (fields.Float, 'number'),
+            (fields.String, 'string'),
+            (fields.Str, 'string'),
+            (fields.Boolean, 'boolean'),
+            (fields.Bool, 'boolean'),
+            (fields.UUID, 'string'),
+            (fields.DateTime, 'string'),
+            (fields.Date, 'string'),
+            (fields.Time, 'string'),
+            (fields.Email, 'string'),
+            (fields.URL, 'string'),
+            # Assume base Field and Raw are strings
+            (fields.Field, 'string'),
+            (fields.Raw, 'string'),
+        ],
+    )
     def test_field2property_type(self, FieldClass, jsontype, openapi):
         field = FieldClass()
         res = openapi.field2property(field)
@@ -52,15 +54,17 @@ class TestMarshmallowFieldToOpenAPI:
         assert res['type'] == 'array'
         assert res['items'] == openapi.field2property(fields.String())
 
-    @mark.parametrize(('FieldClass', 'expected_format'), [
-        (fields.Integer, 'int32'),
-        (fields.Float, 'float'),
-        (fields.UUID, 'uuid'),
-        (fields.DateTime, 'date-time'),
-        (fields.Date, 'date'),
-        (fields.Email, 'email'),
-        (fields.URL, 'url'),
-    ])
+    @mark.parametrize(
+        ('FieldClass', 'expected_format'), [
+            (fields.Integer, 'int32'),
+            (fields.Float, 'float'),
+            (fields.UUID, 'uuid'),
+            (fields.DateTime, 'date-time'),
+            (fields.Date, 'date'),
+            (fields.Email, 'email'),
+            (fields.URL, 'url'),
+        ],
+    )
     def test_field2property_formats(self, FieldClass, expected_format, openapi):
         field = FieldClass()
         res = openapi.field2property(field)
@@ -107,9 +111,11 @@ class TestMarshmallowFieldToOpenAPI:
     # json/body is invalid for OpenAPI 3
     @pytest.mark.parametrize('openapi', ('2.0', ), indirect=True)
     def test_fields_with_multiple_json_locations(self, openapi):
-        field_dict = {'field1': fields.Str(location='json', required=True),
-                      'field2': fields.Str(location='json', required=True),
-                      'field3': fields.Str(location='json')}
+        field_dict = {
+            'field1': fields.Str(location='json', required=True),
+            'field2': fields.Str(location='json', required=True),
+            'field3': fields.Str(location='json'),
+        }
         res = openapi.fields2parameters(field_dict, default_in=None)
         assert len(res) == 1
         assert res[0]['in'] == 'body'
@@ -165,10 +171,12 @@ class TestMarshmallowFieldToOpenAPI:
             class Meta:
                 dump_only = ('name',)
         res = openapi.fields2parameters(
-            UserSchema._declared_fields, schema=UserSchema, default_in='query')
+            UserSchema._declared_fields, schema=UserSchema, default_in='query',
+        )
         assert len(res) == 0
         res = openapi.fields2parameters(
-            UserSchema().fields, schema=UserSchema, default_in='query')
+            UserSchema().fields, schema=UserSchema, default_in='query',
+        )
         assert len(res) == 0
 
     def test_field_with_choices(self, openapi):
@@ -187,7 +195,7 @@ class TestMarshmallowFieldToOpenAPI:
             description='foo',
             enum=['red', 'blue'],
             allOf=['bar'],
-            not_valid='lol'
+            not_valid='lol',
         )
         res = openapi.field2property(field)
         assert res['default'] == field.missing
@@ -199,7 +207,7 @@ class TestMarshmallowFieldToOpenAPI:
     def test_field_with_choices_multiple(self, openapi):
         field = fields.Str(validate=[
             validate.OneOf(['freddie', 'brian', 'john']),
-            validate.OneOf(['brian', 'john', 'roger'])
+            validate.OneOf(['brian', 'john', 'roger']),
         ])
         res = openapi.field2property(field)
         assert set(res['enum']) == {'brian', 'john'}
@@ -242,8 +250,10 @@ class TestMarshmallowSchemaToModelDefinition:
         assert props['email']['format'] == 'email'
         assert props['email']['description'] == 'email address of the user'
 
-    @pytest.mark.skipif(MARSHMALLOW_VERSION_INFO[0] >= 3,
-                        reason='Behaviour changed in marshmallow 3')
+    @pytest.mark.skipif(
+        MARSHMALLOW_VERSION_INFO[0] >= 3,
+        reason='Behaviour changed in marshmallow 3',
+    )
     def test_schema2jsonschema_override_name_ma2(self, openapi):
         class ExampleSchema(Schema):
             _id = fields.Int(load_from='id', dump_to='id')
@@ -267,8 +277,10 @@ class TestMarshmallowSchemaToModelDefinition:
         # `_global` excluded correctly
         assert '_global' not in props and 'global' not in props
 
-    @pytest.mark.skipif(MARSHMALLOW_VERSION_INFO[0] < 3,
-                        reason='Behaviour changed in marshmallow 3')
+    @pytest.mark.skipif(
+        MARSHMALLOW_VERSION_INFO[0] < 3,
+        reason='Behaviour changed in marshmallow 3',
+    )
     def test_schema2jsonschema_override_name_ma3(self, openapi):
         class ExampleSchema(Schema):
             _id = fields.Int(data_key='id')
@@ -354,11 +366,11 @@ class TestMarshmallowSchemaToModelDefinition:
     def test_observed_field_name_for_required_field(self, openapi):
         if MARSHMALLOW_VERSION_INFO[0] < 3:
             fields_dict = {
-                'user_id': fields.Int(load_from='id', dump_to='id', required=True)
+                'user_id': fields.Int(load_from='id', dump_to='id', required=True),
             }
         else:
             fields_dict = {
-                'user_id': fields.Int(data_key='id', required=True)
+                'user_id': fields.Int(data_key='id', required=True),
             }
 
         res = openapi.fields2jsonschema(fields_dict)
@@ -576,14 +588,17 @@ class TestNesting:
         spec_fixture.spec.definition('Category', schema=CategorySchema)
         category = fields.Nested(CategorySchema, description='A category')
         result = spec_fixture.openapi.field2property(category)
-        assert result == {'$ref': self.ref_path(spec_fixture.spec) + 'Category',
-                          'description': 'A category'}
+        assert result == {
+            '$ref': self.ref_path(spec_fixture.spec) + 'Category',
+            'description': 'A category',
+        }
 
     def test_field2property_nested_spec(self, spec_fixture):
         spec_fixture.spec.definition('Category', schema=CategorySchema)
         category = fields.Nested(CategorySchema)
         assert spec_fixture.openapi.field2property(category) == {
-            '$ref': self.ref_path(spec_fixture.spec) + 'Category'}
+            '$ref': self.ref_path(spec_fixture.spec) + 'Category',
+        }
 
     def test_field2property_nested_many_spec(self, spec_fixture):
         spec_fixture.spec.definition('Category', schema=CategorySchema)
@@ -706,21 +721,29 @@ class TestNesting:
         spec_fixture.spec.definition('Category', schema=CategorySchema)
 
         assert spec_fixture.openapi.field2property(category_1) == {
-            '$ref': ref_path + 'Category'}
+            '$ref': ref_path + 'Category',
+        }
         assert spec_fixture.openapi.field2property(category_2) == {
-            '$ref': ref_path + 'Category'}
+            '$ref': ref_path + 'Category',
+        }
         assert spec_fixture.openapi.field2property(category_3) == {
-            'allOf': [{'$ref': ref_path + 'Category'}], 'readOnly': True}
+            'allOf': [{'$ref': ref_path + 'Category'}], 'readOnly': True,
+        }
         assert spec_fixture.openapi.field2property(category_4) == {
-            'allOf': [{'$ref': ref_path + 'Category'}], 'readOnly': True}
+            'allOf': [{'$ref': ref_path + 'Category'}], 'readOnly': True,
+        }
         assert spec_fixture.openapi.field2property(category_5) == {
-            'items': {'$ref': ref_path + 'Category'}, 'type': 'array'}
+            'items': {'$ref': ref_path + 'Category'}, 'type': 'array',
+        }
         assert spec_fixture.openapi.field2property(category_6) == {
-            'items': {'$ref': ref_path + 'Category'}, 'type': 'array'}
+            'items': {'$ref': ref_path + 'Category'}, 'type': 'array',
+        }
         assert spec_fixture.openapi.field2property(category_7) == {
-            'items': {'$ref': ref_path + 'Category'}, 'readOnly': True, 'type': 'array'}
+            'items': {'$ref': ref_path + 'Category'}, 'readOnly': True, 'type': 'array',
+        }
         assert spec_fixture.openapi.field2property(category_8) == {
-            'items': {'$ref': ref_path + 'Category'}, 'readOnly': True, 'type': 'array'}
+            'items': {'$ref': ref_path + 'Category'}, 'readOnly': True, 'type': 'array',
+        }
 
 def test_openapi_tools_validate_v2():
     ma_plugin = MarshmallowPlugin()
@@ -728,7 +751,7 @@ def test_openapi_tools_validate_v2():
         title='Pets',
         version='0.1',
         plugins=(ma_plugin, ),
-        openapi_version='2.0'
+        openapi_version='2.0',
     )
     openapi = ma_plugin.openapi
 
@@ -771,7 +794,7 @@ def test_openapi_tools_validate_v2():
                         'description': 'A pet',
                     },
                 },
-            }
+            },
         },
     )
     try:
@@ -785,7 +808,7 @@ def test_openapi_tools_validate_v3():
         title='Pets',
         version='0.1',
         plugins=(ma_plugin, ),
-        openapi_version='3.0.0'
+        openapi_version='3.0.0',
     )
     #openapi = ma_plugin.openapi
 
@@ -798,15 +821,17 @@ def test_openapi_tools_validate_v3():
         operations={
             'get': {
                 'parameters': [
-                    {'name': 'q',
-                     'in': 'query',
-                     'schema': {'type': 'string'}
-                     },
-                    {'name': 'category_id',
-                     'in': 'path',
-                     'required': True,
-                     'schema': {'type': 'string'}
-                     },
+                    {
+                        'name': 'q',
+                        'in': 'query',
+                        'schema': {'type': 'string'},
+                    },
+                    {
+                        'name': 'category_id',
+                        'in': 'path',
+                        'required': True,
+                        'schema': {'type': 'string'},
+                    },
                 ],  # + openapi.schema2parameters(PageSchema, default_in='query'),
                 'responses': {
                     200: {
@@ -814,26 +839,28 @@ def test_openapi_tools_validate_v3():
                         'content': {
                             'application/json': {
                                 'schema': PetSchemaV3,
-                            }
-                        }
+                            },
+                        },
                     },
                 },
             },
             'post': {
                 'parameters': (
-                    [{'name': 'category_id',
-                      'in': 'path',
-                      'required': True,
-                      'schema': {'type': 'string'}
-                      }
-                     ]
+                    [
+                        {
+                            'name': 'category_id',
+                            'in': 'path',
+                            'required': True,
+                            'schema': {'type': 'string'},
+                        },
+                    ]
                 ),
                 'requestBody': {
                     'content': {
                         'application/json': {
-                            'schema': CategorySchema
-                        }
-                    }
+                            'schema': CategorySchema,
+                        },
+                    },
                 },
                 'responses': {
                     201: {
@@ -841,11 +868,11 @@ def test_openapi_tools_validate_v3():
                         'content': {
                             'application/json': {
                                 'schema': PetSchemaV3,
-                            }
-                        }
+                            },
+                        },
                     },
                 },
-            }
+            },
         },
     )
     try:
@@ -860,7 +887,7 @@ class ValidationSchema(Schema):
         validate.Range(min=1),
         validate.Range(min=3),
         validate.Range(max=10),
-        validate.Range(max=7)
+        validate.Range(max=7),
     ])
     list_length = fields.List(fields.Str, validate=validate.Length(min=1, max=10))
     string_length = fields.Str(validate=validate.Length(min=1, max=10))
@@ -868,11 +895,11 @@ class ValidationSchema(Schema):
         validate.Length(min=1),
         validate.Length(min=3),
         validate.Length(max=10),
-        validate.Length(max=7)
+        validate.Length(max=7),
     ])
     equal_length = fields.Str(validate=[
         validate.Length(equal=5),
-        validate.Length(min=1, max=10)
+        validate.Length(min=1, max=10),
     ])
 
 class TestFieldValidation:
