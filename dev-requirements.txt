@@ -16,7 +16,7 @@ tox==3.0.0
 mock==2.0.0
 
 # Pre-commit hooks
-pre-commit==1.10.2
+pre-commit==1.10.3
 
 # Install this package in development mode with validation requirements
 -e '.[validation]'
