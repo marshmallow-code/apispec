@@ -5,7 +5,7 @@ import pytest
 import mock
 import yaml
 
-from apispec import APISpec, BasePlugin, Path
+from apispec import APISpec, BasePlugin
 from apispec.exceptions import PluginError, APISpecError
 
 
@@ -349,10 +349,6 @@ class TestPath:
             assert p['parameters'][0] == {'$ref': '#/components/parameters/test_parameter'}
             assert route_spec['parameters'][0] == metadata['components']['parameters']['test_parameter']
 
-    def test_add_path_passed_path_deprecation_message(self, spec):
-        with pytest.deprecated_call():
-            spec.add_path(Path(path='/pet/{petId}'))
-
     def test_add_path_check_invalid_http_method(self, spec):
         spec.add_path('/pet/{petId}', operations={'get': {}})
         spec.add_path('/pet/{petId}', operations={'x-dummy': {}})
@@ -367,15 +363,13 @@ class TestPlugins:
         def definition_helper(self, name, definition, **kwargs):
             return {'properties': {'name': {'type': 'string'}}}
 
-        def path_helper(self, path, **kwargs):
-            if path.path == '/path_1':
-                return Path(
-                    path='/path_1_modified',
-                    operations={'get': {'responses': {'200': {}}}},
-                )
+        def path_helper(self, path, operations, **kwargs):
+            if path == '/path_1':
+                operations.update({'get': {'responses': {'200': {}}}})
+                return '/path_1_modified'
 
         def operation_helper(self, path, operations, **kwargs):
-            if path.path == '/path_2':
+            if path == '/path_2':
                 operations['post'] = {'responses': {'201': {}}}
 
         def response_helper(self, method, status_code, **kwargs):
@@ -466,10 +460,10 @@ class TestOldPlugins:
 
     def test_multiple_path_helpers_w_different_signatures(self, spec):
         def helper1(spec, spam, **kwargs):
-            return Path(path='/foo/bar')
+            return '/foo/bar'
 
         def helper2(spec, eggs, **kwargs):
-            return Path(path='/foo/bar')
+            return '/foo/bar'
 
         spec.register_path_helper(helper1)
         spec.register_path_helper(helper2)
@@ -519,7 +513,7 @@ class TestPathHelpers:
 
     def test_path_helper_is_used(self, spec):
         def path_helper(spec, view_func, **kwargs):
-            return Path(path=view_func['path'])
+            return view_func['path']
         spec.register_path_helper(path_helper)
         spec.add_path(
             view_func={'path': '/pet/{petId}'},

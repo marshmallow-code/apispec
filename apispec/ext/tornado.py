@@ -34,7 +34,7 @@ import inspect
 import sys
 from tornado.web import URLSpec
 
-from apispec import Path, BasePlugin, utils
+from apispec import BasePlugin, utils
 from apispec.exceptions import APISpecError
 
 
@@ -90,23 +90,19 @@ class TornadoPlugin(BasePlugin):
         extensions = utils.load_yaml_from_docstring(handler_class.__doc__) or {}
         return extensions
 
-    def path_helper(self, urlspec, operations, **kwargs):
+    def path_helper(self, operations, urlspec, **kwargs):
         """Path helper that allows passing a Tornado URLSpec or tuple."""
         if not isinstance(urlspec, URLSpec):
             urlspec = URLSpec(*urlspec)
-        if not operations:
-            operations = {}
-            for operation in self._operations_from_methods(urlspec.handler_class):
-                operations.update(operation)
+        for operation in self._operations_from_methods(urlspec.handler_class):
+            operations.update(operation)
         if not operations:
             raise APISpecError(
                 'Could not find endpoint for urlspec {0}'.format(urlspec),
             )
         params_method = getattr(urlspec.handler_class, list(operations.keys())[0])
-        path = self.tornadopath2openapi(urlspec, params_method)
-        extensions = self._extensions_from_handler(urlspec.handler_class)
-        operations.update(extensions)
-        return Path(path=path, operations=operations)
+        operations.update(self._extensions_from_handler(urlspec.handler_class))
+        return self.tornadopath2openapi(urlspec, params_method)
 
 
 # Deprecated interface

@@ -26,7 +26,7 @@ import re
 
 from bottle import default_app
 
-from apispec import Path, BasePlugin, utils
+from apispec import BasePlugin, utils
 from apispec.exceptions import APISpecError
 
 
@@ -53,13 +53,12 @@ class BottlePlugin(BasePlugin):
             raise APISpecError('Could not find endpoint for route {0}'.format(view))
         return endpoint
 
-    def path_helper(self, view, operations, **kwargs):
+    def path_helper(self, operations, view, **kwargs):
         """Path helper that allows passing a bottle view function."""
-        operations = utils.load_operations_from_docstring(view.__doc__)
+        operations.update(utils.load_operations_from_docstring(view.__doc__) or {})
         app = kwargs.get('app', _default_app)
         route = self._route_for_view(app, view)
-        bottle_path = self.bottle_path_to_openapi(route.rule)
-        return Path(path=bottle_path, operations=operations)
+        return self.bottle_path_to_openapi(route.rule)
 
 
 # Deprecated interface

@@ -75,7 +75,7 @@ from flask import current_app
 from flask.views import MethodView
 
 from apispec.compat import iteritems
-from apispec import Path, BasePlugin, utils
+from apispec import BasePlugin, utils
 from apispec.exceptions import APISpecError
 
 
@@ -108,24 +108,20 @@ class FlaskPlugin(BasePlugin):
         rule = current_app.url_map._rules_by_endpoint[endpoint][0]
         return rule
 
-    def path_helper(self, view, **kwargs):
+    def path_helper(self, operations, view, **kwargs):
         """Path helper that allows passing a Flask view function."""
         rule = self._rule_for_view(view)
-        path = self.flaskpath2openapi(rule.rule)
-        app_root = current_app.config['APPLICATION_ROOT'] or '/'
-        path = urljoin(app_root.rstrip('/') + '/', path.lstrip('/'))
-        operations = utils.load_operations_from_docstring(view.__doc__)
-        path = Path(path=path, operations=operations)
+        operations.update(utils.load_operations_from_docstring(view.__doc__) or {})
         if hasattr(view, 'view_class') and issubclass(view.view_class, MethodView):
-            operations = {}
             for method in view.methods:
                 if method in rule.methods:
                     method_name = method.lower()
                     method = getattr(view.view_class, method_name)
                     docstring_yaml = utils.load_yaml_from_docstring(method.__doc__)
                     operations[method_name] = docstring_yaml or dict()
-            path.operations.update(operations)
-        return path
+        path = self.flaskpath2openapi(rule.rule)
+        app_root = current_app.config['APPLICATION_ROOT'] or '/'
+        return urljoin(app_root.rstrip('/') + '/', path.lstrip('/'))
 
 
 # Deprecated interface
