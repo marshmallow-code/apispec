@@ -81,13 +81,6 @@ class Path(object):
                 'One or more HTTP methods are invalid: {0}'.format(', '.join(invalid)),
             )
 
-    def to_dict(self):
-        if not self.path:
-            raise APISpecError('Path template is not specified')
-        return {
-            self.path: self.operations,
-        }
-
     def update(self, path):
         if path.path:
             self.path = path.path
