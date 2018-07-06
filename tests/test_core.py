@@ -318,19 +318,9 @@ class TestPath:
         assert '/pets' in spec._paths
         assert '/v1/pets' not in spec._paths
 
-    def test_add_path_accepts_path(self, spec):
-        route = '/pet/{petId}'
-        route_spec = self.paths[route]
-        path = Path(path=route, operations={'get': route_spec['get']})
-        spec.add_path(path)
-
-        p = spec._paths[path.path]
-        assert p == path.operations
-        assert 'get' in p
-
     def test_add_path_strips_path_base_path(self, spec):
         spec.options['basePath'] = '/v1'
-        path = Path(path='/v1/pets')
+        path = '/v1/pets'
         spec.add_path(path)
         assert '/pets' in spec._paths
         assert '/v1/pets' not in spec._paths
@@ -358,6 +348,10 @@ class TestPath:
         else:
             assert p['parameters'][0] == {'$ref': '#/components/parameters/test_parameter'}
             assert route_spec['parameters'][0] == metadata['components']['parameters']['test_parameter']
+
+    def test_add_path_passed_path_deprecation_message(self, spec):
+        with pytest.deprecated_call():
+            spec.add_path(Path(path='/pet/{petId}'))
 
 
 class TestPlugins:

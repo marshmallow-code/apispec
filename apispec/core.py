@@ -219,7 +219,7 @@ class APISpec(object):
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathsObject
 
-        :param str|Path|None path: URL Path component or Path instance
+        :param str|None path: URL path component
         :param dict|None operations: describes the http methods and options for `path`
         :param dict kwargs: parameters used by any path helpers see :meth:`register_path_helper`
         """
@@ -230,6 +230,11 @@ class APISpec(object):
             return path
 
         if isinstance(path, Path):
+            warnings.warn(
+                'Passing a Path instance to add_path is deprecated. '
+                'Pass path as string and operations as dict.',
+                DeprecationWarning,
+            )
             path.path = normalize_path(path.path)
             if operations:
                 path.operations.update(operations)
