@@ -353,6 +353,13 @@ class TestPath:
         with pytest.deprecated_call():
             spec.add_path(Path(path='/pet/{petId}'))
 
+    def test_add_path_check_invalid_http_method(self, spec):
+        spec.add_path('/pet/{petId}', operations={'get': {}})
+        spec.add_path('/pet/{petId}', operations={'x-dummy': {}})
+        with pytest.raises(APISpecError) as excinfo:
+            spec.add_path('/pet/{petId}', operations={'dummy': {}})
+        assert 'One or more HTTP methods are invalid' in str(excinfo)
+
 
 class TestPlugins:
 

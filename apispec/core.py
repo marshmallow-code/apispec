@@ -26,7 +26,7 @@ VALID_METHODS = [
 def clean_operations(operations, openapi_major_version):
     """Ensure that all parameters with "in" equal to "path" are also required
     as required by the OpenAPI specification, as well as normalizing any
-    references to global parameters.
+    references to global parameters. Also checks for invalid HTTP methods.
 
     See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject.
 
@@ -34,6 +34,14 @@ def clean_operations(operations, openapi_major_version):
     :param int openapi_major_version: The major version of the OpenAPI standard
         to use. Supported values are 2 and 3.
     """
+    invalid = {key for key in
+               set(iterkeys(operations)) - set(VALID_METHODS)
+               if not key.startswith('x-')}
+    if invalid:
+        raise APISpecError(
+            'One or more HTTP methods are invalid: {0}'.format(', '.join(invalid)),
+        )
+
     def get_ref(param, openapi_major_version):
         if isinstance(param, dict):
             return param
@@ -66,20 +74,12 @@ class Path(object):
     https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathsObject
 
     :param str path: The path template, e.g. ``"/pet/{petId}"``
-    :param str method: The HTTP method.
-    :param dict operation: The operation object, as a `dict`. See
+    :param dict operations: A `dict` mapping methods to operations objects. See
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject
     """
     def __init__(self, path=None, operations=None):
         self.path = path
         self.operations = operations or OrderedDict()
-        invalid = {key for key in
-                   set(iterkeys(self.operations)) - set(VALID_METHODS)
-                   if not key.startswith('x-')}
-        if invalid:
-            raise APISpecError(
-                'One or more HTTP methods are invalid: {0}'.format(', '.join(invalid)),
-            )
 
     def update(self, path):
         if path.path:
