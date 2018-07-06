@@ -69,22 +69,17 @@ class Path(object):
     :param str method: The HTTP method.
     :param dict operation: The operation object, as a `dict`. See
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject
-    :param str|OpenAPIVersion openapi_version: The OpenAPI version to use.
-        Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
     """
-    def __init__(self, path=None, operations=None, openapi_version='2.0'):
+    def __init__(self, path=None, operations=None):
         self.path = path
-        operations = operations or OrderedDict()
-        openapi_version = OpenAPIVersion(openapi_version)
-        clean_operations(operations, openapi_version.major)
+        self.operations = operations or OrderedDict()
         invalid = {key for key in
-                   set(iterkeys(operations)) - set(VALID_METHODS)
+                   set(iterkeys(self.operations)) - set(VALID_METHODS)
                    if not key.startswith('x-')}
         if invalid:
             raise APISpecError(
                 'One or more HTTP methods are invalid: {0}'.format(', '.join(invalid)),
             )
-        self.operations = operations
 
     def to_dict(self):
         if not self.path:
@@ -242,7 +237,6 @@ class APISpec(object):
             path = Path(
                 path=normalize_path(path),
                 operations=operations,
-                openapi_version=self.openapi_version,
             )
 
         # Execute path helpers
@@ -299,6 +293,8 @@ class APISpec(object):
                     responses[status_code].update(
                         func(self, **kwargs),
                     )
+
+        clean_operations(path.operations, self.openapi_version.major)
 
         self._paths.setdefault(path.path, path.operations).update(path.operations)
 
