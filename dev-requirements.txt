@@ -7,7 +7,7 @@ flake8==3.5.0
 # soft dependencies
 Flask==1.0.2
 marshmallow==2.15.3
-tornado==5.0.2
+tornado==5.1
 bottle==0.12.13
 
 # testing
