@@ -12,7 +12,7 @@ bottle==0.12.13
 
 # testing
 pytest==3.6.3
-tox==3.1.1
+tox==3.1.2
 mock==2.0.0
 
 # Pre-commit hooks
