@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 import marshmallow
 
-from apispec import Path, BasePlugin, utils
+from apispec import BasePlugin, utils
 from .common import resolve_schema_cls, resolve_schema_instance
 from .openapi import OpenAPIConverter
 
@@ -167,7 +167,7 @@ class MarshmallowPlugin(BasePlugin):
 
         return json_schema
 
-    def path_helper(self, view=None, **kwargs):
+    def path_helper(self, operations, view=None, **kwargs):
         """Path helper that allows passing a Schema as a response. Responses can be
         defined in a view's docstring.
         ::
@@ -228,14 +228,8 @@ class MarshmallowPlugin(BasePlugin):
             #                                                    'items': {'$ref': '#/definitions/User'}}}}}}}
 
         """
-        operations = (
-            kwargs.get('operations') or
-            (view and utils.load_operations_from_docstring(view.__doc__))
-        )
-        if not operations:
-            return None
-        operations = operations.copy()
-        return Path(operations=operations)
+        if view:
+            operations.update(utils.load_operations_from_docstring(view.__doc__) or {})
 
     def operation_helper(self, operations, **kwargs):
         for operation in operations.values():

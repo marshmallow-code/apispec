@@ -26,7 +26,7 @@ VALID_METHODS = [
 def clean_operations(operations, openapi_major_version):
     """Ensure that all parameters with "in" equal to "path" are also required
     as required by the OpenAPI specification, as well as normalizing any
-    references to global parameters.
+    references to global parameters. Also checks for invalid HTTP methods.
 
     See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject.
 
@@ -34,6 +34,14 @@ def clean_operations(operations, openapi_major_version):
     :param int openapi_major_version: The major version of the OpenAPI standard
         to use. Supported values are 2 and 3.
     """
+    invalid = {key for key in
+               set(iterkeys(operations)) - set(VALID_METHODS)
+               if not key.startswith('x-')}
+    if invalid:
+        raise APISpecError(
+            'One or more HTTP methods are invalid: {0}'.format(', '.join(invalid)),
+        )
+
     def get_ref(param, openapi_major_version):
         if isinstance(param, dict):
             return param
@@ -58,45 +66,6 @@ def clean_operations(operations, openapi_major_version):
                 get_ref(p, openapi_major_version)
                 for p in parameters
             ]
-
-
-class Path(object):
-    """Represents an OpenAPI Path object.
-
-    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathsObject
-
-    :param str path: The path template, e.g. ``"/pet/{petId}"``
-    :param str method: The HTTP method.
-    :param dict operation: The operation object, as a `dict`. See
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject
-    :param str|OpenAPIVersion openapi_version: The OpenAPI version to use.
-        Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
-    """
-    def __init__(self, path=None, operations=None, openapi_version='2.0'):
-        self.path = path
-        operations = operations or OrderedDict()
-        openapi_version = OpenAPIVersion(openapi_version)
-        clean_operations(operations, openapi_version.major)
-        invalid = {key for key in
-                   set(iterkeys(operations)) - set(VALID_METHODS)
-                   if not key.startswith('x-')}
-        if invalid:
-            raise APISpecError(
-                'One or more HTTP methods are invalid: {0}'.format(', '.join(invalid)),
-            )
-        self.operations = operations
-
-    def to_dict(self):
-        if not self.path:
-            raise APISpecError('Path template is not specified')
-        return {
-            self.path: self.operations,
-        }
-
-    def update(self, path):
-        if path.path:
-            self.path = path.path
-        self.operations.update(path.operations)
 
 
 class APISpec(object):
@@ -219,7 +188,7 @@ class APISpec(object):
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathsObject
 
-        :param str|Path|None path: URL Path component or Path instance
+        :param str|None path: URL path component
         :param dict|None operations: describes the http methods and options for `path`
         :param dict kwargs: parameters used by any path helpers see :meth:`register_path_helper`
         """
@@ -229,53 +198,43 @@ class APISpec(object):
                 path = re.sub(pattern, '', path)
             return path
 
-        if isinstance(path, Path):
-            path.path = normalize_path(path.path)
-            if operations:
-                path.operations.update(operations)
-        else:
-            path = Path(
-                path=normalize_path(path),
-                operations=operations,
-                openapi_version=self.openapi_version,
-            )
+        path = normalize_path(path)
+        operations = operations or OrderedDict()
 
         # Execute path helpers
         for plugin in self.plugins:
             try:
-                ret = plugin.path_helper(path=path, operations=path.operations, **kwargs)
+                ret = plugin.path_helper(path=path, operations=operations, **kwargs)
             except PluginMethodNotImplementedError:
                 continue
-            if isinstance(ret, Path):
-                ret.path = normalize_path(ret.path)
-                path.update(ret)
+            if ret is not None:
+                path = normalize_path(ret)
         # Deprecated interface
         for func in self._path_helpers:
             try:
                 ret = func(
-                    self, path=path, operations=path.operations, **kwargs
+                    self, path=path, operations=operations, **kwargs
                 )
             except TypeError:
                 continue
-            if isinstance(ret, Path):
-                ret.path = normalize_path(ret.path)
-                path.update(ret)
-        if not path.path:
+            if ret is not None:
+                path = normalize_path(ret)
+        if not path:
             raise APISpecError('Path template is not specified')
 
         # Execute operation helpers
         for plugin in self.plugins:
             try:
-                plugin.operation_helper(path=path, operations=path.operations, **kwargs)
+                plugin.operation_helper(path=path, operations=operations, **kwargs)
             except PluginMethodNotImplementedError:
                 continue
         # Deprecated interface
         for func in self._operation_helpers:
-            func(self, path=path, operations=path.operations, **kwargs)
+            func(self, path=path, operations=operations, **kwargs)
 
         # Execute response helpers
         # TODO: cache response helpers output for each (method, status_code) couple
-        for method, operation in iteritems(path.operations):
+        for method, operation in iteritems(operations):
             if method in VALID_METHODS and 'responses' in operation:
                 for status_code, response in iteritems(operation['responses']):
                     for plugin in self.plugins:
@@ -285,9 +244,9 @@ class APISpec(object):
                             continue
         # Deprecated interface
         # Rule is that method + http status exist in both operations and helpers
-        methods = set(iterkeys(path.operations)) & set(iterkeys(self._response_helpers))
+        methods = set(iterkeys(operations)) & set(iterkeys(self._response_helpers))
         for method in methods:
-            responses = path.operations[method]['responses']
+            responses = operations[method]['responses']
             statuses = set(iterkeys(responses)) & set(iterkeys(self._response_helpers[method]))
             for status_code in statuses:
                 for func in self._response_helpers[method][status_code]:
@@ -295,7 +254,9 @@ class APISpec(object):
                         func(self, **kwargs),
                     )
 
-        self._paths.setdefault(path.path, path.operations).update(path.operations)
+        clean_operations(operations, self.openapi_version.major)
+
+        self._paths.setdefault(path, operations).update(operations)
 
     def definition(
         self, name, properties=None, enum=None, description=None, extra_fields=None,
@@ -399,7 +360,7 @@ class APISpec(object):
 
         - Receive the `APISpec` instance as the first argument.
         - Include ``**kwargs`` in signature.
-        - Return a `apispec.core.Path` object.
+        - Return a path as `str` or `None` and mutates ``operations`` `dict` kwarg.
 
         The helper may define any named arguments in its signature.
         """
@@ -462,4 +423,3 @@ if PY2:
     yaml.add_representer(unicode, YAMLDumper._represent_unicode, Dumper=YAMLDumper)
 yaml.add_representer(OrderedDict, YAMLDumper._represent_dict, Dumper=YAMLDumper)
 yaml.add_representer(LazyDict, YAMLDumper._represent_dict, Dumper=YAMLDumper)
-yaml.add_representer(Path, YAMLDumper._represent_dict, Dumper=YAMLDumper)

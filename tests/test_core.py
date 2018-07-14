@@ -5,7 +5,7 @@ import pytest
 import mock
 import yaml
 
-from apispec import APISpec, BasePlugin, Path
+from apispec import APISpec, BasePlugin
 from apispec.exceptions import PluginError, APISpecError
 
 
@@ -318,19 +318,9 @@ class TestPath:
         assert '/pets' in spec._paths
         assert '/v1/pets' not in spec._paths
 
-    def test_add_path_accepts_path(self, spec):
-        route = '/pet/{petId}'
-        route_spec = self.paths[route]
-        path = Path(path=route, operations={'get': route_spec['get']})
-        spec.add_path(path)
-
-        p = spec._paths[path.path]
-        assert p == path.operations
-        assert 'get' in p
-
     def test_add_path_strips_path_base_path(self, spec):
         spec.options['basePath'] = '/v1'
-        path = Path(path='/v1/pets')
+        path = '/v1/pets'
         spec.add_path(path)
         assert '/pets' in spec._paths
         assert '/v1/pets' not in spec._paths
@@ -359,6 +349,13 @@ class TestPath:
             assert p['parameters'][0] == {'$ref': '#/components/parameters/test_parameter'}
             assert route_spec['parameters'][0] == metadata['components']['parameters']['test_parameter']
 
+    def test_add_path_check_invalid_http_method(self, spec):
+        spec.add_path('/pet/{petId}', operations={'get': {}})
+        spec.add_path('/pet/{petId}', operations={'x-dummy': {}})
+        with pytest.raises(APISpecError) as excinfo:
+            spec.add_path('/pet/{petId}', operations={'dummy': {}})
+        assert 'One or more HTTP methods are invalid' in str(excinfo)
+
 
 class TestPlugins:
 
@@ -366,15 +363,13 @@ class TestPlugins:
         def definition_helper(self, name, definition, **kwargs):
             return {'properties': {'name': {'type': 'string'}}}
 
-        def path_helper(self, path, **kwargs):
-            if path.path == '/path_1':
-                return Path(
-                    path='/path_1_modified',
-                    operations={'get': {'responses': {'200': {}}}},
-                )
+        def path_helper(self, path, operations, **kwargs):
+            if path == '/path_1':
+                operations.update({'get': {'responses': {'200': {}}}})
+                return '/path_1_modified'
 
         def operation_helper(self, path, operations, **kwargs):
-            if path.path == '/path_2':
+            if path == '/path_2':
                 operations['post'] = {'responses': {'201': {}}}
 
         def response_helper(self, method, status_code, **kwargs):
@@ -465,10 +460,10 @@ class TestOldPlugins:
 
     def test_multiple_path_helpers_w_different_signatures(self, spec):
         def helper1(spec, spam, **kwargs):
-            return Path(path='/foo/bar')
+            return '/foo/bar'
 
         def helper2(spec, eggs, **kwargs):
-            return Path(path='/foo/bar')
+            return '/foo/bar'
 
         spec.register_path_helper(helper1)
         spec.register_path_helper(helper2)
@@ -518,7 +513,7 @@ class TestPathHelpers:
 
     def test_path_helper_is_used(self, spec):
         def path_helper(spec, view_func, **kwargs):
-            return Path(path=view_func['path'])
+            return view_func['path']
         spec.register_path_helper(path_helper)
         spec.add_path(
             view_func={'path': '/pet/{petId}'},
