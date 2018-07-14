@@ -2,7 +2,7 @@
 apispec
 *******
 
-Release v\ |version| (:ref:`Changelog <changelog>`)
+Release v\ |version| (:doc:`Changelog <changelog>`)
 
 A pluggable API specification generator. Currently supports the `OpenAPI specification <http://swagger.io/specification/>`_ (f.k.a. Swagger 2.0).
 

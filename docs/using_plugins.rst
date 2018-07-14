@@ -1,5 +1,3 @@
-.. _using_plugins:
-
 Using Plugins
 =============
 
@@ -39,7 +37,7 @@ The bundled marshmallow plugin (`apispec.ext.marshmallow.MarshmallowPlugin`) pro
 
 The bundled Flask plugin (`apispec.ext.flask.FlaskPlugin`) provides helpers for generating path objects from view functions.
 
-Let's recreate the spec from the :ref:`Quickstart guide <quickstart>` using these two plugins.
+Let's recreate the spec from the :doc:`Quickstart guide <quickstart>` using these two plugins.
 
 .. code-block:: python
 
@@ -227,4 +225,4 @@ schemas with custom fields, use the
 Next Steps
 ----------
 
-You now know how to use plugins. The next section will show you how to write plugins: :ref:`Writing Plugins <writing_plugins>`.
+You now know how to use plugins. The next section will show you how to write plugins: :doc:`Writing Plugins <writing_plugins>`.

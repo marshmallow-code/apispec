@@ -33,7 +33,7 @@ Setting Up for Local Development
     # After activating your virtualenv
     $ pip install -r dev-requirements.txt
 
-3. Install the pre-commit hooks, which will format and lint your git staged files. ::
+3. (Optional, but recommended) Install the pre-commit hooks, which will format and lint your git staged files. ::
 
     # The pre-commit CLI was installed above
     $ pre-commit install --allow-missing-config

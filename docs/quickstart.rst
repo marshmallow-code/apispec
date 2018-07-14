@@ -1,5 +1,3 @@
-.. _quickstart:
-
 Quickstart
 ==========
 
@@ -87,7 +85,7 @@ Use `to_yaml <apispec.APISpec.to_yaml>` to export your spec to YAML.
     # tags: []
 
 .. seealso::
-    For a full reference of the `APISpec <apispec.APISpec>` class, see the :ref:`Core API Reference <core_api>`.
+    For a full reference of the `APISpec <apispec.APISpec>` class, see the :doc:`Core API Reference <api_core>`.
 
 
 Next Steps
@@ -95,4 +93,4 @@ Next Steps
 
 We've learned how to programmatically construct an OpenAPI spec, but defining our entities was verbose.
 
-In the next section, we'll learn how to let plugins do the dirty work: :ref:`Using Plugins <using_plugins>`.
+In the next section, we'll learn how to let plugins do the dirty work: :doc:`Using Plugins <using_plugins>`.

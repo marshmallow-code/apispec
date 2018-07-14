@@ -1,5 +1,3 @@
-.. _writing_plugins:
-
 Writing Plugins
 ===============
 
@@ -112,6 +110,6 @@ Next Steps
 
 To learn more about how to write plugins
 
-* Consult the :ref:`Core API docs <core_api>` for `BasePlugin <apispec.plugin.BasePlugin>`
+* Consult the :doc:`Core API docs <api_core>` for `BasePlugin <apispec.plugin.BasePlugin>`
 * View the source for apispec's bundled plugins, e.g. `apispec.ext.flask.FlaskPlugin. </_modules/apispec/ext/flask.html>`_
 * Check out some projects using apispec: https://github.com/marshmallow-code/apispec/wiki/Ecosystem

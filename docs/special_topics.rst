@@ -1,5 +1,3 @@
-.. _special_topics:
-
 Special Topics
 ==============
 
