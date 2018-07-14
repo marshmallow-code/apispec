@@ -27,7 +27,7 @@ def test(ctx, watch=False, last_failing=False):
 
 @task
 def syntax(ctx):
-    """Run flake8 on codebase."""
+    """Run pre-commit hooks on codebase. Checks formatting and syntax."""
     ctx.run('pre-commit run --all-files --show-diff-on-failure', echo=True)
 
 @task
