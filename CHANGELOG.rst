@@ -1,6 +1,15 @@
 Changelog
 ---------
 
+0.40.0 (unreleased)
++++++++++++++++++++
+
+Features:
+
+- [apispec.core]: *Backwards-incompatible*: Remove `Path` class.
+  Plugins' `path_helper` methods should now return a path as a string
+  and optionally mutate the `operations` dictionary (:issue:`238`).
+
 0.39.0 (2018-06-28)
 +++++++++++++++++++
 
