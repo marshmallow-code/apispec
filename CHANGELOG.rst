@@ -1,8 +1,8 @@
 Changelog
 ---------
 
-0.40.0 (unreleased)
-+++++++++++++++++++
+1.0.0b1 (unreleased)
+++++++++++++++++++++
 
 Features:
 
