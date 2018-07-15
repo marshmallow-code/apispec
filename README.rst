@@ -33,16 +33,20 @@ Example Application
 .. code-block:: python
 
     from apispec import APISpec
+    from apispec.ext.flask import FlaskPlugin
+    from apispec.ext.marshmallow import MarshmallowPlugin
     from flask import Flask, jsonify
     from marshmallow import Schema, fields
+
 
     # Create an APISpec
     spec = APISpec(
         title='Swagger Petstore',
         version='1.0.0',
+        openapi_version='2.0',
         plugins=[
-            'apispec.ext.flask',
-            'apispec.ext.marshmallow',
+            FlaskPlugin(),
+            MarshmallowPlugin(),
         ],
     )
 
