@@ -51,5 +51,9 @@ class OrderedSchema(Schema):
         ordered = True
 
 
-class DefaultCallableSchema(Schema):
+class DefaultValuesSchema(Schema):
+    number_auto_default = fields.Int(missing=12)
+    number_manual_default = fields.Int(missing=12, doc_default=42)
+    string_callable_default = fields.Str(missing=lambda: 'Callable')
+    string_manual_default = fields.Str(missing=lambda: 'Callable', doc_default='Manual')
     numbers = fields.List(fields.Int, missing=list)
