@@ -779,11 +779,11 @@ class TestFieldWithCustomProps:
         assert result['x-count2'] == 2
 
 
-class TestDefaultCanBeCallable:
-    def test_default_can_be_callable(self, spec):
+class TestDefaultCallableIsIgnored:
+    def test_default_callable_is_ignored(self, spec):
         spec.definition('DefaultCallableSchema', schema=DefaultCallableSchema)
         result = spec._definitions['DefaultCallableSchema']['properties']['numbers']
-        assert result['default'] == []
+        assert 'default' not in result
 
 
 @pytest.mark.skipif(

@@ -319,10 +319,7 @@ class OpenAPIConverter(object):
             ret['format'] = fmt
 
         default = field.missing
-        if default is not marshmallow.missing:
-            if callable(default):
-                ret['default'] = default()
-            else:
+        if default is not marshmallow.missing and not callable(default):
                 ret['default'] = default
 
         for attr_func in (

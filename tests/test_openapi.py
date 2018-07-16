@@ -95,6 +95,11 @@ class TestMarshmallowFieldToOpenAPI:
         res = openapi.field2property(field, dump=False)
         assert res['default'] is False
 
+    def test_field_with_missing_callable(self, openapi):
+        field = fields.Str(missing=lambda: 'dummy')
+        res = openapi.field2property(field)
+        assert 'default' not in res
+
     def test_fields_with_missing_load(self, openapi):
         field_dict = {'field': fields.Str(default='foo', missing='bar')}
         res = openapi.fields2parameters(field_dict, default_in='query')
