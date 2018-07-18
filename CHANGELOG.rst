@@ -9,6 +9,9 @@ Features:
 - [apispec.core]: *Backwards-incompatible*: Remove `Path` class.
   Plugins' `path_helper` methods should now return a path as a string
   and optionally mutate the `operations` dictionary (:pr:`238`).
+- [apispec.ext.marshmallow]: Allow overriding the documentation for
+  a field's default. This is especially useful for documenting
+  callable defaults (:issue:`196`).
 
 0.39.0 (2018-06-28)
 +++++++++++++++++++

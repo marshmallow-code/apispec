@@ -3,17 +3,23 @@
 `Schema` to `APISpec.definition <apispec.APISpec.definition>`
 and `APISpec.add_path <apispec.APISpec.add_path>` (for responses).
 
-Requires marshmallow>=2.0.
+Requires marshmallow>=2.7.
 
 ::
 
     from pprint import pprint
+    import datetime as dt
 
     from marshmallow import Schema, fields
 
     class UserSchema(Schema):
         id = fields.Int(dump_only=True)
         name = fields.Str(description="The user's name")
+        created = fields.Datetime(
+            dump_only=True,
+            default=dt.datetime.utcnow,
+            default_doc="The current datetime"
+        )
 
     spec.definition('User', schema=UserSchema)
     pprint(spec.to_dict()['definitions'])
