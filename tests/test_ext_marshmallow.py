@@ -13,7 +13,7 @@ from apispec.ext.marshmallow.openapi import MARSHMALLOW_VERSION_INFO
 from .schemas import (
     PetSchema, AnalysisSchema, SampleSchema, RunSchema,
     SelfReferencingSchema, OrderedSchema, PatternedObjectSchema,
-    DefaultCallableSchema, AnalysisWithListSchema
+    DefaultValuesSchema, AnalysisWithListSchema
 )
 
 
@@ -779,11 +779,15 @@ class TestFieldWithCustomProps:
         assert result['x-count2'] == 2
 
 
-class TestDefaultCanBeCallable:
-    def test_default_can_be_callable(self, spec):
-        spec.definition('DefaultCallableSchema', schema=DefaultCallableSchema)
-        result = spec._definitions['DefaultCallableSchema']['properties']['numbers']
-        assert result['default'] == []
+class TestSchemaWithDefaultValues:
+    def test_schema_with_default_values(self, spec):
+        spec.definition('DefaultValuesSchema', schema=DefaultValuesSchema)
+        props = spec._definitions['DefaultValuesSchema']['properties']
+        assert props['number_auto_default']['default'] == 12
+        assert props['number_manual_default']['default'] == 42
+        assert 'default' not in props['string_callable_default']
+        assert props['string_manual_default']['default'] == 'Manual'
+        assert 'default' not in props['numbers']
 
 
 @pytest.mark.skipif(
