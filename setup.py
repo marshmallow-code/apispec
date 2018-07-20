@@ -3,11 +3,6 @@ import re
 from setuptools import setup, find_packages
 
 
-REQUIRES = [
-    'PyYAML>=3.10',
-]
-
-
 def find_version(fname):
     """Attempts to find the version number in the file names fname.
     Raises RuntimeError if not found.
@@ -46,8 +41,10 @@ setup(
     packages=find_packages(exclude=('test*', )),
     package_dir={'apispec': 'apispec'},
     include_package_data=True,
-    install_requires=REQUIRES,
     extras_require={
+        'yaml': [
+            'PyYAML>=3.10',
+        ],
         'validation': [
             'prance[osv]>=0.11',
         ],

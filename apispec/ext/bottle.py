@@ -26,7 +26,7 @@ import re
 
 from bottle import default_app
 
-from apispec import BasePlugin, utils
+from apispec import BasePlugin, yaml_utils
 from apispec.exceptions import APISpecError
 
 
@@ -55,7 +55,7 @@ class BottlePlugin(BasePlugin):
 
     def path_helper(self, operations, view, **kwargs):
         """Path helper that allows passing a bottle view function."""
-        operations.update(utils.load_operations_from_docstring(view.__doc__) or {})
+        operations.update(yaml_utils.load_operations_from_docstring(view.__doc__) or {})
         app = kwargs.get('app', _default_app)
         route = self._route_for_view(app, view)
         return self.bottle_path_to_openapi(route.rule)

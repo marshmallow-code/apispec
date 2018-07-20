@@ -4,20 +4,6 @@ import pytest
 from apispec import utils, APISpec
 from apispec.exceptions import APISpecError
 
-def test_load_yaml_from_docstring():
-    def f():
-        """
-        Foo
-            bar
-            baz quux
-
-        ---
-        herp: 1
-        derp: 2
-        """
-    result = utils.load_yaml_from_docstring(f.__doc__)
-    assert result == {'herp': 1, 'derp': 2}
-
 def test_validate_swagger_is_deprecated():
     spec = APISpec(
         title='Pets',
