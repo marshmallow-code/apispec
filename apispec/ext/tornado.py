@@ -87,8 +87,7 @@ class TornadoPlugin(BasePlugin):
         :param handler_class:
         :type handler_class: RequestHandler descendant
         """
-        extensions = yaml_utils.load_yaml_from_docstring(handler_class.__doc__) or {}
-        return extensions
+        return yaml_utils.load_yaml_from_docstring(handler_class.__doc__)
 
     def path_helper(self, operations, urlspec, **kwargs):
         """Path helper that allows passing a Tornado URLSpec or tuple."""

@@ -55,7 +55,7 @@ class BottlePlugin(BasePlugin):
 
     def path_helper(self, operations, view, **kwargs):
         """Path helper that allows passing a bottle view function."""
-        operations.update(yaml_utils.load_operations_from_docstring(view.__doc__) or {})
+        operations.update(yaml_utils.load_operations_from_docstring(view.__doc__))
         app = kwargs.get('app', _default_app)
         route = self._route_for_view(app, view)
         return self.bottle_path_to_openapi(route.rule)

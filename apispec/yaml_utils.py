@@ -75,11 +75,11 @@ def load_yaml_from_docstring(docstring):
             cut_from = index
             break
     else:
-        return None
+        return {}
 
     yaml_string = '\n'.join(split_lines[cut_from:])
     yaml_string = dedent(yaml_string)
-    return yaml.load(yaml_string)
+    return yaml.load(yaml_string) or {}
 
 
 PATH_KEYS = set([
@@ -97,10 +97,7 @@ def load_operations_from_docstring(docstring):
     a docstring.
     """
     doc_data = load_yaml_from_docstring(docstring)
-    if doc_data:
-        return {
-            key: val for key, val in iteritems(doc_data)
-            if key in PATH_KEYS or key.startswith('x-')
-        }
-    else:
-        return None
+    return {
+        key: val for key, val in iteritems(doc_data)
+        if key in PATH_KEYS or key.startswith('x-')
+    }
