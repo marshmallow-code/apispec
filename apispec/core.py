@@ -269,9 +269,13 @@ class APISpec(object):
             If you are using `apispec.ext.marshmallow`, you can pass fields' metadata as
             additional keyword arguments.
 
-            For example, to add ``enum`` to your field: ::
+            For example, to add ``enum`` and ``description`` to your field: ::
 
-                status = fields.String(required=True, enum=['open', 'closed'])
+                status = fields.String(
+                    required=True,
+                    enum=['open', 'closed'],
+                    description='Status (open or closed)',
+                )
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#definitionsObject
         """
