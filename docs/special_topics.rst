@@ -33,6 +33,13 @@ YAML
     spec.to_yaml()
 
 
+.. note::
+    `to_yaml <apispec.APISpec.to_yaml>` requires `PyYAML` to be installed. You can install
+    apispec with YAML support using: ::
+
+        pip install 'apispec[yaml]'
+
+
 JSON
 ++++
 

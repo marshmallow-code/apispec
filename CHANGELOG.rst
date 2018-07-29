@@ -9,6 +9,10 @@ Features:
 - [apispec.core]: *Backwards-incompatible*: Remove `Path` class.
   Plugins' `path_helper` methods should now return a path as a string
   and optionally mutate the `operations` dictionary (:pr:`238`).
+- [apispec.core]: *Backwards-incompatible*: YAML support is optional. To
+  install with YAML support, use ``pip install 'apispec[yaml]'``. You
+  will need to do this if you use the ``apispec.ext.flask`` or
+  ``apispec.ext.tornado`` plugins.
 
 0.39.0 (2018-06-28)
 +++++++++++++++++++

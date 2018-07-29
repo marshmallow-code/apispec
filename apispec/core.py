@@ -159,6 +159,8 @@ class APISpec(object):
         return ret
 
     def to_yaml(self):
+        """Render the spec to YAML. Requires PyYAML to be installed.
+        """
         from .yaml_utils import dict_to_yaml
         return dict_to_yaml(self.to_dict())
 
