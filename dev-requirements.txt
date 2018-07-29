@@ -11,7 +11,7 @@ tornado==5.1
 bottle==0.12.13
 
 # testing
-pytest==3.6.3
+pytest==3.6.4
 tox==3.1.2
 mock==2.0.0
 
