@@ -318,12 +318,12 @@ class OpenAPIConverter(object):
         if fmt:
             ret['format'] = fmt
 
-        default = field.missing
-        if default is not marshmallow.missing:
-            if callable(default):
-                ret['default'] = default()
-            else:
-                ret['default'] = default
+        if 'doc_default' in field.metadata:
+            ret['default'] = field.metadata['doc_default']
+        else:
+            default = field.missing
+            if default is not marshmallow.missing and not callable(default):
+                    ret['default'] = default
 
         for attr_func in (
                 self.field2choices,

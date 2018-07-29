@@ -13,6 +13,9 @@ Features:
   install with YAML support, use ``pip install 'apispec[yaml]'``. You
   will need to do this if you use the ``apispec.ext.flask`` or
   ``apispec.ext.tornado`` plugins.
+- [apispec.ext.marshmallow]: Allow overriding the documentation for
+  a field's default. This is especially useful for documenting
+  callable defaults (:issue:`196`).
 
 0.39.0 (2018-06-28)
 +++++++++++++++++++
