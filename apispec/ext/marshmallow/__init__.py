@@ -33,7 +33,7 @@ from __future__ import absolute_import
 
 import marshmallow
 
-from apispec import BasePlugin, utils
+from apispec import BasePlugin
 from .common import resolve_schema_cls, resolve_schema_instance
 from .openapi import OpenAPIConverter
 
@@ -172,70 +172,6 @@ class MarshmallowPlugin(BasePlugin):
             self.inspect_schema_for_auto_referencing(schema_instance)
 
         return json_schema
-
-    def path_helper(self, operations, view=None, **kwargs):
-        """Path helper that allows passing a Schema as a response. Responses can be
-        defined in a view's docstring.
-        ::
-
-            from pprint import pprint
-
-            from my_app import Users, UserSchema
-
-            class UserHandler:
-                def get(self, user_id):
-                    '''Get a user endpoint.
-                    ---
-                    description: Get a user
-                    responses:
-                        200:
-                            description: A user
-                            schema: UserSchema
-                    '''
-                    user = Users.get(id=user_id)
-                    schema = UserSchema()
-                    return schema.dumps(user)
-
-            urlspec = (r'/users/{user_id}', UserHandler)
-            spec.add_path(urlspec=urlspec)
-            pprint(spec.to_dict()['paths'])
-            # {'/users/{user_id}': {'get': {'description': 'Get a user',
-            #                               'responses': {200: {'description': 'A user',
-            #                                                   'schema': {'$ref': '#/definitions/User'}}}}}}
-
-        ::
-
-            from pprint import pprint
-
-            from my_app import Users, UserSchema
-
-            class UsersHandler:
-                def get(self):
-                    '''Get users endpoint.
-                    ---
-                    description: Get a list of users
-                    responses:
-                        200:
-                            description: A list of user
-                            schema:
-                                type: array
-                                items: UserSchema
-                    '''
-                    users = Users.all()
-                    schema = UserSchema(many=True)
-                    return schema.dumps(users)
-
-            urlspec = (r'/users', UsersHandler)
-            spec.add_path(urlspec=urlspec)
-            pprint(spec.to_dict()['paths'])
-            # {'/users': {'get': {'description': 'Get a list of users',
-            #                     'responses': {200: {'description': 'A list of users',
-            #                                         'schema': {'type': 'array',
-            #                                                    'items': {'$ref': '#/definitions/User'}}}}}}}
-
-        """
-        if view:
-            operations.update(utils.load_operations_from_docstring(view.__doc__) or {})
 
     def operation_helper(self, operations, **kwargs):
         for operation in operations.values():
