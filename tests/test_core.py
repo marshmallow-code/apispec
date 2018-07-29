@@ -418,6 +418,44 @@ class TestPlugins:
         }}}}
 
 
+class TestPluginsOrder:
+
+    class OrderedPlugin(BasePlugin):
+
+        def __init__(self, index, output):
+            super(TestPluginsOrder.OrderedPlugin, self).__init__()
+            self.index = index
+            self.output = output
+
+        def path_helper(self, path, operations, **kwargs):
+            self.output.append('plugin_{}_path'.format(self.index))
+
+        def operation_helper(self, path, operations, **kwargs):
+            self.output.append('plugin_{}_operations'.format(self.index))
+
+        def response_helper(self, method, status_code, **kwargs):
+            self.output.append('plugin_{}_response'.format(self.index))
+
+    def test_plugins_order(self):
+        """Test plugins execution order in APISpec.add_path
+
+        - All path helpers are called, then all operation helpers, then all response helpers.
+        - At each step, helpers are executed in the order the plugins are passed to APISpec.
+        """
+        output = []
+        spec = APISpec(
+            title='Swagger Petstore',
+            version='1.0.0',
+            plugins=(self.OrderedPlugin(1, output), self.OrderedPlugin(2, output)),
+        )
+        spec.add_path('/path', operations={'get': {'responses': {200: {}}}})
+        assert output == [
+            'plugin_1_path', 'plugin_2_path',
+            'plugin_1_operations', 'plugin_2_operations',
+            'plugin_1_response', 'plugin_2_response',
+        ]
+
+
 class TestOldPlugins:
 
     DUMMY_PLUGIN = 'tests.plugins.dummy_plugin'
