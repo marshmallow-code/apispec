@@ -5,10 +5,7 @@ import warnings
 from collections import OrderedDict
 import copy
 
-import yaml
-
-from apispec.compat import iterkeys, iteritems, PY2, unicode
-from apispec.lazy_dict import LazyDict
+from apispec.compat import iterkeys, iteritems
 from .exceptions import PluginError, APISpecError, PluginMethodNotImplementedError
 from .utils import OpenAPIVersion
 
@@ -162,7 +159,10 @@ class APISpec(object):
         return ret
 
     def to_yaml(self):
-        return yaml.dump(self.to_dict(), Dumper=YAMLDumper)
+        """Render the spec to YAML. Requires PyYAML to be installed.
+        """
+        from .yaml_utils import dict_to_yaml
+        return dict_to_yaml(self.to_dict())
 
     def add_parameter(self, param_id, location, **kwargs):
         """ Add a parameter which can be referenced.
@@ -409,21 +409,3 @@ class APISpec(object):
         if method not in self._response_helpers:
             self._response_helpers[method] = {}
         self._response_helpers[method].setdefault(status_code, []).append(func)
-
-
-class YAMLDumper(yaml.Dumper):
-
-    @staticmethod
-    def _represent_dict(dumper, instance):
-        return dumper.represent_mapping('tag:yaml.org,2002:map', instance.items())
-
-    if PY2:
-        @staticmethod
-        def _represent_unicode(_, uni):
-            return yaml.ScalarNode(tag=u'tag:yaml.org,2002:str', value=uni)
-
-
-if PY2:
-    yaml.add_representer(unicode, YAMLDumper._represent_unicode, Dumper=YAMLDumper)
-yaml.add_representer(OrderedDict, YAMLDumper._represent_dict, Dumper=YAMLDumper)
-yaml.add_representer(LazyDict, YAMLDumper._represent_dict, Dumper=YAMLDumper)

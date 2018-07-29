@@ -34,7 +34,7 @@ import inspect
 import sys
 from tornado.web import URLSpec
 
-from apispec import BasePlugin, utils
+from apispec import BasePlugin, yaml_utils
 from apispec.exceptions import APISpecError
 
 
@@ -48,9 +48,9 @@ class TornadoPlugin(BasePlugin):
         :param handler_class:
         :type handler_class: RequestHandler descendant
         """
-        for httpmethod in utils.PATH_KEYS:
+        for httpmethod in yaml_utils.PATH_KEYS:
             method = getattr(handler_class, httpmethod)
-            operation_data = utils.load_yaml_from_docstring(method.__doc__)
+            operation_data = yaml_utils.load_yaml_from_docstring(method.__doc__)
             if operation_data:
                 operation = {httpmethod: operation_data}
                 yield operation
@@ -87,8 +87,7 @@ class TornadoPlugin(BasePlugin):
         :param handler_class:
         :type handler_class: RequestHandler descendant
         """
-        extensions = utils.load_yaml_from_docstring(handler_class.__doc__) or {}
-        return extensions
+        return yaml_utils.load_yaml_from_docstring(handler_class.__doc__)
 
     def path_helper(self, operations, urlspec, **kwargs):
         """Path helper that allows passing a Tornado URLSpec or tuple."""

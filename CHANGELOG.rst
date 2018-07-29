@@ -9,6 +9,10 @@ Features:
 - [apispec.core]: *Backwards-incompatible*: Remove `Path` class.
   Plugins' `path_helper` methods should now return a path as a string
   and optionally mutate the `operations` dictionary (:pr:`238`).
+- [apispec.core]: *Backwards-incompatible*: YAML support is optional. To
+  install with YAML support, use ``pip install 'apispec[yaml]'``. You
+  will need to do this if you use ``FlaskPlugin``,
+  ``BottlePlugin``, or ``TornadoPlugin``.
 - [apispec.ext.marshmallow]: Allow overriding the documentation for
   a field's default. This is especially useful for documenting
   callable defaults (:issue:`196`).
