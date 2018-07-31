@@ -3,7 +3,6 @@
 the OpenAPI spec.
 """
 import json
-import warnings
 
 from distutils import version
 
@@ -38,17 +37,6 @@ def validate_spec(spec):
         raise exceptions.OpenAPIError(*err.args)
     else:
         return True
-
-def validate_swagger(spec):
-    """
-    .. deprecated:: 0.38.0
-        Use `apispec.utils.validate_spec` instead.
-    """
-    warnings.warn(
-        'apispec.utils.validate_swagger is deprecated. Use apispec.utils.validate_spec instead.',
-        DeprecationWarning,
-    )
-    return validate_spec(spec)
 
 
 class OpenAPIVersion(version.LooseVersion, object):

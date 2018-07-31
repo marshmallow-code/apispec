@@ -121,15 +121,3 @@ class FlaskPlugin(BasePlugin):
         path = self.flaskpath2openapi(rule.rule)
         app_root = current_app.config['APPLICATION_ROOT'] or '/'
         return urljoin(app_root.rstrip('/') + '/', path.lstrip('/'))
-
-
-# Deprecated interface
-def setup(spec):
-    """Setup for the plugin.
-
-    .. deprecated:: 0.39.0
-        Use FlaskPlugin class.
-    """
-    plugin = FlaskPlugin()
-    plugin.init_spec(spec)
-    spec.plugins.append(plugin)

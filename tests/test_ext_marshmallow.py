@@ -34,30 +34,18 @@ class TestDefinitionHelper:
         assert props['id']['type'] == 'integer'
         assert props['name']['type'] == 'string'
 
-    @pytest.mark.parametrize('deprecated_interface', (True, False))
     @pytest.mark.parametrize('schema', [AnalysisSchema, AnalysisSchema()])
-    def test_resolve_schema_dict_auto_reference(self, schema, deprecated_interface):
+    def test_resolve_schema_dict_auto_reference(self, schema):
         def resolver(schema):
             return schema.__name__
-        if deprecated_interface:
-            spec = APISpec(
-                title='Test auto-reference',
-                version='0.1',
-                description='Test auto-reference',
-                plugins=(
-                    'apispec.ext.marshmallow',
-                ),
-                schema_name_resolver=resolver,
-            )
-        else:
-            spec = APISpec(
-                title='Test auto-reference',
-                version='0.1',
-                description='Test auto-reference',
-                plugins=(
-                    MarshmallowPlugin(schema_name_resolver=resolver),
-                ),
-            )
+        spec = APISpec(
+            title='Test auto-reference',
+            version='0.1',
+            description='Test auto-reference',
+            plugins=(
+                MarshmallowPlugin(schema_name_resolver=resolver),
+            ),
+        )
         assert {} == spec._definitions
 
         spec.definition('analysis', schema=schema)
@@ -81,30 +69,18 @@ class TestDefinitionHelper:
         assert 'SampleSchema' in spec._definitions
         assert 'RunSchema' in spec._definitions
 
-    @pytest.mark.parametrize('deprecated_interface', (True, False))
     @pytest.mark.parametrize('schema', [AnalysisWithListSchema, AnalysisWithListSchema()])
-    def test_resolve_schema_dict_auto_reference_in_list(self, schema, deprecated_interface):
+    def test_resolve_schema_dict_auto_reference_in_list(self, schema):
         def resolver(schema):
             return schema.__name__
-        if deprecated_interface:
-            spec = APISpec(
-                title='Test auto-reference',
-                version='0.1',
-                description='Test auto-reference',
-                plugins=(
-                    'apispec.ext.marshmallow',
-                ),
-                schema_name_resolver=resolver,
-            )
-        else:
-            spec = APISpec(
-                title='Test auto-reference',
-                version='0.1',
-                description='Test auto-reference',
-                plugins=(
-                    MarshmallowPlugin(schema_name_resolver=resolver,),
-                ),
-            )
+        spec = APISpec(
+            title='Test auto-reference',
+            version='0.1',
+            description='Test auto-reference',
+            plugins=(
+                MarshmallowPlugin(schema_name_resolver=resolver,),
+            ),
+        )
         assert {} == spec._definitions
 
         spec.definition('analysis', schema=schema)
@@ -128,31 +104,19 @@ class TestDefinitionHelper:
         assert 'SampleSchema' in spec._definitions
         assert 'RunSchema' in spec._definitions
 
-    @pytest.mark.parametrize('deprecated_interface', (True, False))
     @pytest.mark.parametrize('schema', [AnalysisSchema, AnalysisSchema()])
-    def test_resolve_schema_dict_auto_reference_return_none(self, schema, deprecated_interface):
+    def test_resolve_schema_dict_auto_reference_return_none(self, schema):
         # this resolver return None
         def resolver(schema):
             return None
-        if deprecated_interface:
-            spec = APISpec(
-                title='Test auto-reference',
-                version='0.1',
-                description='Test auto-reference',
-                plugins=(
-                    'apispec.ext.marshmallow',
-                ),
-                schema_name_resolver=resolver,
-            )
-        else:
-            spec = APISpec(
-                title='Test auto-reference',
-                version='0.1',
-                description='Test auto-reference',
-                plugins=(
-                    MarshmallowPlugin(schema_name_resolver=resolver,),
-                ),
-            )
+        spec = APISpec(
+            title='Test auto-reference',
+            version='0.1',
+            description='Test auto-reference',
+            plugins=(
+                MarshmallowPlugin(schema_name_resolver=resolver,),
+            ),
+        )
         assert {} == spec._definitions
 
         spec.definition('analysis', schema=schema)

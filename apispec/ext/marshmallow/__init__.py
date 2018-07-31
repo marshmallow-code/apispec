@@ -184,15 +184,3 @@ class MarshmallowPlugin(BasePlugin):
                     self.resolve_schema_in_request_body(operation['requestBody'])
             for response in operation.get('responses', {}).values():
                 self.resolve_schema(response)
-
-
-# Deprecated interface
-def setup(spec):
-    """Setup for the plugin.
-
-    .. deprecated:: 0.39.0
-        Use MarshmallowPlugin class.
-    """
-    plugin = MarshmallowPlugin(schema_name_resolver=spec.schema_name_resolver)
-    plugin.init_spec(spec)
-    spec.plugins.append(plugin)

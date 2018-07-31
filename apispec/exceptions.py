@@ -5,9 +5,6 @@ import warnings
 class APISpecError(Exception):
     """Base class for all apispec-related errors."""
 
-class PluginError(APISpecError):
-    """Raised when a plugin cannot be found or is invalid."""
-
 class PluginMethodNotImplementedError(APISpecError, NotImplementedError):
     """Raised when calling an unimplemented helper method in a plugin"""
 
