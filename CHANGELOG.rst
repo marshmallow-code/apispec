@@ -1,6 +1,16 @@
 Changelog
 ---------
 
+1.0.0b2 (unreleased)
+++++++++++++++++++++
+
+Other changes:
+
+- Drop deprecated plugin interface. Only plugin classes are now supported. This
+  includes the removal of ``APISpec``'s ``register_*_helper`` methods, as well
+  as its ``schema_name_resolver`` parameter. Also drop deprecated
+  ``apispec.utils.validate_swagger``. (:pr:`259`)
+
 1.0.0b1 (2018-07-29)
 ++++++++++++++++++++
 
@@ -32,7 +42,6 @@ Features:
   while using the legacy interface. (:issue:`207`)
 - [apispec.core]: *Backwards-incompatible*: ``APISpec.openapi_version`` is now an
   ``apispec.utils.OpenAPIVersion`` instance.
-
 
 0.38.0 (2018-06-10)
 +++++++++++++++++++
