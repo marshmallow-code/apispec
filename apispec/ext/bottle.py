@@ -59,15 +59,3 @@ class BottlePlugin(BasePlugin):
         app = kwargs.get('app', _default_app)
         route = self._route_for_view(app, view)
         return self.bottle_path_to_openapi(route.rule)
-
-
-# Deprecated interface
-def setup(spec):
-    """Setup for the plugin.
-
-    .. deprecated:: 0.39.0
-        Use BottlePlugin class.
-    """
-    plugin = BottlePlugin()
-    plugin.init_spec(spec)
-    spec.plugins.append(plugin)

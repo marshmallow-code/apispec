@@ -102,15 +102,3 @@ class TornadoPlugin(BasePlugin):
         params_method = getattr(urlspec.handler_class, list(operations.keys())[0])
         operations.update(self._extensions_from_handler(urlspec.handler_class))
         return self.tornadopath2openapi(urlspec, params_method)
-
-
-# Deprecated interface
-def setup(spec):
-    """Setup for the plugin.
-
-    .. deprecated:: 0.39.0
-        Use TornadoPlugin class.
-    """
-    plugin = TornadoPlugin()
-    plugin.init_spec(spec)
-    spec.plugins.append(plugin)

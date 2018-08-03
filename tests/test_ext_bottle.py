@@ -5,7 +5,8 @@ from bottle import route
 from apispec import APISpec
 from apispec.ext.bottle import BottlePlugin
 
-@pytest.fixture(params=(True, False))
+
+@pytest.fixture
 def spec(request):
     return APISpec(
         title='Swagger Petstore',
@@ -14,10 +15,7 @@ def spec(request):
                     'about Swagger at <a href=\"http://swagger.wordnik.com\">http://swagger.wordnik.com</a> '
                     'or on irc.freenode.net, #swagger.  For this sample, you can use the api '
                     'key \"special-key\" to test the authorization filters',
-        plugins=(
-            # Test both plugin class and deprecated interface
-            BottlePlugin() if request.param else 'apispec.ext.bottle',
-        ),
+        plugins=(BottlePlugin(), ),
     )
 
 
