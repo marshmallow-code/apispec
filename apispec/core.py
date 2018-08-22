@@ -2,7 +2,6 @@
 """Core apispec classes and functions."""
 import re
 from collections import OrderedDict
-import copy
 
 from apispec.compat import iterkeys, iteritems
 from .exceptions import APISpecError, PluginMethodNotImplementedError
@@ -115,21 +114,12 @@ class APISpec(object):
 
         elif self.openapi_version.major == 3:
             ret['openapi'] = self.openapi_version.vstring
-            options = copy.deepcopy(self.options)
-            components = options.pop('components', {})
+            ret.update(self.options)
 
             # deep update components object
-            definitions = components.pop('schemas', {})
-            definitions.update(self._definitions)
-            parameters = components.pop('parameters', {})
-            parameters.update(self._parameters)
-
-            ret['components'] = dict(
-                schemas=definitions,
-                parameters=parameters,
-                **components
-            )
-            ret.update(options)
+            components = ret.setdefault('components', {})
+            components.setdefault('schemas', {}).update(self._definitions)
+            components.setdefault('parameters', {}).update(self._parameters)
 
         return ret
 
