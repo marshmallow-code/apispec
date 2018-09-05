@@ -46,7 +46,7 @@ def load_yaml_from_docstring(docstring):
 
     yaml_string = '\n'.join(split_lines[cut_from:])
     yaml_string = dedent(yaml_string)
-    return yaml.load(yaml_string) or {}
+    return yaml.safe_load(yaml_string) or {}
 
 
 PATH_KEYS = set([

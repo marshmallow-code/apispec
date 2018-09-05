@@ -87,7 +87,7 @@ Here is an example that includes a `Security Scheme Object <https://github.com/O
           bearerFormat: JWT
     """
 
-    settings = yaml.load(OPENAPI_SPEC)
+    settings = yaml.safe_load(OPENAPI_SPEC)
     # retrieve  title, version, and openapi version
     title = settings['info'].pop('title')
     spec_version = settings['info'].pop('version')
