@@ -51,3 +51,4 @@ Contributors (chronological)
 - Christina Long `@cvlong <https://github.com/cvlong>`_
 - Felix Yan `@felixonmars <https://github.com/felixonmars>`_
 - Guoli Lyu `@Guoli-Lyu <https://github.com/Guoli-Lyu>`_
+- Laura Beaufort `@lbeaufort <https://github.com/lbeaufort>`_

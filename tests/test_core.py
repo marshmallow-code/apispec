@@ -163,7 +163,7 @@ class TestDefinitions:
             properties=self.properties,
             enum=enum,
         )
-        assert spec.to_dict() == yaml.load(spec.to_yaml())
+        assert spec.to_dict() == yaml.safe_load(spec.to_yaml())
 
 class TestPath:
     paths = {
