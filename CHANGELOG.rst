@@ -10,6 +10,9 @@ Other changes:
   includes the removal of ``APISpec``'s ``register_*_helper`` methods, as well
   as its ``schema_name_resolver`` parameter. Also drop deprecated
   ``apispec.utils.validate_swagger``. (:pr:`259`)
+- Use ``yaml.safe_load`` instead of ``yaml.load`` when reading
+  docstrings (:issue:`278`). Thanks :user:`lbeaufort` for the suggestion
+  and the PR.
 
 1.0.0b1 (2018-07-29)
 ++++++++++++++++++++
