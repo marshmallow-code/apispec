@@ -65,7 +65,8 @@ setup(
     ],
     test_suite='tests',
     project_urls={
-        'Bug Reports': 'https://github.com/marshmallow-code/apispec/issues',
         'Funding': 'https://opencollective.com/marshmallow',
+        'Issues': 'https://github.com/marshmallow-code/apispec/issues',
+        'Tidelift': 'https://tidelift.com/subscription/pkg/pypi-apispec?utm_source=pypi-apispec&utm_medium=pypi',  # noqa: E501
     },
 )
