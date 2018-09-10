@@ -1,10 +1,8 @@
 Changelog
 ---------
 
-1.0.0b2 (unreleased)
+1.0.0b2 (2018-09-09)
 ++++++++++++++++++++
-
-Other changes:
 
 - Drop deprecated plugin interface. Only plugin classes are now supported. This
   includes the removal of ``APISpec``'s ``register_*_helper`` methods, as well
