@@ -78,15 +78,11 @@ class APISpec(object):
     def __init__(
         self, title, version, plugins=(), openapi_version='2.0', **options
     ):
-        self.info = {
-            'title': title,
-            'version': version,
-        }
-        self.info.update(options.pop('info', {}))
-
+        self.title = title
+        self.version = version
         self.openapi_version = OpenAPIVersion(openapi_version)
-
         self.options = options
+
         # Metadata
         self._definitions = {}
         self._parameters = {}
@@ -100,7 +96,6 @@ class APISpec(object):
 
     def to_dict(self):
         ret = {
-            'info': self.info,
             'paths': self._paths,
             'tags': self._tags,
         }
@@ -119,6 +114,11 @@ class APISpec(object):
             components = ret.setdefault('components', {})
             components.setdefault('schemas', {}).update(self._definitions)
             components.setdefault('parameters', {}).update(self._parameters)
+
+        # Add title and version unless those were provided in options['info']
+        info = ret.setdefault('info', {})
+        info.setdefault('title', self.title)
+        info.setdefault('version', self.version)
 
         return ret
 
