@@ -44,8 +44,8 @@ def spec(request):
     return APISpec(
         title='Swagger Petstore',
         version='1.0.0',
-        info={'description': description},
         openapi_version=openapi_version,
+        info={'description': description},
         **security_kwargs
     )
 
@@ -57,9 +57,9 @@ class TestAPISpecInit:
             APISpec(
                 'Swagger Petstore',
                 version='1.0.0',
+                openapi_version='4.0',  # 4.0 is not supported
                 info={'description': description},
                 security=[{'apiKey': []}],
-                openapi_version='4.0',  # 4.0 is not supported
             )
         assert 'Not a valid OpenAPI version number:' in str(excinfo)
 

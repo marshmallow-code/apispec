@@ -69,7 +69,6 @@ class APISpec(object):
     :param str title: API title
     :param str version: API version
     :param list|tuple plugins: Plugin instances.
-    :param dict info: Optional dict to add to `info`
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#infoObject
     :param str|OpenAPIVersion openapi_version: The OpenAPI version to use.
         Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
@@ -77,13 +76,13 @@ class APISpec(object):
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
     """
     def __init__(
-        self, title, version, plugins=(), info=None, openapi_version='2.0', **options
+        self, title, version, plugins=(), openapi_version='2.0', **options
     ):
         self.info = {
             'title': title,
             'version': version,
         }
-        self.info.update(info or {})
+        self.info.update(options.pop('info', {}))
 
         self.openapi_version = OpenAPIVersion(openapi_version)
 
