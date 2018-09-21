@@ -1,6 +1,15 @@
 Changelog
 ---------
 
+1.0.0b3 (unreleased)
+++++++++++++++++++++
+
+Features:
+
+- [apispec.core]: *Backwards-incompatible*: ``openapi_version`` parameter of
+  ``APISpec`` class does not default to `'2.0'` anymore and ``info`` parameter
+  is merged with ``**options`` kwargs.
+
 1.0.0b2 (2018-09-09)
 ++++++++++++++++++++
 
