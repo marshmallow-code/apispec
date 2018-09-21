@@ -41,7 +41,7 @@ class TestDefinitionHelper:
         spec = APISpec(
             title='Test auto-reference',
             version='0.1',
-            description='Test auto-reference',
+            openapi_version='2.0',
             plugins=(
                 MarshmallowPlugin(schema_name_resolver=resolver),
             ),
@@ -76,7 +76,7 @@ class TestDefinitionHelper:
         spec = APISpec(
             title='Test auto-reference',
             version='0.1',
-            description='Test auto-reference',
+            openapi_version='2.0',
             plugins=(
                 MarshmallowPlugin(schema_name_resolver=resolver,),
             ),
@@ -112,7 +112,7 @@ class TestDefinitionHelper:
         spec = APISpec(
             title='Test auto-reference',
             version='0.1',
-            description='Test auto-reference',
+            openapi_version='2.0',
             plugins=(
                 MarshmallowPlugin(schema_name_resolver=resolver,),
             ),

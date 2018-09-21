@@ -44,8 +44,8 @@ def spec(request):
     return APISpec(
         title='Swagger Petstore',
         version='1.0.0',
-        info={'description': description},
         openapi_version=openapi_version,
+        info={'description': description},
         **security_kwargs
     )
 
@@ -57,9 +57,9 @@ class TestAPISpecInit:
             APISpec(
                 'Swagger Petstore',
                 version='1.0.0',
+                openapi_version='4.0',  # 4.0 is not supported
                 info={'description': description},
                 security=[{'apiKey': []}],
-                openapi_version='4.0',  # 4.0 is not supported
             )
         assert 'Not a valid OpenAPI version number:' in str(excinfo)
 
@@ -362,6 +362,7 @@ class TestPlugins:
         spec = APISpec(
             title='Swagger Petstore',
             version='1.0.0',
+            openapi_version='3.0.0',
             plugins=(self.TestPlugin(), ),
         )
         spec.definition('Pet', {})
@@ -371,6 +372,7 @@ class TestPlugins:
         spec = APISpec(
             title='Swagger Petstore',
             version='1.0.0',
+            openapi_version='3.0.0',
             plugins=(self.TestPlugin(), ),
         )
         spec.add_path('/path_1')
@@ -381,6 +383,7 @@ class TestPlugins:
         spec = APISpec(
             title='Swagger Petstore',
             version='1.0.0',
+            openapi_version='3.0.0',
             plugins=(self.TestPlugin(), ),
         )
         spec.add_path('/path_2', operations={'post': {'responses': {'200': {}}}})
@@ -391,6 +394,7 @@ class TestPlugins:
         spec = APISpec(
             title='Swagger Petstore',
             version='1.0.0',
+            openapi_version='3.0.0',
             plugins=(self.TestPlugin(), ),
         )
         spec.add_path('/path_3', operations={'delete': {'responses': {'204': {'content': {}}}}})
@@ -428,6 +432,7 @@ class TestPluginsOrder:
         spec = APISpec(
             title='Swagger Petstore',
             version='1.0.0',
+            openapi_version='3.0.0',
             plugins=(self.OrderedPlugin(1, output), self.OrderedPlugin(2, output)),
         )
         spec.add_path('/path', operations={'get': {'responses': {200: {}}}})
