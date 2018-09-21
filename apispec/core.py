@@ -75,9 +75,7 @@ class APISpec(object):
     :param dict options: Optional top-level keys
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
     """
-    def __init__(
-        self, title, version, plugins=(), openapi_version='2.0', **options
-    ):
+    def __init__(self, title, version, openapi_version, plugins=(), **options):
         self.title = title
         self.version = version
         self.openapi_version = OpenAPIVersion(openapi_version)

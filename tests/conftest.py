@@ -13,8 +13,8 @@ def spec_fixture(request):
     spec = APISpec(
         title='Validation',
         version='0.1',
-        plugins=(ma_plugin, ),
         openapi_version=request.param,
+        plugins=(ma_plugin, ),
     )
     return namedtuple(
         'Spec', ('spec', 'marshmallow_plugin', 'openapi'),

@@ -1,22 +1,19 @@
 # -*- coding: utf-8 -*-
 import pytest
 
-from apispec import APISpec
-from apispec.ext.tornado import TornadoPlugin
 from tornado.web import RequestHandler
 import tornado.gen
 
+from apispec import APISpec
+from apispec.ext.tornado import TornadoPlugin
 
-@pytest.fixture
+
+@pytest.fixture(params=('2.0', '3.0.0'))
 def spec(request):
     return APISpec(
         title='Swagger Petstore',
         version='1.0.0',
-        description='This is a sample Petstore server.  You can find out more '
-        'about Swagger at <a href=\"http://swagger.wordnik.com\">'
-        'http://swagger.wordnik.com</a> or on irc.freenode.net, #swagger.'
-        'For this sample, you can use the api key \"special-key\" to test the'
-        'authorization filters',
+        openapi_version=request.param,
         plugins=(TornadoPlugin(), ),
     )
 
