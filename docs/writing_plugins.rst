@@ -87,6 +87,7 @@ To use the plugin:
     spec = APISpec(
         title='Gisty',
         version='1.0.0',
+        openapi_version='2.0',
         plugins=[Docplugin()]
     )
 
