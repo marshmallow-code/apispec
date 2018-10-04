@@ -46,7 +46,7 @@ class BottlePlugin(BasePlugin):
     def _route_for_view(app, view):
         endpoint = None
         for route in app.routes:
-            if route._context['callback'] == view:
+            if route.callback == view:
                 endpoint = route
                 break
         if not endpoint:
