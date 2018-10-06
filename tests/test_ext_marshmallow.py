@@ -213,7 +213,9 @@ class TestOperationHelper:
             },
         )
         get = spec_fixture.spec._paths['/pet']['get']
-        assert get['responses'][200]['schema'] == spec_fixture.openapi.schema2jsonschema(PetSchema)
+        assert get['responses'][200]['schema'] == spec_fixture.openapi.schema2jsonschema(
+            PetSchema, dump=True, load=False,
+        )
         assert get['responses'][200]['description'] == 'successful operation'
 
     @pytest.mark.parametrize('pet_schema', (PetSchema, PetSchema(), 'tests.schemas.PetSchema'))
@@ -238,7 +240,9 @@ class TestOperationHelper:
         )
         get = spec_fixture.spec._paths['/pet']['get']
         resolved_schema = get['responses'][200]['content']['application/json']['schema']
-        assert resolved_schema == spec_fixture.openapi.schema2jsonschema(PetSchema)
+        assert resolved_schema == spec_fixture.openapi.schema2jsonschema(
+            PetSchema, dump=True, load=False,
+        )
         assert get['responses'][200]['description'] == 'successful operation'
 
     @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
