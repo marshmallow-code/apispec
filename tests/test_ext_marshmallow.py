@@ -313,7 +313,7 @@ class TestOperationHelper:
             name = parameter['name']
             assert description == PetSchema.description[name]
         post = p['post']
-        post_schema = spec_fixture.openapi.resolve_schema_dict(PetSchema)
+        post_schema = spec_fixture.openapi.resolve_schema_dict(PetSchema, dump=False, load=True)
         assert post['requestBody']['content']['application/json']['schema'] == post_schema
         assert post['requestBody']['description'] == 'a pet schema'
         assert post['requestBody']['required']

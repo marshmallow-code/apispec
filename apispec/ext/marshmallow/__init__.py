@@ -113,7 +113,7 @@ class MarshmallowPlugin(BasePlugin):
         content = request_body['content']
         for content_type in content:
             schema = content[content_type]['schema']
-            content[content_type]['schema'] = self.openapi.resolve_schema_dict(schema)
+            content[content_type]['schema'] = self.openapi.resolve_schema_dict(schema, dump=False, load=True)
 
     def resolve_schema(self, data, dump=True, load=True):
         """Function to resolve a schema in a parameter or response - modifies the
