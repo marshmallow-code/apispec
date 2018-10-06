@@ -9,7 +9,6 @@ import operator
 import warnings
 import functools
 from collections import OrderedDict
-import copy
 
 import marshmallow
 from marshmallow.utils import is_collection
@@ -18,7 +17,7 @@ from marshmallow.orderedset import OrderedSet
 
 from apispec.lazy_dict import LazyDict
 from apispec.utils import OpenAPIVersion
-from .common import resolve_schema_cls
+from .common import resolve_schema_cls, get_fields
 
 
 MARSHMALLOW_VERSION_INFO = tuple(
@@ -401,21 +400,12 @@ class OpenAPIConverter(object):
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
         """
-        if hasattr(schema, 'fields'):
-            fields = schema.fields
-        elif hasattr(schema, '_declared_fields'):
-            fields = copy.deepcopy(schema._declared_fields)
-        else:
-            raise ValueError(
-                "{0!r} doesn't have either `fields` or `_declared_fields`".format(schema),
-            )
-        return self.fields2parameters(fields, schema, **kwargs)
-
+        return self.fields2parameters(get_fields(schema), schema, **kwargs)
 
     def fields2parameters(
-        self, fields, schema=None, use_refs=True,
-        default_in='body', name='body', required=False,
-        use_instances=False, description=None, **kwargs
+            self, fields, schema=None, use_refs=True,
+            default_in='body', name='body', required=False,
+            use_instances=False, description=None, **kwargs
     ):
         """Return an array of OpenAPI parameters given a mapping between field names and
         :class:`Field <marshmallow.Field>` objects. If `default_in` is "body", then return an array
@@ -479,7 +469,6 @@ class OpenAPIConverter(object):
                 parameters.append(param)
         return parameters
 
-
     def field2parameter(self, field, name='body', use_refs=True, default_in='body'):
         """Return an OpenAPI parameter as a `dict`, given a marshmallow
         :class:`Field <marshmallow.Field>`.
@@ -496,7 +485,6 @@ class OpenAPIConverter(object):
             location=location,
             default_in=default_in,
         )
-
 
     def property2parameter(
         self, prop, name='body', required=False, multiple=False,
@@ -546,20 +534,8 @@ class OpenAPIConverter(object):
                 ret['schema'] = prop
         return ret
 
-    def schema2jsonschema(self, schema, use_refs=True, dump=True, load=True, name=None):
-        if hasattr(schema, 'fields'):
-            fields = schema.fields
-        elif hasattr(schema, '_declared_fields'):
-            fields = copy.deepcopy(schema._declared_fields)
-        else:
-            raise ValueError(
-                "{0!r} doesn't have either `fields` or `_declared_fields`".format(schema),
-            )
-
-        return self.fields2jsonschema(
-            fields, schema, use_refs=use_refs, dump=dump, load=load, name=name,
-        )
-
+    def schema2jsonschema(self, schema, **kwargs):
+        return self.fields2jsonschema(get_fields(schema), schema, **kwargs)
 
     def fields2jsonschema(self, fields, schema=None, use_refs=True, dump=True, load=True, name=None):
         """Return the JSON Schema Object for a given marshmallow
@@ -654,7 +630,6 @@ class OpenAPIConverter(object):
             }
 
         return jsonschema
-
 
     def get_ref_path(self):
         """Return the path for references based on the openapi version

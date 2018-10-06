@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Utilities to get schema instances/classes"""
 
+import copy
+
 import marshmallow
 
 
@@ -28,3 +30,12 @@ def resolve_schema_cls(schema):
     if isinstance(schema, marshmallow.Schema):
         return type(schema)
     return marshmallow.class_registry.get_class(schema)
+
+
+def get_fields(schema):
+    """Return fields from schema"""
+    if hasattr(schema, 'fields'):
+        return schema.fields
+    elif hasattr(schema, '_declared_fields'):
+        return copy.deepcopy(schema._declared_fields)
+    raise ValueError("{0!r} doesn't have either `fields` or `_declared_fields`".format(schema))
