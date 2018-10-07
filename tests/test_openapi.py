@@ -11,6 +11,9 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec.ext.marshmallow.openapi import OpenAPIConverter, MARSHMALLOW_VERSION_INFO
 from apispec import exceptions, utils, APISpec
 
+from .utils import get_definitions
+
+
 @pytest.fixture(params=('2.0', '3.0.0'))
 def openapi(request):
     return OpenAPIConverter(openapi_version=request.param)
@@ -932,7 +935,7 @@ class TestFieldValidation:
 
     def test_range(self, spec):
         spec.definition('Validation', schema=ValidationSchema)
-        result = spec._definitions['Validation']['properties']['range']
+        result = get_definitions(spec)['Validation']['properties']['range']
 
         assert 'minimum' in result
         assert result['minimum'] == 1
@@ -941,7 +944,7 @@ class TestFieldValidation:
 
     def test_multiple_ranges(self, spec):
         spec.definition('Validation', schema=ValidationSchema)
-        result = spec._definitions['Validation']['properties']['multiple_ranges']
+        result = get_definitions(spec)['Validation']['properties']['multiple_ranges']
 
         assert 'minimum' in result
         assert result['minimum'] == 3
@@ -950,7 +953,7 @@ class TestFieldValidation:
 
     def test_list_length(self, spec):
         spec.definition('Validation', schema=ValidationSchema)
-        result = spec._definitions['Validation']['properties']['list_length']
+        result = get_definitions(spec)['Validation']['properties']['list_length']
 
         assert 'minItems' in result
         assert result['minItems'] == 1
@@ -959,7 +962,7 @@ class TestFieldValidation:
 
     def test_string_length(self, spec):
         spec.definition('Validation', schema=ValidationSchema)
-        result = spec._definitions['Validation']['properties']['string_length']
+        result = get_definitions(spec)['Validation']['properties']['string_length']
 
         assert 'minLength' in result
         assert result['minLength'] == 1
@@ -968,7 +971,7 @@ class TestFieldValidation:
 
     def test_multiple_lengths(self, spec):
         spec.definition('Validation', schema=ValidationSchema)
-        result = spec._definitions['Validation']['properties']['multiple_lengths']
+        result = get_definitions(spec)['Validation']['properties']['multiple_lengths']
 
         assert 'minLength' in result
         assert result['minLength'] == 3
@@ -977,7 +980,7 @@ class TestFieldValidation:
 
     def test_equal_length(self, spec):
         spec.definition('Validation', schema=ValidationSchema)
-        result = spec._definitions['Validation']['properties']['equal_length']
+        result = get_definitions(spec)['Validation']['properties']['equal_length']
 
         assert 'minLength' in result
         assert result['minLength'] == 5

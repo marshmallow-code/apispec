@@ -7,6 +7,8 @@ from flask.views import MethodView
 from apispec import APISpec
 from apispec.ext.flask import FlaskPlugin
 
+from .utils import get_paths
+
 
 @pytest.fixture(params=('2.0', '3.0.0'))
 def spec(request):
@@ -38,10 +40,11 @@ class TestPathHelpers:
             view=hello,
             operations={'get': {'parameters': [], 'responses': {'200': {}}}},
         )
-        assert '/hello' in spec._paths
-        assert 'get' in spec._paths['/hello']
+        paths = get_paths(spec)
+        assert '/hello' in paths
+        assert 'get' in paths['/hello']
         expected = {'parameters': [], 'responses': {'200': {}}}
-        assert spec._paths['/hello']['get'] == expected
+        assert paths['/hello']['get'] == expected
 
     def test_path_from_method_view(self, app, spec):
         class HelloApi(MethodView):
@@ -69,9 +72,10 @@ class TestPathHelpers:
             'description': 'get a greeting',
             'responses': {200: {'description': 'said hi'}},
         }
-        assert spec._paths['/hi']['get'] == expected
-        assert spec._paths['/hi']['post'] == {}
-        assert spec._paths['/hi']['x-extension'] == 'global metadata'
+        paths = get_paths(spec)
+        assert paths['/hi']['get'] == expected
+        assert paths['/hi']['post'] == {}
+        assert paths['/hi']['x-extension'] == 'global metadata'
 
     def test_path_with_multiple_methods(self, app, spec):
 
@@ -85,8 +89,9 @@ class TestPathHelpers:
                 post={'description': 'post a greeting', 'responses': {'200': {}}},
             ),
         )
-        get_op = spec._paths['/hello']['get']
-        post_op = spec._paths['/hello']['post']
+        paths = get_paths(spec)
+        get_op = paths['/hello']['get']
+        post_op = paths['/hello']['post']
         assert get_op['description'] == 'get a greeting'
         assert post_op['description'] == 'post a greeting'
 
@@ -115,9 +120,10 @@ class TestPathHelpers:
         method_view = HelloApi.as_view('hi')
         app.add_url_rule('/hi', view_func=method_view, methods=('GET', 'POST'))
         spec.add_path(view=method_view)
-        assert 'get' in spec._paths['/hi']
-        assert 'post' in spec._paths['/hi']
-        assert 'delete' not in spec._paths['/hi']
+        paths = get_paths(spec)
+        assert 'get' in paths['/hi']
+        assert 'post' in paths['/hi']
+        assert 'delete' not in paths['/hi']
 
     def test_integration_with_docstring_introspection(self, app, spec):
 
@@ -151,12 +157,13 @@ class TestPathHelpers:
             return 'hi'
 
         spec.add_path(view=hello)
-        get_op = spec._paths['/hello']['get']
-        post_op = spec._paths['/hello']['post']
-        extension = spec._paths['/hello']['x-extension']
+        paths = get_paths(spec)
+        get_op = paths['/hello']['get']
+        post_op = paths['/hello']['post']
+        extension = paths['/hello']['x-extension']
         assert get_op['description'] == 'get a greeting'
         assert post_op['description'] == 'post a greeting'
-        assert 'foo' not in spec._paths['/hello']
+        assert 'foo' not in paths['/hello']
         assert extension == 'value'
 
     def test_path_is_translated_to_swagger_template(self, app, spec):
@@ -166,7 +173,7 @@ class TestPathHelpers:
             return 'representation of pet {pet_id}'.format(pet_id=pet_id)
 
         spec.add_path(view=get_pet)
-        assert '/pet/{pet_id}' in spec._paths
+        assert '/pet/{pet_id}' in get_paths(spec)
 
     def test_path_includes_app_root(self, app, spec):
 
@@ -178,7 +185,7 @@ class TestPathHelpers:
             return 'pet'
 
         spec.add_path(view=get_pet)
-        assert '/app/root/partial/path/pet' in spec._paths
+        assert '/app/root/partial/path/pet' in get_paths(spec)
 
     def test_path_with_args_includes_app_root(self, app, spec):
 
@@ -190,7 +197,7 @@ class TestPathHelpers:
             return 'representation of pet {pet_id}'.format(pet_id=pet_id)
 
         spec.add_path(view=get_pet)
-        assert '/app/root/partial/path/pet/{pet_id}' in spec._paths
+        assert '/app/root/partial/path/pet/{pet_id}' in get_paths(spec)
 
     def test_path_includes_app_root_with_right_slash(self, app, spec):
 
@@ -202,4 +209,4 @@ class TestPathHelpers:
             return 'pet'
 
         spec.add_path(view=get_pet)
-        assert '/app/root/partial/path/pet' in spec._paths
+        assert '/app/root/partial/path/pet' in get_paths(spec)

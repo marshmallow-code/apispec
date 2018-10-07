@@ -7,6 +7,8 @@ import tornado.gen
 from apispec import APISpec
 from apispec.ext.tornado import TornadoPlugin
 
+from .utils import get_paths
+
 
 @pytest.fixture(params=('2.0', '3.0.0'))
 def spec(request):
@@ -31,10 +33,11 @@ class TestPathHelpers:
         )
 
         spec.add_path(urlspec=urlspec, operations=operations)
-        assert '/hello' in spec._paths
-        assert 'get' in spec._paths['/hello']
+        paths = get_paths(spec)
+        assert '/hello' in paths
+        assert 'get' in paths['/hello']
         expected = {'parameters': [], 'responses': {'200': {}}}
-        assert spec._paths['/hello']['get'] == expected
+        assert paths['/hello']['get'] == expected
 
     def test_path_with_multiple_methods(self, spec):
 
@@ -57,8 +60,9 @@ class TestPathHelpers:
             },
         }
         spec.add_path(urlspec=urlspec, operations=operations)
-        get_op = spec._paths['/hello']['get']
-        post_op = spec._paths['/hello']['post']
+        paths = get_paths(spec)
+        get_op = paths['/hello']['get']
+        post_op = paths['/hello']['post']
         assert get_op['description'] == 'get a greeting'
         assert post_op['description'] == 'post a greeting'
 
@@ -93,9 +97,10 @@ class TestPathHelpers:
 
         urlspec = (r'/hello', HelloHandler)
         spec.add_path(urlspec=urlspec)
-        get_op = spec._paths['/hello']['get']
-        post_op = spec._paths['/hello']['post']
-        extension = spec._paths['/hello']['x-extension']
+        paths = get_paths(spec)
+        get_op = paths['/hello']['get']
+        post_op = paths['/hello']['post']
+        extension = paths['/hello']['x-extension']
         assert get_op['description'] == 'get a greeting'
         assert post_op['description'] == 'post a greeting'
         assert extension == 'value'
@@ -112,7 +117,7 @@ class TestPathHelpers:
         )
 
         spec.add_path(urlspec=urlspec, operations=operations)
-        assert '/hello/world' in spec._paths
+        assert '/hello/world' in get_paths(spec)
 
     class HelloWorldHandler(RequestHandler):
         def get(self, param1, param2):
@@ -138,7 +143,8 @@ class TestPathHelpers:
 
         spec.add_path(urlspec=urlspec, operations=operations)
         path = '/hello/{param1}/world/{param2}'
-        assert path in spec._paths
-        assert 'get' in spec._paths[path]
+        paths = get_paths(spec)
+        assert path in paths
+        assert 'get' in paths[path]
         expected = {'parameters': [], 'responses': {'200': {}}}
-        assert spec._paths[path]['get'] == expected
+        assert paths[path]['get'] == expected

@@ -6,6 +6,8 @@ from bottle import route
 from apispec import APISpec
 from apispec.ext.bottle import BottlePlugin
 
+from .utils import get_paths
+
 
 @pytest.fixture(params=('2.0', '3.0.0'))
 def spec(request):
@@ -27,10 +29,11 @@ class TestPathHelpers:
             view=hello,
             operations={'get': {'parameters': [], 'responses': {'200': {}}}},
         )
-        assert '/hello' in spec._paths
-        assert 'get' in spec._paths['/hello']
+        paths = get_paths(spec)
+        assert '/hello' in paths
+        assert 'get' in paths['/hello']
         expected = {'parameters': [], 'responses': {'200': {}}}
-        assert spec._paths['/hello']['get'] == expected
+        assert paths['/hello']['get'] == expected
 
     def test_path_with_multiple_methods(self, spec):
 
@@ -44,8 +47,9 @@ class TestPathHelpers:
                 post={'description': 'post a greeting', 'responses': {'200': {}}},
             ),
         )
-        get_op = spec._paths['/hello']['get']
-        post_op = spec._paths['/hello']['post']
+        paths = get_paths(spec)
+        get_op = paths['/hello']['get']
+        post_op = paths['/hello']['post']
         assert get_op['description'] == 'get a greeting'
         assert post_op['description'] == 'post a greeting'
 
@@ -81,12 +85,13 @@ class TestPathHelpers:
             return 'hi'
 
         spec.add_path(view=hello)
-        get_op = spec._paths['/hello']['get']
-        post_op = spec._paths['/hello']['post']
-        extension = spec._paths['/hello']['x-extension']
+        paths = get_paths(spec)
+        get_op = paths['/hello']['get']
+        post_op = paths['/hello']['post']
+        extension = paths['/hello']['x-extension']
         assert get_op['description'] == 'get a greeting'
         assert post_op['description'] == 'post a greeting'
-        assert 'foo' not in spec._paths['/hello']
+        assert 'foo' not in paths['/hello']
         assert extension == 'value'
 
     def test_path_is_translated_to_openapi_template(self, spec):
@@ -96,7 +101,7 @@ class TestPathHelpers:
             return 'representation of pet {pet_id}'.format(pet_id=pet_id)
 
         spec.add_path(view=get_pet)
-        assert '/pet/{pet_id}' in spec._paths
+        assert '/pet/{pet_id}' in get_paths(spec)
 
     def test_path_with_params(self, spec):
 
@@ -105,4 +110,4 @@ class TestPathHelpers:
             return 'new pet!'
 
         spec.add_path(view=set_pet)
-        assert '/pet/{pet_id}/{shop_id}' in spec._paths
+        assert '/pet/{pet_id}/{shop_id}' in get_paths(spec)

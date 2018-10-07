@@ -16,6 +16,8 @@ from .schemas import (
     DefaultValuesSchema, AnalysisWithListSchema
 )
 
+from .utils import get_definitions, get_paths
+
 
 def ref_path(spec):
     if spec.openapi_version.version[0] < 3:
@@ -28,8 +30,9 @@ class TestDefinitionHelper:
     @pytest.mark.parametrize('schema', [PetSchema, PetSchema()])
     def test_can_use_schema_as_definition(self, spec, schema):
         spec.definition('Pet', schema=schema)
-        assert 'Pet' in spec._definitions
-        props = spec._definitions['Pet']['properties']
+        definitions = get_definitions(spec)
+        assert 'Pet' in definitions
+        props = definitions['Pet']['properties']
 
         assert props['id']['type'] == 'integer'
         assert props['name']['type'] == 'string'
@@ -46,7 +49,7 @@ class TestDefinitionHelper:
                 MarshmallowPlugin(schema_name_resolver=resolver),
             ),
         )
-        assert {} == spec._definitions
+        assert {} == get_definitions(spec)
 
         spec.definition('analysis', schema=schema)
         spec.add_path(
@@ -62,12 +65,12 @@ class TestDefinitionHelper:
                 },
             },
         )
+        definitions = get_definitions(spec)
+        assert 3 == len(definitions)
 
-        assert 3 == len(spec._definitions)
-
-        assert 'analysis' in spec._definitions
-        assert 'SampleSchema' in spec._definitions
-        assert 'RunSchema' in spec._definitions
+        assert 'analysis' in definitions
+        assert 'SampleSchema' in definitions
+        assert 'RunSchema' in definitions
 
     @pytest.mark.parametrize('schema', [AnalysisWithListSchema, AnalysisWithListSchema()])
     def test_resolve_schema_dict_auto_reference_in_list(self, schema):
@@ -81,7 +84,7 @@ class TestDefinitionHelper:
                 MarshmallowPlugin(schema_name_resolver=resolver,),
             ),
         )
-        assert {} == spec._definitions
+        assert {} == get_definitions(spec)
 
         spec.definition('analysis', schema=schema)
         spec.add_path(
@@ -97,12 +100,12 @@ class TestDefinitionHelper:
                 },
             },
         )
+        definitions = get_definitions(spec)
+        assert 3 == len(definitions)
 
-        assert 3 == len(spec._definitions)
-
-        assert 'analysis' in spec._definitions
-        assert 'SampleSchema' in spec._definitions
-        assert 'RunSchema' in spec._definitions
+        assert 'analysis' in definitions
+        assert 'SampleSchema' in definitions
+        assert 'RunSchema' in definitions
 
     @pytest.mark.parametrize('schema', [AnalysisSchema, AnalysisSchema()])
     def test_resolve_schema_dict_auto_reference_return_none(self, schema):
@@ -117,7 +120,7 @@ class TestDefinitionHelper:
                 MarshmallowPlugin(schema_name_resolver=resolver,),
             ),
         )
-        assert {} == spec._definitions
+        assert {} == get_definitions(spec)
 
         spec.definition('analysis', schema=schema)
         spec.add_path(
@@ -133,18 +136,16 @@ class TestDefinitionHelper:
                 },
             },
         )
-
         # Other shemas not yet referenced
-        assert 1 == len(spec._definitions)
-
-        spec_dict = spec.to_dict()
-        assert spec_dict.get('definitions')
-        assert 'analysis' in spec_dict['definitions']
+        definitions = get_definitions(spec)
+        assert 1 == len(definitions)
+        assert 'analysis' in definitions
         # Inspect/Read objects will not auto reference because resolver func
         # return None
-        json.dumps(spec_dict)
+        json.dumps(spec.to_dict())
         # Other shema still not referenced
-        assert 1 == len(spec._definitions)
+        definitions = get_definitions(spec)
+        assert 1 == len(definitions)
 
 
 class TestCustomField:
@@ -174,9 +175,9 @@ class TestCustomField:
         spec_fixture.spec.definition('CustomPetA', schema=CustomPetASchema)
         spec_fixture.spec.definition('CustomPetB', schema=CustomPetBSchema)
 
-        props_0 = spec_fixture.spec._definitions['Pet']['properties']
-        props_a = spec_fixture.spec._definitions['CustomPetA']['properties']
-        props_b = spec_fixture.spec._definitions['CustomPetB']['properties']
+        props_0 = get_definitions(spec_fixture.spec)['Pet']['properties']
+        props_a = get_definitions(spec_fixture.spec)['CustomPetA']['properties']
+        props_b = get_definitions(spec_fixture.spec)['CustomPetB']['properties']
 
         assert props_0['name']['type'] == 'string'
         assert 'format' not in props_0['name']
@@ -212,7 +213,7 @@ class TestOperationHelper:
                 },
             },
         )
-        get = spec_fixture.spec._paths['/pet']['get']
+        get = get_paths(spec_fixture.spec)['/pet']['get']
         assert get['responses'][200]['schema'] == spec_fixture.openapi.schema2jsonschema(
             PetSchema, dump=True, load=False,
         )
@@ -238,7 +239,7 @@ class TestOperationHelper:
                 },
             },
         )
-        get = spec_fixture.spec._paths['/pet']['get']
+        get = get_paths(spec_fixture.spec)['/pet']['get']
         resolved_schema = get['responses'][200]['content']['application/json']['schema']
         assert resolved_schema == spec_fixture.openapi.schema2jsonschema(
             PetSchema, dump=True, load=False,
@@ -267,7 +268,7 @@ class TestOperationHelper:
                 },
             },
         )
-        p = spec_fixture.spec._paths['/pet']
+        p = get_paths(spec_fixture.spec)['/pet']
         get = p['get']
         assert get['parameters'] == spec_fixture.openapi.schema2parameters(
             PetSchema, default_in='query',
@@ -302,7 +303,7 @@ class TestOperationHelper:
                 },
             },
         )
-        p = spec_fixture.spec._paths['/pet']
+        p = get_paths(spec_fixture.spec)['/pet']
         get = p['get']
         assert get['parameters'] == spec_fixture.openapi.schema2parameters(
             PetSchema, default_in='query',
@@ -333,7 +334,7 @@ class TestOperationHelper:
                 },
             },
         )
-        get = spec_fixture.spec._paths['/pet']['get']
+        get = get_paths(spec_fixture.spec)['/pet']['get']
         assert get['responses'][200]['schema']['$ref'] == self.ref_path(spec_fixture.spec) + 'Pet'
 
     @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
@@ -355,7 +356,7 @@ class TestOperationHelper:
                 },
             },
         )
-        get = spec_fixture.spec._paths['/pet']['get']
+        get = get_paths(spec_fixture.spec)['/pet']['get']
         assert get['responses'][200]['content']['application/json']['schema']['$ref'] == self.ref_path(
             spec_fixture.spec,
         ) + 'Pet'
@@ -380,7 +381,7 @@ class TestOperationHelper:
                 },
             },
         )
-        p = spec_fixture.spec._paths['/pet']
+        p = get_paths(spec_fixture.spec)['/pet']
         assert 'schema' not in p['get']['parameters'][0]
         post = p['post']
         assert len(post['parameters']) == 1
@@ -409,7 +410,7 @@ class TestOperationHelper:
                 },
             },
         )
-        p = spec_fixture.spec._paths['/pet']
+        p = get_paths(spec_fixture.spec)['/pet']
         assert 'schema' in p['get']['parameters'][0]
         post = p['post']
         schema_ref = post['requestBody']['content']['application/json']['schema']
@@ -440,7 +441,7 @@ class TestOperationHelper:
                 },
             },
         )
-        get = spec_fixture.spec._paths['/pet']['get']
+        get = get_paths(spec_fixture.spec)['/pet']['get']
         len(get['parameters']) == 1
         resolved_schema = {
             'type': 'array',
@@ -482,7 +483,7 @@ class TestOperationHelper:
                 },
             },
         )
-        p = spec_fixture.spec._paths['/pet']
+        p = get_paths(spec_fixture.spec)['/pet']
         assert 'get' in p
         op = p['get']
         resolved_schema = {
@@ -515,7 +516,7 @@ class TestOperationHelper:
                 },
             },
         )
-        get = spec_fixture.spec._paths['/parents']['get']
+        get = get_paths(spec_fixture.spec)['/parents']['get']
         assert get['responses'][200]['schema'] == {
             'type': 'object',
             'properties': {
@@ -549,7 +550,7 @@ class TestOperationHelper:
                 },
             },
         )
-        get = spec_fixture.spec._paths['/parents']['get']
+        get = get_paths(spec_fixture.spec)['/parents']['get']
         assert get['responses'][200]['content']['application/json']['schema'] == {
             'type': 'object',
             'properties': {
@@ -576,7 +577,8 @@ class TestCircularReference:
         spec.definition('Analysis', schema=AnalysisSchema)
         spec.definition('Sample', schema=SampleSchema)
         spec.definition('Run', schema=RunSchema)
-        ref = spec._definitions['Analysis']['properties']['sample']['$ref']
+        definitions = get_definitions(spec)
+        ref = definitions['Analysis']['properties']['sample']['$ref']
         assert ref == ref_path(spec) + 'Sample'
 
 # Regression tests for issue #55
@@ -584,12 +586,14 @@ class TestSelfReference:
 
     def test_self_referencing_field_single(self, spec):
         spec.definition('SelfReference', schema=SelfReferencingSchema)
-        ref = spec._definitions['SelfReference']['properties']['single']['$ref']
+        definitions = get_definitions(spec)
+        ref = definitions['SelfReference']['properties']['single']['$ref']
         assert ref == ref_path(spec) + 'SelfReference'
 
     def test_self_referencing_field_many(self, spec):
         spec.definition('SelfReference', schema=SelfReferencingSchema)
-        result = spec._definitions['SelfReference']['properties']['many']
+        definitions = get_definitions(spec)
+        result = definitions['SelfReference']['properties']['many']
         assert result == {
             'type': 'array',
             'items': {'$ref': ref_path(spec) + 'SelfReference'},
@@ -598,11 +602,12 @@ class TestSelfReference:
     def test_self_referencing_with_ref(self, spec):
         version = 'v2' if spec.openapi_version.version[0] < 3 else 'v3'
         spec.definition('SelfReference', schema=SelfReferencingSchema)
-        result = spec._definitions['SelfReference']['properties'][
+        definitions = get_definitions(spec)
+        result = definitions['SelfReference']['properties'][
             'single_with_ref_{}'.format(version)
         ]
         assert result == {'$ref': ref_path(spec) + 'Self'}
-        result = spec._definitions['SelfReference']['properties'][
+        result = definitions['SelfReference']['properties'][
             'many_with_ref_{}'.format(version)
         ]
         assert result == {'type': 'array', 'items': {'$ref': ref_path(spec) + 'Selves'}}
@@ -612,20 +617,20 @@ class TestOrderedSchema:
 
     def test_ordered_schema(self, spec):
         spec.definition('Ordered', schema=OrderedSchema)
-        result = spec._definitions['Ordered']['properties']
+        result = get_definitions(spec)['Ordered']['properties']
         assert list(result.keys()) == ['field1', 'field2', 'field3', 'field4', 'field5']
 
 
 class TestFieldWithCustomProps:
     def test_field_with_custom_props(self, spec):
         spec.definition('PatternedObject', schema=PatternedObjectSchema)
-        result = spec._definitions['PatternedObject']['properties']['count']
+        result = get_definitions(spec)['PatternedObject']['properties']['count']
         assert 'x-count' in result
         assert result['x-count'] == 1
 
     def test_field_with_custom_props_passed_as_snake_case(self, spec):
         spec.definition('PatternedObject', schema=PatternedObjectSchema)
-        result = spec._definitions['PatternedObject']['properties']['count2']
+        result = get_definitions(spec)['PatternedObject']['properties']['count2']
         assert 'x-count2' in result
         assert result['x-count2'] == 2
 
@@ -633,7 +638,8 @@ class TestFieldWithCustomProps:
 class TestSchemaWithDefaultValues:
     def test_schema_with_default_values(self, spec):
         spec.definition('DefaultValuesSchema', schema=DefaultValuesSchema)
-        props = spec._definitions['DefaultValuesSchema']['properties']
+        definitions = get_definitions(spec)
+        props = definitions['DefaultValuesSchema']['properties']
         assert props['number_auto_default']['default'] == 12
         assert props['number_manual_default']['default'] == 42
         assert 'default' not in props['string_callable_default']
@@ -652,7 +658,7 @@ class TestDictValues:
             dict_field = Dict(values=String())
 
         spec.definition('SchemaWithDict', schema=SchemaWithDict)
-        result = spec._definitions['SchemaWithDict']['properties']['dict_field']
+        result = get_definitions(spec)['SchemaWithDict']['properties']['dict_field']
         assert result == {'type': 'object', 'additionalProperties': {'type': 'string'}}
 
     def test_dict_with_empty_values_field(self, spec):
@@ -661,5 +667,5 @@ class TestDictValues:
             dict_field = Dict()
 
         spec.definition('SchemaWithDict', schema=SchemaWithDict)
-        result = spec._definitions['SchemaWithDict']['properties']['dict_field']
+        result = get_definitions(spec)['SchemaWithDict']['properties']['dict_field']
         assert result == {'type': 'object'}

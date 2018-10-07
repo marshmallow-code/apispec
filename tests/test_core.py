@@ -7,6 +7,8 @@ import yaml
 from apispec import APISpec, BasePlugin
 from apispec.exceptions import APISpecError
 
+from .utils import get_definitions, get_paths
+
 
 description = 'This is a sample Petstore server.  You can find out more '
 'about Swagger at <a href=\"http://swagger.wordnik.com\">http://swagger.wordnik.com</a> '
@@ -223,7 +225,7 @@ class TestPath:
             ),
         )
 
-        p = spec._paths['/pet/{petId}']['get']
+        p = get_paths(spec)['/pet/{petId}']['get']
         assert p['parameters'] == route_spec['parameters']
         assert p['responses'] == route_spec['responses']
         assert p['operationId'] == route_spec['operationId']
@@ -270,7 +272,7 @@ class TestPath:
             ),
         )
 
-        p = spec._paths[path]
+        p = get_paths(spec)[path]
         assert 'get' in p
         assert 'put' in p
 
@@ -287,7 +289,7 @@ class TestPath:
                 ),
             ),
         )
-        assert spec._paths[path]['put']['parameters'][0]['required'] is True
+        assert get_paths(spec)[path]['put']['parameters'][0]['required'] is True
 
     def test_add_path_with_no_path_raises_error(self, spec):
         with pytest.raises(APISpecError) as excinfo:
@@ -297,15 +299,17 @@ class TestPath:
     def test_add_path_strips_base_path(self, spec):
         spec.options['basePath'] = '/v1'
         spec.add_path('/v1/pets')
-        assert '/pets' in spec._paths
-        assert '/v1/pets' not in spec._paths
+        paths = get_paths(spec)
+        assert '/pets' in paths
+        assert '/v1/pets' not in paths
 
     def test_add_path_strips_path_base_path(self, spec):
         spec.options['basePath'] = '/v1'
         path = '/v1/pets'
         spec.add_path(path)
-        assert '/pets' in spec._paths
-        assert '/v1/pets' not in spec._paths
+        paths = get_paths(spec)
+        assert '/pets' in paths
+        assert '/v1/pets' not in paths
 
     def test_add_parameters(self, spec):
         route_spec = self.paths['/pet/{petId}']['get']
@@ -322,7 +326,7 @@ class TestPath:
         )
 
         metadata = spec.to_dict()
-        p = spec._paths['/pet/{petId}']['get']
+        p = get_paths(spec)['/pet/{petId}']['get']
 
         if spec.openapi_version.major < 3:
             assert p['parameters'][0] == {'$ref': '#/parameters/test_parameter'}
@@ -358,48 +362,56 @@ class TestPlugins:
             if method == 'delete':
                 return {'description': 'Clever description'}
 
-    def test_plugin_definition_helper_is_used(self):
+    @pytest.mark.parametrize('openapi_version', ('2.0', '3.0.0', ))
+    def test_plugin_definition_helper_is_used(self, openapi_version):
         spec = APISpec(
             title='Swagger Petstore',
             version='1.0.0',
-            openapi_version='3.0.0',
+            openapi_version=openapi_version,
             plugins=(self.TestPlugin(), ),
         )
         spec.definition('Pet', {})
-        assert spec._definitions['Pet'] == {'properties': {'name': {'type': 'string'}}}
+        definitions = get_definitions(spec)
+        assert definitions['Pet'] == {'properties': {'name': {'type': 'string'}}}
 
-    def test_plugin_path_helper_is_used(self):
+    @pytest.mark.parametrize('openapi_version', ('2.0', '3.0.0', ))
+    def test_plugin_path_helper_is_used(self, openapi_version):
         spec = APISpec(
             title='Swagger Petstore',
             version='1.0.0',
-            openapi_version='3.0.0',
+            openapi_version=openapi_version,
             plugins=(self.TestPlugin(), ),
         )
         spec.add_path('/path_1')
-        assert len(spec._paths) == 1
-        assert spec._paths['/path_1_modified'] == {'get': {'responses': {'200': {}}}}
+        paths = get_paths(spec)
+        assert len(paths) == 1
+        assert paths['/path_1_modified'] == {'get': {'responses': {'200': {}}}}
 
-    def test_plugin_operation_helper_is_used(self):
+    @pytest.mark.parametrize('openapi_version', ('2.0', '3.0.0', ))
+    def test_plugin_operation_helper_is_used(self, openapi_version):
         spec = APISpec(
             title='Swagger Petstore',
             version='1.0.0',
-            openapi_version='3.0.0',
+            openapi_version=openapi_version,
             plugins=(self.TestPlugin(), ),
         )
         spec.add_path('/path_2', operations={'post': {'responses': {'200': {}}}})
-        assert len(spec._paths) == 1
-        assert spec._paths['/path_2'] == {'post': {'responses': {'201': {}}}}
+        paths = get_paths(spec)
+        assert len(paths) == 1
+        assert paths['/path_2'] == {'post': {'responses': {'201': {}}}}
 
-    def test_plugin_response_helper_is_used(self, spec):
+    @pytest.mark.parametrize('openapi_version', ('2.0', '3.0.0', ))
+    def test_plugin_response_helper_is_used(self, spec, openapi_version):
         spec = APISpec(
             title='Swagger Petstore',
             version='1.0.0',
-            openapi_version='3.0.0',
+            openapi_version=openapi_version,
             plugins=(self.TestPlugin(), ),
         )
         spec.add_path('/path_3', operations={'delete': {'responses': {'204': {'content': {}}}}})
-        assert len(spec._paths) == 1
-        assert spec._paths['/path_3'] == {'delete': {'responses': {'204': {
+        paths = get_paths(spec)
+        assert len(paths) == 1
+        assert paths['/path_3'] == {'delete': {'responses': {'204': {
             'content': {}, 'description': 'Clever description',
         }}}}
 
