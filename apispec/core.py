@@ -181,19 +181,6 @@ class APISpec(object):
         ret = deepupdate(ret, self.options)
         return ret
 
-    # Backward compatigility
-    def add_parameter(self, param_id, location, **kwargs):
-        self.components.add_parameter(param_id, location, **kwargs)
-
-    # Backward compatigility
-    def definition(
-            self, name, properties=None, enum=None, description=None, extra_fields=None,
-            **kwargs
-    ):
-        self.components.add_schema(
-            name, properties=properties, enum=enum, description=description, extra_fields=extra_fields,
-            **kwargs)
-
     def to_yaml(self):
         """Render the spec to YAML. Requires PyYAML to be installed."""
         from .yaml_utils import dict_to_yaml

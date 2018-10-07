@@ -21,7 +21,7 @@ Requires marshmallow>=2.15.2.
             default_doc="The current datetime"
         )
 
-    spec.definition('User', schema=UserSchema)
+    spec.components.add_schema('User', schema=UserSchema)
     pprint(spec.to_dict()['definitions'])
     # {'User': {'properties': {'id': {'format': 'int32', 'type': 'integer'},
     #                         'name': {'description': "The user's name",
@@ -85,7 +85,7 @@ class MarshmallowPlugin(BasePlugin):
                     nested_schema_class,
                 )
                 if definition_name:
-                    self.spec.definition(
+                    self.spec.components.add_schema(
                         definition_name,
                         schema=nested_schema_class,
                     )

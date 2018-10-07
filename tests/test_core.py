@@ -92,7 +92,7 @@ class TestMetadata:
                 'type': 'boolean', 'description': 'property description', 'example': True,
             },
         }
-        spec.definition('definition', properties=properties, description='definiton description')
+        spec.components.add_schema('definition', properties=properties, description='definiton description')
         metadata = spec.to_dict()
         assert metadata['components']['schemas'].get('ErrorResponse', False)
         assert metadata['components']['schemas'].get('definition', False)
@@ -119,7 +119,7 @@ class TestDefinitions:
     }
 
     def test_definition(self, spec):
-        spec.definition('Pet', properties=self.properties)
+        spec.components.add_schema('Pet', properties=self.properties)
         if spec.openapi_version.major < 3:
             defs = spec.to_dict()['definitions']
         else:
@@ -129,7 +129,7 @@ class TestDefinitions:
 
     def test_definition_description(self, spec):
         model_description = 'An animal which lives with humans.'
-        spec.definition('Pet', properties=self.properties, description=model_description)
+        spec.components.add_schema('Pet', properties=self.properties, description=model_description)
         if spec.openapi_version.major < 3:
             defs = spec.to_dict()['definitions']
         else:
@@ -138,7 +138,7 @@ class TestDefinitions:
 
     def test_definition_stores_enum(self, spec):
         enum = ['name', 'photoUrls']
-        spec.definition(
+        spec.components.add_schema(
             'Pet',
             properties=self.properties,
             enum=enum,
@@ -151,7 +151,7 @@ class TestDefinitions:
 
     def test_definition_extra_fields(self, spec):
         extra_fields = {'discriminator': 'name'}
-        spec.definition('Pet', properties=self.properties, extra_fields=extra_fields)
+        spec.components.add_schema('Pet', properties=self.properties, extra_fields=extra_fields)
         if spec.openapi_version.major < 3:
             defs = spec.to_dict()['definitions']
         else:
@@ -160,7 +160,7 @@ class TestDefinitions:
 
     def test_to_yaml(self, spec):
         enum = ['name', 'photoUrls']
-        spec.definition(
+        spec.components.add_schema(
             'Pet',
             properties=self.properties,
             enum=enum,
@@ -303,10 +303,10 @@ class TestPath:
         assert '/pets' in paths
         assert '/v1/pets' not in paths
 
-    def test_add_parameters(self, spec):
+    def test_add_parameter(self, spec):
         route_spec = self.paths['/pet/{petId}']['get']
 
-        spec.add_parameter('test_parameter', 'path', **route_spec['parameters'][0])
+        spec.components.add_parameter('test_parameter', 'path', **route_spec['parameters'][0])
 
         spec.add_path(
             path='/pet/{petId}',
@@ -358,7 +358,7 @@ class TestPlugins:
             openapi_version=openapi_version,
             plugins=(self.TestPlugin(), ),
         )
-        spec.definition('Pet', {})
+        spec.components.add_schema('Pet', {})
         definitions = get_definitions(spec)
         assert definitions['Pet'] == {'properties': {'name': {'type': 'string'}}}
 

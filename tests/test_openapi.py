@@ -614,7 +614,7 @@ class TestNesting:
         return '#/components/schemas/'
 
     def test_field2property_nested_spec_metadatas(self, spec_fixture):
-        spec_fixture.spec.definition('Category', schema=CategorySchema)
+        spec_fixture.spec.components.add_schema('Category', schema=CategorySchema)
         category = fields.Nested(CategorySchema, description='A category')
         result = spec_fixture.openapi.field2property(category)
         assert result == {
@@ -623,14 +623,14 @@ class TestNesting:
         }
 
     def test_field2property_nested_spec(self, spec_fixture):
-        spec_fixture.spec.definition('Category', schema=CategorySchema)
+        spec_fixture.spec.components.add_schema('Category', schema=CategorySchema)
         category = fields.Nested(CategorySchema)
         assert spec_fixture.openapi.field2property(category) == {
             '$ref': self.ref_path(spec_fixture.spec) + 'Category',
         }
 
     def test_field2property_nested_many_spec(self, spec_fixture):
-        spec_fixture.spec.definition('Category', schema=CategorySchema)
+        spec_fixture.spec.components.add_schema('Category', schema=CategorySchema)
         category = fields.Nested(CategorySchema, many=True)
         ret = spec_fixture.openapi.field2property(category)
         assert ret['type'] == 'array'
@@ -747,7 +747,7 @@ class TestNesting:
         category_6 = fields.Nested(CategorySchema, many=True, ref=ref_path + 'Category')
         category_7 = fields.Nested(CategorySchema, many=True, dump_only=True)
         category_8 = fields.Nested(CategorySchema, many=True, dump_only=True, ref=ref_path + 'Category')
-        spec_fixture.spec.definition('Category', schema=CategorySchema)
+        spec_fixture.spec.components.add_schema('Category', schema=CategorySchema)
 
         assert spec_fixture.openapi.field2property(category_1) == {
             '$ref': ref_path + 'Category',
@@ -784,8 +784,8 @@ def test_openapi_tools_validate_v2():
     )
     openapi = ma_plugin.openapi
 
-    spec.definition('Category', schema=CategorySchema)
-    spec.definition('Pet', schema=PetSchema, extra_fields={'discriminator': 'name'})
+    spec.components.add_schema('Category', schema=CategorySchema)
+    spec.components.add_schema('Pet', schema=PetSchema, extra_fields={'discriminator': 'name'})
 
     spec.add_path(
         view=None,
@@ -841,8 +841,8 @@ def test_openapi_tools_validate_v3():
     )
     #openapi = ma_plugin.openapi
 
-    spec.definition('Category', schema=CategorySchema)
-    spec.definition('Pet', schema=PetSchemaV3)
+    spec.components.add_schema('Category', schema=CategorySchema)
+    spec.components.add_schema('Pet', schema=PetSchemaV3)
 
     spec.add_path(
         view=None,
@@ -934,7 +934,7 @@ class ValidationSchema(Schema):
 class TestFieldValidation:
 
     def test_range(self, spec):
-        spec.definition('Validation', schema=ValidationSchema)
+        spec.components.add_schema('Validation', schema=ValidationSchema)
         result = get_definitions(spec)['Validation']['properties']['range']
 
         assert 'minimum' in result
@@ -943,7 +943,7 @@ class TestFieldValidation:
         assert result['maximum'] == 10
 
     def test_multiple_ranges(self, spec):
-        spec.definition('Validation', schema=ValidationSchema)
+        spec.components.add_schema('Validation', schema=ValidationSchema)
         result = get_definitions(spec)['Validation']['properties']['multiple_ranges']
 
         assert 'minimum' in result
@@ -952,7 +952,7 @@ class TestFieldValidation:
         assert result['maximum'] == 7
 
     def test_list_length(self, spec):
-        spec.definition('Validation', schema=ValidationSchema)
+        spec.components.add_schema('Validation', schema=ValidationSchema)
         result = get_definitions(spec)['Validation']['properties']['list_length']
 
         assert 'minItems' in result
@@ -961,7 +961,7 @@ class TestFieldValidation:
         assert result['maxItems'] == 10
 
     def test_string_length(self, spec):
-        spec.definition('Validation', schema=ValidationSchema)
+        spec.components.add_schema('Validation', schema=ValidationSchema)
         result = get_definitions(spec)['Validation']['properties']['string_length']
 
         assert 'minLength' in result
@@ -970,7 +970,7 @@ class TestFieldValidation:
         assert result['maxLength'] == 10
 
     def test_multiple_lengths(self, spec):
-        spec.definition('Validation', schema=ValidationSchema)
+        spec.components.add_schema('Validation', schema=ValidationSchema)
         result = get_definitions(spec)['Validation']['properties']['multiple_lengths']
 
         assert 'minLength' in result
@@ -979,7 +979,7 @@ class TestFieldValidation:
         assert result['maxLength'] == 7
 
     def test_equal_length(self, spec):
-        spec.definition('Validation', schema=ValidationSchema)
+        spec.components.add_schema('Validation', schema=ValidationSchema)
         result = get_definitions(spec)['Validation']['properties']['equal_length']
 
         assert 'minLength' in result
