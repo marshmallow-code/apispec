@@ -4,9 +4,9 @@ from flask import Flask
 from flask.views import MethodView
 from tornado.web import RequestHandler
 from apispec import APISpec
-from apispec.ext.bottle import BottlePlugin
-from apispec.ext.flask import FlaskPlugin
-from apispec.ext.tornado import TornadoPlugin
+from apispec_webframeworks.bottle import BottlePlugin
+from apispec_webframeworks.flask import FlaskPlugin
+from apispec_webframeworks.tornado import TornadoPlugin
 from apispec.ext.marshmallow import MarshmallowPlugin
 
 
