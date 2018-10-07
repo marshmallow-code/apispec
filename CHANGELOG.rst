@@ -10,6 +10,13 @@ Features:
   ``APISpec`` class does not default to `'2.0'` anymore and ``info`` parameter
   is merged with ``**options`` kwargs.
 
+Bug fixes:
+
+- [apispec.ext.marshmallow]: Exclude ``load_only`` fields when documenting
+  responses (:issue:`119`). Thanks :user:`luisincrespo` for reporting.
+- [apispec.ext.marshmallow]: Exclude ``dump_only`` fields when documenting
+  request body parameter schema.
+
 1.0.0b2 (2018-09-09)
 ++++++++++++++++++++
 

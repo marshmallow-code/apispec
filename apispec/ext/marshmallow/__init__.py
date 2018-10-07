@@ -102,7 +102,7 @@ class MarshmallowPlugin(BasePlugin):
                         default_in=parameter.pop('in'), **parameter
                     )
                     continue
-            self.resolve_schema(parameter)
+            self.resolve_schema(parameter, dump=False, load=True)
             resolved.append(parameter)
         return resolved
 
@@ -113,23 +113,27 @@ class MarshmallowPlugin(BasePlugin):
         content = request_body['content']
         for content_type in content:
             schema = content[content_type]['schema']
-            content[content_type]['schema'] = self.openapi.resolve_schema_dict(schema)
+            content[content_type]['schema'] = self.openapi.resolve_schema_dict(schema, dump=False, load=True)
 
-    def resolve_schema(self, data):
+    def resolve_schema(self, data, dump=True, load=True):
         """Function to resolve a schema in a parameter or response - modifies the
         corresponding dict to convert Marshmallow Schema object or class into dict
 
         :param APISpec spec: `APISpec` containing refs.
         :param dict data: the parameter or response dictionary that may contain a schema
+        :param bool dump: Introspect dump logic.
+        :param bool load: Introspect load logic.
         """
         if self.openapi_version.major < 3:
             if 'schema' in data:
-                data['schema'] = self.openapi.resolve_schema_dict(data['schema'])
+                data['schema'] = self.openapi.resolve_schema_dict(data['schema'], dump=dump, load=load)
         else:
             if 'content' in data:
                 for content_type in data['content']:
                     schema = data['content'][content_type]['schema']
-                    data['content'][content_type]['schema'] = self.openapi.resolve_schema_dict(schema)
+                    data['content'][content_type]['schema'] = self.openapi.resolve_schema_dict(
+                        schema, dump=dump, load=load,
+                    )
 
     def map_to_openapi_type(self, *args):
         """Decorator to set mapping for custom fields.
@@ -183,4 +187,4 @@ class MarshmallowPlugin(BasePlugin):
                 if 'requestBody' in operation:
                     self.resolve_schema_in_request_body(operation['requestBody'])
             for response in operation.get('responses', {}).values():
-                self.resolve_schema(response)
+                self.resolve_schema(response, dump=True, load=False)

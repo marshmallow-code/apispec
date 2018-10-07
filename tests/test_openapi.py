@@ -439,6 +439,17 @@ class TestMarshmallowSchemaToModelDefinition:
         else:
             assert 'writeOnly' in props['password']
 
+        res = openapi.schema2jsonschema(UserSchema(), dump=False)
+        props = res['properties']
+        assert 'name' in props
+        assert '_id' not in props
+        assert 'password' in props
+
+        res = openapi.schema2jsonschema(UserSchema(), load=False)
+        props = res['properties']
+        assert 'name' in props
+        assert '_id' in props
+        assert 'password' not in props
 
 class TestMarshmallowSchemaToParameters:
 
