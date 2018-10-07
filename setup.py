@@ -48,6 +48,9 @@ setup(
         'validation': [
             'prance[osv]>=0.11',
         ],
+        'webframeworks': [
+            'apispec-webframeworks',
+        ],
     },
     license='MIT',
     zip_safe=False,

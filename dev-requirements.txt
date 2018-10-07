@@ -19,4 +19,4 @@ mock==2.0.0
 pre-commit==1.11.2
 
 # Install this package in development mode with validation requirements
--e '.[validation]'
+-e '.[validation,webframeworks]'
