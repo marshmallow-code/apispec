@@ -5,4 +5,4 @@ bottle==0.12.13
 pyyaml==3.13
 sphinx==1.8.1
 sphinx-issues==1.1.0
-sphinx-rtd-theme==0.4.1
+sphinx-rtd-theme==0.4.2
