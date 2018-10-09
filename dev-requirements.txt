@@ -12,7 +12,7 @@ pyyaml==3.13
 
 # testing
 pytest==3.8.2
-tox==3.4.0
+tox==3.5.1
 mock==2.0.0
 
 # Pre-commit hooks
