@@ -1,4 +1,4 @@
-marshmallow==2.15.6
+marshmallow==2.16.0
 Flask==1.0.2
 tornado==5.1.1
 bottle==0.12.13
