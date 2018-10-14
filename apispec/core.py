@@ -147,10 +147,16 @@ class Components(object):
         :param str location: location of the parameter.
         :param dict kwargs: parameter fields.
         """
-        if 'name' not in kwargs:
-            kwargs['name'] = param_id
-        kwargs['in'] = location
-        self._parameters[param_id] = kwargs
+        ret = kwargs.copy()
+        ret.setdefault('name', param_id)
+        ret['in'] = location
+        # Execute all helpers from plugins
+        for plugin in self._plugins:
+            try:
+                ret.update(plugin.parameter_helper(**kwargs))
+            except PluginMethodNotImplementedError:
+                continue
+        self._parameters[param_id] = ret
 
     def add_response(self, ref_id, **kwargs):
         """Add a response which can be referenced.

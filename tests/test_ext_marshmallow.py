@@ -16,7 +16,7 @@ from .schemas import (
     DefaultValuesSchema, AnalysisWithListSchema,
 )
 
-from .utils import get_definitions, get_responses, get_paths
+from .utils import get_definitions, get_parameters, get_responses, get_paths
 
 
 def ref_path(spec):
@@ -146,6 +146,28 @@ class TestDefinitionHelper:
         # Other shema still not referenced
         definitions = get_definitions(spec)
         assert 1 == len(definitions)
+
+
+class TestComponentParameterHelper:
+
+    @pytest.mark.parametrize('schema', [PetSchema, PetSchema()])
+    def test_can_use_schema_in_parameter(self, spec, schema):
+        if spec.openapi_version.major < 3:
+            kwargs = {'schema': schema}
+        else:
+            kwargs = {'content': {'application/json': {'schema': schema}}}
+        spec.components.add_parameter('Pet', 'body', **kwargs)
+        parameter = get_parameters(spec)['Pet']
+        assert parameter['in'] == 'body'
+        if spec.openapi_version.major < 3:
+            schema = parameter['schema']['properties']
+        else:
+            schema = parameter['content']['application/json']['schema']['properties']
+
+        assert schema['name']['type'] == 'string'
+        assert schema['password']['type'] == 'string'
+        # dump_only field is ignored
+        assert 'id' not in schema
 
 
 class TestComponentResponseHelper:
