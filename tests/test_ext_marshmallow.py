@@ -16,7 +16,7 @@ from .schemas import (
     DefaultValuesSchema, AnalysisWithListSchema,
 )
 
-from .utils import get_definitions, get_paths
+from .utils import get_definitions, get_responses, get_paths
 
 
 def ref_path(spec):
@@ -146,6 +146,27 @@ class TestDefinitionHelper:
         # Other shema still not referenced
         definitions = get_definitions(spec)
         assert 1 == len(definitions)
+
+
+class TestComponentResponseHelper:
+
+    @pytest.mark.parametrize('schema', [PetSchema, PetSchema()])
+    def test_can_use_schema_in_response(self, spec, schema):
+        if spec.openapi_version.major < 3:
+            kwargs = {'schema': schema}
+        else:
+            kwargs = {'content': {'application/json': {'schema': schema}}}
+        spec.components.add_response('GetPetOk', **kwargs)
+        response = get_responses(spec)['GetPetOk']
+        if spec.openapi_version.major < 3:
+            schema = response['schema']['properties']
+        else:
+            schema = response['content']['application/json']['schema']['properties']
+
+        assert schema['id']['type'] == 'integer'
+        assert schema['name']['type'] == 'string'
+        # load_only field is ignored
+        assert 'password' not in schema
 
 
 class TestCustomField:

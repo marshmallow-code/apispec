@@ -16,6 +16,10 @@ class BasePlugin(object):
         """Must return definition as a dict."""
         raise PluginMethodNotImplementedError
 
+    def response_helper(self, **kwargs):
+        """Must return response component description as a dict."""
+        raise PluginMethodNotImplementedError
+
     def path_helper(self, path=None, operations=None, **kwargs):
         """May return a path as string and mutate operations dict.
 

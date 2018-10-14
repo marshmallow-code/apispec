@@ -158,7 +158,14 @@ class Components(object):
         :param str ref_id: ref_id to use as reference
         :param dict kwargs: response fields
         """
-        self._responses[ref_id] = kwargs
+        ret = kwargs.copy()
+        # Execute all helpers from plugins
+        for plugin in self._plugins:
+            try:
+                ret.update(plugin.response_helper(**kwargs))
+            except PluginMethodNotImplementedError:
+                continue
+        self._responses[ref_id] = ret
 
 
 class APISpec(object):

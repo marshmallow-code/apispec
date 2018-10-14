@@ -177,6 +177,15 @@ class MarshmallowPlugin(BasePlugin):
 
         return json_schema
 
+    def response_helper(self, **kwargs):
+        """Response component helper that allows using a marshmallow
+        :class:`Schema <marshmallow.Schema>` in response definition.
+
+        :param type|Schema schema: A marshmallow Schema class or instance.
+        """
+        self.resolve_schema(kwargs, dump=True, load=False)
+        return kwargs
+
     def operation_helper(self, operations, **kwargs):
         for operation in operations.values():
             if not isinstance(operation, dict):
