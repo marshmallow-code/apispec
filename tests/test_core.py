@@ -310,11 +310,7 @@ class TestPath:
 
         spec.add_path(
             path='/pet/{petId}',
-            operations=dict(
-                get=dict(
-                    parameters=['test_parameter'],
-                ),
-            ),
+            operations={'get': {'parameters': ['test_parameter']}},
         )
 
         metadata = spec.to_dict()
@@ -326,6 +322,26 @@ class TestPath:
         else:
             assert p['parameters'][0] == {'$ref': '#/components/parameters/test_parameter'}
             assert route_spec['parameters'][0] == metadata['components']['parameters']['test_parameter']
+
+    def test_add_response(self, spec):
+        route_spec = self.paths['/pet/{petId}']['get']
+
+        spec.components.add_response('test_response', **route_spec['responses']['200'])
+
+        spec.add_path(
+            path='/pet/{petId}',
+            operations={'get': {'responses': {'200': 'test_response'}}},
+        )
+
+        metadata = spec.to_dict()
+        p = get_paths(spec)['/pet/{petId}']['get']
+
+        if spec.openapi_version.major < 3:
+            assert p['responses']['200'] == {'$ref': '#/responses/test_response'}
+            assert route_spec['responses']['200'] == metadata['responses']['test_response']
+        else:
+            assert p['responses']['200'] == {'$ref': '#/components/responses/test_response'}
+            assert route_spec['responses']['200'] == metadata['components']['responses']['test_response']
 
     def test_add_path_check_invalid_http_method(self, spec):
         spec.add_path('/pet/{petId}', operations={'get': {}})

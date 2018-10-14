@@ -3,7 +3,7 @@
 import re
 from collections import OrderedDict
 
-from apispec.compat import iterkeys
+from apispec.compat import iterkeys, iteritems
 from .exceptions import APISpecError, PluginMethodNotImplementedError
 from .utils import OpenAPIVersion, deepupdate
 
@@ -37,20 +37,36 @@ def clean_operations(operations, openapi_major_version):
             'One or more HTTP methods are invalid: {0}'.format(', '.join(invalid)),
         )
 
-    def get_ref(param, openapi_major_version):
-        if isinstance(param, dict):
-            return param
+    def get_ref(obj_type, obj, openapi_major_version):
+        """Return object or rererence
+
+        If obj is a dict, it is assumed to be a complete description and it is returned as is.
+        Otherwise, it is assumed to be a reference name as string and the corresponding $ref
+        string is returned.
+
+        :param str obj_type: 'parameter' or 'response'
+        :param dict|str obj: parameter or response in dict form or as ref_id string
+        :param int openapi_major_version: The major version of the OpenAPI standard
+        """
+        if isinstance(obj, dict):
+            return obj
 
         ref_paths = {
-            2: 'parameters',
-            3: 'components/parameters',
+            'parameter': {
+                2: 'parameters',
+                3: 'components/parameters',
+            },
+            'response': {
+                2: 'responses',
+                3: 'components/responses',
+            },
         }
-        ref_path = ref_paths[openapi_major_version]
-        return {'$ref': '#/{0}/{1}'.format(ref_path, param)}
+        ref_path = ref_paths[obj_type][openapi_major_version]
+        return {'$ref': '#/{0}/{1}'.format(ref_path, obj)}
 
     for operation in (operations or {}).values():
         if 'parameters' in operation:
-            parameters = operation.get('parameters')
+            parameters = operation['parameters']
             for parameter in parameters:
                 if (
                         isinstance(parameter, dict) and
@@ -58,9 +74,11 @@ def clean_operations(operations, openapi_major_version):
                 ):
                     parameter['required'] = True
             operation['parameters'] = [
-                get_ref(p, openapi_major_version)
-                for p in parameters
+                get_ref('parameter', p, openapi_major_version) for p in parameters
             ]
+        if 'responses' in operation:
+            for code, response in iteritems(operation['responses']):
+                operation['responses'][code] = get_ref('response', response, openapi_major_version)
 
 
 class Components(object):
@@ -74,11 +92,13 @@ class Components(object):
         self.openapi_version = openapi_version
         self._schemas = {}
         self._parameters = {}
+        self._responses = {}
 
     def to_dict(self):
         schemas_key = 'definitions' if self.openapi_version.major < 3 else 'schemas'
         return {
             'parameters': self._parameters,
+            'responses': self._responses,
             schemas_key: self._schemas,
         }
 
@@ -131,6 +151,14 @@ class Components(object):
             kwargs['name'] = param_id
         kwargs['in'] = location
         self._parameters[param_id] = kwargs
+
+    def add_response(self, ref_id, **kwargs):
+        """Add a response which can be referenced.
+
+        :param str ref_id: ref_id to use as reference
+        :param dict kwargs: response fields
+        """
+        self._responses[ref_id] = kwargs
 
 
 class APISpec(object):
