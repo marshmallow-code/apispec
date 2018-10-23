@@ -5,7 +5,7 @@ flake8==3.5.0
 
 # soft dependencies
 Flask==1.0.2
-marshmallow==2.16.0
+marshmallow==2.16.1
 tornado==5.1.1
 bottle==0.12.13
 pyyaml==3.13
