@@ -9,7 +9,7 @@ python:
 
 env:
   # Lowest supported version
-  - MARSHMALLOW_VERSION="==2.7.0"
+  - MARSHMALLOW_VERSION="==2.15.2"
   # Latest release
   - MARSHMALLOW_VERSION=""
 
