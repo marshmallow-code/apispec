@@ -7,6 +7,12 @@ flake8==3.5.0
 marshmallow==2.16.1
 pyyaml==3.13
 
+# web frameworks
+apispec-webframeworks
+bottle==0.12.13
+Flask==1.0.2
+tornado==5.1.1
+
 # testing
 pytest==3.9.2
 tox==3.5.2
