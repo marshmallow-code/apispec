@@ -22,8 +22,6 @@ def test(ctx, watch=False, last_failing=False):
     if last_failing:
         args.append('--lf')
     args.append('tests')
-    import apispec_webframeworks # noqa
-    args.extend(['--pyargs', 'apispec_webframeworks'])
     retcode = pytest.main(args)
     sys.exit(retcode)
 
