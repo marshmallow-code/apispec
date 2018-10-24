@@ -603,10 +603,12 @@ class OpenAPIConverter(object):
             ):
                 continue
 
+            def prop_func(field_obj=field_obj):
+                return self.field2property(
+                    field_obj, use_refs=use_refs, dump=dump, load=load, name=name,
+                )
+
             observed_field_name = self._observed_name(field_obj, field_name)
-            prop_func = lambda field_obj=field_obj: self.field2property(  # flake8: noqa
-                field_obj, use_refs=use_refs, dump=dump, load=load, name=name,
-            )
             jsonschema['properties'][observed_field_name] = prop_func
 
             partial = getattr(schema, 'partial', None)
