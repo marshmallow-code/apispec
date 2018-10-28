@@ -112,5 +112,5 @@ Next Steps
 To learn more about how to write plugins
 
 * Consult the :doc:`Core API docs <api_core>` for `BasePlugin <apispec.plugin.BasePlugin>`
-* View the source for apispec's bundled plugins, e.g. `apispec.ext.flask.FlaskPlugin. </_modules/apispec/ext/flask.html>`_
+* View the source for an existing apispec plugin, e.g. `FlaskPlugin <https://github.com/marshmallow-code/apispec-webframeworks/blob/master/apispec_webframeworks/flask.py>`_.
 * Check out some projects using apispec: https://github.com/marshmallow-code/apispec/wiki/Ecosystem

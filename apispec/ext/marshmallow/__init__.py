@@ -3,7 +3,7 @@
 `Schema` to `APISpec.definition <apispec.APISpec.definition>`
 and `APISpec.add_path <apispec.APISpec.add_path>` (for responses).
 
-Requires marshmallow>=2.7.
+Requires marshmallow>=2.15.2.
 
 ::
 
