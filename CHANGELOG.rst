@@ -4,7 +4,7 @@ Changelog
 1.0.0b4 (2018-10-28)
 ++++++++++++++++++++
 
-* *Backwards-incompatible*: ``apispec.ext.marshmallow``,
+* *Backwards-incompatible*: ``apispec.ext.flask``,
   ``apispec.ext.bottle``, and ``apispec.ext.tornado`` are moved to
   a separate package, `apispec-webframeworks <https://github.com/marshmallow-code/apispec-webframeworks>`_.
   (:issue:`302`).
