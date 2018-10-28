@@ -13,7 +13,7 @@ from apispec.ext.marshmallow.openapi import MARSHMALLOW_VERSION_INFO
 from .schemas import (
     PetSchema, AnalysisSchema, SampleSchema, RunSchema,
     SelfReferencingSchema, OrderedSchema, PatternedObjectSchema,
-    DefaultValuesSchema, AnalysisWithListSchema
+    DefaultValuesSchema, AnalysisWithListSchema,
 )
 
 from .utils import get_definitions, get_paths
