@@ -1,6 +1,27 @@
 Changelog
 ---------
 
+1.0.0b4 (unreleased)
+++++++++++++++++++++
+
+Other changes:
+
+* *Backwards-incompatible*: ``apispec.ext.marshmallow``,
+  ``apispec.ext.bottle``, and ``apispec.ext.tornado`` are moved to
+  a separate package, `apispec-webframeworks <https://github.com/marshmallow-code/apispec-webframeworks>`_.
+  (:issue:`302`).
+
+If you use these plugins, install ``apispec-webframeworks`` and
+update your imports like so: ::
+
+    # apispec<1.0.0b4
+    from apispec.ext.flask import FlaskPlugin
+
+    # apispec>=1.0.0b4
+    from apispec_webframeworks.flask import FlaskPlugin
+
+Thanks :user:`ergo` for the suggestion and the PR.
+
 1.0.0b3 (2018-10-08)
 ++++++++++++++++++++
 
