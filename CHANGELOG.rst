@@ -1,10 +1,8 @@
 Changelog
 ---------
 
-1.0.0b4 (unreleased)
+1.0.0b4 (2018-10-28)
 ++++++++++++++++++++
-
-Other changes:
 
 * *Backwards-incompatible*: ``apispec.ext.marshmallow``,
   ``apispec.ext.bottle``, and ``apispec.ext.tornado`` are moved to
