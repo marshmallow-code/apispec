@@ -2,6 +2,35 @@
 import re
 from setuptools import setup, find_packages
 
+EXTRAS_REQUIRE = {
+    'yaml': [
+        'PyYAML>=3.10',
+    ],
+    'validation': [
+        'prance[osv]>=0.11',
+    ],
+    'webframeworks-tests': [
+        'apispec-webframeworks[tests]>=0.1.0',
+    ],
+    'lint': [
+        'flake8==3.6.0',
+        'pre-commit==1.12.0',
+    ],
+}
+EXTRAS_REQUIRE['tests'] = (
+    EXTRAS_REQUIRE['yaml'] +
+    EXTRAS_REQUIRE['validation'] +
+    [
+        'marshmallow==2.16.1',
+        'pytest',
+        'mock',
+    ]
+)
+EXTRAS_REQUIRE['dev'] = (
+    EXTRAS_REQUIRE['tests'] +
+    EXTRAS_REQUIRE['lint'] +
+    ['tox']
+)
 
 def find_version(fname):
     """Attempts to find the version number in the file names fname.
@@ -41,14 +70,7 @@ setup(
     packages=find_packages(exclude=('test*', )),
     package_dir={'apispec': 'apispec'},
     include_package_data=True,
-    extras_require={
-        'yaml': [
-            'PyYAML>=3.10',
-        ],
-        'validation': [
-            'prance[osv]>=0.11',
-        ],
-    },
+    extras_require=EXTRAS_REQUIRE,
     license='MIT',
     zip_safe=False,
     keywords='apispec swagger openapi specification documentation spec rest api',
