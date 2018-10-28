@@ -28,15 +28,20 @@ Setting Up for Local Development
     $ git clone https://github.com/marshmallow-code/apispec.git
     $ cd apispec
 
-2. Install development requirements. It is highly recommended that you use a virtualenv. ::
+2. Install development requirements. **It is highly recommended that you use a virtualenv.**
+   Use the following command to install an editable version of
+   apispec along with its development requirements.
+
+::
 
     # After activating your virtualenv
-    $ pip install -r dev-requirements.txt
+    $ pip install -e '.[dev]'
 
-3. (Optional, but recommended) Install the pre-commit hooks, which will format and lint your git staged files. ::
+3. Install the pre-commit hooks, which will format and lint your git staged files. ::
 
     # The pre-commit CLI was installed above
-    $ pre-commit install --allow-missing-config
+    $ pre-commit install
+
 
 Git Branch Structure
 ++++++++++++++++++++
@@ -82,9 +87,13 @@ Running Tests
 
 To run all tests: ::
 
-    $ invoke test
+    $ pytest
 
-To run tests on Python 2.7, 3.5, and 3.6 virtual environments (must have each interpreter installed): ::
+To run syntax checks: ::
+
+    $ tox -e lint
+
+(Optional) To run tests Python 2.7, 3.5, 3.6, and 3.7 virtual environments (must have each interpreter installed): ::
 
     $ tox
 
@@ -93,15 +102,11 @@ Documentation
 
 Contributions to the documentation are welcome. Documentation is written in `reStructured Text`_ (rST). A quick rST reference can be found `here <http://docutils.sourceforge.net/docs/user/rst/quickref.html>`_. Builds are powered by Sphinx_.
 
-To install the packages for building the docs: ::
+To build the docs in "watch" mode: ::
 
-    $ pip install -r docs/requirements.txt
+   $ tox -e watch-docs
 
-To build the docs: ::
-
-    $ invoke docs -b
-
-The ``-b`` (for "browse") automatically opens up the docs in your browser after building.
+Changes in the `docs/` directory will automatically trigger a rebuild.
 
 .. _Sphinx: http://sphinx.pocoo.org/
 .. _`reStructured Text`: http://docutils.sourceforge.net/rst.html
