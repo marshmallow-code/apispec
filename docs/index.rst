@@ -9,9 +9,10 @@ A pluggable API specification generator. Currently supports the `OpenAPI specifi
 Features
 ========
 
-- Supports OpenAPI 2.0 specification (f.k.a. Swagger)
+- Supports OpenAPI Specification version 2 (f.k.a. the Swagger specification)
+  with limited support for version 3
 - Framework-agnostic
-- Includes plugins for `marshmallow <https://marshmallow.readthedocs.io/>`_, `Flask <http://flask.pocoo.org/>`_, `Tornado <http://www.tornadoweb.org/>`_, and `bottle <http://bottlepy.org/docs/dev/>`_.
+- Built-in support for `marshmallow <https://marshmallow.readthedocs.io/>`_
 - Utilities for parsing docstrings
 
 Example Application
@@ -20,8 +21,8 @@ Example Application
 .. code-block:: python
 
     from apispec import APISpec
-    from apispec.ext.flask import FlaskPlugin
     from apispec.ext.marshmallow import MarshmallowPlugin
+    from apispec_webframeworks import FlaskPlugin
     from flask import Flask, jsonify
     from marshmallow import Schema, fields
 

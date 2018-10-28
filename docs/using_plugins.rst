@@ -33,17 +33,25 @@ To enable a plugin, pass an instance to the constructor of `APISpec <apispec.API
 Example: Flask and Marshmallow Plugins
 --------------------------------------
 
-The bundled marshmallow plugin (`apispec.ext.marshmallow.MarshmallowPlugin`) provides helpers for generating OpenAPI schema and parameter objects from `marshmallow <https://marshmallow.readthedocs.io/en/latest/>`_ schemas and fields.
+The bundled marshmallow plugin (`apispec.ext.marshmallow.MarshmallowPlugin`)
+provides helpers for generating OpenAPI schema and parameter objects from `marshmallow <https://marshmallow.readthedocs.io/en/latest/>`_ schemas and fields.
 
-The bundled Flask plugin (`apispec.ext.flask.FlaskPlugin`) provides helpers for generating path objects from view functions.
+The `apispec-webframeworks <https://github.com/marshmallow-code/apispec-webframeworks>`_
+package includes a Flask plugin with helpers for generating path objects from view functions.
 
 Let's recreate the spec from the :doc:`Quickstart guide <quickstart>` using these two plugins.
+
+First, ensure that ``apispec-webframeworks`` is installed: ::
+
+    $ pip install apispec-webframeworks
+
+We can now use the marshmallow and Flask plugins.
 
 .. code-block:: python
 
     from apispec import APISpec
-    from apispec.ext.flask import FlaskPlugin
     from apispec.ext.marshmallow import MarshmallowPlugin
+    from apispec_webframeworks import FlaskPlugin
 
     spec = APISpec(
         title='Gisty',
@@ -72,7 +80,8 @@ Our application will have a marshmallow `Schema <marshmallow.Schema>` for gists.
         content = fields.Str()
 
 
-The marshmallow plugin allows us to pass this `Schema` to `spec.definition <apispec.APISpec.definition>`.
+The marshmallow plugin allows us to pass this `Schema` to
+`spec.definition <apispec.APISpec.definition>`.
 
 
 .. code-block:: python
