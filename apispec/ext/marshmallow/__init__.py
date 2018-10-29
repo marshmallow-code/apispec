@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Marshmallow plugin for apispec. Allows passing a marshmallow
 `Schema` to `APISpec.definition <apispec.APISpec.definition>`
-and `APISpec.add_path <apispec.APISpec.add_path>` (for responses).
+and `APISpec.path <apispec.APISpec.path>` (for responses).
 
 Requires marshmallow>=2.15.2.
 
@@ -21,7 +21,7 @@ Requires marshmallow>=2.15.2.
             default_doc="The current datetime"
         )
 
-    spec.components.add_schema('User', schema=UserSchema)
+    spec.components.schema('User', schema=UserSchema)
     pprint(spec.to_dict()['definitions'])
     # {'User': {'properties': {'id': {'format': 'int32', 'type': 'integer'},
     #                         'name': {'description': "The user's name",
@@ -85,7 +85,7 @@ class MarshmallowPlugin(BasePlugin):
                     nested_schema_class,
                 )
                 if definition_name:
-                    self.spec.components.add_schema(
+                    self.spec.components.schema(
                         definition_name,
                         schema=nested_schema_class,
                     )

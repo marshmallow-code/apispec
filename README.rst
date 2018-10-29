@@ -81,7 +81,7 @@ Example Application
     spec.definition('Category', schema=CategorySchema)
     spec.definition('Pet', schema=PetSchema)
     with app.test_request_context():
-        spec.add_path(view=random_pet)
+        spec.path(view=random_pet)
 
 
 Generated OpenAPI Spec

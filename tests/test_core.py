@@ -92,7 +92,7 @@ class TestMetadata:
                 'type': 'boolean', 'description': 'property description', 'example': True,
             },
         }
-        spec.components.add_schema('definition', properties=properties, description='definiton description')
+        spec.components.schema('definition', properties=properties, description='definiton description')
         metadata = spec.to_dict()
         assert metadata['components']['schemas'].get('ErrorResponse', False)
         assert metadata['components']['schemas'].get('definition', False)
@@ -106,7 +106,7 @@ class TestTags:
     }
 
     def test_tag(self, spec):
-        spec.add_tag(self.tag)
+        spec.tag(self.tag)
         tags_json = spec.to_dict()['tags']
         assert self.tag in tags_json
 
@@ -119,7 +119,7 @@ class TestDefinitions:
     }
 
     def test_definition(self, spec):
-        spec.components.add_schema('Pet', properties=self.properties)
+        spec.components.schema('Pet', properties=self.properties)
         if spec.openapi_version.major < 3:
             defs = spec.to_dict()['definitions']
         else:
@@ -129,7 +129,7 @@ class TestDefinitions:
 
     def test_definition_description(self, spec):
         model_description = 'An animal which lives with humans.'
-        spec.components.add_schema('Pet', properties=self.properties, description=model_description)
+        spec.components.schema('Pet', properties=self.properties, description=model_description)
         if spec.openapi_version.major < 3:
             defs = spec.to_dict()['definitions']
         else:
@@ -138,7 +138,7 @@ class TestDefinitions:
 
     def test_definition_stores_enum(self, spec):
         enum = ['name', 'photoUrls']
-        spec.components.add_schema(
+        spec.components.schema(
             'Pet',
             properties=self.properties,
             enum=enum,
@@ -151,7 +151,7 @@ class TestDefinitions:
 
     def test_definition_extra_fields(self, spec):
         extra_fields = {'discriminator': 'name'}
-        spec.components.add_schema('Pet', properties=self.properties, extra_fields=extra_fields)
+        spec.components.schema('Pet', properties=self.properties, extra_fields=extra_fields)
         if spec.openapi_version.major < 3:
             defs = spec.to_dict()['definitions']
         else:
@@ -160,7 +160,7 @@ class TestDefinitions:
 
     def test_to_yaml(self, spec):
         enum = ['name', 'photoUrls']
-        spec.components.add_schema(
+        spec.components.schema(
             'Pet',
             properties=self.properties,
             enum=enum,
@@ -208,9 +208,9 @@ class TestPath:
         },
     }
 
-    def test_add_path(self, spec):
+    def test_path(self, spec):
         route_spec = self.paths['/pet/{petId}']['get']
-        spec.add_path(
+        spec.path(
             path='/pet/{petId}',
             operations=dict(
                 get=dict(
@@ -234,30 +234,30 @@ class TestPath:
         assert p['tags'] == route_spec['tags']
 
     def test_paths_maintain_order(self, spec):
-        spec.add_path(path='/path1')
-        spec.add_path(path='/path2')
-        spec.add_path(path='/path3')
-        spec.add_path(path='/path4')
+        spec.path(path='/path1')
+        spec.path(path='/path2')
+        spec.path(path='/path3')
+        spec.path(path='/path4')
         assert list(spec.to_dict()['paths'].keys()) == ['/path1', '/path2', '/path3', '/path4']
 
     def test_methods_maintain_order(self, spec):
         methods = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options']
         for method in methods:
-            spec.add_path(path='/path', operations=OrderedDict({method: {}}))
+            spec.path(path='/path', operations=OrderedDict({method: {}}))
         assert list(spec.to_dict()['paths']['/path']) == methods
 
-    def test_add_path_merges_paths(self, spec):
+    def test_path_merges_paths(self, spec):
         """Test that adding a second HTTP method to an existing path performs
         a merge operation instead of an overwrite"""
         path = '/pet/{petId}'
         route_spec = self.paths[path]['get']
-        spec.add_path(
+        spec.path(
             path=path,
             operations=dict(
                 get=route_spec,
             ),
         )
-        spec.add_path(
+        spec.path(
             path=path,
             operations=dict(
                 put=dict(
@@ -276,9 +276,9 @@ class TestPath:
         assert 'get' in p
         assert 'put' in p
 
-    def test_add_path_ensures_path_parameters_required(self, spec):
+    def test_path_ensures_path_parameters_required(self, spec):
         path = '/pet/{petId}'
-        spec.add_path(
+        spec.path(
             path=path,
             operations=dict(
                 put=dict(
@@ -291,24 +291,24 @@ class TestPath:
         )
         assert get_paths(spec)[path]['put']['parameters'][0]['required'] is True
 
-    def test_add_path_with_no_path_raises_error(self, spec):
+    def test_path_with_no_path_raises_error(self, spec):
         with pytest.raises(APISpecError) as excinfo:
-            spec.add_path()
+            spec.path()
         assert 'Path template is not specified' in str(excinfo)
 
-    def test_add_path_strips_base_path(self, spec):
+    def test_path_strips_base_path(self, spec):
         spec.options['basePath'] = '/v1'
-        spec.add_path('/v1/pets')
+        spec.path('/v1/pets')
         paths = get_paths(spec)
         assert '/pets' in paths
         assert '/v1/pets' not in paths
 
-    def test_add_parameter(self, spec):
+    def test_parameter(self, spec):
         route_spec = self.paths['/pet/{petId}']['get']
 
-        spec.components.add_parameter('test_parameter', 'path', **route_spec['parameters'][0])
+        spec.components.parameter('test_parameter', 'path', **route_spec['parameters'][0])
 
-        spec.add_path(
+        spec.path(
             path='/pet/{petId}',
             operations={'get': {'parameters': ['test_parameter']}},
         )
@@ -323,12 +323,12 @@ class TestPath:
             assert p['parameters'][0] == {'$ref': '#/components/parameters/test_parameter'}
             assert route_spec['parameters'][0] == metadata['components']['parameters']['test_parameter']
 
-    def test_add_response(self, spec):
+    def test_response(self, spec):
         route_spec = self.paths['/pet/{petId}']['get']
 
-        spec.components.add_response('test_response', **route_spec['responses']['200'])
+        spec.components.response('test_response', **route_spec['responses']['200'])
 
-        spec.add_path(
+        spec.path(
             path='/pet/{petId}',
             operations={'get': {'responses': {'200': 'test_response'}}},
         )
@@ -343,11 +343,11 @@ class TestPath:
             assert p['responses']['200'] == {'$ref': '#/components/responses/test_response'}
             assert route_spec['responses']['200'] == metadata['components']['responses']['test_response']
 
-    def test_add_path_check_invalid_http_method(self, spec):
-        spec.add_path('/pet/{petId}', operations={'get': {}})
-        spec.add_path('/pet/{petId}', operations={'x-dummy': {}})
+    def test_path_check_invalid_http_method(self, spec):
+        spec.path('/pet/{petId}', operations={'get': {}})
+        spec.path('/pet/{petId}', operations={'x-dummy': {}})
         with pytest.raises(APISpecError) as excinfo:
-            spec.add_path('/pet/{petId}', operations={'dummy': {}})
+            spec.path('/pet/{petId}', operations={'dummy': {}})
         assert 'One or more HTTP methods are invalid' in str(excinfo)
 
 
@@ -374,7 +374,7 @@ class TestPlugins:
             openapi_version=openapi_version,
             plugins=(self.TestPlugin(), ),
         )
-        spec.components.add_schema('Pet', {})
+        spec.components.schema('Pet', {})
         definitions = get_definitions(spec)
         assert definitions['Pet'] == {'properties': {'name': {'type': 'string'}}}
 
@@ -386,7 +386,7 @@ class TestPlugins:
             openapi_version=openapi_version,
             plugins=(self.TestPlugin(), ),
         )
-        spec.add_path('/path_1')
+        spec.path('/path_1')
         paths = get_paths(spec)
         assert len(paths) == 1
         assert paths['/path_1_modified'] == {'get': {'responses': {'200': {}}}}
@@ -399,7 +399,7 @@ class TestPlugins:
             openapi_version=openapi_version,
             plugins=(self.TestPlugin(), ),
         )
-        spec.add_path('/path_2', operations={'post': {'responses': {'200': {}}}})
+        spec.path('/path_2', operations={'post': {'responses': {'200': {}}}})
         paths = get_paths(spec)
         assert len(paths) == 1
         assert paths['/path_2'] == {'post': {'responses': {'201': {}}}}
@@ -421,7 +421,7 @@ class TestPluginsOrder:
             self.output.append('plugin_{}_operations'.format(self.index))
 
     def test_plugins_order(self):
-        """Test plugins execution order in APISpec.add_path
+        """Test plugins execution order in APISpec.path
 
         - All path helpers are called, then all operation helpers, then all response helpers.
         - At each step, helpers are executed in the order the plugins are passed to APISpec.
@@ -433,7 +433,7 @@ class TestPluginsOrder:
             openapi_version='3.0.0',
             plugins=(self.OrderedPlugin(1, output), self.OrderedPlugin(2, output)),
         )
-        spec.add_path('/path', operations={'get': {'responses': {200: {}}}})
+        spec.path('/path', operations={'get': {'responses': {200: {}}}})
         assert output == [
             'plugin_1_path', 'plugin_2_path',
             'plugin_1_operations', 'plugin_2_operations',

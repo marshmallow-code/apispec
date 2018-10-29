@@ -102,7 +102,7 @@ class Components(object):
             schemas_key: self._schemas,
         }
 
-    def add_schema(
+    def schema(
             self, name, properties=None, enum=None, description=None, extra_fields=None,
             **kwargs
     ):
@@ -140,7 +140,7 @@ class Components(object):
             ret.update(extra_fields)
         self._schemas[name] = ret
 
-    def add_parameter(self, param_id, location, **kwargs):
+    def parameter(self, param_id, location, **kwargs):
         """ Add a parameter which can be referenced.
 
         :param str param_id: identifier by which parameter may be referenced.
@@ -158,7 +158,7 @@ class Components(object):
                 continue
         self._parameters[param_id] = ret
 
-    def add_response(self, ref_id, **kwargs):
+    def response(self, ref_id, **kwargs):
         """Add a response which can be referenced.
 
         :param str ref_id: ref_id to use as reference
@@ -227,14 +227,14 @@ class APISpec(object):
         from .yaml_utils import dict_to_yaml
         return dict_to_yaml(self.to_dict())
 
-    def add_tag(self, tag):
+    def tag(self, tag):
         """ Store information about a tag.
 
         :param dict tag: the dictionary storing information about the tag.
         """
         self._tags.append(tag)
 
-    def add_path(self, path=None, operations=None, **kwargs):
+    def path(self, path=None, operations=None, **kwargs):
         """Add a new path object to the spec.
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathsObject
