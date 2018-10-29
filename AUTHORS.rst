@@ -52,3 +52,4 @@ Contributors (chronological)
 - Felix Yan `@felixonmars <https://github.com/felixonmars>`_
 - Guoli Lyu `@Guoli-Lyu <https://github.com/Guoli-Lyu>`_
 - Laura Beaufort `@lbeaufort <https://github.com/lbeaufort>`_
+- Marcin Lulek `@ergo <https://github.com/ergo>`_
