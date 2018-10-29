@@ -354,7 +354,7 @@ class TestPath:
 class TestPlugins:
 
     class TestPlugin(BasePlugin):
-        def definition_helper(self, name, definition, **kwargs):
+        def schema_helper(self, name, definition, **kwargs):
             return {'properties': {'name': {'type': 'string'}}}
 
         def path_helper(self, path, operations, **kwargs):
@@ -367,7 +367,7 @@ class TestPlugins:
                 operations['post'] = {'responses': {'201': {}}}
 
     @pytest.mark.parametrize('openapi_version', ('2.0', '3.0.0', ))
-    def test_plugin_definition_helper_is_used(self, openapi_version):
+    def test_plugin_schema_helper_is_used(self, openapi_version):
         spec = APISpec(
             title='Swagger Petstore',
             version='1.0.0',

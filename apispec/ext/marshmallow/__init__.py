@@ -155,7 +155,7 @@ class MarshmallowPlugin(BasePlugin):
         """
         return self.openapi.map_to_openapi_type(*args)
 
-    def definition_helper(self, name, schema, **kwargs):
+    def schema_helper(self, name, schema, **kwargs):
         """Definition helper that allows using a marshmallow
         :class:`Schema <marshmallow.Schema>` to provide OpenAPI
         metadata.

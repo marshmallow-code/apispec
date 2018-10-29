@@ -127,7 +127,7 @@ class Components(object):
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
-                ret.update(plugin.definition_helper(name, definition=ret, **kwargs))
+                ret.update(plugin.schema_helper(name, definition=ret, **kwargs))
             except PluginMethodNotImplementedError:
                 continue
         if properties:
