@@ -3,7 +3,7 @@
 import re
 from collections import OrderedDict
 
-from apispec.compat import iterkeys, iteritems
+from apispec.compat import iterkeys
 from .exceptions import APISpecError, PluginMethodNotImplementedError
 from .utils import OpenAPIVersion
 
@@ -180,17 +180,6 @@ class APISpec(object):
                 plugin.operation_helper(path=path, operations=operations, **kwargs)
             except PluginMethodNotImplementedError:
                 continue
-
-        # Execute response helpers
-        # TODO: cache response helpers output for each (method, status_code) couple
-        for method, operation in iteritems(operations):
-            if method in VALID_METHODS and 'responses' in operation:
-                for status_code, response in iteritems(operation['responses']):
-                    for plugin in self.plugins:
-                        try:
-                            response.update(plugin.response_helper(method, status_code, **kwargs) or {})
-                        except PluginMethodNotImplementedError:
-                            continue
 
         clean_operations(operations, self.openapi_version.major)
 

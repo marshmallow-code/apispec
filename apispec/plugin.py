@@ -39,10 +39,3 @@ class BasePlugin(object):
         :param dict operations: A `dict` mapping HTTP methods to operation object. See
         """
         raise PluginMethodNotImplementedError
-
-    def response_helper(self, method, status_code, **kwargs):
-        """Should return a dict to update the response description.
-
-        Returning None is equivalent to returning an empty dictionary.
-        """
-        raise PluginMethodNotImplementedError
