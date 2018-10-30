@@ -52,3 +52,4 @@ Contributors (chronological)
 - Guoli Lyu `@Guoli-Lyu <https://github.com/Guoli-Lyu>`_
 - Laura Beaufort `@lbeaufort <https://github.com/lbeaufort>`_
 - Marcin Lulek `@ergo <https://github.com/ergo>`_
+- Jonathan Beezley `@jbeezley <https://github.com/jbeezley>`_
