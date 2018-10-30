@@ -11,37 +11,22 @@ jobs:
     - env: TOXENV=webframeworks
 
   include:
-  - python: '3.6'
-    env: TOXENV=lint
+  - { python: '3.6', env: TOXENV=lint }
 
-  - python: '2.7'
-    env: TOXENV=py27-marshmallow2
-  - python: '2.7'
-    env: TOXENV=py27-marshmallow3
+  - { python: '2.7', env: TOXENV=py27-marshmallow2 }
+  - { python: '2.7', env: TOXENV=py27-marshmallow3 }
 
-  - python: '3.5'
-    env: TOXENV=py35-marshmallow2
-  - python: '3.5'
-    env: TOXENV=py35-marshmallow3
+  - { python: '3.5', env: TOXENV=py35-marshmallow2 }
+  - { python: '3.5', env: TOXENV=py35-marshmallow3 }
 
-  - python: '3.6'
-    env: TOXENV=py36-marshmallow2
-  - python: '3.6'
-    env: TOXENV=py36-marshmallow3
+  - { python: '3.6', env: TOXENV=py36-marshmallow2 }
+  - { python: '3.6', env: TOXENV=py36-marshmallow3 }
 
-  - python: '3.7'
-    dist: xenial    # required for Python 3.7 (travis-ci/travis-ci#9069)
-    sudo: required  # required for Python 3.7 (travis-ci/travis-ci#9069)
-    env: TOXENV=py37-marshmallow2
-  - python: '3.7'
-    dist: xenial    # required for Python 3.7 (travis-ci/travis-ci#9069)
-    sudo: required  # required for Python 3.7 (travis-ci/travis-ci#9069)
-    env: TOXENV=py37-marshmallow3
+  - { python: '3.7', env: TOXENV=py37-marshmallow2, dist: xenial, sudo: required }
+  - { python: '3.7', env: TOXENV=py37-marshmallow3, dist: xenial, sudo: required }
 
-  - python: '3.6'
-    env: TOXENV=webframeworks
-  - python: '3.6'
-    env: TOXENV=docs
+  - { python: '3.6', env: TOXENV=webframeworks }
+  - { python: '3.6', env: TOXENV=docs }
 
   - stage: PyPI Release
     if: tag IS present
