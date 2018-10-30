@@ -19,22 +19,22 @@ First, create an `APISpec <apispec.APISpec>` object, passing basic information a
         )
     )
 
-Add definitions to your spec using `definition <apispec.APISpec.definition>`.
+Add schemas to your spec using `schema <apispec.core.Components.schema>`.
 
 .. code-block:: python
 
-    spec.definition('Gist', properties={
+    spec.components.schema('Gist', properties={
         'id': {'type': 'integer', 'format': 'int64'},
         'name': {'type': 'string'}
     })
 
 
-Add paths to your spec using `add_path <apispec.APISpec.add_path>`.
+Add paths to your spec using `path <apispec.APISpec.path>`.
 
 .. code-block:: python
 
 
-    spec.add_path(
+    spec.path(
         path='/gist/{gist_id}',
         operations=dict(
             get=dict(

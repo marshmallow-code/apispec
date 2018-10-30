@@ -81,14 +81,14 @@ Our application will have a marshmallow `Schema <marshmallow.Schema>` for gists.
 
 
 The marshmallow plugin allows us to pass this `Schema` to
-`spec.definition <apispec.APISpec.definition>`.
+`spec.components.schema <apispec.core.Components.schema>`.
 
 
 .. code-block:: python
 
-    spec.definition('Gist', schema=GistSchema)
+    spec.components.schema('Gist', schema=GistSchema)
 
-The definition is now added to the spec.
+The schema is now added to the spec.
 
 .. code-block:: python
     :emphasize-lines: 4,5,6,7
@@ -133,15 +133,15 @@ We'll add some YAML in the docstring to add response information.
         """
         return 'details about gist {}'.format(gist_id)
 
-The Flask plugin allows us to pass this view to `spec.add_path <apispec.APISpec.add_path>`.
+The Flask plugin allows us to pass this view to `spec.path <apispec.APISpec.path>`.
 
 
 .. code-block:: python
 
-    # Since add_path inspects the view and its route,
+    # Since path inspects the view and its route,
     # we need to be in a Flask request context
     with app.test_request_context():
-        spec.add_path(view=gist_detail)
+        spec.path(view=gist_detail)
 
 
 Our OpenAPI spec now looks like this:
@@ -190,7 +190,7 @@ If your API uses `method-based dispatching <http://flask.pocoo.org/docs/0.12/vie
     method_view = GistApi.as_view('gist')
     app.add_url_rule("/gist", view_func=method_view)
     with app.test_request_context():
-        spec.add_path(view=method_view)
+        spec.path(view=method_view)
     print(spec.to_dict()['paths'])
     # {'/gist': {'get': {'description': 'get a gist',
     #                    'responses': {200: {'schema': {'$ref': '#/definitions/Gist'}}}},

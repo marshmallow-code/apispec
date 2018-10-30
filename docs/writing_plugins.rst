@@ -9,14 +9,15 @@ Helper Methods
 
 Plugins provide "helper" methods that augment the behavior of `apispec.APISpec` methods.
 
-There are four types of helper methods:
+There are five types of helper methods:
 
-* Definition helpers
+* Schema helpers
+* Parameter helpers
+* Response helpers
 * Path helpers
 * Operation helpers
-* Response helpers
 
-Each helper function type modifies a different `apispec.APISpec` method. For example, path helpers modify `apispec.APISpec.add_path`.
+Helper functions modify `apispec.APISpec` methods. For example, path helpers modify `apispec.APISpec.path`.
 
 
 A plugin with a path helper function may look something like this:
@@ -30,7 +31,7 @@ A plugin with a path helper function may look something like this:
 
         def path_helper(self, path, func, **kwargs):
             """Path helper that parses docstrings for operations. Adds a
-            ``func`` parameter to `apispec.APISpec.add_path`.
+            ``func`` parameter to `apispec.APISpec.path`.
             """
             operations = load_operations_from_docstring(func.__doc__)
             return Path(path=path, operations=operations)
@@ -66,7 +67,7 @@ Here's a plugin example involving conditional processing depending on the OpenAP
 
         def operation_helper(self, operations, func, **kwargs):
             """Operation helper that parses docstrings for operations. Adds a
-            ``func`` parameter to `apispec.APISpec.add_path`.
+            ``func`` parameter to `apispec.APISpec.path`.
             """
             doc_operations = load_operations_from_docstring(func.__doc__))
             # Apply conditional processing
@@ -101,7 +102,7 @@ To use the plugin:
         """
         pass
 
-    spec.add_path(path='/gists/{gist_id}', func=gist_detail)
+    spec.path(path='/gists/{gist_id}', func=gist_detail)
     print(spec.to_dict()['paths'])
     # {'/gists/{gist_id}': {'get': {'responses': {200: {'schema': '#/definitions/Gist'}}}}}
 
@@ -111,6 +112,6 @@ Next Steps
 
 To learn more about how to write plugins
 
-* Consult the :doc:`Core API docs <api_core>` for `BasePlugin <apispec.plugin.BasePlugin>`
+* Consult the :doc:`Core API docs <api_core>` for `BasePlugin <apispec.BasePlugin>`
 * View the source for an existing apispec plugin, e.g. `FlaskPlugin <https://github.com/marshmallow-code/apispec-webframeworks/blob/master/apispec_webframeworks/flask.py>`_.
 * Check out some projects using apispec: https://github.com/marshmallow-code/apispec/wiki/Ecosystem
