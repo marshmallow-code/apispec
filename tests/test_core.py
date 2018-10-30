@@ -350,10 +350,6 @@ class TestPlugins:
             if path == '/path_2':
                 operations['post'] = {'responses': {'201': {}}}
 
-        def response_helper(self, method, status_code, **kwargs):
-            if method == 'delete':
-                return {'description': 'Clever description'}
-
     @pytest.mark.parametrize('openapi_version', ('2.0', '3.0.0', ))
     def test_plugin_definition_helper_is_used(self, openapi_version):
         spec = APISpec(
@@ -392,21 +388,6 @@ class TestPlugins:
         assert len(paths) == 1
         assert paths['/path_2'] == {'post': {'responses': {'201': {}}}}
 
-    @pytest.mark.parametrize('openapi_version', ('2.0', '3.0.0', ))
-    def test_plugin_response_helper_is_used(self, spec, openapi_version):
-        spec = APISpec(
-            title='Swagger Petstore',
-            version='1.0.0',
-            openapi_version=openapi_version,
-            plugins=(self.TestPlugin(), ),
-        )
-        spec.add_path('/path_3', operations={'delete': {'responses': {'204': {'content': {}}}}})
-        paths = get_paths(spec)
-        assert len(paths) == 1
-        assert paths['/path_3'] == {'delete': {'responses': {'204': {
-            'content': {}, 'description': 'Clever description',
-        }}}}
-
 
 class TestPluginsOrder:
 
@@ -422,9 +403,6 @@ class TestPluginsOrder:
 
         def operation_helper(self, path, operations, **kwargs):
             self.output.append('plugin_{}_operations'.format(self.index))
-
-        def response_helper(self, method, status_code, **kwargs):
-            self.output.append('plugin_{}_response'.format(self.index))
 
     def test_plugins_order(self):
         """Test plugins execution order in APISpec.add_path
@@ -443,5 +421,4 @@ class TestPluginsOrder:
         assert output == [
             'plugin_1_path', 'plugin_2_path',
             'plugin_1_operations', 'plugin_2_operations',
-            'plugin_1_response', 'plugin_2_response',
         ]

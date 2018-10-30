@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+1.0.0b5 (unreleased)
+++++++++++++++++++++
+
+Deprecations/Removals:
+
+- The ``response_helper`` feature is removed. The same can be achieved from
+  ``operation_helper``.
+
 1.0.0b4 (2018-10-28)
 ++++++++++++++++++++
 
