@@ -51,7 +51,7 @@ We can now use the marshmallow and Flask plugins.
 
     from apispec import APISpec
     from apispec.ext.marshmallow import MarshmallowPlugin
-    from apispec_webframeworks import FlaskPlugin
+    from apispec_webframeworks.flask import FlaskPlugin
 
     spec = APISpec(
         title='Gisty',
