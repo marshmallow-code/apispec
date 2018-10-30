@@ -6,16 +6,14 @@ Leads
 =====
 
 - Steven Loria `@sloria <https://github.com/sloria>`_
-- Josh Carp `@jmcarp <https://github.com/jmcarp>`_
-- Yoichi NAKAYAMA `@yoichi <https://github.com/yoichi>`_
 - Jérôme Lafréchoux `@lafrech <https://github.com/lafrech>`_
-- Michael Bangert `@Bangertm <https://github.com/Bangertm>`_
 
 Contributors (chronological)
 ============================
 
 - Josh Johnston `@Trii <https://github.com/Trii>`_
 - Vlad Frolov `@frol <https://github.com/frol>`_
+- Josh Carp `@jmcarp <https://github.com/jmcarp>`_
 - Andrew Pashkin `@AndrewPashkin <https://github.com/AndrewPashkin>`_
 - João Taveira Araújo `@jta <https://github.com/jta>`_
 - Giacomo Tagliabue `@itajaja <https://github.com/itajaja>`_
@@ -35,6 +33,7 @@ Contributors (chronological)
 - Lucas Coutinho `@lucasrc <https://github.com/lucasrc>`_
 - `@lamiskin <https://github.com/lamiskin>`_
 - Florian Scheffler `@nebularazer <https://github.com/nebularazer>`_
+- Yoichi NAKAYAMA `@yoichi <https://github.com/yoichi>`_
 - Vadim Radovel `@NightBlues <https://github.com/NightBlues>`_
 - Douglas Anderson `@djanderson <https://github.com/djanderson>`_
 - Marat Sharafutdinov `@decaz <https://github.com/decaz>`_
