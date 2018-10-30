@@ -7,7 +7,7 @@ import yaml
 from apispec import APISpec, BasePlugin
 from apispec.exceptions import APISpecError
 
-from .utils import get_definitions, get_paths
+from .utils import get_definitions, get_paths, get_parameters, get_responses
 
 
 description = 'This is a sample Petstore server.  You can find out more '
@@ -357,6 +357,12 @@ class TestPlugins:
         def schema_helper(self, name, definition, **kwargs):
             return {'properties': {'name': {'type': 'string'}}}
 
+        def parameter_helper(self, **kwargs):
+            return {'name': 'parameter'}
+
+        def response_helper(self, **kwargs):
+            return {'description': '42'}
+
         def path_helper(self, path, operations, **kwargs):
             if path == '/path_1':
                 operations.update({'get': {'responses': {'200': {}}}})
@@ -377,6 +383,30 @@ class TestPlugins:
         spec.components.schema('Pet', {})
         definitions = get_definitions(spec)
         assert definitions['Pet'] == {'properties': {'name': {'type': 'string'}}}
+
+    @pytest.mark.parametrize('openapi_version', ('2.0', '3.0.0', ))
+    def test_plugin_parameter_helper_is_used(self, openapi_version):
+        spec = APISpec(
+            title='Swagger Petstore',
+            version='1.0.0',
+            openapi_version=openapi_version,
+            plugins=(self.TestPlugin(), ),
+        )
+        spec.components.parameter('Pet', 'body', **{})
+        parameters = get_parameters(spec)
+        assert parameters['Pet'] == {'in': 'body', 'name': 'parameter'}
+
+    @pytest.mark.parametrize('openapi_version', ('2.0', '3.0.0', ))
+    def test_plugin_response_helper_is_used(self, openapi_version):
+        spec = APISpec(
+            title='Swagger Petstore',
+            version='1.0.0',
+            openapi_version=openapi_version,
+            plugins=(self.TestPlugin(), ),
+        )
+        spec.components.response('Pet', **{})
+        responses = get_responses(spec)
+        assert responses['Pet'] == {'description': '42'}
 
     @pytest.mark.parametrize('openapi_version', ('2.0', '3.0.0', ))
     def test_plugin_path_helper_is_used(self, openapi_version):
