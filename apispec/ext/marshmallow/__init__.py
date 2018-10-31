@@ -30,6 +30,7 @@ Requires marshmallow>=2.15.2.
 
 """
 from __future__ import absolute_import
+import warnings
 
 import marshmallow
 
@@ -38,12 +39,22 @@ from .common import resolve_schema_cls, resolve_schema_instance
 from .openapi import OpenAPIConverter
 
 
+def resolver(schema):
+    """Default implementation of a schema name resolver function
+    """
+    name = schema.__name__
+    if name.endswith('Schema'):
+        return name[:-6] or name
+    return name
+
+
 class MarshmallowPlugin(BasePlugin):
     """APISpec plugin handling marshmallow schemas
 
     :param callable schema_name_resolver: Callable to generate the schema definition name.
         Receives the `Schema` class and returns the name to be used in refs within
-        the generated spec.
+        the generated spec. When working with circular referencing this function
+        must must not return `None` for schemas in a circular reference chain.
 
         Example: ::
 
@@ -52,7 +63,7 @@ class MarshmallowPlugin(BasePlugin):
     """
     def __init__(self, schema_name_resolver=None):
         super(MarshmallowPlugin, self).__init__()
-        self.schema_name_resolver = schema_name_resolver
+        self.schema_name_resolver = schema_name_resolver or resolver
         self.spec = None
         self.openapi_version = None
         self.openapi = None
@@ -61,34 +72,11 @@ class MarshmallowPlugin(BasePlugin):
         super(MarshmallowPlugin, self).init_spec(spec)
         self.spec = spec
         self.openapi_version = spec.openapi_version
-        self.openapi = OpenAPIConverter(openapi_version=spec.openapi_version)
-
-    def inspect_schema_for_auto_referencing(self, original_schema_instance):
-        """Parse given schema instance and reference eventual nested schemas
-        :param original_schema_instance: schema to parse
-        """
-        # schema_name_resolver must be provided to use this function
-        assert self.schema_name_resolver
-
-        for field in original_schema_instance.fields.values():
-            nested_schema_class = None
-
-            if isinstance(field, marshmallow.fields.Nested):
-                nested_schema_class = self.openapi.resolve_schema_class(field.schema)
-
-            elif isinstance(field, marshmallow.fields.List) \
-                    and isinstance(field.container, marshmallow.fields.Nested):
-                nested_schema_class = self.openapi.resolve_schema_class(field.container.schema)
-
-            if nested_schema_class and nested_schema_class not in self.openapi.refs:
-                definition_name = self.schema_name_resolver(
-                    nested_schema_class,
-                )
-                if definition_name:
-                    self.spec.components.schema(
-                        definition_name,
-                        schema=nested_schema_class,
-                    )
+        self.openapi = OpenAPIConverter(
+            openapi_version=spec.openapi_version,
+            schema_name_resolver=self.schema_name_resolver,
+            spec=spec,
+        )
 
     def resolve_parameters(self, parameters):
         resolved = []
@@ -102,7 +90,7 @@ class MarshmallowPlugin(BasePlugin):
                         default_in=parameter.pop('in'), **parameter
                     )
                     continue
-            self.resolve_schema(parameter, dump=False, load=True)
+            self.resolve_schema(parameter)
             resolved.append(parameter)
         return resolved
 
@@ -113,26 +101,24 @@ class MarshmallowPlugin(BasePlugin):
         content = request_body['content']
         for content_type in content:
             schema = content[content_type]['schema']
-            content[content_type]['schema'] = self.openapi.resolve_schema_dict(schema, dump=False, load=True)
+            content[content_type]['schema'] = self.openapi.resolve_schema_dict(schema)
 
-    def resolve_schema(self, data, dump=True, load=True):
+    def resolve_schema(self, data):
         """Function to resolve a schema in a parameter or response - modifies the
         corresponding dict to convert Marshmallow Schema object or class into dict
 
         :param APISpec spec: `APISpec` containing refs.
         :param dict data: the parameter or response dictionary that may contain a schema
-        :param bool dump: Introspect dump logic.
-        :param bool load: Introspect load logic.
         """
         if self.openapi_version.major < 3:
             if 'schema' in data:
-                data['schema'] = self.openapi.resolve_schema_dict(data['schema'], dump=dump, load=load)
+                data['schema'] = self.openapi.resolve_schema_dict(data['schema'])
         else:
             if 'content' in data:
                 for content_type in data['content']:
                     schema = data['content'][content_type]['schema']
                     data['content'][content_type]['schema'] = self.openapi.resolve_schema_dict(
-                        schema, dump=dump, load=load,
+                        schema,
                     )
 
     def map_to_openapi_type(self, *args):
@@ -168,14 +154,11 @@ class MarshmallowPlugin(BasePlugin):
         schema_cls = resolve_schema_cls(schema)
         schema_instance = resolve_schema_instance(schema)
 
+        self.warn_if_schema_already_in_spec(schema_cls)
         # Store registered refs, keyed by Schema class
         self.openapi.refs[schema_cls] = name
 
         json_schema = self.openapi.schema2jsonschema(schema_instance, name=name)
-
-        # Auto reference schema if schema_name_resolver
-        if self.schema_name_resolver:
-            self.inspect_schema_for_auto_referencing(schema_instance)
 
         return json_schema
 
@@ -186,7 +169,7 @@ class MarshmallowPlugin(BasePlugin):
         :param type|Schema schema: A marshmallow Schema class or instance.
         """
         # In OpenAPIv3, this only works when using the complex form using "content"
-        self.resolve_schema(kwargs, dump=False, load=True)
+        self.resolve_schema(kwargs)
         return kwargs
 
     def response_helper(self, **kwargs):
@@ -195,7 +178,7 @@ class MarshmallowPlugin(BasePlugin):
 
         :param type|Schema schema: A marshmallow Schema class or instance.
         """
-        self.resolve_schema(kwargs, dump=True, load=False)
+        self.resolve_schema(kwargs)
         return kwargs
 
     def operation_helper(self, operations, **kwargs):
@@ -208,4 +191,15 @@ class MarshmallowPlugin(BasePlugin):
                 if 'requestBody' in operation:
                     self.resolve_schema_in_request_body(operation['requestBody'])
             for response in operation.get('responses', {}).values():
-                self.resolve_schema(response, dump=True, load=False)
+                self.resolve_schema(response)
+
+    def warn_if_schema_already_in_spec(self, schema_cls):
+        """Method to warn the user if the schema has already been added to the
+        spec.
+        """
+        if schema_cls in self.openapi.refs:
+            warnings.warn(
+                '{} has already been added to the spec. Adding it twice may '
+                'cause references to not resove properly'.format(schema_cls),
+                UserWarning,
+            )

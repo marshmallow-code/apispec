@@ -4,7 +4,6 @@
 from collections import OrderedDict
 import yaml
 
-from apispec.lazy_dict import LazyDict
 from apispec.compat import PY2, unicode, iteritems
 from apispec.utils import trim_docstring, dedent
 
@@ -24,7 +23,6 @@ class YAMLDumper(yaml.Dumper):
 if PY2:
     yaml.add_representer(unicode, YAMLDumper._represent_unicode, Dumper=YAMLDumper)
 yaml.add_representer(OrderedDict, YAMLDumper._represent_dict, Dumper=YAMLDumper)
-yaml.add_representer(LazyDict, YAMLDumper._represent_dict, Dumper=YAMLDumper)
 
 
 def dict_to_yaml(dic):

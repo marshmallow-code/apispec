@@ -15,9 +15,9 @@ from marshmallow.utils import is_collection
 from marshmallow.compat import iteritems
 from marshmallow.orderedset import OrderedSet
 
-from apispec.lazy_dict import LazyDict
 from apispec.utils import OpenAPIVersion
 from .common import resolve_schema_cls, get_fields
+from apispec.exceptions import APISpecError
 
 
 MARSHMALLOW_VERSION_INFO = tuple(
@@ -94,18 +94,16 @@ _VALID_PROPERTIES = {
 _VALID_PREFIX = 'x-'
 
 
-class OrderedLazyDict(LazyDict, OrderedDict):
-    pass
-
-
 class OpenAPIConverter(object):
     """Converter generating OpenAPI specification from Marshmallow schemas and fields
 
     :param str|OpenAPIVersion openapi_version: The OpenAPI version to use.
         Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
     """
-    def __init__(self, openapi_version):
+    def __init__(self, openapi_version, schema_name_resolver, spec):
         self.openapi_version = OpenAPIVersion(openapi_version)
+        self.schema_name_resolver = schema_name_resolver
+        self.spec = spec
         # Schema references
         self.refs = {}
         # Field mappings
@@ -291,7 +289,7 @@ class OpenAPIConverter(object):
                 attributes[max_attr] = validator.equal
         return attributes
 
-    def field2property(self, field, use_refs=True, dump=True, load=True, name=None):
+    def field2property(self, field, use_refs=True, name=None):
         """Return the JSON Schema property definition given a marshmallow
         :class:`Field <marshmallow.fields.Field>`.
 
@@ -302,8 +300,6 @@ class OpenAPIConverter(object):
 
         :param Field field: A marshmallow field.
         :param bool use_refs: Use JSONSchema ``refs``.
-        :param bool dump: Introspect dump logic.
-        :param bool load: Introspect load logic.
         :param str name: The definition name, if applicable, used to construct the $ref value.
         :rtype: dict, a Property Object
         """
@@ -362,20 +358,20 @@ class OpenAPIConverter(object):
                     else:
                         ret.update(ref_schema)
             else:
-                schema_dict = self.resolve_schema_dict(field.schema, dump=dump, load=load)
+                schema_dict = self.resolve_nested_schema(field.schema)
                 if ret and '$ref' in schema_dict:
                     ret.update({'allOf': [schema_dict]})
                 else:
                     ret.update(schema_dict)
         elif isinstance(field, marshmallow.fields.List):
             ret['items'] = self.field2property(
-                field.container, use_refs=use_refs, dump=dump, load=load,
+                field.container, use_refs=use_refs,
             )
         elif isinstance(field, marshmallow.fields.Dict):
             if MARSHMALLOW_VERSION_INFO[0] >= 3:
                 if field.value_container:
                     ret['additionalProperties'] = self.field2property(
-                        field.value_container, use_refs=use_refs, dump=dump, load=load,
+                        field.value_container, use_refs=use_refs,
                     )
 
         # Dasherize metadata that starts with x_
@@ -391,6 +387,41 @@ class OpenAPIConverter(object):
         ret.pop('ref', None)
 
         return ret
+
+    def resolve_nested_schema(self, schema):
+        """Return the Open API representation of a marshmallow Schema.
+
+        Adds the schema to the spec if it isn't already present.
+
+        Typically will return a dictionary with the reference to the schema's
+        path in the spec unless the `schema_name_resolver` returns `None`, in
+        which case the returned dictoinary will contain a JSON Schema Object
+        representation of the schema.
+
+        :param schema: schema to add to the spec
+        """
+
+        schema_cls = self.resolve_schema_class(schema)
+        name = self.schema_name_resolver(schema_cls)
+
+        if not name:
+            try:
+                return self.schema2jsonschema(schema)
+            except RuntimeError:
+                raise APISpecError(
+                    'Name resolver returned None for schema {schema} which is '
+                    'part of a chain of circular referencing schemas. Please'
+                    ' ensure that the schema_name_resolver passed to'
+                    ' MarshmallowPlugin returns a string for all circular'
+                    ' referencing schemas.'.format(schema=schema),
+                )
+
+        if schema_cls not in self.refs:
+            self.spec.components.schema(
+                name,
+                schema=schema,
+            )
+        return self.get_ref_dict(schema, schema_cls)
 
     def schema2parameters(self, schema, **kwargs):
         """Return an array of OpenAPI parameters given a given marshmallow
@@ -425,9 +456,9 @@ class OpenAPIConverter(object):
         openapi_default_in = __location_map__.get(default_in, default_in)
         if self.openapi_version.major < 3 and openapi_default_in == 'body':
             if schema is not None:
-                prop = self.resolve_schema_dict(schema, dump=False, load=True, use_instances=use_instances)
+                prop = self.resolve_schema_dict(schema, use_instances=use_instances)
             else:
-                prop = self.fields2jsonschema(fields, use_refs=use_refs, dump=False, load=True)
+                prop = self.fields2jsonschema(fields, use_refs=use_refs)
 
             param = {
                 'in': openapi_default_in,
@@ -476,7 +507,7 @@ class OpenAPIConverter(object):
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
         """
         location = field.metadata.get('location', None)
-        prop = self.field2property(field, use_refs=use_refs, dump=False, load=True)
+        prop = self.field2property(field, use_refs=use_refs)
         return self.property2parameter(
             prop,
             name=name,
@@ -537,7 +568,7 @@ class OpenAPIConverter(object):
     def schema2jsonschema(self, schema, **kwargs):
         return self.fields2jsonschema(get_fields(schema), schema, **kwargs)
 
-    def fields2jsonschema(self, fields, schema=None, use_refs=True, dump=True, load=True, name=None):
+    def fields2jsonschema(self, fields, schema=None, use_refs=True, name=None):
         """Return the JSON Schema Object for a given marshmallow
         :class:`Schema <marshmallow.Schema>`. Schema may optionally provide the ``title`` and
         ``description`` class Meta options.
@@ -590,26 +621,20 @@ class OpenAPIConverter(object):
 
         jsonschema = {
             'type': 'object',
-            'properties': OrderedLazyDict() if getattr(Meta, 'ordered', None) else LazyDict(),
+            'properties': OrderedDict() if getattr(Meta, 'ordered', None) else {},
         }
 
         exclude = set(getattr(Meta, 'exclude', []))
 
         for field_name, field_obj in iteritems(fields):
-            if (
-                    field_name in exclude or
-                    (field_obj.dump_only and not dump) or
-                    (field_obj.load_only and not load)
-            ):
+            if (field_name in exclude):
                 continue
 
-            def prop_func(field_obj=field_obj):
-                return self.field2property(
-                    field_obj, use_refs=use_refs, dump=dump, load=load, name=name,
-                )
-
             observed_field_name = self._observed_name(field_obj, field_name)
-            jsonschema['properties'][observed_field_name] = prop_func
+            property = self.field2property(
+                field_obj, use_refs=use_refs, name=name,
+            )
+            jsonschema['properties'][observed_field_name] = property
 
             partial = getattr(schema, 'partial', None)
             if field_obj.required:
@@ -633,6 +658,19 @@ class OpenAPIConverter(object):
 
         return jsonschema
 
+    def get_ref_dict(self, schema, schema_cls):
+        """Method to create a dictionary containing a JSON reference to the
+        schema in the spec
+        """
+        ref_path = self.get_ref_path()
+        ref_schema = {'$ref': '#/{0}/{1}'.format(ref_path, self.refs[schema_cls])}
+        if getattr(schema, 'many', False):
+            return {
+                'type': 'array',
+                'items': ref_schema,
+            }
+        return ref_schema
+
     def get_ref_path(self):
         """Return the path for references based on the openapi version
 
@@ -645,7 +683,7 @@ class OpenAPIConverter(object):
         }
         return ref_paths[self.openapi_version.major]
 
-    def resolve_schema_dict(self, schema, dump=True, load=True, use_instances=False):
+    def resolve_schema_dict(self, schema, use_instances=False):
         if isinstance(schema, dict):
             if schema.get('type') == 'array' and 'items' in schema:
                 schema['items'] = self.resolve_schema_dict(
@@ -653,27 +691,12 @@ class OpenAPIConverter(object):
                 )
             if schema.get('type') == 'object' and 'properties' in schema:
                 schema['properties'] = {
-                    k: self.resolve_schema_dict(v, dump=dump, load=load, use_instances=use_instances)
+                    k: self.resolve_schema_dict(v, use_instances=use_instances)
                     for k, v in schema['properties'].items()
                 }
             return schema
-        if isinstance(schema, marshmallow.Schema) and use_instances:
-            schema_cls = schema
-        else:
-            schema_cls = self.resolve_schema_class(schema)
 
-        if schema_cls in self.refs:
-            ref_path = self.get_ref_path()
-            ref_schema = {'$ref': '#/{0}/{1}'.format(ref_path, self.refs[schema_cls])}
-            if getattr(schema, 'many', False):
-                return {
-                    'type': 'array',
-                    'items': ref_schema,
-                }
-            return ref_schema
-        if not isinstance(schema, marshmallow.Schema):
-            schema = schema_cls
-        return self.schema2jsonschema(schema, dump=dump, load=load)
+        return self.resolve_nested_schema(schema)
 
     def resolve_schema_class(self, schema):
         """Return schema class for given schema (instance or class)
