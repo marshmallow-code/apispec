@@ -23,7 +23,9 @@ Questions, Feature Requests, Bug Reports, and Feedback. . .
 Setting Up for Local Development
 ++++++++++++++++++++++++++++++++
 
-1. Fork apispec_ on Github. ::
+1. Fork apispec_ on Github.
+
+::
 
     $ git clone https://github.com/marshmallow-code/apispec.git
     $ cd apispec
@@ -63,6 +65,7 @@ Pull Requests
 ++++++++++++++
 
 1. Create a new local branch.
+
 ::
 
     # For a new feature
@@ -72,6 +75,7 @@ Pull Requests
     $ git checkout -b fix-something 1.2-line
 
 2. Commit your changes. Write `good commit messages <http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html>`_.
+
 ::
 
     $ git commit -m "Detailed commit message"
