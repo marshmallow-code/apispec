@@ -23,16 +23,12 @@ Features:
     # apispec<1.0.0b5
     spec.add_tag({'name': 'Pet', 'description': 'Operations on pets'})
     spec.add_path('/pets/', operations=...)
-    spec.definition('Pet')
-    def PetSchema(Schema)
-        ...
+    spec.definition('Pet', properties=...)
 
     # apispec>=1.0.0b5
     spec.tag({'name': 'Pet', 'description': 'Operations on pets'})
     spec.path('/pets/', operations=...)
-    spec.components.schema('Pet')
-    def PetSchema(Schema)
-        ...
+    spec.components.schema('Pet', properties=...)
 
 
 Deprecations/Removals:
