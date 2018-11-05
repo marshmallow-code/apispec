@@ -7,11 +7,12 @@ apispec
 .. automodule:: apispec
     :members:
 
-apispec.plugin
---------------
 
-.. automodule:: apispec.plugin
-    :members:
+apispec.core
+------------
+
+.. automodule:: apispec.core
+    :members: Components
 
 apispec.exceptions
 ------------------

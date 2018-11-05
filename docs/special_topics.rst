@@ -7,7 +7,7 @@ Solutions to specific problems are documented here.
 Adding Additional Fields To Schema Objects
 ------------------------------------------
 
-To add additional fields (e.g. ``"discriminator"``) to Schema objects generated from `APISpec.definition <apispec.APISpec.definition>` , pass the ``extra_fields`` argument.
+To add additional fields (e.g. ``"discriminator"``) to Schema objects generated from `spec.components.schema <apispec.core.Components.schema>` , pass the ``extra_fields`` argument.
 
 .. code-block:: python
 
@@ -16,7 +16,7 @@ To add additional fields (e.g. ``"discriminator"``) to Schema objects generated 
         'name': {'type': 'string', 'example': 'doggie'},
     }
 
-    spec.definition('Pet', properties=properties, extra_fields={'discriminator': 'petType'})
+    spec.components.schema('Pet', properties=properties, extra_fields={'discriminator': 'petType'})
 
 
 .. note::
@@ -52,8 +52,16 @@ JSON
 Documenting Top-level Components
 --------------------------------
 
-To add objects within the top-level ``components`` object, pass the
-components to the ``APISpec`` as a keyword argument.
+The ``APISpec`` object contains helpers to add top-level components.
+
+To add a schema (a.k.a. "definition" in OpenAPI v2 termionology), use
+`spec.components.schema <apispec.core.Components.schema>`.
+
+Likewise, parameters and responses can be added using
+`spec.components.parameter <apispec.core.Components.parameter>` and
+`spec.components.response <apispec.core.Components.response>`.
+
+To add other top-level objects, pass them to the ``APISpec`` as keyword arguments.
 
 Here is an example that includes a `Security Scheme Object <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#securitySchemeObject>`_.
 
@@ -104,3 +112,9 @@ Here is an example that includes a `Security Scheme Object <https://github.com/O
     )
 
     validate_swagger(spec)
+
+
+When adding components, the main advantage of using dedicated methods over
+passing them as kwargs is the ability to use plugin helpers. For instance,
+`MarshmallowPlugin <apispec.ext.marshmallow.MarshmallowPlugin>` has helpers to
+resolve schemas in parameters and responses.

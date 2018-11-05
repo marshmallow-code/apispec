@@ -16,7 +16,7 @@ from .schemas import (
     DefaultValuesSchema, AnalysisWithListSchema,
 )
 
-from .utils import get_definitions, get_paths
+from .utils import get_definitions, get_parameters, get_responses, get_paths
 
 
 def ref_path(spec):
@@ -29,7 +29,7 @@ class TestDefinitionHelper:
 
     @pytest.mark.parametrize('schema', [PetSchema, PetSchema()])
     def test_can_use_schema_as_definition(self, spec, schema):
-        spec.definition('Pet', schema=schema)
+        spec.components.schema('Pet', schema=schema)
         definitions = get_definitions(spec)
         assert 'Pet' in definitions
         props = definitions['Pet']['properties']
@@ -51,8 +51,8 @@ class TestDefinitionHelper:
         )
         assert {} == get_definitions(spec)
 
-        spec.definition('analysis', schema=schema)
-        spec.add_path(
+        spec.components.schema('analysis', schema=schema)
+        spec.path(
             '/test', operations={
                 'get': {
                     'responses': {
@@ -86,8 +86,8 @@ class TestDefinitionHelper:
         )
         assert {} == get_definitions(spec)
 
-        spec.definition('analysis', schema=schema)
-        spec.add_path(
+        spec.components.schema('analysis', schema=schema)
+        spec.path(
             '/test', operations={
                 'get': {
                     'responses': {
@@ -122,8 +122,8 @@ class TestDefinitionHelper:
         )
         assert {} == get_definitions(spec)
 
-        spec.definition('analysis', schema=schema)
-        spec.add_path(
+        spec.components.schema('analysis', schema=schema)
+        spec.path(
             '/test', operations={
                 'get': {
                     'responses': {
@@ -146,6 +146,49 @@ class TestDefinitionHelper:
         # Other shema still not referenced
         definitions = get_definitions(spec)
         assert 1 == len(definitions)
+
+
+class TestComponentParameterHelper:
+
+    @pytest.mark.parametrize('schema', [PetSchema, PetSchema()])
+    def test_can_use_schema_in_parameter(self, spec, schema):
+        if spec.openapi_version.major < 3:
+            kwargs = {'schema': schema}
+        else:
+            kwargs = {'content': {'application/json': {'schema': schema}}}
+        spec.components.parameter('Pet', 'body', **kwargs)
+        parameter = get_parameters(spec)['Pet']
+        assert parameter['in'] == 'body'
+        if spec.openapi_version.major < 3:
+            schema = parameter['schema']['properties']
+        else:
+            schema = parameter['content']['application/json']['schema']['properties']
+
+        assert schema['name']['type'] == 'string'
+        assert schema['password']['type'] == 'string'
+        # dump_only field is ignored
+        assert 'id' not in schema
+
+
+class TestComponentResponseHelper:
+
+    @pytest.mark.parametrize('schema', [PetSchema, PetSchema()])
+    def test_can_use_schema_in_response(self, spec, schema):
+        if spec.openapi_version.major < 3:
+            kwargs = {'schema': schema}
+        else:
+            kwargs = {'content': {'application/json': {'schema': schema}}}
+        spec.components.response('GetPetOk', **kwargs)
+        response = get_responses(spec)['GetPetOk']
+        if spec.openapi_version.major < 3:
+            schema = response['schema']['properties']
+        else:
+            schema = response['content']['application/json']['schema']['properties']
+
+        assert schema['id']['type'] == 'integer'
+        assert schema['name']['type'] == 'string'
+        # load_only field is ignored
+        assert 'password' not in schema
 
 
 class TestCustomField:
@@ -171,9 +214,9 @@ class TestCustomField:
         class CustomPetBSchema(PetSchema):
             name = CustomNameB()
 
-        spec_fixture.spec.definition('Pet', schema=PetSchema)
-        spec_fixture.spec.definition('CustomPetA', schema=CustomPetASchema)
-        spec_fixture.spec.definition('CustomPetB', schema=CustomPetBSchema)
+        spec_fixture.spec.components.schema('Pet', schema=PetSchema)
+        spec_fixture.spec.components.schema('CustomPetA', schema=CustomPetASchema)
+        spec_fixture.spec.components.schema('CustomPetB', schema=CustomPetBSchema)
 
         props_0 = get_definitions(spec_fixture.spec)['Pet']['properties']
         props_a = get_definitions(spec_fixture.spec)['CustomPetA']['properties']
@@ -200,7 +243,7 @@ class TestOperationHelper:
     @pytest.mark.parametrize('pet_schema', (PetSchema, PetSchema(), 'tests.schemas.PetSchema'))
     @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
     def test_schema_v2(self, spec_fixture, pet_schema):
-        spec_fixture.spec.add_path(
+        spec_fixture.spec.path(
             path='/pet',
             operations={
                 'get': {
@@ -222,7 +265,7 @@ class TestOperationHelper:
     @pytest.mark.parametrize('pet_schema', (PetSchema, PetSchema(), 'tests.schemas.PetSchema'))
     @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
     def test_schema_v3(self, spec_fixture, pet_schema):
-        spec_fixture.spec.add_path(
+        spec_fixture.spec.path(
             path='/pet',
             operations={
                 'get': {
@@ -248,7 +291,7 @@ class TestOperationHelper:
 
     @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
     def test_schema_expand_parameters_v2(self, spec_fixture):
-        spec_fixture.spec.add_path(
+        spec_fixture.spec.path(
             path='/pet',
             operations={
                 'get': {
@@ -281,7 +324,7 @@ class TestOperationHelper:
 
     @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
     def test_schema_expand_parameters_v3(self, spec_fixture):
-        spec_fixture.spec.add_path(
+        spec_fixture.spec.path(
             path='/pet',
             operations={
                 'get': {
@@ -321,8 +364,8 @@ class TestOperationHelper:
 
     @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
     def test_schema_uses_ref_if_available_v2(self, spec_fixture):
-        spec_fixture.spec.definition('Pet', schema=PetSchema)
-        spec_fixture.spec.add_path(
+        spec_fixture.spec.components.schema('Pet', schema=PetSchema)
+        spec_fixture.spec.path(
             path='/pet',
             operations={
                 'get': {
@@ -339,8 +382,8 @@ class TestOperationHelper:
 
     @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
     def test_schema_uses_ref_if_available_v3(self, spec_fixture):
-        spec_fixture.spec.definition('Pet', schema=PetSchema)
-        spec_fixture.spec.add_path(
+        spec_fixture.spec.components.schema('Pet', schema=PetSchema)
+        spec_fixture.spec.path(
             path='/pet',
             operations={
                 'get': {
@@ -363,8 +406,8 @@ class TestOperationHelper:
 
     @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
     def test_schema_uses_ref_in_parameters_and_request_body_if_available_v2(self, spec_fixture):
-        spec_fixture.spec.definition('Pet', schema=PetSchema)
-        spec_fixture.spec.add_path(
+        spec_fixture.spec.components.schema('Pet', schema=PetSchema)
+        spec_fixture.spec.path(
             path='/pet',
             operations={
                 'get': {
@@ -389,8 +432,8 @@ class TestOperationHelper:
 
     @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
     def test_schema_uses_ref_in_parameters_and_request_body_if_available_v3(self, spec_fixture):
-        spec_fixture.spec.definition('Pet', schema=PetSchema)
-        spec_fixture.spec.add_path(
+        spec_fixture.spec.components.schema('Pet', schema=PetSchema)
+        spec_fixture.spec.path(
             path='/pet',
             operations={
                 'get': {
@@ -418,8 +461,8 @@ class TestOperationHelper:
 
     @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
     def test_schema_array_uses_ref_if_available_v2(self, spec_fixture):
-        spec_fixture.spec.definition('Pet', schema=PetSchema)
-        spec_fixture.spec.add_path(
+        spec_fixture.spec.components.schema('Pet', schema=PetSchema)
+        spec_fixture.spec.path(
             path='/pet',
             operations={
                 'get': {
@@ -452,8 +495,8 @@ class TestOperationHelper:
 
     @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
     def test_schema_array_uses_ref_if_available_v3(self, spec_fixture):
-        spec_fixture.spec.definition('Pet', schema=PetSchema)
-        spec_fixture.spec.add_path(
+        spec_fixture.spec.components.schema('Pet', schema=PetSchema)
+        spec_fixture.spec.path(
             path='/pet',
             operations={
                 'get': {
@@ -497,8 +540,8 @@ class TestOperationHelper:
 
     @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
     def test_schema_partially_v2(self, spec_fixture):
-        spec_fixture.spec.definition('Pet', schema=PetSchema)
-        spec_fixture.spec.add_path(
+        spec_fixture.spec.components.schema('Pet', schema=PetSchema)
+        spec_fixture.spec.path(
             path='/parents',
             operations={
                 'get': {
@@ -527,8 +570,8 @@ class TestOperationHelper:
 
     @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
     def test_schema_partially_v3(self, spec_fixture):
-        spec_fixture.spec.definition('Pet', schema=PetSchema)
-        spec_fixture.spec.add_path(
+        spec_fixture.spec.components.schema('Pet', schema=PetSchema)
+        spec_fixture.spec.path(
             path='/parents',
             operations={
                 'get': {
@@ -574,9 +617,9 @@ class TestOperationHelper:
 class TestCircularReference:
 
     def test_circular_referencing_schemas(self, spec):
-        spec.definition('Analysis', schema=AnalysisSchema)
-        spec.definition('Sample', schema=SampleSchema)
-        spec.definition('Run', schema=RunSchema)
+        spec.components.schema('Analysis', schema=AnalysisSchema)
+        spec.components.schema('Sample', schema=SampleSchema)
+        spec.components.schema('Run', schema=RunSchema)
         definitions = get_definitions(spec)
         ref = definitions['Analysis']['properties']['sample']['$ref']
         assert ref == ref_path(spec) + 'Sample'
@@ -585,13 +628,13 @@ class TestCircularReference:
 class TestSelfReference:
 
     def test_self_referencing_field_single(self, spec):
-        spec.definition('SelfReference', schema=SelfReferencingSchema)
+        spec.components.schema('SelfReference', schema=SelfReferencingSchema)
         definitions = get_definitions(spec)
         ref = definitions['SelfReference']['properties']['single']['$ref']
         assert ref == ref_path(spec) + 'SelfReference'
 
     def test_self_referencing_field_many(self, spec):
-        spec.definition('SelfReference', schema=SelfReferencingSchema)
+        spec.components.schema('SelfReference', schema=SelfReferencingSchema)
         definitions = get_definitions(spec)
         result = definitions['SelfReference']['properties']['many']
         assert result == {
@@ -601,7 +644,7 @@ class TestSelfReference:
 
     def test_self_referencing_with_ref(self, spec):
         version = 'v2' if spec.openapi_version.version[0] < 3 else 'v3'
-        spec.definition('SelfReference', schema=SelfReferencingSchema)
+        spec.components.schema('SelfReference', schema=SelfReferencingSchema)
         definitions = get_definitions(spec)
         result = definitions['SelfReference']['properties'][
             'single_with_ref_{}'.format(version)
@@ -616,20 +659,20 @@ class TestSelfReference:
 class TestOrderedSchema:
 
     def test_ordered_schema(self, spec):
-        spec.definition('Ordered', schema=OrderedSchema)
+        spec.components.schema('Ordered', schema=OrderedSchema)
         result = get_definitions(spec)['Ordered']['properties']
         assert list(result.keys()) == ['field1', 'field2', 'field3', 'field4', 'field5']
 
 
 class TestFieldWithCustomProps:
     def test_field_with_custom_props(self, spec):
-        spec.definition('PatternedObject', schema=PatternedObjectSchema)
+        spec.components.schema('PatternedObject', schema=PatternedObjectSchema)
         result = get_definitions(spec)['PatternedObject']['properties']['count']
         assert 'x-count' in result
         assert result['x-count'] == 1
 
     def test_field_with_custom_props_passed_as_snake_case(self, spec):
-        spec.definition('PatternedObject', schema=PatternedObjectSchema)
+        spec.components.schema('PatternedObject', schema=PatternedObjectSchema)
         result = get_definitions(spec)['PatternedObject']['properties']['count2']
         assert 'x-count2' in result
         assert result['x-count2'] == 2
@@ -637,7 +680,7 @@ class TestFieldWithCustomProps:
 
 class TestSchemaWithDefaultValues:
     def test_schema_with_default_values(self, spec):
-        spec.definition('DefaultValuesSchema', schema=DefaultValuesSchema)
+        spec.components.schema('DefaultValuesSchema', schema=DefaultValuesSchema)
         definitions = get_definitions(spec)
         props = definitions['DefaultValuesSchema']['properties']
         assert props['number_auto_default']['default'] == 12
@@ -657,7 +700,7 @@ class TestDictValues:
         class SchemaWithDict(Schema):
             dict_field = Dict(values=String())
 
-        spec.definition('SchemaWithDict', schema=SchemaWithDict)
+        spec.components.schema('SchemaWithDict', schema=SchemaWithDict)
         result = get_definitions(spec)['SchemaWithDict']['properties']['dict_field']
         assert result == {'type': 'object', 'additionalProperties': {'type': 'string'}}
 
@@ -666,6 +709,6 @@ class TestDictValues:
         class SchemaWithDict(Schema):
             dict_field = Dict()
 
-        spec.definition('SchemaWithDict', schema=SchemaWithDict)
+        spec.components.schema('SchemaWithDict', schema=SchemaWithDict)
         result = get_definitions(spec)['SchemaWithDict']['properties']['dict_field']
         assert result == {'type': 'object'}

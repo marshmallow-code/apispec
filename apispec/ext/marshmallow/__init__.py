@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Marshmallow plugin for apispec. Allows passing a marshmallow
 `Schema` to `APISpec.definition <apispec.APISpec.definition>`
-and `APISpec.add_path <apispec.APISpec.add_path>` (for responses).
+and `APISpec.path <apispec.APISpec.path>` (for responses).
 
 Requires marshmallow>=2.15.2.
 
@@ -21,7 +21,7 @@ Requires marshmallow>=2.15.2.
             default_doc="The current datetime"
         )
 
-    spec.definition('User', schema=UserSchema)
+    spec.components.schema('User', schema=UserSchema)
     pprint(spec.to_dict()['definitions'])
     # {'User': {'properties': {'id': {'format': 'int32', 'type': 'integer'},
     #                         'name': {'description': "The user's name",
@@ -85,7 +85,7 @@ class MarshmallowPlugin(BasePlugin):
                     nested_schema_class,
                 )
                 if definition_name:
-                    self.spec.definition(
+                    self.spec.components.schema(
                         definition_name,
                         schema=nested_schema_class,
                     )
@@ -155,7 +155,7 @@ class MarshmallowPlugin(BasePlugin):
         """
         return self.openapi.map_to_openapi_type(*args)
 
-    def definition_helper(self, name, schema, **kwargs):
+    def schema_helper(self, name, schema, **kwargs):
         """Definition helper that allows using a marshmallow
         :class:`Schema <marshmallow.Schema>` to provide OpenAPI
         metadata.
@@ -176,6 +176,25 @@ class MarshmallowPlugin(BasePlugin):
             self.inspect_schema_for_auto_referencing(schema_instance)
 
         return json_schema
+
+    def parameter_helper(self, **kwargs):
+        """Parameter component helper that allows using a marshmallow
+        :class:`Schema <marshmallow.Schema>` in parameter definition.
+
+        :param type|Schema schema: A marshmallow Schema class or instance.
+        """
+        # In OpenAPIv3, this only works when using the complex form using "content"
+        self.resolve_schema(kwargs, dump=False, load=True)
+        return kwargs
+
+    def response_helper(self, **kwargs):
+        """Response component helper that allows using a marshmallow
+        :class:`Schema <marshmallow.Schema>` in response definition.
+
+        :param type|Schema schema: A marshmallow Schema class or instance.
+        """
+        self.resolve_schema(kwargs, dump=True, load=False)
+        return kwargs
 
     def operation_helper(self, operations, **kwargs):
         for operation in operations.values():

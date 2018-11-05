@@ -4,6 +4,37 @@ Changelog
 1.0.0b5 (unreleased)
 ++++++++++++++++++++
 
+Features:
+
+- ``apispec.core.Components`` is added. Each ``APISpec`` instance has a
+  ``Components`` object used to define components such as schemas, parameters
+  or reponses. "Components" is the OpenAPI v3 terminology for those reusable
+  top-level objects.
+- ``apispec.core.Components.parameter`` and ``apispec.core.Components.response``
+  are added.
+- *Backwards-incompatible*: ``apispec.APISpec.add_path`` and
+  ``apispec.APISpec.add_tag`` are renamed to ``apispec.APISpec.path`` and
+  ``apispec.APISpec.tag``.
+- *Backwards-incompatible*: ``apispec.APISpec.definition`` is moved to the
+  ``Components`` class and renamed to ``apispec.core.Components.schema``.
+
+::
+
+    # apispec<1.0.0b5
+    spec.add_tag({'name': 'Pet', 'description': 'Operations on pets'})
+    spec.add_path('/pets/', operations=...)
+    spec.definition('Pet')
+    def PetSchema(Schema)
+        ...
+
+    # apispec>=1.0.0b5
+    spec.tag({'name': 'Pet', 'description': 'Operations on pets'})
+    spec.path('/pets/', operations=...)
+    spec.components.schema('Pet')
+    def PetSchema(Schema)
+        ...
+
+
 Deprecations/Removals:
 
 - The ``response_helper`` feature is removed. The same can be achieved from
@@ -12,7 +43,7 @@ Deprecations/Removals:
 1.0.0b4 (2018-10-28)
 ++++++++++++++++++++
 
-* *Backwards-incompatible*: ``apispec.ext.flask``,
+- *Backwards-incompatible*: ``apispec.ext.flask``,
   ``apispec.ext.bottle``, and ``apispec.ext.tornado`` are moved to
   a separate package, `apispec-webframeworks <https://github.com/marshmallow-code/apispec-webframeworks>`_.
   (:issue:`302`).

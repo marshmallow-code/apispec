@@ -65,10 +65,10 @@ Example Application
         return jsonify(PetSchema().dump(pet).data)
 
     # Register entities and paths
-    spec.definition('Category', schema=CategorySchema)
-    spec.definition('Pet', schema=PetSchema)
+    spec.components.schema('Category', schema=CategorySchema)
+    spec.components.schema('Pet', schema=PetSchema)
     with app.test_request_context():
-        spec.add_path(view=random_pet)
+        spec.path(view=random_pet)
 
 
 Generated OpenAPI Spec

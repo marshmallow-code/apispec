@@ -3,9 +3,9 @@
 import re
 from collections import OrderedDict
 
-from apispec.compat import iterkeys
+from apispec.compat import iterkeys, iteritems
 from .exceptions import APISpecError, PluginMethodNotImplementedError
-from .utils import OpenAPIVersion
+from .utils import OpenAPIVersion, deepupdate
 
 VALID_METHODS = [
     'get',
@@ -37,30 +37,141 @@ def clean_operations(operations, openapi_major_version):
             'One or more HTTP methods are invalid: {0}'.format(', '.join(invalid)),
         )
 
-    def get_ref(param, openapi_major_version):
-        if isinstance(param, dict):
-            return param
+    def get_ref(obj_type, obj, openapi_major_version):
+        """Return object or rererence
+
+        If obj is a dict, it is assumed to be a complete description and it is returned as is.
+        Otherwise, it is assumed to be a reference name as string and the corresponding $ref
+        string is returned.
+
+        :param str obj_type: 'parameter' or 'response'
+        :param dict|str obj: parameter or response in dict form or as ref_id string
+        :param int openapi_major_version: The major version of the OpenAPI standard
+        """
+        if isinstance(obj, dict):
+            return obj
 
         ref_paths = {
-            2: 'parameters',
-            3: 'components/parameters',
+            'parameter': {
+                2: 'parameters',
+                3: 'components/parameters',
+            },
+            'response': {
+                2: 'responses',
+                3: 'components/responses',
+            },
         }
-        ref_path = ref_paths[openapi_major_version]
-        return {'$ref': '#/{0}/{1}'.format(ref_path, param)}
+        ref_path = ref_paths[obj_type][openapi_major_version]
+        return {'$ref': '#/{0}/{1}'.format(ref_path, obj)}
 
     for operation in (operations or {}).values():
         if 'parameters' in operation:
-            parameters = operation.get('parameters')
+            parameters = operation['parameters']
             for parameter in parameters:
                 if (
-                    isinstance(parameter, dict) and
-                    'in' in parameter and parameter['in'] == 'path'
+                        isinstance(parameter, dict) and
+                        'in' in parameter and parameter['in'] == 'path'
                 ):
                     parameter['required'] = True
             operation['parameters'] = [
-                get_ref(p, openapi_major_version)
-                for p in parameters
+                get_ref('parameter', p, openapi_major_version) for p in parameters
             ]
+        if 'responses' in operation:
+            for code, response in iteritems(operation['responses']):
+                operation['responses'][code] = get_ref('response', response, openapi_major_version)
+
+
+class Components(object):
+    """Stores OpenAPI components
+
+    Components are top-level fields in Openapi v2.
+    They became sub-fields of "components" top-level field in Openapi v3.
+    """
+    def __init__(self, plugins, openapi_version):
+        self._plugins = plugins
+        self.openapi_version = openapi_version
+        self._schemas = {}
+        self._parameters = {}
+        self._responses = {}
+
+    def to_dict(self):
+        schemas_key = 'definitions' if self.openapi_version.major < 3 else 'schemas'
+        return {
+            'parameters': self._parameters,
+            'responses': self._responses,
+            schemas_key: self._schemas,
+        }
+
+    def schema(
+            self, name, properties=None, enum=None, description=None, extra_fields=None,
+            **kwargs
+    ):
+        """Add a new definition to the spec.
+
+        .. note::
+
+            If you are using `apispec.ext.marshmallow`, you can pass fields' metadata as
+            additional keyword arguments.
+
+            For example, to add ``enum`` and ``description`` to your field: ::
+
+                status = fields.String(
+                    required=True,
+                    enum=['open', 'closed'],
+                    description='Status (open or closed)',
+                )
+
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#definitionsObject
+        """
+        ret = {}
+        # Execute all helpers from plugins
+        for plugin in self._plugins:
+            try:
+                ret.update(plugin.schema_helper(name, definition=ret, **kwargs))
+            except PluginMethodNotImplementedError:
+                continue
+        if properties:
+            ret['properties'] = properties
+        if enum:
+            ret['enum'] = enum
+        if description:
+            ret['description'] = description
+        if extra_fields:
+            ret.update(extra_fields)
+        self._schemas[name] = ret
+
+    def parameter(self, param_id, location, **kwargs):
+        """ Add a parameter which can be referenced.
+
+        :param str param_id: identifier by which parameter may be referenced.
+        :param str location: location of the parameter.
+        :param dict kwargs: parameter fields.
+        """
+        ret = kwargs.copy()
+        ret.setdefault('name', param_id)
+        ret['in'] = location
+        # Execute all helpers from plugins
+        for plugin in self._plugins:
+            try:
+                ret.update(plugin.parameter_helper(**kwargs))
+            except PluginMethodNotImplementedError:
+                continue
+        self._parameters[param_id] = ret
+
+    def response(self, ref_id, **kwargs):
+        """Add a response which can be referenced.
+
+        :param str ref_id: ref_id to use as reference
+        :param dict kwargs: response fields
+        """
+        ret = kwargs.copy()
+        # Execute all helpers from plugins
+        for plugin in self._plugins:
+            try:
+                ret.update(plugin.response_helper(**kwargs))
+            except PluginMethodNotImplementedError:
+                continue
+        self._responses[ref_id] = ret
 
 
 class APISpec(object):
@@ -82,8 +193,6 @@ class APISpec(object):
         self.options = options
 
         # Metadata
-        self._definitions = {}
-        self._parameters = {}
         self._tags = []
         self._paths = OrderedDict()
 
@@ -92,60 +201,40 @@ class APISpec(object):
         for plugin in self.plugins:
             plugin.init_spec(self)
 
+        # Components
+        self.components = Components(self.plugins, self.openapi_version)
+
     def to_dict(self):
         ret = {
             'paths': self._paths,
             'tags': self._tags,
+            'info': {
+                'title': self.title,
+                'version': self.version,
+            },
         }
-
-        if self.openapi_version.major == 2:
+        if self.openapi_version.major < 3:
             ret['swagger'] = self.openapi_version.vstring
-            ret['definitions'] = self._definitions
-            ret['parameters'] = self._parameters
-            ret.update(self.options)
-
-        elif self.openapi_version.major == 3:
+            ret.update(self.components.to_dict())
+        else:
             ret['openapi'] = self.openapi_version.vstring
-            ret.update(self.options)
-
-            # deep update components object
-            components = ret.setdefault('components', {})
-            components.setdefault('schemas', {}).update(self._definitions)
-            components.setdefault('parameters', {}).update(self._parameters)
-
-        # Add title and version unless those were provided in options['info']
-        info = ret.setdefault('info', {})
-        info.setdefault('title', self.title)
-        info.setdefault('version', self.version)
-
+            ret.update({'components': self.components.to_dict()})
+        ret = deepupdate(ret, self.options)
         return ret
 
     def to_yaml(self):
-        """Render the spec to YAML. Requires PyYAML to be installed.
-        """
+        """Render the spec to YAML. Requires PyYAML to be installed."""
         from .yaml_utils import dict_to_yaml
         return dict_to_yaml(self.to_dict())
 
-    def add_parameter(self, param_id, location, **kwargs):
-        """ Add a parameter which can be referenced.
-
-        :param str param_id: identifier by which parameter may be referenced.
-        :param str location: location of the parameter.
-        :param dict kwargs: parameter fields.
-        """
-        if 'name' not in kwargs:
-            kwargs['name'] = param_id
-        kwargs['in'] = location
-        self._parameters[param_id] = kwargs
-
-    def add_tag(self, tag):
+    def tag(self, tag):
         """ Store information about a tag.
 
         :param dict tag: the dictionary storing information about the tag.
         """
         self._tags.append(tag)
 
-    def add_path(self, path=None, operations=None, **kwargs):
+    def path(self, path=None, operations=None, **kwargs):
         """Add a new path object to the spec.
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathsObject
@@ -184,41 +273,3 @@ class APISpec(object):
         clean_operations(operations, self.openapi_version.major)
 
         self._paths.setdefault(path, operations).update(operations)
-
-    def definition(
-        self, name, properties=None, enum=None, description=None, extra_fields=None,
-        **kwargs
-    ):
-        """Add a new definition to the spec.
-
-        .. note::
-
-            If you are using `apispec.ext.marshmallow`, you can pass fields' metadata as
-            additional keyword arguments.
-
-            For example, to add ``enum`` and ``description`` to your field: ::
-
-                status = fields.String(
-                    required=True,
-                    enum=['open', 'closed'],
-                    description='Status (open or closed)',
-                )
-
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#definitionsObject
-        """
-        ret = {}
-        # Execute all helpers from plugins
-        for plugin in self.plugins:
-            try:
-                ret.update(plugin.definition_helper(name, definition=ret, **kwargs))
-            except PluginMethodNotImplementedError:
-                continue
-        if properties:
-            ret['properties'] = properties
-        if enum:
-            ret['enum'] = enum
-        if description:
-            ret['description'] = description
-        if extra_fields:
-            ret.update(extra_fields)
-        self._definitions[name] = ret
