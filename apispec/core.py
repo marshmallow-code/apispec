@@ -103,8 +103,8 @@ class Components(object):
         }
 
     def schema(
-            self, name, properties=None, enum=None, description=None, extra_fields=None,
-            **kwargs
+        self, name, properties=None, enum=None, description=None, extra_fields=None,
+        **kwargs
     ):
         """Add a new definition to the spec.
 
