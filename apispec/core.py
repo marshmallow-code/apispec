@@ -127,7 +127,7 @@ class Components(object):
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
-                ret.update(plugin.schema_helper(name, definition=ret, **kwargs))
+                ret.update(plugin.schema_helper(name, definition=ret, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
         if properties:
@@ -153,7 +153,7 @@ class Components(object):
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
-                ret.update(plugin.parameter_helper(**kwargs))
+                ret.update(plugin.parameter_helper(**kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
         self._parameters[param_id] = ret
@@ -168,7 +168,7 @@ class Components(object):
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
-                ret.update(plugin.response_helper(**kwargs))
+                ret.update(plugin.response_helper(**kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
         self._responses[ref_id] = ret
