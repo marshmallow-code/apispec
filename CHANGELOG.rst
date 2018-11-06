@@ -30,11 +30,21 @@ Features:
     spec.path('/pets/', operations=...)
     spec.components.schema('Pet', properties=...)
 
+- Plugins can define ``parameter_helper`` and ``response_helper`` to modify
+  parameter and response components definitions.
+- ``MarshmallowPlugin`` resolves schemas in parameters and responses components.
+- Components helpers may return ``None`` as a no-op rather than an empty `dict`
+  (:pr:`336`).
+
+Bug fixes:
+
+- ``MarshmallowPlugin.schema_helper`` does not crash when no schema is passed
+  (:pr:`336`).
 
 Deprecations/Removals:
 
-- The ``response_helper`` feature is removed. The same can be achieved from
-  ``operation_helper``.
+- The legacy ``response_helper`` feature is removed. The same can be achieved
+  from ``operation_helper``.
 
 1.0.0b4 (2018-10-28)
 ++++++++++++++++++++
