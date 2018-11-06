@@ -31,11 +31,15 @@ class TestDefinitionHelper:
     def test_can_use_schema_as_definition(self, spec, schema):
         spec.components.schema('Pet', schema=schema)
         definitions = get_definitions(spec)
-        assert 'Pet' in definitions
         props = definitions['Pet']['properties']
 
         assert props['id']['type'] == 'integer'
         assert props['name']['type'] == 'string'
+
+    def test_schema_helper_without_schema(self, spec):
+        spec.components.schema('Pet', properties={'key': {'type': 'integer'}})
+        definitions = get_definitions(spec)
+        assert definitions['Pet']['properties'] == {'key': {'type': 'integer'}}
 
     @pytest.mark.parametrize('schema', [AnalysisSchema, AnalysisSchema()])
     def test_resolve_schema_dict_auto_reference(self, schema):

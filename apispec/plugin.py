@@ -13,15 +13,15 @@ class BasePlugin(object):
         """
 
     def schema_helper(self, name, definition, **kwargs):
-        """Must return definition as a dict."""
+        """May return definition as a dict."""
         raise PluginMethodNotImplementedError
 
     def parameter_helper(self, **kwargs):
-        """Must return parameter component description as a dict."""
+        """May return parameter component description as a dict."""
         raise PluginMethodNotImplementedError
 
     def response_helper(self, **kwargs):
-        """Must return response component description as a dict."""
+        """May return response component description as a dict."""
         raise PluginMethodNotImplementedError
 
     def path_helper(self, path=None, operations=None, **kwargs):
@@ -41,7 +41,7 @@ class BasePlugin(object):
         raise PluginMethodNotImplementedError
 
     def operation_helper(self, path=None, operations=None, **kwargs):
-        """Should mutate operations.
+        """May mutate operations.
 
         :param str path: Path to the resource
         :param dict operations: A `dict` mapping HTTP methods to operation object. See
