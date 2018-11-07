@@ -139,6 +139,7 @@ class Components(object):
         if extra_fields:
             ret.update(extra_fields)
         self._schemas[name] = ret
+        return self
 
     def parameter(self, param_id, location, **kwargs):
         """ Add a parameter which can be referenced.
@@ -157,6 +158,7 @@ class Components(object):
             except PluginMethodNotImplementedError:
                 continue
         self._parameters[param_id] = ret
+        return self
 
     def response(self, ref_id, **kwargs):
         """Add a response which can be referenced.
@@ -172,6 +174,7 @@ class Components(object):
             except PluginMethodNotImplementedError:
                 continue
         self._responses[ref_id] = ret
+        return self
 
 
 class APISpec(object):
@@ -233,6 +236,7 @@ class APISpec(object):
         :param dict tag: the dictionary storing information about the tag.
         """
         self._tags.append(tag)
+        return self
 
     def path(self, path=None, operations=None, **kwargs):
         """Add a new path object to the spec.
@@ -273,3 +277,4 @@ class APISpec(object):
         clean_operations(operations, self.openapi_version.major)
 
         self._paths.setdefault(path, operations).update(operations)
+        return self
