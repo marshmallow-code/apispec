@@ -110,6 +110,10 @@ class TestTags:
         tags_json = spec.to_dict()['tags']
         assert self.tag in tags_json
 
+    def test_tag_is_chainable(self, spec):
+        spec.tag({'name': 'tag1'}).tag({'name': 'tag2'})
+        assert spec.to_dict()['tags'] == [{'name': 'tag1'}, {'name': 'tag2'}]
+
 
 class TestDefinitions:
 
@@ -126,6 +130,15 @@ class TestDefinitions:
             defs = spec.to_dict()['components']['schemas']
         assert 'Pet' in defs
         assert defs['Pet']['properties'] == self.properties
+
+    def test_definition_is_chainable(self, spec):
+        spec.components.schema('Pet', properties={}).schema('Plant', properties={})
+        if spec.openapi_version.major < 3:
+            defs = spec.to_dict()['definitions']
+        else:
+            defs = spec.to_dict()['components']['schemas']
+        assert 'Pet' in defs
+        assert 'Plant' in defs
 
     def test_definition_description(self, spec):
         model_description = 'An animal which lives with humans.'
@@ -240,6 +253,10 @@ class TestPath:
         spec.path(path='/path4')
         assert list(spec.to_dict()['paths'].keys()) == ['/path1', '/path2', '/path3', '/path4']
 
+    def test_paths_is_chainable(self, spec):
+        spec.path(path='/path1').path('/path2')
+        assert list(spec.to_dict()['paths'].keys()) == ['/path1', '/path2']
+
     def test_methods_maintain_order(self, spec):
         methods = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options']
         for method in methods:
@@ -323,6 +340,15 @@ class TestPath:
             assert p['parameters'][0] == {'$ref': '#/components/parameters/test_parameter'}
             assert route_spec['parameters'][0] == metadata['components']['parameters']['test_parameter']
 
+    def test_parameter_is_chainable(self, spec):
+        spec.components.parameter('param1', 'path').parameter('param2', 'path')
+        if spec.openapi_version.major < 3:
+            params = spec.to_dict()['parameters']
+        else:
+            params = spec.to_dict()['components']['parameters']
+        assert 'param1' in params
+        assert 'param2' in params
+
     def test_response(self, spec):
         route_spec = self.paths['/pet/{petId}']['get']
 
@@ -342,6 +368,15 @@ class TestPath:
         else:
             assert p['responses']['200'] == {'$ref': '#/components/responses/test_response'}
             assert route_spec['responses']['200'] == metadata['components']['responses']['test_response']
+
+    def test_response_is_chainable(self, spec):
+        spec.components.response('resp1').response('resp2')
+        if spec.openapi_version.major < 3:
+            responses = spec.to_dict()['responses']
+        else:
+            responses = spec.to_dict()['components']['responses']
+        assert 'resp1' in responses
+        assert 'resp2' in responses
 
     def test_path_check_invalid_http_method(self, spec):
         spec.path('/pet/{petId}', operations={'get': {}})

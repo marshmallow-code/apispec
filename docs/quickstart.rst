@@ -47,6 +47,19 @@ Add paths to your spec using `path <apispec.APISpec.path>`.
         )
     )
 
+
+The API is chainable, allowing you to combine multiple method calls in
+one statement:
+
+.. code-block:: python
+
+    spec.path(...)\
+        .path(...)\
+        .tag(...)
+
+    spec.components.schema(...)\
+                   .parameter(...)
+
 To output your OpenAPI spec, invoke the `to_dict <apispec.APISpec.to_dict>` method.
 
 .. code-block:: python
