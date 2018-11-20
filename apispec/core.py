@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Core apispec classes and functions."""
-import re
 from collections import OrderedDict
 
 from apispec.compat import iterkeys, iteritems
@@ -247,13 +246,6 @@ class APISpec(object):
         :param dict|None operations: describes the http methods and options for `path`
         :param dict kwargs: parameters used by any path helpers see :meth:`register_path_helper`
         """
-        def normalize_path(path):
-            if path and 'basePath' in self.options:
-                pattern = '^{0}'.format(re.escape(self.options['basePath']))
-                path = re.sub(pattern, '', path)
-            return path
-
-        path = normalize_path(path)
         operations = operations or OrderedDict()
 
         # Execute path helpers
@@ -263,7 +255,7 @@ class APISpec(object):
             except PluginMethodNotImplementedError:
                 continue
             if ret is not None:
-                path = normalize_path(ret)
+                path = ret
         if not path:
             raise APISpecError('Path template is not specified')
 
