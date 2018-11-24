@@ -436,7 +436,7 @@ class OpenAPIConverter(object):
     def fields2parameters(
             self, fields, schema=None, use_refs=True,
             default_in='body', name='body', required=False,
-            use_instances=False, description=None, **kwargs
+            description=None, **kwargs
     ):
         """Return an array of OpenAPI parameters given a mapping between field names and
         :class:`Field <marshmallow.Field>` objects. If `default_in` is "body", then return an array
@@ -456,7 +456,7 @@ class OpenAPIConverter(object):
         openapi_default_in = __location_map__.get(default_in, default_in)
         if self.openapi_version.major < 3 and openapi_default_in == 'body':
             if schema is not None:
-                prop = self.resolve_schema_dict(schema, use_instances=use_instances)
+                prop = self.resolve_schema_dict(schema)
             else:
                 prop = self.fields2jsonschema(fields, use_refs=use_refs)
 
@@ -683,15 +683,13 @@ class OpenAPIConverter(object):
         }
         return ref_paths[self.openapi_version.major]
 
-    def resolve_schema_dict(self, schema, use_instances=False):
+    def resolve_schema_dict(self, schema):
         if isinstance(schema, dict):
             if schema.get('type') == 'array' and 'items' in schema:
-                schema['items'] = self.resolve_schema_dict(
-                    schema['items'], use_instances=use_instances,
-                )
+                schema['items'] = self.resolve_schema_dict(schema['items'])
             if schema.get('type') == 'object' and 'properties' in schema:
                 schema['properties'] = {
-                    k: self.resolve_schema_dict(v, use_instances=use_instances)
+                    k: self.resolve_schema_dict(v)
                     for k, v in schema['properties'].items()
                 }
             return schema
