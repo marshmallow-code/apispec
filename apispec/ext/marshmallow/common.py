@@ -3,7 +3,7 @@
 
 import copy
 import warnings
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 
 import marshmallow
 
@@ -40,10 +40,35 @@ def resolve_schema_cls(schema):
 def get_fields(schema):
     """Return fields from schema"""
     if hasattr(schema, 'fields'):
-        return schema.fields
+        fields = schema.fields
     elif hasattr(schema, '_declared_fields'):
-        return copy.deepcopy(schema._declared_fields)
-    raise ValueError("{0!r} doesn't have either `fields` or `_declared_fields`.".format(schema))
+        fields = copy.deepcopy(schema._declared_fields)
+    else:
+        raise ValueError("{0!r} doesn't have either `fields` or `_declared_fields`.".format(schema))
+
+    return filter_excluded_fields(fields, schema)
+
+
+def filter_excluded_fields(fields, schema):
+    Meta = getattr(schema, 'Meta', None)
+    if getattr(Meta, 'fields', None) or getattr(Meta, 'additional', None):
+        declared_fields = set(schema._declared_fields.keys())
+        if (
+            set(getattr(Meta, 'fields', set())) > declared_fields or
+            set(getattr(Meta, 'additional', set())) > declared_fields
+        ):
+            warnings.warn(
+                'Only explicitly-declared fields will be included in the Schema Object. '
+                'Fields defined in Meta.fields or Meta.additional are ignored.',
+            )
+
+    exclude = getattr(Meta, 'exclude', [])
+
+    filtered_fields = OrderedDict(
+        (key, value) for key, value in fields.items() if key not in exclude
+    )
+
+    return filtered_fields
 
 
 def make_schema_key(schema):
