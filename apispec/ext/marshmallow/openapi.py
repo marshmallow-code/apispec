@@ -469,7 +469,9 @@ class OpenAPIConverter(object):
             )
         return self.get_ref_dict(schema_instance)
 
-    def schema2parameters(self, schema, **kwargs):
+    def schema2parameters(
+        self, schema, default_in='body', name='body', required=False, description=None,
+    ):
         """Return an array of OpenAPI parameters given a given marshmallow
         :class:`Schema <marshmallow.Schema>`. If `default_in` is "body", then return an array
         of a single parameter; else return an array of a parameter for each included field in
@@ -477,34 +479,9 @@ class OpenAPIConverter(object):
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
         """
-        return self.fields2parameters(get_fields(schema), schema, **kwargs)
-
-    def fields2parameters(
-            self, fields, schema=None, use_refs=True,
-            default_in='body', name='body', required=False,
-            description=None, **kwargs
-    ):
-        """Return an array of OpenAPI parameters given a mapping between field names and
-        :class:`Field <marshmallow.Field>` objects. If `default_in` is "body", then return an array
-        of a single parameter; else return an array of a parameter for each included field in
-        the :class:`Schema <marshmallow.Schema>`.
-
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
-
-        In OpenAPI3, only "query", "header", "path" or "cookie" are allowed for the location
-        of parameters. In OpenAPI 3, "requestBody" is used when fields are in the body.
-
-        This function always returns a list, with a parameter
-        for each included field in the :class:`Schema <marshmallow.Schema>`.
-
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#parameterObject
-        """
         openapi_default_in = __location_map__.get(default_in, default_in)
         if self.openapi_version.major < 3 and openapi_default_in == 'body':
-            if schema is not None:
-                prop = self.resolve_schema_dict(schema)
-            else:
-                prop = self.fields2jsonschema(fields, use_refs=use_refs)
+            prop = self.resolve_schema_dict(schema)
 
             param = {
                 'in': openapi_default_in,
@@ -521,12 +498,30 @@ class OpenAPIConverter(object):
         assert not getattr(schema, 'many', False), \
             "Schemas with many=True are only supported for 'json' location (aka 'in: body')"
 
-        dump_only_fields = getattr(getattr(schema, 'Meta', None), 'dump_only', [])
+        fields = get_fields(schema, exclude_dump_only=True)
 
+        return self.fields2parameters(fields, default_in=default_in)
+
+    def fields2parameters(self, fields, use_refs=True, default_in='body'):
+        """Return an array of OpenAPI parameters given a mapping between field names and
+        :class:`Field <marshmallow.Field>` objects. If `default_in` is "body", then return an array
+        of a single parameter; else return an array of a parameter for each included field in
+        the :class:`Schema <marshmallow.Schema>`.
+
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
+
+        In OpenAPI3, only "query", "header", "path" or "cookie" are allowed for the location
+        of parameters. In OpenAPI 3, "requestBody" is used when fields are in the body.
+
+        This function always returns a list, with a parameter
+        for each included field in the :class:`Schema <marshmallow.Schema>`.
+
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#parameterObject
+        """
         parameters = []
         body_param = None
         for field_name, field_obj in iteritems(fields):
-            if (field_obj.dump_only or field_name in dump_only_fields):
+            if field_obj.dump_only:
                 continue
             param = self.field2parameter(
                 field_obj,
