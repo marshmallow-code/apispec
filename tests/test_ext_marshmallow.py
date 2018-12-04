@@ -153,6 +153,21 @@ class TestDefinitionHelper:
         pet_exclude = definitions['MultiModifierSchema']['properties']['pet_exclude']
         assert pet_exclude == {'$ref': ref_path(spec) + 'Pet_Exclude'}
 
+    def test_schema_with_clashing_names(self, spec):
+        class Pet(PetSchema):
+            another_field = String()
+
+        class NameClashSchema(Schema):
+            pet_1 = Nested(PetSchema)
+            pet_2 = Nested(Pet)
+
+        with pytest.warns(UserWarning, match='Multiple schemas resolved to the name Pet'):
+            spec.components.schema('NameClashSchema', schema=NameClashSchema)
+
+        definitions = get_definitions(spec)
+
+        assert 'Pet' in definitions
+        assert 'Pet1' in definitions
 
 class TestComponentParameterHelper:
 

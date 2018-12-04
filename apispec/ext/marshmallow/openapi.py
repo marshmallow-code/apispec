@@ -18,6 +18,7 @@ from marshmallow.orderedset import OrderedSet
 from apispec.utils import OpenAPIVersion
 from .common import (
     resolve_schema_cls, get_fields, make_schema_key, resolve_schema_instance,
+    get_unique_schema_name,
 )
 from apispec.exceptions import APISpecError
 
@@ -421,6 +422,7 @@ class OpenAPIConverter(object):
         schema_instance = resolve_schema_instance(schema)
         schema_key = make_schema_key(schema_instance)
         if schema_key not in self.refs:
+            name = get_unique_schema_name(self.spec.components, name)
             self.spec.components.schema(
                 name,
                 schema=schema,

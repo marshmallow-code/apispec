@@ -2,6 +2,7 @@
 """Utilities to get schema instances/classes"""
 
 import copy
+import warnings
 from collections import namedtuple
 
 import marshmallow
@@ -60,3 +61,28 @@ def make_schema_key(schema):
 
 
 SchemaKey = namedtuple('SchemaKey', ['SchemaClass'] + MODIFIERS)
+
+
+def get_unique_schema_name(components, name, counter=0):
+    """Function to generate a unique name based on the provided name and names
+    already in the spec.  Will append a number to the name to make it unique if
+    the name is already in the spec.
+
+    :param Components components: instance of the components of the spec
+    :param string name: the name to use as a basis for the unique name
+    :param int counter: the counter of the number of recursions
+    :return: the unique name
+    """
+    if name not in components._schemas:
+        return name
+    if not counter:  # first time time through recursion
+        warnings.warn(
+            'Multiple schemas resolved to the name {} - name has been modified '
+            'either manually add each of the schemas with a different name or '
+            'provide custom schema_name_resolver'.format(name),
+            UserWarning,
+        )
+    else:  # subsequent recursions
+        name = name[:-len(str(counter))]
+    counter += 1
+    return get_unique_schema_name(components, name + str(counter), counter)
