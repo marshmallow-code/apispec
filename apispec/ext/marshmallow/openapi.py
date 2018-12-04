@@ -16,7 +16,9 @@ from marshmallow.compat import iteritems
 from marshmallow.orderedset import OrderedSet
 
 from apispec.utils import OpenAPIVersion
-from .common import resolve_schema_cls, get_fields
+from .common import (
+    resolve_schema_cls, get_fields, make_schema_key, resolve_schema_instance,
+)
 from apispec.exceptions import APISpecError
 
 
@@ -416,12 +418,14 @@ class OpenAPIConverter(object):
                     ' referencing schemas.'.format(schema=schema),
                 )
 
-        if schema_cls not in self.refs:
+        schema_instance = resolve_schema_instance(schema)
+        schema_key = make_schema_key(schema_instance)
+        if schema_key not in self.refs:
             self.spec.components.schema(
                 name,
                 schema=schema,
             )
-        return self.get_ref_dict(schema, schema_cls)
+        return self.get_ref_dict(schema_instance)
 
     def schema2parameters(self, schema, **kwargs):
         """Return an array of OpenAPI parameters given a given marshmallow
@@ -658,12 +662,13 @@ class OpenAPIConverter(object):
 
         return jsonschema
 
-    def get_ref_dict(self, schema, schema_cls):
+    def get_ref_dict(self, schema):
         """Method to create a dictionary containing a JSON reference to the
         schema in the spec
         """
         ref_path = self.get_ref_path()
-        ref_schema = {'$ref': '#/{0}/{1}'.format(ref_path, self.refs[schema_cls])}
+        schema_key = make_schema_key(schema)
+        ref_schema = {'$ref': '#/{0}/{1}'.format(ref_path, self.refs[schema_key])}
         if getattr(schema, 'many', False):
             return {
                 'type': 'array',

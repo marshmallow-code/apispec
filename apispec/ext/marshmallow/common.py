@@ -2,8 +2,12 @@
 """Utilities to get schema instances/classes"""
 
 import copy
+from collections import namedtuple
 
 import marshmallow
+
+
+MODIFIERS = ['only', 'exclude', 'load_only', 'dump_only', 'partial']
 
 
 def resolve_schema_instance(schema):
@@ -39,3 +43,20 @@ def get_fields(schema):
     elif hasattr(schema, '_declared_fields'):
         return copy.deepcopy(schema._declared_fields)
     raise ValueError("{0!r} doesn't have either `fields` or `_declared_fields`".format(schema))
+
+
+def make_schema_key(schema):
+    if not isinstance(schema, marshmallow.Schema):
+        raise TypeError('can only make a schema key based on a Schema instance')
+    modifiers = []
+    for modifier in MODIFIERS:
+        attribute = getattr(schema, modifier)
+        try:
+            hash(attribute)
+        except TypeError:
+            attribute = tuple(attribute)
+        modifiers.append(attribute)
+    return SchemaKey(schema.__class__, *modifiers)
+
+
+SchemaKey = namedtuple('SchemaKey', ['SchemaClass'] + MODIFIERS)

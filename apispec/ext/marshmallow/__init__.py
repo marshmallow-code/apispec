@@ -35,7 +35,7 @@ import warnings
 import marshmallow
 
 from apispec import BasePlugin
-from .common import resolve_schema_cls, resolve_schema_instance
+from .common import resolve_schema_cls, resolve_schema_instance, make_schema_key
 from .openapi import OpenAPIConverter
 
 
@@ -151,12 +151,11 @@ class MarshmallowPlugin(BasePlugin):
         if schema is None:
             return None
 
-        schema_cls = resolve_schema_cls(schema)
         schema_instance = resolve_schema_instance(schema)
 
-        self.warn_if_schema_already_in_spec(schema_cls)
-        # Store registered refs, keyed by Schema class
-        self.openapi.refs[schema_cls] = name
+        schema_key = make_schema_key(schema_instance)
+        self.warn_if_schema_already_in_spec(schema_key)
+        self.openapi.refs[schema_key] = name
 
         json_schema = self.openapi.schema2jsonschema(schema_instance, name=name)
 
@@ -193,13 +192,13 @@ class MarshmallowPlugin(BasePlugin):
             for response in operation.get('responses', {}).values():
                 self.resolve_schema(response)
 
-    def warn_if_schema_already_in_spec(self, schema_cls):
+    def warn_if_schema_already_in_spec(self, schema_key):
         """Method to warn the user if the schema has already been added to the
         spec.
         """
-        if schema_cls in self.openapi.refs:
+        if schema_key in self.openapi.refs:
             warnings.warn(
                 '{} has already been added to the spec. Adding it twice may '
-                'cause references to not resove properly'.format(schema_cls),
+                'cause references to not resove properly'.format(schema_key[0]),
                 UserWarning,
             )

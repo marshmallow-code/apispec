@@ -136,6 +136,23 @@ class TestDefinitionHelper:
         with pytest.warns(UserWarning, match='has already been added to the spec'):
             spec.components.schema('Analysis', schema=schema)
 
+    def test_schema_instances_with_different_modifiers_added(self, spec):
+        class MultiModifierSchema(Schema):
+            pet_unmodified = Nested(PetSchema)
+            pet_exclude = Nested(PetSchema, exclude=('name',))
+
+        spec.components.schema('Pet', schema=PetSchema())
+        spec.components.schema('Pet_Exclude', schema=PetSchema(exclude=('name',)))
+
+        spec.components.schema('MultiModifierSchema', schema=MultiModifierSchema)
+
+        definitions = get_definitions(spec)
+        pet_unmodified_ref = definitions['MultiModifierSchema']['properties']['pet_unmodified']
+        assert pet_unmodified_ref == {'$ref': ref_path(spec) + 'Pet'}
+
+        pet_exclude = definitions['MultiModifierSchema']['properties']['pet_exclude']
+        assert pet_exclude == {'$ref': ref_path(spec) + 'Pet_Exclude'}
+
 
 class TestComponentParameterHelper:
 
