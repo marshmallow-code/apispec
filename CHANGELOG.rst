@@ -9,6 +9,8 @@ Features:
 - *Backwards-incompatible*: `basePath` is not removed from paths anymore.
   Paths passed to ``APISpec.path`` should not contain the application base path
   (:pr:`345`).
+- Add ``apispec.ext.marshmallow.openapi.OpenAPIConverter.resolve_schema_class`` (:pr:`346`).
+  Thanks :user:`buxx`.
 
 1.0.0b5 (2018-11-06)
 ++++++++++++++++++++
