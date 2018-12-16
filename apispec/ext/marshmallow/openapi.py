@@ -660,7 +660,7 @@ class OpenAPIConverter(object):
         if isinstance(schema, marshmallow.Schema) and use_instances:
             schema_cls = schema
         else:
-            schema_cls = resolve_schema_cls(schema)
+            schema_cls = self.resolve_schema_class(schema)
 
         if schema_cls in self.refs:
             ref_path = self.get_ref_path()
@@ -674,3 +674,11 @@ class OpenAPIConverter(object):
         if not isinstance(schema, marshmallow.Schema):
             schema = schema_cls
         return self.schema2jsonschema(schema, dump=dump, load=load)
+
+    def resolve_schema_class(self, schema):
+        """Return schema class for given schema (instance or class)
+
+        :param type|Schema|str: instance, class or class name of marshmallow.Schema
+        :return: schema class of given schema (instance or class)
+        """
+        return resolve_schema_cls(schema)

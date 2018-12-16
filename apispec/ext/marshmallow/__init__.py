@@ -74,11 +74,11 @@ class MarshmallowPlugin(BasePlugin):
             nested_schema_class = None
 
             if isinstance(field, marshmallow.fields.Nested):
-                nested_schema_class = resolve_schema_cls(field.schema)
+                nested_schema_class = self.openapi.resolve_schema_class(field.schema)
 
             elif isinstance(field, marshmallow.fields.List) \
                     and isinstance(field.container, marshmallow.fields.Nested):
-                nested_schema_class = resolve_schema_cls(field.container.schema)
+                nested_schema_class = self.openapi.resolve_schema_class(field.container.schema)
 
             if nested_schema_class and nested_schema_class not in self.openapi.refs:
                 definition_name = self.schema_name_resolver(
