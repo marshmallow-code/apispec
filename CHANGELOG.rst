@@ -1,6 +1,15 @@
 Changelog
 ---------
 
+1.0.0b6 (unreleased)
+++++++++++++++++++++
+
+Features:
+
+- *Backwards-incompatible*: `basePath` is not removed from paths anymore.
+  Paths passed to ``APISpec.path`` should not contain the application base path
+  (:pr:`345`).
+
 1.0.0b5 (2018-11-06)
 ++++++++++++++++++++
 

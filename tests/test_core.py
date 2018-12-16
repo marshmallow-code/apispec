@@ -313,13 +313,6 @@ class TestPath:
             spec.path()
         assert 'Path template is not specified' in str(excinfo)
 
-    def test_path_strips_base_path(self, spec):
-        spec.options['basePath'] = '/v1'
-        spec.path('/v1/pets')
-        paths = get_paths(spec)
-        assert '/pets' in paths
-        assert '/v1/pets' not in paths
-
     def test_parameter(self, spec):
         route_spec = self.paths['/pet/{petId}']['get']
 
