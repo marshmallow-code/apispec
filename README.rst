@@ -2,20 +2,21 @@
 apispec
 *******
 
-.. image:: https://badge.fury.io/py/apispec.svg
-    :target: http://badge.fury.io/py/apispec
-    :alt: Latest version
+.. image:: https://badgen.net/pypi/v/apispec
+    :target: https://badge.fury.io/py/apispec
+    :alt: PyPI version
 
-.. image:: https://travis-ci.org/marshmallow-code/apispec.svg?branch=dev
+.. image:: https://badgen.net/travis/marshmallow-code/apispec/dev
     :target: https://travis-ci.org/marshmallow-code/apispec
+    :alt: TravisCI build status
 
 .. image:: https://readthedocs.org/projects/apispec/badge/
    :target: https://apispec.readthedocs.io/
    :alt: Documentation
 
-.. image:: https://img.shields.io/badge/marshmallow-3-blue.svg
+.. image:: https://badgen.net/badge/marshmallow/2,3?list=1
     :target: https://marshmallow.readthedocs.io/en/latest/upgrading.html
-    :alt: marshmallow 3 compatible
+    :alt: marshmallow 2/3 compatible
 
 A pluggable API specification generator. Currently supports the `OpenAPI Specification <https://github.com/OAI/OpenAPI-Specification>`_ (f.k.a. the Swagger specification).
 
