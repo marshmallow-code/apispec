@@ -166,6 +166,26 @@ class OpenAPIConverter(object):
 
         return ret
 
+    def field2default(self, field):
+        """Return the dictionary containing the field's default value
+
+        Will first look for a `doc_default` key in the field's metadata and then
+        fall back on the field's `missing` parameter. A callable passed to the
+        field's missing parameter will be ignored.
+
+        :param Field field: A marshmallow field.
+        :rtype: dict
+        """
+        ret = {}
+        if 'doc_default' in field.metadata:
+            ret['default'] = field.metadata['doc_default']
+        else:
+            default = field.missing
+            if default is not marshmallow.missing and not callable(default):
+                    ret['default'] = default
+
+        return ret
+
     def field2choices(self, field, **kwargs):
         """Return the dictionary of OpenAPI field attributes for valid choices definition
 
@@ -355,15 +375,10 @@ class OpenAPIConverter(object):
         :rtype: dict, a Property Object
         """
         ret = {}
-        if 'doc_default' in field.metadata:
-            ret['default'] = field.metadata['doc_default']
-        else:
-            default = field.missing
-            if default is not marshmallow.missing and not callable(default):
-                    ret['default'] = default
 
         for attr_func in (
                 self.field2type_and_format,
+                self.field2default,
                 self.field2choices,
                 self.field2read_only,
                 self.field2write_only,
