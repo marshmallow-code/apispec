@@ -292,6 +292,36 @@ class OpenAPIConverter(object):
                 attributes[max_attr] = validator.equal
         return attributes
 
+    def metadata2properties(self, field):
+        """Return a dictionary of properties extracted from field Metadata
+
+        Will include field metadata that are valid properties of `OpenAPI schema
+        objects
+        <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject>`_
+        (e.g. “description”, “enum”, “example”).
+
+        In addition, `specification extensions
+        <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#patterned-objects-9>`_
+        are supported.  Prefix `x_` to the desired extension when passing the
+        keyword argument to the field constructor. apispec will convert `x_` to
+        `x-` to comply with OpenAPI.
+
+        :param Field field: A marshmallow field.
+        :rtype: dict
+        """
+        # Dasherize metadata that starts with x_
+        metadata = {
+            key.replace('_', '-') if key.startswith('x_') else key: value
+            for key, value in iteritems(field.metadata)
+        }
+
+        # Avoid validation error with "Additional properties not allowed"
+        ret = {
+            key: value for key, value in metadata.items()
+            if key in _VALID_PROPERTIES or key.startswith(_VALID_PREFIX)
+        }
+        return ret
+
     def field2property(self, field, use_refs=True, name=None):
         """Return the JSON Schema property definition given a marshmallow
         :class:`Field <marshmallow.fields.Field>`.
@@ -330,6 +360,7 @@ class OpenAPIConverter(object):
                 self.field2nullable,
                 self.field2range,
                 self.field2length,
+                self.metadata2properties,
         ):
             ret.update(attr_func(field))
 
@@ -376,16 +407,6 @@ class OpenAPIConverter(object):
                     ret['additionalProperties'] = self.field2property(
                         field.value_container, use_refs=use_refs,
                     )
-
-        # Dasherize metadata that starts with x_
-        metadata = {
-            key.replace('_', '-') if key.startswith('x_') else key: value
-            for key, value in iteritems(field.metadata)
-        }
-        for key, value in iteritems(metadata):
-            if key in _VALID_PROPERTIES or key.startswith(_VALID_PREFIX):
-                ret[key] = value
-        # Avoid validation error with "Additional properties not allowed"
         # Property "ref" is not valid in this context
         ret.pop('ref', None)
 

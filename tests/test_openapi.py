@@ -574,11 +574,17 @@ class TestNesting:
 
     def test_field2property_nested_spec_metadatas(self, spec_fixture):
         spec_fixture.spec.components.schema('Category', schema=CategorySchema)
-        category = fields.Nested(CategorySchema, description='A category')
+        category = fields.Nested(
+            CategorySchema,
+            description='A category',
+            invalid_property='not in the result',
+            x_extension='A great extension',
+        )
         result = spec_fixture.openapi.field2property(category)
         assert result == {
-            '$ref': ref_path(spec_fixture.spec) + 'Category',
+            'allOf': [{'$ref': ref_path(spec_fixture.spec) + 'Category'}],
             'description': 'A category',
+            'x-extension': 'A great extension',
         }
 
     def test_field2property_nested_spec(self, spec_fixture):
@@ -598,11 +604,6 @@ class TestNesting:
     def test_field2property_nested_ref(self, openapi):
         cat_with_ref = fields.Nested(CategorySchema, ref='Category')
         assert openapi.field2property(cat_with_ref) == {'$ref': 'Category'}
-
-    def test_field2property_nested_ref_with_meta(self, openapi):
-        cat_with_ref = fields.Nested(CategorySchema, ref='Category', description='A category')
-        result = openapi.field2property(cat_with_ref)
-        assert result == {'$ref': 'Category', 'description': 'A category'}
 
     def test_field2property_nested_many(self, spec_fixture):
         categories = fields.Nested(CategorySchema, many=True)
