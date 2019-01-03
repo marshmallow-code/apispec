@@ -148,6 +148,24 @@ class OpenAPIConverter(object):
 
         return inner
 
+    def field2type_and_format(self, field):
+        """Return the dictionary of OpenAPI type and format based on the field
+        type
+
+        :param Field field: A marshmallow field.
+        :rtype: dict
+        """
+        type_, fmt = self.field_mapping.get(type(field), ('string', None))
+
+        ret = {
+            'type': type_,
+        }
+
+        if fmt:
+            ret['format'] = fmt
+
+        return ret
+
     def field2choices(self, field, **kwargs):
         """Return the dictionary of OpenAPI field attributes for valid choices definition
 
@@ -336,16 +354,7 @@ class OpenAPIConverter(object):
         :param str name: The definition name, if applicable, used to construct the $ref value.
         :rtype: dict, a Property Object
         """
-
-        type_, fmt = self.field_mapping.get(type(field), ('string', None))
-
-        ret = {
-            'type': type_,
-        }
-
-        if fmt:
-            ret['format'] = fmt
-
+        ret = {}
         if 'doc_default' in field.metadata:
             ret['default'] = field.metadata['doc_default']
         else:
@@ -354,6 +363,7 @@ class OpenAPIConverter(object):
                     ret['default'] = default
 
         for attr_func in (
+                self.field2type_and_format,
                 self.field2choices,
                 self.field2read_only,
                 self.field2write_only,
