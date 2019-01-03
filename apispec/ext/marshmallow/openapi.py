@@ -407,8 +407,6 @@ class OpenAPIConverter(object):
                     ret['additionalProperties'] = self.field2property(
                         field.value_container, use_refs=use_refs,
                     )
-        # Property "ref" is not valid in this context
-        ret.pop('ref', None)
 
         return ret
 
