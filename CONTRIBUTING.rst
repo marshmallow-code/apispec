@@ -1,8 +1,25 @@
 Contributing Guidelines
 =======================
 
+Security Contact Information
+----------------------------
+
+To report a security vulnerability, please use the
+`Tidelift security contact <https://tidelift.com/security>`_.
+Tidelift will coordinate the fix and disclosure.
+
+Questions, Feature Requests, Bug Reports, and Feedback. . .
+-----------------------------------------------------------
+
+. . .should all be reported on the `Github Issue Tracker`_ .
+
+.. _`Github Issue Tracker`: https://github.com/marshmallow-code/apispec/issues?state=open
+
+Contributing Code
+-----------------
+
 In General
-----------
+++++++++++
 
 - `PEP 8`_, when sensible.
 - Test ruthlessly. Write docs for new features.
@@ -11,17 +28,10 @@ In General
 .. _`PEP 8`: http://www.python.org/dev/peps/pep-0008/
 
 In Particular
--------------
-
-Questions, Feature Requests, Bug Reports, and Feedback. . .
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-. . .should all be reported on the `Github Issue Tracker`_ .
-
-.. _`Github Issue Tracker`: https://github.com/marshmallow-code/apispec/issues?state=open
++++++++++++++
 
 Setting Up for Local Development
-++++++++++++++++++++++++++++++++
+********************************
 
 1. Fork apispec_ on Github.
 
@@ -48,7 +58,7 @@ Setting Up for Local Development
 
 
 Git Branch Structure
-++++++++++++++++++++
+********************
 
 apispec abides by the following branching model:
 
@@ -62,7 +72,7 @@ apispec abides by the following branching model:
 **Always make a new branch for your work**, no matter how small. Also, **do not put unrelated changes in the same branch or pull request**. This makes it more difficult to merge your changes.
 
 Pull Requests
-++++++++++++++
+**************
 
 1. Create a new local branch.
 
@@ -89,7 +99,7 @@ Pull Requests
 4. Submit a pull request to ``marshmallow-code:dev`` or the appropriate maintenance branch. The `Travis CI <https://travis-ci.org/marshmallow-code/apispec>`_ build must be passing before your pull request is merged.
 
 Running Tests
-+++++++++++++
+*************
 
 To run all tests: ::
 
@@ -104,7 +114,7 @@ To run syntax checks: ::
     $ tox
 
 Documentation
-+++++++++++++
+*************
 
 Contributions to the documentation are welcome. Documentation is written in `reStructured Text`_ (rST). A quick rST reference can be found `here <http://docutils.sourceforge.net/docs/user/rst/quickref.html>`_. Builds are powered by Sphinx_.
 

@@ -171,6 +171,41 @@ A list of apispec-related libraries can be found at the GitHub wiki here:
 
 https://github.com/marshmallow-code/apispec/wiki/Ecosystem
 
+Support apispec
+===============
+
+apispec is maintained by a group of
+`volunteers <https://apispec.readthedocs.io/en/latest/authors.html>`_.
+If you'd like to support the future of the project, please consider
+contributing to our Open Collective:
+
+.. image:: https://opencollective.com/marshmallow/donate/button.png
+    :target: https://opencollective.com/marshmallow
+    :alt: Donate to our collective
+
+Professional Support
+====================
+
+Professionally-supported apispec is available through the
+`Tidelift Subscription <https://tidelift.com/subscription/pkg/pypi-apispec?utm_source=pypi-apispec&utm_medium=referral&utm_campaign=readme>`_.
+
+Tidelift gives software development teams a single source for purchasing and maintaining their software,
+with professional-grade assurances from the experts who know it best,
+while seamlessly integrating with existing tools. [`Get professional support`_]
+
+.. _`Get professional support`: https://tidelift.com/subscription/pkg/pypi-apispec?utm_source=pypi-apispec&utm_medium=referral&utm_campaign=readme
+
+.. image:: https://user-images.githubusercontent.com/2379650/45126032-50b69880-b13f-11e8-9c2c-abd16c433495.png
+    :target: https://tidelift.com/subscription/pkg/pypi-apispec?utm_source=pypi-apispec&utm_medium=referral&utm_campaign=readme
+    :alt: Get supported apispec with Tidelift
+
+Security Contact Information
+============================
+
+To report a security vulnerability, please use the
+`Tidelift security contact <https://tidelift.com/security>`_.
+Tidelift will coordinate the fix and disclosure.
+
 License
 =======
 
