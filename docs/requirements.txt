@@ -1,4 +1,4 @@
-marshmallow==2.17.0
+marshmallow==2.18.0
 pyyaml==3.13
 sphinx==1.8.3
 sphinx-issues==1.2.0
