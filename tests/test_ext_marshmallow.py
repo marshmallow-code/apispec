@@ -10,20 +10,14 @@ from marshmallow import Schema
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec.ext.marshmallow.openapi import MARSHMALLOW_VERSION_INFO
+from apispec.exceptions import APISpecError
 from .schemas import (
     PetSchema, AnalysisSchema, RunSchema,
     SelfReferencingSchema, OrderedSchema, PatternedObjectSchema,
     DefaultValuesSchema, AnalysisWithListSchema,
 )
 
-from .utils import get_definitions, get_parameters, get_responses, get_paths
-from apispec.exceptions import APISpecError
-
-
-def ref_path(spec):
-    if spec.openapi_version.version[0] < 3:
-        return '#/definitions/'
-    return '#/components/schemas/'
+from .utils import get_definitions, get_parameters, get_responses, get_paths, ref_path
 
 
 class TestDefinitionHelper:
@@ -259,12 +253,6 @@ class TestCustomField:
 
 class TestOperationHelper:
 
-    @staticmethod
-    def ref_path(spec):
-        if spec.openapi_version.version[0] < 3:
-            return '#/definitions/'
-        return '#/components/schemas/'
-
     @pytest.mark.parametrize('pet_schema', (PetSchema, PetSchema(), 'tests.schemas.PetSchema'))
     @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
     def test_schema_v2(self, spec_fixture, pet_schema):
@@ -283,7 +271,7 @@ class TestOperationHelper:
         )
         get = get_paths(spec_fixture.spec)['/pet']['get']
         reference = get['responses'][200]['schema']
-        assert reference == {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'}
+        assert reference == {'$ref': ref_path(spec_fixture.spec) + 'Pet'}
         assert len(spec_fixture.spec.components._schemas) == 1
         resolved_schema = spec_fixture.spec.components._schemas['Pet']
         assert resolved_schema == spec_fixture.openapi.schema2jsonschema(
@@ -314,7 +302,7 @@ class TestOperationHelper:
         get = get_paths(spec_fixture.spec)['/pet']['get']
         reference = get['responses'][200]['content']['application/json']['schema']
 
-        assert reference == {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'}
+        assert reference == {'$ref': ref_path(spec_fixture.spec) + 'Pet'}
         assert len(spec_fixture.spec.components._schemas) == 1
         resolved_schema = spec_fixture.spec.components._schemas['Pet']
         assert resolved_schema == spec_fixture.openapi.schema2jsonschema(
@@ -411,7 +399,7 @@ class TestOperationHelper:
             },
         )
         get = get_paths(spec_fixture.spec)['/pet']['get']
-        assert get['responses'][200]['schema']['$ref'] == self.ref_path(spec_fixture.spec) + 'Pet'
+        assert get['responses'][200]['schema']['$ref'] == ref_path(spec_fixture.spec) + 'Pet'
 
     @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
     def test_schema_uses_ref_if_available_v3(self, spec_fixture):
@@ -433,7 +421,7 @@ class TestOperationHelper:
             },
         )
         get = get_paths(spec_fixture.spec)['/pet']['get']
-        assert get['responses'][200]['content']['application/json']['schema']['$ref'] == self.ref_path(
+        assert get['responses'][200]['content']['application/json']['schema']['$ref'] == ref_path(
             spec_fixture.spec,
         ) + 'Pet'
 
@@ -461,7 +449,7 @@ class TestOperationHelper:
         assert 'schema' not in p['get']['parameters'][0]
         post = p['post']
         assert len(post['parameters']) == 1
-        assert post['parameters'][0]['schema']['$ref'] == self.ref_path(spec_fixture.spec) + 'Pet'
+        assert post['parameters'][0]['schema']['$ref'] == ref_path(spec_fixture.spec) + 'Pet'
 
     @pytest.mark.parametrize('spec_fixture', ('3.0.0', ), indirect=True)
     def test_schema_uses_ref_in_parameters_and_request_body_if_available_v3(self, spec_fixture):
@@ -490,7 +478,7 @@ class TestOperationHelper:
         assert 'schema' in p['get']['parameters'][0]
         post = p['post']
         schema_ref = post['requestBody']['content']['application/json']['schema']
-        assert schema_ref == {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'}
+        assert schema_ref == {'$ref': ref_path(spec_fixture.spec) + 'Pet'}
 
     @pytest.mark.parametrize('spec_fixture', ('2.0', ), indirect=True)
     def test_schema_array_uses_ref_if_available_v2(self, spec_fixture):
@@ -521,7 +509,7 @@ class TestOperationHelper:
         len(get['parameters']) == 1
         resolved_schema = {
             'type': 'array',
-            'items': {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'},
+            'items': {'$ref': ref_path(spec_fixture.spec) + 'Pet'},
         }
         assert get['parameters'][0]['schema'] == resolved_schema
         assert get['responses'][200]['schema'] == resolved_schema
@@ -564,7 +552,7 @@ class TestOperationHelper:
         op = p['get']
         resolved_schema = {
             'type': 'array',
-            'items': {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'},
+            'items': {'$ref': ref_path(spec_fixture.spec) + 'Pet'},
         }
         request_schema = op['parameters'][0]['content']['application/json']['schema']
         assert request_schema == resolved_schema
@@ -596,8 +584,8 @@ class TestOperationHelper:
         assert get['responses'][200]['schema'] == {
             'type': 'object',
             'properties': {
-                'mother': {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'},
-                'father': {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'},
+                'mother': {'$ref': ref_path(spec_fixture.spec) + 'Pet'},
+                'father': {'$ref': ref_path(spec_fixture.spec) + 'Pet'},
             },
         }
 
@@ -630,8 +618,8 @@ class TestOperationHelper:
         assert get['responses'][200]['content']['application/json']['schema'] == {
             'type': 'object',
             'properties': {
-                'mother': {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'},
-                'father': {'$ref': self.ref_path(spec_fixture.spec) + 'Pet'},
+                'mother': {'$ref': ref_path(spec_fixture.spec) + 'Pet'},
+                'father': {'$ref': ref_path(spec_fixture.spec) + 'Pet'},
             },
         }
 
