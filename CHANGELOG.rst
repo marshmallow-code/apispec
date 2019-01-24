@@ -1,6 +1,18 @@
 Changelog
 ---------
 
+1.0.0 (unreleased)
+++++++++++++++++++
+
+Features:
+
+- Automatically generate references to nested schemas with a computed name, e.g.
+  ``fields.Nested(PetSchema())`` -> ``#components/schemas/Pet``.
+- Automatically generate references for ``requestBody`` using the above mechanism.
+- Ability to opt out of the above behavior by passing a ``schema_name_resolver``
+  function that returns ``None`` to ``api.ext.MarshmallowPlugin`` on initialization.
+- References now respect Schema initialization modifiers such as exclude.
+
 1.0.0b6 (2018-12-16)
 ++++++++++++++++++++
 

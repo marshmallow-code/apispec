@@ -18,3 +18,8 @@ def get_responses(spec):
 
 def get_paths(spec):
     return spec.to_dict()['paths']
+
+def ref_path(spec):
+    if spec.openapi_version.version[0] < 3:
+        return '#/definitions/'
+    return '#/components/schemas/'

@@ -8,15 +8,10 @@ from pytest import mark
 from marshmallow import fields, Schema, validate
 
 from apispec.ext.marshmallow import MarshmallowPlugin
-from apispec.ext.marshmallow.openapi import OpenAPIConverter, MARSHMALLOW_VERSION_INFO
+from apispec.ext.marshmallow.openapi import MARSHMALLOW_VERSION_INFO
 from apispec import exceptions, utils, APISpec
 
-from .utils import get_definitions
-
-
-@pytest.fixture(params=('2.0', '3.0.0'))
-def openapi(request):
-    return OpenAPIConverter(openapi_version=request.param)
+from .utils import get_definitions, ref_path
 
 
 class TestMarshmallowFieldToOpenAPI:
@@ -90,12 +85,12 @@ class TestMarshmallowFieldToOpenAPI:
 
     def test_field_with_missing_load(self, openapi):
         field = fields.Str(default='foo', missing='bar')
-        res = openapi.field2property(field, dump=False)
+        res = openapi.field2property(field)
         assert res['default'] == 'bar'
 
     def test_field_with_boolean_false_missing_load(self, openapi):
         field = fields.Boolean(default=None, missing=False)
-        res = openapi.field2property(field, dump=False)
+        res = openapi.field2property(field)
         assert res['default'] is False
 
     def test_field_with_missing_callable(self, openapi):
@@ -423,36 +418,6 @@ class TestMarshmallowSchemaToModelDefinition:
         assert excinfo.value.args[0] == ("{0!r} doesn't have either `fields` "
                                          'or `_declared_fields`'.format(NotASchema))
 
-    def test_dump_only_load_only_fields(self, openapi):
-        class UserSchema(Schema):
-            _id = fields.Str(dump_only=True)
-            name = fields.Str()
-            password = fields.Str(load_only=True)
-
-        res = openapi.schema2jsonschema(UserSchema())
-        props = res['properties']
-        assert 'name' in props
-        # dump_only field appears with readOnly attribute
-        assert '_id' in props
-        assert 'readOnly' in props['_id']
-        # load_only field appears (writeOnly attribute does not exist)
-        assert 'password' in props
-        if openapi.openapi_version.major < 3:
-            assert 'writeOnly' not in props['password']
-        else:
-            assert 'writeOnly' in props['password']
-
-        res = openapi.schema2jsonschema(UserSchema(), dump=False)
-        props = res['properties']
-        assert 'name' in props
-        assert '_id' not in props
-        assert 'password' in props
-
-        res = openapi.schema2jsonschema(UserSchema(), load=False)
-        props = res['properties']
-        assert 'name' in props
-        assert '_id' in props
-        assert 'password' not in props
 
 class TestMarshmallowSchemaToParameters:
 
@@ -490,8 +455,10 @@ class TestMarshmallowSchemaToParameters:
         assert len(res) == 1
         param = res[0]
         assert param['in'] == 'body'
-        assert param['schema'] == openapi.schema2jsonschema(UserSchema)
+        assert param['schema'] == {'$ref': '#/definitions/User'}
 
+    # json/body is invalid for OpenAPI 3
+    @pytest.mark.parametrize('openapi', ('2.0', ), indirect=True)
     def test_schema_body_with_dump_only(self, openapi):
         class UserSchema(Schema):
             name = fields.Str()
@@ -501,8 +468,7 @@ class TestMarshmallowSchemaToParameters:
         assert len(res_nodump) == 1
         param = res_nodump[0]
         assert param['in'] == 'body'
-        assert param['schema'] == openapi.schema2jsonschema(UserSchema, dump=False)
-        assert set(param['schema']['properties'].keys()) == {'name'}
+        assert param['schema'] == {'$ref': ref_path(openapi.spec) + 'User'}
 
     # json/body is invalid for OpenAPI 3
     @pytest.mark.parametrize('openapi', ('2.0', ), indirect=True)
@@ -516,8 +482,7 @@ class TestMarshmallowSchemaToParameters:
         param = res[0]
         assert param['in'] == 'body'
         assert param['schema']['type'] == 'array'
-        assert param['schema']['items']['type'] == 'object'
-        assert param['schema']['items'] == openapi.schema2jsonschema(UserSchema)
+        assert param['schema']['items'] == {'$ref': '#/definitions/User'}
 
     def test_schema_query(self, openapi):
         class UserSchema(Schema):
@@ -637,30 +602,19 @@ class TestNesting:
         assert ret['items'] == {'$ref': self.ref_path(spec_fixture.spec) + 'Category'}
 
     def test_field2property_nested_ref(self, openapi):
-        category = fields.Nested(CategorySchema)
-        assert openapi.field2property(category) == openapi.schema2jsonschema(CategorySchema)
-
         cat_with_ref = fields.Nested(CategorySchema, ref='Category')
         assert openapi.field2property(cat_with_ref) == {'$ref': 'Category'}
 
     def test_field2property_nested_ref_with_meta(self, openapi):
-        category = fields.Nested(CategorySchema)
-        assert openapi.field2property(category) == openapi.schema2jsonschema(CategorySchema)
-
         cat_with_ref = fields.Nested(CategorySchema, ref='Category', description='A category')
         result = openapi.field2property(cat_with_ref)
         assert result == {'$ref': 'Category', 'description': 'A category'}
 
-    def test_field2property_nested_many(self, openapi):
+    def test_field2property_nested_many(self, spec_fixture):
         categories = fields.Nested(CategorySchema, many=True)
-        res = openapi.field2property(categories)
+        res = spec_fixture.openapi.field2property(categories)
         assert res['type'] == 'array'
-        assert res['items'] == openapi.schema2jsonschema(CategorySchema)
-
-        cats_with_ref = fields.Nested(CategorySchema, many=True, ref='Category')
-        res = openapi.field2property(cats_with_ref)
-        assert res['type'] == 'array'
-        assert res['items'] == {'$ref': 'Category'}
+        assert res['items'] == {'$ref': ref_path(spec_fixture.spec) + 'Category'}
 
     def test_field2property_nested_self_without_name_raises_error(self, openapi):
         self_nesting = fields.Nested('self')
@@ -693,47 +647,38 @@ class TestNesting:
         res = openapi.field2property(self_nesting2, name='Foo')
         assert res == {'$ref': '#/definitions/Bar'}
 
-    def test_field2property_nested_dump_only(self, openapi):
-        category = fields.Nested(CategorySchema)
-        res = openapi.field2property(category, name='Foo', dump=False)
+    def test_schema2jsonschema_with_nested_fields(self, spec_fixture):
+        res = spec_fixture.openapi.schema2jsonschema(PetSchema, use_refs=False)
         props = res['properties']
-        assert 'breed' not in props
 
-    def test_field2property_nested_dump_only_with_spec(self, openapi):
-        category = fields.Nested(CategorySchema)
-        res = openapi.field2property(category, name='Foo', dump=False)
-        props = res['properties']
-        assert 'breed' not in props
+        assert props['category']['items'] == {'$ref': ref_path(spec_fixture.spec) + 'Category'}
 
-    def test_schema2jsonschema_with_nested_fields(self, openapi):
-        res = openapi.schema2jsonschema(PetSchema, use_refs=False)
-        props = res['properties']
-        assert props['category']['items'] == openapi.schema2jsonschema(CategorySchema)
-
-    def test_schema2jsonschema_with_nested_fields_with_adhoc_changes(self, openapi):
+    def test_schema2jsonschema_with_nested_fields_with_adhoc_changes(self, spec_fixture):
         category_schema = CategorySchema(many=True)
         category_schema.fields['id'].required = True
 
         class PetSchema(Schema):
-            category = fields.Nested(category_schema, many=True, ref='#/definitions/Category')
+            category = fields.Nested(category_schema, many=True)
             name = fields.Str()
 
-        res = openapi.schema2jsonschema(PetSchema(), use_refs=False)
-        props = res['properties']
-        assert props['category'] == openapi.schema2jsonschema(category_schema)
-        assert set(props['category']['items']['required']) == {'id', 'name'}
+        spec_fixture.spec.components.schema('Pet', schema=PetSchema)
+        props = get_definitions(spec_fixture.spec)
 
-        props['category']['items']['required'] = ['name']
-        assert props['category']['items'] == openapi.schema2jsonschema(CategorySchema)
+        assert props['Category'] == spec_fixture.openapi.schema2jsonschema(category_schema)
+        assert set(props['Category']['items']['required']) == {'id', 'name'}
 
-    def test_schema2jsonschema_with_nested_excluded_fields(self, openapi):
+        props['Category']['items']['required'] = ['name']
+        assert props['Category']['items'] == spec_fixture.openapi.schema2jsonschema(CategorySchema)
+
+    def test_schema2jsonschema_with_nested_excluded_fields(self, spec):
         category_schema = CategorySchema(exclude=('breed', ))
 
         class PetSchema(Schema):
             category = fields.Nested(category_schema)
 
-        res = openapi.schema2jsonschema(PetSchema(), use_refs=False)
-        category_props = res['properties']['category']['properties']
+        spec.components.schema('Pet', schema=PetSchema)
+
+        category_props = get_definitions(spec)['Category']['properties']
         assert 'breed' not in category_props
 
     def test_nested_field_with_property(self, spec_fixture):

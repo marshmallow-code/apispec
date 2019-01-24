@@ -9,13 +9,13 @@ class PetSchema(Schema):
 
 
 class SampleSchema(Schema):
-    runs = fields.Nested('RunSchema', many=True, exclude=('sample',))
+    runs = fields.Nested('RunSchema', many=True)
 
     count = fields.Int()
 
 
 class RunSchema(Schema):
-    sample = fields.Nested(SampleSchema, exclude=('runs',))
+    sample = fields.Nested(SampleSchema)
 
 
 class AnalysisSchema(Schema):

@@ -30,3 +30,9 @@ def spec_fixture(request):
 @pytest.fixture(params=('2.0', '3.0.0'))
 def spec(request):
     return make_spec(request.param).spec
+
+
+@pytest.fixture(params=('2.0', '3.0.0'))
+def openapi(request):
+    spec = make_spec(request.param)
+    return spec.openapi
