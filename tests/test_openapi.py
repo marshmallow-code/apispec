@@ -648,6 +648,20 @@ class TestNesting:
 
         assert props['category']['items'] == {'$ref': ref_path(spec_fixture.spec) + 'Category'}
 
+    @pytest.mark.parametrize('modifier', ('only', 'exclude'))
+    def test_schema2jsonschema_with_nested_fields_only_exclude(self, spec_fixture, modifier):
+        class Child(Schema):
+            i = fields.Int()
+            j = fields.Int()
+
+        class Parent(Schema):
+            child = fields.Nested(Child, **{modifier: ('i', )})
+
+        spec_fixture.openapi.schema2jsonschema(Parent)
+        props = get_definitions(spec_fixture.spec)['Child']['properties']
+        assert ('i' in props) == (modifier == 'only')
+        assert ('j' not in props) == (modifier == 'only')
+
     def test_schema2jsonschema_with_nested_fields_with_adhoc_changes(self, spec_fixture):
         category_schema = CategorySchema(many=True)
         category_schema.fields['id'].required = True
