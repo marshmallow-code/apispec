@@ -447,25 +447,22 @@ class OpenAPIConverter(object):
 
         :param schema: schema to add to the spec
         """
-
-        schema_cls = self.resolve_schema_class(schema)
-        name = self.schema_name_resolver(schema_cls)
-
-        if not name:
-            try:
-                return self.schema2jsonschema(schema)
-            except RuntimeError:
-                raise APISpecError(
-                    'Name resolver returned None for schema {schema} which is '
-                    'part of a chain of circular referencing schemas. Please'
-                    ' ensure that the schema_name_resolver passed to'
-                    ' MarshmallowPlugin returns a string for all circular'
-                    ' referencing schemas.'.format(schema=schema),
-                )
-
         schema_instance = resolve_schema_instance(schema)
         schema_key = make_schema_key(schema_instance)
         if schema_key not in self.refs:
+            schema_cls = self.resolve_schema_class(schema)
+            name = self.schema_name_resolver(schema_cls)
+            if not name:
+                try:
+                    return self.schema2jsonschema(schema)
+                except RuntimeError:
+                    raise APISpecError(
+                        'Name resolver returned None for schema {schema} which is '
+                        'part of a chain of circular referencing schemas. Please'
+                        ' ensure that the schema_name_resolver passed to'
+                        ' MarshmallowPlugin returns a string for all circular'
+                        ' referencing schemas.'.format(schema=schema),
+                    )
             name = get_unique_schema_name(self.spec.components, name)
             self.spec.components.schema(
                 name,
