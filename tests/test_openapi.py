@@ -793,7 +793,7 @@ def test_openapi_tools_validate_v3():
         plugins=(ma_plugin, ),
         openapi_version='3.0.0',
     )
-    #openapi = ma_plugin.openapi
+    openapi = ma_plugin.openapi
 
     spec.components.schema('Category', schema=CategorySchema)
     spec.components.schema('Pet', schema=PetSchemaV3)
@@ -815,7 +815,16 @@ def test_openapi_tools_validate_v3():
                         'required': True,
                         'schema': {'type': 'string'},
                     },
-                ],  # + openapi.schema2parameters(PageSchema, default_in='query'),
+                    openapi.field2parameter(
+                        field=fields.List(
+                            fields.Str(),
+                            validate=validate.OneOf(['freddie', 'roger']),
+                            location='querystring',
+                        ),
+                        name='body',
+                        use_refs=False,
+                    ),
+                ] + openapi.schema2parameters(PageSchema, default_in='query'),
                 'responses': {
                     200: {
                         'description': 'success',
