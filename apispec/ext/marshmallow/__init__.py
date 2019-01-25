@@ -32,10 +32,8 @@ Requires marshmallow>=2.15.2.
 from __future__ import absolute_import
 import warnings
 
-import marshmallow
-
 from apispec import BasePlugin
-from .common import resolve_schema_cls, resolve_schema_instance, make_schema_key
+from .common import resolve_schema_instance, make_schema_key
 from .openapi import OpenAPIConverter
 
 
@@ -82,11 +80,11 @@ class MarshmallowPlugin(BasePlugin):
         resolved = []
         for parameter in parameters:
             if not isinstance(parameter.get('schema', {}), dict):
-                schema_cls = resolve_schema_cls(parameter['schema'])
-                if issubclass(schema_cls, marshmallow.Schema) and 'in' in parameter:
+                schema_instance = resolve_schema_instance(parameter['schema'])
+                if 'in' in parameter:
                     del parameter['schema']
                     resolved += self.openapi.schema2parameters(
-                        schema_cls,
+                        schema_instance,
                         default_in=parameter.pop('in'), **parameter
                     )
                     continue
@@ -157,7 +155,7 @@ class MarshmallowPlugin(BasePlugin):
         self.warn_if_schema_already_in_spec(schema_key)
         self.openapi.refs[schema_key] = name
 
-        json_schema = self.openapi.schema2jsonschema(schema_instance, name=name)
+        json_schema = self.openapi.schema2jsonschema(schema_instance)
 
         return json_schema
 

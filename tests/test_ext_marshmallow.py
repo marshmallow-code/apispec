@@ -721,19 +721,6 @@ class TestSelfReference:
             'items': {'$ref': ref_path(spec) + 'SelfReference'},
         }
 
-    def test_self_referencing_with_ref(self, spec):
-        version = 'v2' if spec.openapi_version.version[0] < 3 else 'v3'
-        spec.components.schema('SelfReference', schema=SelfReferencingSchema)
-        definitions = get_definitions(spec)
-        result = definitions['SelfReference']['properties'][
-            'single_with_ref_{}'.format(version)
-        ]
-        assert result == {'$ref': ref_path(spec) + 'Self'}
-        result = definitions['SelfReference']['properties'][
-            'many_with_ref_{}'.format(version)
-        ]
-        assert result == {'type': 'array', 'items': {'$ref': ref_path(spec) + 'Selves'}}
-
 
 class TestOrderedSchema:
 
