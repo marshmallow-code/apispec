@@ -148,6 +148,44 @@ class OpenAPIConverter(object):
 
         return inner
 
+    def field2type_and_format(self, field):
+        """Return the dictionary of OpenAPI type and format based on the field
+        type
+
+        :param Field field: A marshmallow field.
+        :rtype: dict
+        """
+        type_, fmt = self.field_mapping.get(type(field), ('string', None))
+
+        ret = {
+            'type': type_,
+        }
+
+        if fmt:
+            ret['format'] = fmt
+
+        return ret
+
+    def field2default(self, field):
+        """Return the dictionary containing the field's default value
+
+        Will first look for a `doc_default` key in the field's metadata and then
+        fall back on the field's `missing` parameter. A callable passed to the
+        field's missing parameter will be ignored.
+
+        :param Field field: A marshmallow field.
+        :rtype: dict
+        """
+        ret = {}
+        if 'doc_default' in field.metadata:
+            ret['default'] = field.metadata['doc_default']
+        else:
+            default = field.missing
+            if default is not marshmallow.missing and not callable(default):
+                    ret['default'] = default
+
+        return ret
+
     def field2choices(self, field, **kwargs):
         """Return the dictionary of OpenAPI field attributes for valid choices definition
 
@@ -292,6 +330,36 @@ class OpenAPIConverter(object):
                 attributes[max_attr] = validator.equal
         return attributes
 
+    def metadata2properties(self, field):
+        """Return a dictionary of properties extracted from field Metadata
+
+        Will include field metadata that are valid properties of `OpenAPI schema
+        objects
+        <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject>`_
+        (e.g. “description”, “enum”, “example”).
+
+        In addition, `specification extensions
+        <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#patterned-objects-9>`_
+        are supported.  Prefix `x_` to the desired extension when passing the
+        keyword argument to the field constructor. apispec will convert `x_` to
+        `x-` to comply with OpenAPI.
+
+        :param Field field: A marshmallow field.
+        :rtype: dict
+        """
+        # Dasherize metadata that starts with x_
+        metadata = {
+            key.replace('_', '-') if key.startswith('x_') else key: value
+            for key, value in iteritems(field.metadata)
+        }
+
+        # Avoid validation error with "Additional properties not allowed"
+        ret = {
+            key: value for key, value in metadata.items()
+            if key in _VALID_PROPERTIES or key.startswith(_VALID_PREFIX)
+        }
+        return ret
+
     def field2property(self, field, use_refs=True, name=None):
         """Return the JSON Schema property definition given a marshmallow
         :class:`Field <marshmallow.fields.Field>`.
@@ -306,30 +374,18 @@ class OpenAPIConverter(object):
         :param str name: The definition name, if applicable, used to construct the $ref value.
         :rtype: dict, a Property Object
         """
-
-        type_, fmt = self.field_mapping.get(type(field), ('string', None))
-
-        ret = {
-            'type': type_,
-        }
-
-        if fmt:
-            ret['format'] = fmt
-
-        if 'doc_default' in field.metadata:
-            ret['default'] = field.metadata['doc_default']
-        else:
-            default = field.missing
-            if default is not marshmallow.missing and not callable(default):
-                    ret['default'] = default
+        ret = {}
 
         for attr_func in (
+                self.field2type_and_format,
+                self.field2default,
                 self.field2choices,
                 self.field2read_only,
                 self.field2write_only,
                 self.field2nullable,
                 self.field2range,
                 self.field2length,
+                self.metadata2properties,
         ):
             ret.update(attr_func(field))
 
@@ -376,18 +432,6 @@ class OpenAPIConverter(object):
                     ret['additionalProperties'] = self.field2property(
                         field.value_container, use_refs=use_refs,
                     )
-
-        # Dasherize metadata that starts with x_
-        metadata = {
-            key.replace('_', '-') if key.startswith('x_') else key: value
-            for key, value in iteritems(field.metadata)
-        }
-        for key, value in iteritems(metadata):
-            if key in _VALID_PROPERTIES or key.startswith(_VALID_PREFIX):
-                ret[key] = value
-        # Avoid validation error with "Additional properties not allowed"
-        # Property "ref" is not valid in this context
-        ret.pop('ref', None)
 
         return ret
 
