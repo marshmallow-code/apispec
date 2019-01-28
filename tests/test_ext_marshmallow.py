@@ -335,7 +335,7 @@ class TestOperationHelper:
         p = get_paths(spec_fixture.spec)['/pet']
         get = p['get']
         assert get['parameters'] == spec_fixture.openapi.schema2parameters(
-            PetSchema, default_in='query',
+            PetSchema(), default_in='query',
         )
         post = p['post']
         assert post['parameters'] == spec_fixture.openapi.schema2parameters(
@@ -370,7 +370,7 @@ class TestOperationHelper:
         p = get_paths(spec_fixture.spec)['/pet']
         get = p['get']
         assert get['parameters'] == spec_fixture.openapi.schema2parameters(
-            PetSchema, default_in='query',
+            PetSchema(), default_in='query',
         )
         for parameter in get['parameters']:
             description = parameter.get('description', False)
