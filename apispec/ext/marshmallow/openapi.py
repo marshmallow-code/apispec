@@ -7,6 +7,7 @@ OpenAPI 2.0 spec: https://github.com/OAI/OpenAPI-Specification/blob/master/versi
 from __future__ import absolute_import, unicode_literals
 import operator
 import functools
+import warnings
 from collections import OrderedDict
 
 import marshmallow
@@ -14,6 +15,7 @@ from marshmallow.utils import is_collection
 from marshmallow.compat import iteritems
 from marshmallow.orderedset import OrderedSet
 
+from apispec.compat import RegexType
 from apispec.utils import OpenAPIVersion
 from .common import (
     resolve_schema_cls, get_fields, make_schema_key, resolve_schema_instance,
@@ -329,6 +331,26 @@ class OpenAPIConverter(object):
                 attributes[max_attr] = validator.equal
         return attributes
 
+    def field2pattern(self, field, **kwargs):
+        """Return the dictionary of OpenAPI field attributes for a set of
+        :class:`Range <marshmallow.validators.Regexp>` validators.
+
+        :param Field field: A marshmallow field.
+        :rtype: dict
+        """
+        regex_validators = (v for v in field.validators
+                            if isinstance(getattr(v, 'regex', None), RegexType))
+        v = next(regex_validators, None)
+        attributes = {} if v is None else {'pattern': v.regex.pattern}
+
+        if next(regex_validators, None) is not None:
+            warnings.warn(
+                'More than one regex validator defined on {} field.'
+                .format(type(field)), UserWarning,
+            )
+
+        return attributes
+
     def metadata2properties(self, field):
         """Return a dictionary of properties extracted from field Metadata
 
@@ -384,6 +406,7 @@ class OpenAPIConverter(object):
                 self.field2nullable,
                 self.field2range,
                 self.field2length,
+                self.field2pattern,
                 self.metadata2properties,
         ):
             ret.update(attr_func(field))

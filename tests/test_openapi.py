@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import re
 import warnings
 
 import pytest
@@ -234,6 +235,38 @@ class TestMarshmallowFieldToOpenAPI:
             assert res['x-nullable'] is True
         else:
             assert res['nullable'] is True
+
+    def test_field_with_str_regex(self, openapi):
+        regex_str = '^[a-zA-Z0-9]$'
+        field = fields.Str(validate=validate.Regexp(regex_str))
+        ret = openapi.field2property(field)
+        assert ret['pattern'] == regex_str
+
+    def test_field_with_pattern_obj_regex(self, openapi):
+        regex_str = '^[a-zA-Z0-9]$'
+        field = fields.Str(validate=validate.Regexp(re.compile(regex_str)))
+        ret = openapi.field2property(field)
+        assert ret['pattern'] == regex_str
+
+    def test_field_with_no_pattern(self, openapi):
+        field = fields.Str()
+        ret = openapi.field2property(field)
+        assert 'pattern' not in ret
+
+    def test_field_with_multiple_patterns(self, recwarn, openapi):
+        regex_validators = [
+            validate.Regexp('winner'),
+            validate.Regexp('loser'),
+        ]
+        field = fields.Str(validate=regex_validators)
+        with warnings.catch_warnings():
+            warnings.simplefilter('always')
+            ret = openapi.field2property(field)
+            warning = recwarn.pop()
+            expected_msg = 'More than one regex validator defined on {} field.'
+            assert warning.category == UserWarning
+            assert str(warning.message) == expected_msg.format(type(field))
+            assert ret['pattern'] == 'winner'
 
 class TestMarshmallowSchemaToModelDefinition:
 
