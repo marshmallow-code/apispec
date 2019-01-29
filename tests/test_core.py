@@ -5,7 +5,7 @@ import pytest
 import yaml
 
 from apispec import APISpec, BasePlugin
-from apispec.exceptions import APISpecError
+from apispec.exceptions import APISpecError, DuplicateComponentNameError
 
 from .utils import get_definitions, get_paths, get_parameters, get_responses
 
@@ -170,6 +170,14 @@ class TestDefinitions:
         else:
             defs = spec.to_dict()['components']['schemas']
         assert defs['Pet']['discriminator'] == 'name'
+
+    def test_definition_duplicate_name(self, spec):
+        spec.components.schema('Pet', properties=self.properties)
+        with pytest.raises(
+            DuplicateComponentNameError,
+            match='Another schema with name "Pet" is already registered.',
+        ):
+            spec.components.schema('Pet', properties=self.properties)
 
     def test_to_yaml(self, spec):
         enum = ['name', 'photoUrls']
@@ -342,6 +350,15 @@ class TestPath:
         assert 'param1' in params
         assert 'param2' in params
 
+    def test_parameter_duplicate_name(self, spec):
+        route_spec = self.paths['/pet/{petId}']['get']
+        spec.components.parameter('test_parameter', 'path', **route_spec['parameters'][0])
+        with pytest.raises(
+            DuplicateComponentNameError,
+            match='Another parameter with name "test_parameter" is already registered.',
+        ):
+            spec.components.parameter('test_parameter', 'path', **route_spec['parameters'][0])
+
     def test_response(self, spec):
         route_spec = self.paths['/pet/{petId}']['get']
 
@@ -370,6 +387,15 @@ class TestPath:
             responses = spec.to_dict()['components']['responses']
         assert 'resp1' in responses
         assert 'resp2' in responses
+
+    def test_response_duplicate_name(self, spec):
+        route_spec = self.paths['/pet/{petId}']['get']
+        spec.components.response('test_response', **route_spec['responses']['200'])
+        with pytest.raises(
+            DuplicateComponentNameError,
+            match='Another response with name "test_response" is already registered.',
+        ):
+            spec.components.response('test_response', **route_spec['responses']['200'])
 
     def test_path_check_invalid_http_method(self, spec):
         spec.path('/pet/{petId}', operations={'get': {}})

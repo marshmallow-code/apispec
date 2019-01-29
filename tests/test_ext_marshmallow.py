@@ -128,7 +128,7 @@ class TestDefinitionHelper:
     def test_warning_when_schema_added_twice(self, spec, schema):
         spec.components.schema('Analysis', schema=schema)
         with pytest.warns(UserWarning, match='has already been added to the spec'):
-            spec.components.schema('Analysis', schema=schema)
+            spec.components.schema('DuplicateAnalysis', schema=schema)
 
     def test_schema_instances_with_different_modifiers_added(self, spec):
         class MultiModifierSchema(Schema):
