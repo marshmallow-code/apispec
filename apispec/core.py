@@ -3,7 +3,7 @@
 from collections import OrderedDict
 
 from apispec.compat import iterkeys, iteritems
-from .exceptions import APISpecError, PluginMethodNotImplementedError
+from .exceptions import APISpecError, PluginMethodNotImplementedError, DuplicateComponentNameError
 from .utils import OpenAPIVersion, deepupdate
 
 VALID_METHODS = [
@@ -122,6 +122,10 @@ class Components(object):
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#definitionsObject
         """
+        if name in self._schemas:
+            raise DuplicateComponentNameError(
+                'Another schema with name {} is already registered'.format(name),
+            )
         ret = {}
         # Execute all helpers from plugins
         for plugin in self._plugins:
@@ -147,6 +151,10 @@ class Components(object):
         :param str location: location of the parameter.
         :param dict kwargs: parameter fields.
         """
+        if param_id in self._parameters:
+            raise DuplicateComponentNameError(
+                'Another parameter with name {} is already registered.'.format(param_id),
+            )
         ret = kwargs.copy()
         ret.setdefault('name', param_id)
         ret['in'] = location
@@ -165,6 +173,10 @@ class Components(object):
         :param str ref_id: ref_id to use as reference
         :param dict kwargs: response fields
         """
+        if ref_id in self._responses:
+            raise DuplicateComponentNameError(
+                'Another response with name {} is already registered'.format(ref_id),
+            )
         ret = kwargs.copy()
         # Execute all helpers from plugins
         for plugin in self._plugins:
