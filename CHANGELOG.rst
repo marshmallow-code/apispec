@@ -1,8 +1,8 @@
 Changelog
 ---------
 
-1.0.0 (unreleased)
-++++++++++++++++++
+1.0.0rc1 (unreleased)
++++++++++++++++++++++
 
 Features:
 
@@ -12,6 +12,8 @@ Features:
 - Ability to opt out of the above behavior by passing a ``schema_name_resolver``
   function that returns ``None`` to ``api.ext.MarshmallowPlugin`` on initialization.
 - References now respect Schema initialization modifiers such as exclude.
+- *Backwards-incompatible*: A `DuplicateComponentNameError` is raised
+  when registering two components with the same name (:issue:`340`).
 
 1.0.0b6 (2018-12-16)
 ++++++++++++++++++++
