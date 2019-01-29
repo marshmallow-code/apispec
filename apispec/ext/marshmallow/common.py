@@ -43,12 +43,12 @@ def get_fields(schema):
         return schema.fields
     elif hasattr(schema, '_declared_fields'):
         return copy.deepcopy(schema._declared_fields)
-    raise ValueError("{0!r} doesn't have either `fields` or `_declared_fields`".format(schema))
+    raise ValueError("{0!r} doesn't have either `fields` or `_declared_fields`.".format(schema))
 
 
 def make_schema_key(schema):
     if not isinstance(schema, marshmallow.Schema):
-        raise TypeError('can only make a schema key based on a Schema instance')
+        raise TypeError('can only make a schema key based on a Schema instance.')
     modifiers = []
     for modifier in MODIFIERS:
         attribute = getattr(schema, modifier)

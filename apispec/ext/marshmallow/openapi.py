@@ -140,7 +140,7 @@ class OpenAPIConverter(object):
         elif len(args) == 2:
             openapi_type_field = args
         else:
-            raise TypeError('Pass core marshmallow field type or (type, fmt) pair')
+            raise TypeError('Pass core marshmallow field type or (type, fmt) pair.')
 
         def inner(field_type):
             self.field_mapping[field_type] = openapi_type_field

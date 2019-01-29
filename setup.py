@@ -45,7 +45,7 @@ def find_version(fname):
                 version = m.group(1)
                 break
     if not version:
-        raise RuntimeError('Cannot find version information')
+        raise RuntimeError('Cannot find version information.')
     return version
 
 

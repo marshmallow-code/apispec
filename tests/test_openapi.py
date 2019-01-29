@@ -412,11 +412,9 @@ class TestMarshmallowSchemaToModelDefinition:
         class NotASchema(object):
             pass
 
-        with pytest.raises(ValueError) as excinfo:
+        expected_error = "{0!r} doesn't have either `fields` or `_declared_fields`.".format(NotASchema)
+        with pytest.raises(ValueError, match=expected_error):
             openapi.schema2jsonschema(NotASchema)
-
-        assert excinfo.value.args[0] == ("{0!r} doesn't have either `fields` "
-                                         'or `_declared_fields`'.format(NotASchema))
 
 
 class TestMarshmallowSchemaToParameters:
@@ -546,11 +544,9 @@ class TestMarshmallowSchemaToParameters:
         class NotASchema(object):
             pass
 
-        with pytest.raises(ValueError) as excinfo:
+        expected_error = "{0!r} doesn't have either `fields` or `_declared_fields`".format(NotASchema)
+        with pytest.raises(ValueError, match=expected_error):
             openapi.schema2jsonschema(NotASchema)
-
-        assert excinfo.value.args[0] == ("{0!r} doesn't have either `fields` "
-                                         'or `_declared_fields`'.format(NotASchema))
 
 
 class CategorySchema(Schema):

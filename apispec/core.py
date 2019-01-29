@@ -257,7 +257,7 @@ class APISpec(object):
             if ret is not None:
                 path = ret
         if not path:
-            raise APISpecError('Path template is not specified')
+            raise APISpecError('Path template is not specified.')
 
         # Execute operation helpers
         for plugin in self.plugins:
