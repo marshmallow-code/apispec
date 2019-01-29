@@ -175,7 +175,7 @@ class TestDefinitions:
         spec.components.schema('Pet', properties=self.properties)
         with pytest.raises(
             DuplicateComponentNameError,
-            match='Another schema with name Pet is already registered',
+            match='Another schema with name "Pet" is already registered.',
         ):
             spec.components.schema('Pet', properties=self.properties)
 
@@ -355,7 +355,7 @@ class TestPath:
         spec.components.parameter('test_parameter', 'path', **route_spec['parameters'][0])
         with pytest.raises(
             DuplicateComponentNameError,
-            match='Another parameter with name test_parameter is already registered',
+            match='Another parameter with name "test_parameter" is already registered.',
         ):
             spec.components.parameter('test_parameter', 'path', **route_spec['parameters'][0])
 
@@ -393,7 +393,7 @@ class TestPath:
         spec.components.response('test_response', **route_spec['responses']['200'])
         with pytest.raises(
             DuplicateComponentNameError,
-            match='Another response with name test_response is already registered',
+            match='Another response with name "test_response" is already registered.',
         ):
             spec.components.response('test_response', **route_spec['responses']['200'])
 

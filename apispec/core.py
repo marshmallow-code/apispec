@@ -124,7 +124,7 @@ class Components(object):
         """
         if name in self._schemas:
             raise DuplicateComponentNameError(
-                'Another schema with name {} is already registered'.format(name),
+                'Another schema with name "{}" is already registered.'.format(name),
             )
         ret = {}
         # Execute all helpers from plugins
@@ -153,7 +153,7 @@ class Components(object):
         """
         if param_id in self._parameters:
             raise DuplicateComponentNameError(
-                'Another parameter with name {} is already registered.'.format(param_id),
+                'Another parameter with name "{}" is already registered.'.format(param_id),
             )
         ret = kwargs.copy()
         ret.setdefault('name', param_id)
@@ -175,7 +175,7 @@ class Components(object):
         """
         if ref_id in self._responses:
             raise DuplicateComponentNameError(
-                'Another response with name {} is already registered'.format(ref_id),
+                'Another response with name "{}" is already registered.'.format(ref_id),
             )
         ret = kwargs.copy()
         # Execute all helpers from plugins
