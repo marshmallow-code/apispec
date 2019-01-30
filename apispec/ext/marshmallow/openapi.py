@@ -182,7 +182,7 @@ class OpenAPIConverter(object):
         else:
             default = field.missing
             if default is not marshmallow.missing and not callable(default):
-                    ret['default'] = default
+                ret['default'] = default
 
         return ret
 
