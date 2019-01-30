@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-1.0.0rc1 (unreleased)
+1.0.0rc1 (2018-01-29)
 +++++++++++++++++++++
 
 Features:
