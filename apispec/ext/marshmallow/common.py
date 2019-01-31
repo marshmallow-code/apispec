@@ -3,7 +3,7 @@
 
 import copy
 import warnings
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 
 import marshmallow
 
@@ -21,7 +21,13 @@ def resolve_schema_instance(schema):
         return schema()
     if isinstance(schema, marshmallow.Schema):
         return schema
-    return marshmallow.class_registry.get_class(schema)()
+    try:
+        return marshmallow.class_registry.get_class(schema)()
+    except marshmallow.exceptions.RegistryError:
+        raise ValueError(
+            '{!r} is not a marshmallow.Schema subclass or instance and has not'
+            ' been registered in the Marshmallow class registry.'.format(schema),
+        )
 
 
 def resolve_schema_cls(schema):
@@ -34,16 +40,68 @@ def resolve_schema_cls(schema):
         return schema
     if isinstance(schema, marshmallow.Schema):
         return type(schema)
-    return marshmallow.class_registry.get_class(schema)
+    try:
+        return marshmallow.class_registry.get_class(schema)
+    except marshmallow.exceptions.RegistryError:
+        raise ValueError(
+            '{!r} is not a marshmallow.Schema subclass or instance and has not'
+            ' been registered in the Marshmallow class registry.'.format(schema),
+        )
 
 
-def get_fields(schema):
-    """Return fields from schema"""
+def get_fields(schema, exclude_dump_only=False):
+    """Return fields from schema
+
+    :param Schema schema: A marshmallow Schema instance or a class object
+    :param bool exclude_dump_only: whether to filter fields in Meta.dump_only
+    :rtype: dict, of field name field object pairs
+    """
     if hasattr(schema, 'fields'):
-        return schema.fields
+        fields = schema.fields
     elif hasattr(schema, '_declared_fields'):
-        return copy.deepcopy(schema._declared_fields)
-    raise ValueError("{0!r} doesn't have either `fields` or `_declared_fields`.".format(schema))
+        fields = copy.deepcopy(schema._declared_fields)
+    else:
+        raise ValueError("{!r} doesn't have either `fields` or `_declared_fields`.".format(schema))
+    Meta = getattr(schema, 'Meta', None)
+    warn_if_fields_defined_in_meta(fields, Meta)
+    return filter_excluded_fields(fields, Meta, exclude_dump_only)
+
+
+def warn_if_fields_defined_in_meta(fields, Meta):
+    """Warns user that fields defined in Meta.fields or Meta.additional will
+    be ignored
+
+    :param dict fields: A dictionary of of fields name field object pairs
+    :param Meta: the schema's Meta class
+    """
+    if getattr(Meta, 'fields', None) or getattr(Meta, 'additional', None):
+        declared_fields = set(fields.keys())
+        if (
+            set(getattr(Meta, 'fields', set())) > declared_fields or
+            set(getattr(Meta, 'additional', set())) > declared_fields
+        ):
+            warnings.warn(
+                'Only explicitly-declared fields will be included in the Schema Object. '
+                'Fields defined in Meta.fields or Meta.additional are ignored.',
+            )
+
+
+def filter_excluded_fields(fields, Meta, exclude_dump_only):
+    """Filter fields that should be ignored in the OpenAPI spec
+
+    :param dict fields: A dictionary of of fields name field object pairs
+    :param Meta: the schema's Meta class
+    :param bool exclude_dump_only: whether to filter fields in Meta.dump_only
+    """
+    exclude = getattr(Meta, 'exclude', [])
+    if exclude_dump_only:
+        exclude += getattr(Meta, 'dump_only', [])
+
+    filtered_fields = OrderedDict(
+        (key, value) for key, value in fields.items() if key not in exclude
+    )
+
+    return filtered_fields
 
 
 def make_schema_key(schema):

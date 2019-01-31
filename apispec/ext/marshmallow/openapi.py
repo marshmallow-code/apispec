@@ -6,7 +6,6 @@ OpenAPI 2.0 spec: https://github.com/OAI/OpenAPI-Specification/blob/master/versi
 """
 from __future__ import absolute_import, unicode_literals
 import operator
-import warnings
 import functools
 from collections import OrderedDict
 
@@ -470,7 +469,9 @@ class OpenAPIConverter(object):
             )
         return self.get_ref_dict(schema_instance)
 
-    def schema2parameters(self, schema, **kwargs):
+    def schema2parameters(
+        self, schema, default_in='body', name='body', required=False, description=None,
+    ):
         """Return an array of OpenAPI parameters given a given marshmallow
         :class:`Schema <marshmallow.Schema>`. If `default_in` is "body", then return an array
         of a single parameter; else return an array of a parameter for each included field in
@@ -478,34 +479,9 @@ class OpenAPIConverter(object):
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
         """
-        return self.fields2parameters(get_fields(schema), schema, **kwargs)
-
-    def fields2parameters(
-            self, fields, schema=None, use_refs=True,
-            default_in='body', name='body', required=False,
-            description=None, **kwargs
-    ):
-        """Return an array of OpenAPI parameters given a mapping between field names and
-        :class:`Field <marshmallow.Field>` objects. If `default_in` is "body", then return an array
-        of a single parameter; else return an array of a parameter for each included field in
-        the :class:`Schema <marshmallow.Schema>`.
-
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
-
-        In OpenAPI3, only "query", "header", "path" or "cookie" are allowed for the location
-        of parameters. In OpenAPI 3, "requestBody" is used when fields are in the body.
-
-        This function always returns a list, with a parameter
-        for each included field in the :class:`Schema <marshmallow.Schema>`.
-
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#parameterObject
-        """
         openapi_default_in = __location_map__.get(default_in, default_in)
         if self.openapi_version.major < 3 and openapi_default_in == 'body':
-            if schema is not None:
-                prop = self.resolve_schema_dict(schema)
-            else:
-                prop = self.fields2jsonschema(fields, use_refs=use_refs)
+            prop = self.resolve_schema_dict(schema)
 
             param = {
                 'in': openapi_default_in,
@@ -522,13 +498,30 @@ class OpenAPIConverter(object):
         assert not getattr(schema, 'many', False), \
             "Schemas with many=True are only supported for 'json' location (aka 'in: body')"
 
-        exclude_fields = getattr(getattr(schema, 'Meta', None), 'exclude', [])
-        dump_only_fields = getattr(getattr(schema, 'Meta', None), 'dump_only', [])
+        fields = get_fields(schema, exclude_dump_only=True)
 
+        return self.fields2parameters(fields, default_in=default_in)
+
+    def fields2parameters(self, fields, use_refs=True, default_in='body'):
+        """Return an array of OpenAPI parameters given a mapping between field names and
+        :class:`Field <marshmallow.Field>` objects. If `default_in` is "body", then return an array
+        of a single parameter; else return an array of a parameter for each included field in
+        the :class:`Schema <marshmallow.Schema>`.
+
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
+
+        In OpenAPI3, only "query", "header", "path" or "cookie" are allowed for the location
+        of parameters. In OpenAPI 3, "requestBody" is used when fields are in the body.
+
+        This function always returns a list, with a parameter
+        for each included field in the :class:`Schema <marshmallow.Schema>`.
+
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#parameterObject
+        """
         parameters = []
         body_param = None
         for field_name, field_obj in iteritems(fields):
-            if (field_name in exclude_fields or field_obj.dump_only or field_name in dump_only_fields):
+            if field_obj.dump_only:
                 continue
             param = self.field2parameter(
                 field_obj,
@@ -613,9 +606,6 @@ class OpenAPIConverter(object):
         return ret
 
     def schema2jsonschema(self, schema, **kwargs):
-        return self.fields2jsonschema(get_fields(schema), schema, **kwargs)
-
-    def fields2jsonschema(self, fields, schema=None, use_refs=True, name=None):
         """Return the JSON Schema Object for a given marshmallow
         :class:`Schema <marshmallow.Schema>`. Schema may optionally provide the ``title`` and
         ``description`` class Meta options.
@@ -654,54 +644,55 @@ class OpenAPIConverter(object):
         :param Schema schema: A marshmallow Schema instance or a class object
         :rtype: dict, a JSON Schema Object
         """
+        fields = get_fields(schema)
         Meta = getattr(schema, 'Meta', None)
-        if getattr(Meta, 'fields', None) or getattr(Meta, 'additional', None):
-            declared_fields = set(schema._declared_fields.keys())
-            if (
-                set(getattr(Meta, 'fields', set())) > declared_fields or
-                set(getattr(Meta, 'additional', set())) > declared_fields
-            ):
-                warnings.warn(
-                    'Only explicitly-declared fields will be included in the Schema Object. '
-                    'Fields defined in Meta.fields or Meta.additional are ignored.',
-                )
+        partial = getattr(schema, 'partial', None)
+        ordered = getattr(schema, 'ordered', False)
 
-        jsonschema = {
-            'type': 'object',
-            'properties': OrderedDict() if getattr(Meta, 'ordered', None) else {},
-        }
+        jsonschema = self.fields2jsonschema(fields, partial=partial, ordered=ordered, **kwargs)
 
-        exclude = set(getattr(Meta, 'exclude', []))
-
-        for field_name, field_obj in iteritems(fields):
-            if (field_name in exclude):
-                continue
-
-            observed_field_name = self._observed_name(field_obj, field_name)
-            property = self.field2property(
-                field_obj, use_refs=use_refs, name=name,
-            )
-            jsonschema['properties'][observed_field_name] = property
-
-            partial = getattr(schema, 'partial', None)
-            if field_obj.required:
-                if not partial or (is_collection(partial) and field_name not in partial):
-                    jsonschema.setdefault('required', []).append(observed_field_name)
-
-        if 'required' in jsonschema:
-            jsonschema['required'].sort()
-
-        if Meta is not None:
-            if hasattr(Meta, 'title'):
-                jsonschema['title'] = Meta.title
-            if hasattr(Meta, 'description'):
-                jsonschema['description'] = Meta.description
+        if hasattr(Meta, 'title'):
+            jsonschema['title'] = Meta.title
+        if hasattr(Meta, 'description'):
+            jsonschema['description'] = Meta.description
 
         if getattr(schema, 'many', False):
             jsonschema = {
                 'type': 'array',
                 'items': jsonschema,
             }
+
+        return jsonschema
+
+    def fields2jsonschema(self, fields, ordered=False, partial=None, use_refs=True, name=None):
+        """Return the JSON Schema Object given a mapping between field names and
+        :class:`Field <marshmallow.Field>` objects.
+
+        :param dict fields: A dictionary of field name field object pairs
+        :param bool ordered: Whether to preserve the order in which fields were declared
+        :param bool|tuple partial: Whether to override a field's required flag.
+            If `True` no fields will be set as required. If an iterable fields
+            in the iterable will not be marked as required.
+        :rtype: dict, a JSON Schema Object
+        """
+        jsonschema = {
+            'type': 'object',
+            'properties': OrderedDict() if ordered else {},
+        }
+
+        for field_name, field_obj in iteritems(fields):
+            observed_field_name = self._observed_name(field_obj, field_name)
+            property = self.field2property(
+                field_obj, use_refs=use_refs, name=name,
+            )
+            jsonschema['properties'][observed_field_name] = property
+
+            if field_obj.required:
+                if not partial or (is_collection(partial) and field_name not in partial):
+                    jsonschema.setdefault('required', []).append(observed_field_name)
+
+        if 'required' in jsonschema:
+            jsonschema['required'].sort()
 
         return jsonschema
 

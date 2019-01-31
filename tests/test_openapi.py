@@ -167,7 +167,7 @@ class TestMarshmallowFieldToOpenAPI:
             id = fields.Int()
 
         schema = ExampleSchema(many=True)
-        res = openapi.fields2parameters(schema.fields, schema=schema, default_in='json')
+        res = openapi.schema2parameters(schema=schema, default_in='json')
         assert res[0]['in'] == 'body'
 
     def test_fields_with_dump_only(self, openapi):
@@ -183,12 +183,8 @@ class TestMarshmallowFieldToOpenAPI:
 
             class Meta:
                 dump_only = ('name',)
-        res = openapi.fields2parameters(
-            UserSchema._declared_fields, schema=UserSchema, default_in='query',
-        )
-        assert len(res) == 0
-        res = openapi.fields2parameters(
-            UserSchema().fields, schema=UserSchema, default_in='query',
+        res = openapi.schema2parameters(
+            schema=UserSchema, default_in='query',
         )
         assert len(res) == 0
 
