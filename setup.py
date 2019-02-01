@@ -13,7 +13,7 @@ EXTRAS_REQUIRE = {
         'apispec-webframeworks[tests]>=0.3.0',
     ],
     'lint': [
-        'flake8==3.7.3',
+        'flake8==3.7.4',
         'pre-commit==1.14.2',
     ],
 }
