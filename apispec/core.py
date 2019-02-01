@@ -6,7 +6,7 @@ from apispec.compat import iterkeys, iteritems
 from .exceptions import APISpecError, PluginMethodNotImplementedError, DuplicateComponentNameError
 from .utils import OpenAPIVersion, deepupdate
 
-VALID_METHODS = [
+VALID_METHODS_OPENAPI_V2 = [
     'get',
     'post',
     'put',
@@ -15,6 +15,13 @@ VALID_METHODS = [
     'head',
     'options',
 ]
+
+VALID_METHODS_OPENAPI_V3 = VALID_METHODS_OPENAPI_V2 + ['trace']
+
+VALID_METHODS = {
+    2: VALID_METHODS_OPENAPI_V2,
+    3: VALID_METHODS_OPENAPI_V3,
+}
 
 
 def clean_operations(operations, openapi_major_version):
@@ -29,7 +36,7 @@ def clean_operations(operations, openapi_major_version):
         to use. Supported values are 2 and 3.
     """
     invalid = {key for key in
-               set(iterkeys(operations)) - set(VALID_METHODS)
+               set(iterkeys(operations)) - set(VALID_METHODS[openapi_major_version])
                if not key.startswith('x-')}
     if invalid:
         raise APISpecError(
