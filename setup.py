@@ -10,7 +10,7 @@ EXTRAS_REQUIRE = {
         'prance[osv]>=0.11',
     ],
     'webframeworks-tests': [
-        'apispec-webframeworks[tests]>=0.1.0',
+        'apispec-webframeworks[tests]>=0.3.0',
     ],
     'lint': [
         'flake8==3.7.3',
