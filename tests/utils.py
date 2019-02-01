@@ -16,6 +16,11 @@ def get_responses(spec):
         return spec.to_dict()['responses']
     return spec.to_dict()['components']['responses']
 
+def get_security_schemes(spec):
+    if spec.openapi_version.major < 3:
+        return spec.to_dict()['securityDefinitions']
+    return spec.to_dict()['components']['securitySchemes']
+
 def get_paths(spec):
     return spec.to_dict()['paths']
 

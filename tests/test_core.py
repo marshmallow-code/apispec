@@ -7,7 +7,7 @@ import yaml
 from apispec import APISpec, BasePlugin
 from apispec.exceptions import APISpecError, DuplicateComponentNameError
 
-from .utils import get_definitions, get_paths, get_parameters, get_responses
+from .utils import get_definitions, get_paths, get_parameters, get_responses, get_security_schemes
 
 
 description = 'This is a sample Petstore server.  You can find out more '
@@ -396,6 +396,27 @@ class TestPath:
             match='Another response with name "test_response" is already registered.',
         ):
             spec.components.response('test_response', **route_spec['responses']['200'])
+
+    def test_security_scheme(self, spec):
+        sec_scheme = {'type': 'apiKey', 'in': 'header', 'name': 'X-API-Key'}
+        spec.components.security_scheme('ApiKeyAuth', **sec_scheme)
+        assert get_security_schemes(spec)['ApiKeyAuth'] == sec_scheme
+
+    def test_security_scheme_is_chainable(self, spec):
+        spec.components.security_scheme('sec_1').security_scheme('sec_2')
+        security_schemes = get_security_schemes(spec)
+        assert 'sec_1' in security_schemes
+        assert 'sec_2' in security_schemes
+
+    def test_security_scheme_duplicate_name(self, spec):
+        sec_scheme_1 = {'type': 'apiKey', 'in': 'header', 'name': 'X-API-Key'}
+        sec_scheme_2 = {'type': 'apiKey', 'in': 'header', 'name': 'X-API-Key-2'}
+        spec.components.security_scheme('ApiKeyAuth', **sec_scheme_1)
+        with pytest.raises(
+            DuplicateComponentNameError,
+            match='Another security scheme with name "ApiKeyAuth" is already registered.',
+        ):
+            spec.components.security_scheme('ApiKeyAuth', **sec_scheme_2)
 
     def test_path_check_invalid_http_method(self, spec):
         spec.path('/pet/{petId}', operations={'get': {}})
