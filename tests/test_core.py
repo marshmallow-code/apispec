@@ -124,29 +124,20 @@ class TestDefinitions:
 
     def test_definition(self, spec):
         spec.components.schema('Pet', properties=self.properties)
-        if spec.openapi_version.major < 3:
-            defs = spec.to_dict()['definitions']
-        else:
-            defs = spec.to_dict()['components']['schemas']
+        defs = get_definitions(spec)
         assert 'Pet' in defs
         assert defs['Pet']['properties'] == self.properties
 
     def test_definition_is_chainable(self, spec):
         spec.components.schema('Pet', properties={}).schema('Plant', properties={})
-        if spec.openapi_version.major < 3:
-            defs = spec.to_dict()['definitions']
-        else:
-            defs = spec.to_dict()['components']['schemas']
+        defs = get_definitions(spec)
         assert 'Pet' in defs
         assert 'Plant' in defs
 
     def test_definition_description(self, spec):
         model_description = 'An animal which lives with humans.'
         spec.components.schema('Pet', properties=self.properties, description=model_description)
-        if spec.openapi_version.major < 3:
-            defs = spec.to_dict()['definitions']
-        else:
-            defs = spec.to_dict()['components']['schemas']
+        defs = get_definitions(spec)
         assert defs['Pet']['description'] == model_description
 
     def test_definition_stores_enum(self, spec):
@@ -156,19 +147,13 @@ class TestDefinitions:
             properties=self.properties,
             enum=enum,
         )
-        if spec.openapi_version.major < 3:
-            defs = spec.to_dict()['definitions']
-        else:
-            defs = spec.to_dict()['components']['schemas']
+        defs = get_definitions(spec)
         assert defs['Pet']['enum'] == enum
 
     def test_definition_extra_fields(self, spec):
         extra_fields = {'discriminator': 'name'}
         spec.components.schema('Pet', properties=self.properties, extra_fields=extra_fields)
-        if spec.openapi_version.major < 3:
-            defs = spec.to_dict()['definitions']
-        else:
-            defs = spec.to_dict()['components']['schemas']
+        defs = get_definitions(spec)
         assert defs['Pet']['discriminator'] == 'name'
 
     def test_definition_duplicate_name(self, spec):
@@ -343,10 +328,7 @@ class TestPath:
 
     def test_parameter_is_chainable(self, spec):
         spec.components.parameter('param1', 'path').parameter('param2', 'path')
-        if spec.openapi_version.major < 3:
-            params = spec.to_dict()['parameters']
-        else:
-            params = spec.to_dict()['components']['parameters']
+        params = get_parameters(spec)
         assert 'param1' in params
         assert 'param2' in params
 
@@ -381,10 +363,7 @@ class TestPath:
 
     def test_response_is_chainable(self, spec):
         spec.components.response('resp1').response('resp2')
-        if spec.openapi_version.major < 3:
-            responses = spec.to_dict()['responses']
-        else:
-            responses = spec.to_dict()['components']['responses']
+        responses = get_responses(spec)
         assert 'resp1' in responses
         assert 'resp2' in responses
 
