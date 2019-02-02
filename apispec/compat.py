@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 # flake8: noqa
+import re
 import sys
+
+RegexType = type(re.compile(''))
 
 PY2 = int(sys.version[0]) == 2
 
