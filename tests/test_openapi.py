@@ -259,14 +259,9 @@ class TestMarshmallowFieldToOpenAPI:
             validate.Regexp('loser'),
         ]
         field = fields.Str(validate=regex_validators)
-        with warnings.catch_warnings():
-            warnings.simplefilter('always')
+        with pytest.warns(UserWarning, match='More than one regex validator'):
             ret = openapi.field2property(field)
-            warning = recwarn.pop()
-            expected_msg = 'More than one regex validator defined on {} field.'
-            assert warning.category == UserWarning
-            assert str(warning.message) == expected_msg.format(type(field))
-            assert ret['pattern'] == 'winner'
+        assert ret['pattern'] == 'winner'
 
 class TestMarshmallowSchemaToModelDefinition:
 

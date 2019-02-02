@@ -345,7 +345,8 @@ class OpenAPIConverter(object):
 
         if next(regex_validators, None) is not None:
             warnings.warn(
-                'More than one regex validator defined on {} field.'
+                'More than one regex validator defined on {} field. Only the '
+                'first one will be used in the output spec.'
                 .format(type(field)), UserWarning,
             )
 
