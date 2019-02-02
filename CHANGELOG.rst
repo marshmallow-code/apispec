@@ -7,6 +7,9 @@ Changelog
 Features:
 
 - Expanded support for OpenAPI Specification version 3 (:issue:`165`).
+- [apispec.ext.marshmallow]: Add support for outputting field patterns
+  from ``Regexp`` validators (:pr:`364`).
+  Thanks :user:`DStape` for the PR.
 - A `DuplicateComponentNameError` is raised when registering two
   components with the same name (:issue:`340`).
 
