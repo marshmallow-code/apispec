@@ -3,7 +3,7 @@ apispec
 *******
 
 .. image:: https://badgen.net/pypi/v/apispec
-    :target: https://badge.fury.io/py/apispec
+    :target: https://pypi.org/project/apispec/
     :alt: PyPI version
 
 .. image:: https://badgen.net/travis/marshmallow-code/apispec/dev
