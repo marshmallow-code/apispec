@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Utilities for generating OpenAPI spec (fka Swagger) entities from
+"""Utilities for generating OpenAPI Specification (fka Swagger) entities from
 marshmallow :class:`Schemas <marshmallow.Schema>` and :class:`Fields <marshmallow.fields.Field>`.
-
-OpenAPI 2.0 spec: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md
 """
 from __future__ import absolute_import, unicode_literals
 import operator
@@ -61,7 +59,7 @@ __location_map__ = {
 
 # Properties that may be defined in a field's metadata that will be added to the output
 # of field2property
-# https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
+# https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schemaObject
 _VALID_PROPERTIES = {
     'format',
     'title',
@@ -334,11 +332,11 @@ class OpenAPIConverter(object):
 
         Will include field metadata that are valid properties of `OpenAPI schema
         objects
-        <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject>`_
+        <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schemaObject>`_
         (e.g. “description”, “enum”, “example”).
 
         In addition, `specification extensions
-        <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#patterned-objects-9>`_
+        <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#specification-extensions>`_
         are supported.  Prefix `x_` to the desired extension when passing the
         keyword argument to the field constructor. apispec will convert `x_` to
         `x-` to comply with OpenAPI.
@@ -366,7 +364,7 @@ class OpenAPIConverter(object):
         Will include field metadata that are valid properties of OpenAPI schema objects
         (e.g. "description", "enum", "example").
 
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schemaObject
 
         :param Field field: A marshmallow field.
         :param bool use_refs: Use JSONSchema ``refs``.
@@ -477,7 +475,7 @@ class OpenAPIConverter(object):
         of a single parameter; else return an array of a parameter for each included field in
         the :class:`Schema <marshmallow.Schema>`.
 
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
         """
         openapi_default_in = __location_map__.get(default_in, default_in)
         if self.openapi_version.major < 3 and openapi_default_in == 'body':
@@ -508,15 +506,13 @@ class OpenAPIConverter(object):
         of a single parameter; else return an array of a parameter for each included field in
         the :class:`Schema <marshmallow.Schema>`.
 
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
-
         In OpenAPI3, only "query", "header", "path" or "cookie" are allowed for the location
         of parameters. In OpenAPI 3, "requestBody" is used when fields are in the body.
 
         This function always returns a list, with a parameter
         for each included field in the :class:`Schema <marshmallow.Schema>`.
 
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#parameterObject
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
         """
         parameters = []
         body_param = None
@@ -544,7 +540,7 @@ class OpenAPIConverter(object):
         """Return an OpenAPI parameter as a `dict`, given a marshmallow
         :class:`Field <marshmallow.Field>`.
 
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
         """
         location = field.metadata.get('location', None)
         prop = self.field2property(field, use_refs=use_refs)
@@ -563,7 +559,7 @@ class OpenAPIConverter(object):
     ):
         """Return the Parameter Object definition for a JSON Schema property.
 
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
 
         :param dict prop: JSON Schema property
         :param str name: Field name
@@ -610,7 +606,7 @@ class OpenAPIConverter(object):
         :class:`Schema <marshmallow.Schema>`. Schema may optionally provide the ``title`` and
         ``description`` class Meta options.
 
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schemaObject
 
         Example: ::
 
@@ -623,23 +619,16 @@ class OpenAPIConverter(object):
                     title = 'User'
                     description = 'A registered user'
 
-            OpenAPI.schema2jsonschema(UserSchema)
-            # {
-            #     'title': 'User', 'description': 'A registered user',
-            #     'properties': {
-            #         'name': {'required': False,
-            #                 'description': '',
-            #                 'type': 'string'},
-            #         '_id': {'format': 'int32',
-            #                 'required': False,
-            #                 'description': '',
-            #                 'type': 'integer'},
-            #         'email': {'format': 'email',
-            #                 'required': False,
-            #                 'description': 'email address of the user',
-            #                 'type': 'string'}
-            #     }
-            # }
+            oaic = OpenAPIConverter(openapi_version='3.0.2', schema_name_resolver=resolver, spec=spec)
+            pprint(oaic.schema2jsonschema(UserSchema))
+            # {'description': 'A registered user',
+            #  'properties': {'_id': {'format': 'int32', 'type': 'integer'},
+            #                 'email': {'description': 'email address of the user',
+            #                           'format': 'email',
+            #                           'type': 'string'},
+            #                 'name': {'type': 'string'}},
+            #  'title': 'User',
+            #  'type': 'object'}
 
         :param Schema schema: A marshmallow Schema instance or a class object
         :rtype: dict, a JSON Schema Object

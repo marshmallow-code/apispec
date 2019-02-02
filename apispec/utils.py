@@ -50,12 +50,12 @@ class OpenAPIVersion(version.LooseVersion, object):
 
         Example: ::
 
-            ver = OpenAPIVersion('3.0.1')
+            ver = OpenAPIVersion('3.0.2')
             assert ver.major == 3
             assert ver.minor == 0
             assert ver.patch == 1
-            assert ver.vstring == '3.0.1'
-            assert str(ver) == '3.0.1'
+            assert ver.vstring == '3.0.2'
+            assert str(ver) == '3.0.2'
     """
     MIN_INCLUSIVE_VERSION = version.LooseVersion('2.0')
     MAX_EXCLUSIVE_VERSION = version.LooseVersion('4.0')

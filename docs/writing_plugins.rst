@@ -56,8 +56,8 @@ Here's a plugin example involving conditional processing depending on the OpenAP
 
     # docplugin.py
 
-    from apispec import Path, BasePlugin
-    from apispec.utils import load_operations_from_docstring
+    from apispec import BasePlugin
+    from apispec.yaml_utils import load_operations_from_docstring
 
     class DocPlugin(BasePlugin):
 
@@ -69,13 +69,13 @@ Here's a plugin example involving conditional processing depending on the OpenAP
             """Operation helper that parses docstrings for operations. Adds a
             ``func`` parameter to `apispec.APISpec.path`.
             """
-            doc_operations = load_operations_from_docstring(func.__doc__))
+            doc_operations = load_operations_from_docstring(func.__doc__)
             # Apply conditional processing
             if self.openapi_major_version < 3:
-                [...]  # Mutating doc_operations for OpenAPI v2
+                "...Mutating doc_operations for OpenAPI v2..."
             else:
-                [...]  # Mutating doc_operations for OpenAPI v3+
-            operations.update(doc_operations)
+                "...Mutating doc_operations for OpenAPI v3+..."
+            operations.update(doc_operations
 
 
 To use the plugin:
@@ -88,23 +88,25 @@ To use the plugin:
     spec = APISpec(
         title='Gisty',
         version='1.0.0',
-        openapi_version='2.0',
-        plugins=[Docplugin()]
+        openapi_version='3.0.2',
+        plugins=[DocPlugin()]
     )
 
     def gist_detail(gist_id):
         """Gist detail view.
         ---
         get:
-            responses:
-                200:
-                    schema: '#/definitions/Gist'
+        responses:
+            200:
+            content:
+                application/json:
+                schema: '#/definitions/Gist'
         """
         pass
 
     spec.path(path='/gists/{gist_id}', func=gist_detail)
-    print(spec.to_dict()['paths'])
-    # {'/gists/{gist_id}': {'get': {'responses': {200: {'schema': '#/definitions/Gist'}}}}}
+    print(dict(spec.to_dict()['paths']))
+    # {'/gists/{gist_id}': OrderedDict([('get', {'responses': {200: {'content': {'application/json': {'schema': '#/definitions/Gist'}}}}})])}
 
 
 Next Steps

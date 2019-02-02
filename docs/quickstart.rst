@@ -13,13 +13,13 @@ First, create an `APISpec <apispec.APISpec>` object, passing basic information a
     spec = APISpec(
         title='Gisty',
         version='1.0.0',
-        openapi_version='2.0',
+        openapi_version='3.0.2',
         info=dict(
             description='A minimal gist API'
         )
     )
 
-Add schemas to your spec using `schema <apispec.core.Components.schema>`.
+Add schemas to your spec using `spec.components.schema <apispec.core.Components.schema>`.
 
 .. code-block:: python
 
@@ -40,7 +40,11 @@ Add paths to your spec using `path <apispec.APISpec.path>`.
             get=dict(
                 responses={
                     '200': {
-                        'schema': {'$ref': '#/definitions/Gist'}
+                        'content': {
+                            'application/json': {
+                                'schema': {'$ref': '#/definitions/Gist'}
+                            }
+                        }
                     }
                 }
             )
@@ -67,34 +71,42 @@ To output your OpenAPI spec, invoke the `to_dict <apispec.APISpec.to_dict>` meth
     from pprint import pprint
 
     pprint(spec.to_dict())
-    # {'definitions': {'Gist': {'properties': {'id': {'format': 'int64',
-    #                                                 'type': 'integer'},
-    #                                         'name': {'type': 'string'}}}},
-    # 'info': {'description': 'A minimal gist API',
-    #         'title': 'Gisty',
-    #         'version': '1.0.0'},
-    # 'parameters': {},
-    # 'paths': {'/gist/{gist_id}': {'get': {'responses': {'200': {'schema': {'$ref': '#/definitions/Gist'}}}}}},
-    # 'swagger': '2.0',
-    # 'tags': []}
+    # {'components': {'parameters': {},
+    #                 'responses': {},
+    #                 'schemas': {'Gist': {'properties': {'id': {'format': 'int64',
+    #                                                            'type': 'integer'},
+    #                                                     'name': {'type': 'string'}}}}},
+    #  'info': {'description': 'A minimal gist API',
+    #           'title': 'Gisty',
+    #           'version': '1.0.0'},
+    #  'openapi': '3.0.2',
+    #  'paths': OrderedDict([('/gist/{gist_id}',
+    #                         {'get': {'responses': {'200': {'content': {'application/json': {'schema': {'$ref': '#/definitions/Gist'}}}}}}})]),
+    #  'tags': []}
 
 Use `to_yaml <apispec.APISpec.to_yaml>` to export your spec to YAML.
 
 .. code-block:: python
 
     print(spec.to_yaml())
-    # definitions:
-    #   Pet:
-    #     enum: [name, photoUrls]
-    #     properties:
-    #       id: {format: int64, type: integer}
-    #       name: {example: doggie, type: string}
-    # info: {description: 'This is a sample Petstore server.  You can find out more ', title: Swagger Petstore, version: 1.0.0}
-    # parameters: {}
-    # paths: {}
-    # security:
-    # - apiKey: []
-    # swagger: '2.0'
+    # components:
+    #   parameters: {}
+    #   responses: {}
+    #   schemas:
+    #     Gist:
+    #       properties:
+    #         id: {format: int64, type: integer}
+    #         name: {type: string}
+    # info: {description: A minimal gist API, title: Gisty, version: 1.0.0}
+    # openapi: 3.0.2
+    # paths:
+    #   /gist/{gist_id}:
+    #     get:
+    #       responses:
+    #         '200':
+    #           content:
+    #             application/json:
+    #               schema: {$ref: '#/definitions/Gist'}
     # tags: []
 
 .. seealso::

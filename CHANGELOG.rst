@@ -1,6 +1,15 @@
 Changelog
 ---------
 
+1.0.0 (unreleased)
+++++++++++++++++++
+
+Features:
+
+- Expanded support for OpenAPI Specification version 3 (:issue:`165`).
+- A `DuplicateComponentNameError` is raised when registering two
+  components with the same name (:issue:`340`).
+
 1.0.0rc1 (2018-01-29)
 +++++++++++++++++++++
 

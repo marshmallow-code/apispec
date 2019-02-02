@@ -23,8 +23,7 @@ A pluggable API specification generator. Currently supports the `OpenAPI Specifi
 Features
 ========
 
-- Supports OpenAPI Specification version 2 (f.k.a. the Swagger specification)
-  with limited support for version 3
+- Supports the OpenAPI Specification (versions 2 and 3)
 - Framework-agnostic
 - Built-in support for `marshmallow <https://marshmallow.readthedocs.io/>`_
 - Utilities for parsing docstrings
@@ -45,7 +44,7 @@ Example Application
     spec = APISpec(
         title='Swagger Petstore',
         version='1.0.0',
-        openapi_version='2.0',
+        openapi_version='3.0.2',
         plugins=[
             FlaskPlugin(),
             MarshmallowPlugin(),
@@ -69,18 +68,19 @@ Example Application
         """A cute furry animal endpoint.
         ---
         get:
-            description: Get a random pet
-            responses:
-                200:
-                    description: A pet to be returned
-                    schema: PetSchema
+          description: Get a random pet
+          responses:
+            200:
+            content:
+                application/json:
+                  schema: PetSchema
         """
         pet = get_random_pet()
         return jsonify(PetSchema().dump(pet).data)
 
     # Register entities and paths
-    spec.definition('Category', schema=CategorySchema)
-    spec.definition('Pet', schema=PetSchema)
+    spec.components.schema('Category', schema=CategorySchema)
+    spec.components.schema('Pet', schema=PetSchema)
     with app.test_request_context():
         spec.path(view=random_pet)
 
@@ -90,79 +90,106 @@ Generated OpenAPI Spec
 
 .. code-block:: python
 
-    spec.to_dict()
+    import json
+    print(json.dumps(spec.to_dict(), indent=2))
     # {
+    #   "paths": {
+    #     "/random": {
+    #       "get": {
+    #         "description": "Get a random pet",
+    #         "responses": {
+    #           "200": {
+    #             "content": {
+    #               "application/json": {
+    #                 "schema": {
+    #                   "$ref": "#/components/schemas/Pet"
+    #                 }
+    #               }
+    #             }
+    #           }
+    #         }
+    #       }
+    #     }
+    #   },
+    #   "tags": [],
     #   "info": {
     #     "title": "Swagger Petstore",
     #     "version": "1.0.0"
     #   },
-    #   "swagger": "2.0",
-    #   "paths": {
-    #     "/random": {
-    #       "get": {
-    #         "description": "A cute furry animal endpoint.",
-    #         "responses": {
-    #           "200": {
-    #             "schema": {
-    #               "$ref": "#/definitions/Pet"
-    #             },
-    #             "description": "A pet to be returned"
+    #   "openapi": "3.0.2",
+    #   "components": {
+    #     "parameters": {},
+    #     "responses": {},
+    #     "schemas": {
+    #       "Category": {
+    #         "type": "object",
+    #         "properties": {
+    #           "name": {
+    #             "type": "string"
+    #           },
+    #           "id": {
+    #             "type": "integer",
+    #             "format": "int32"
     #           }
     #         },
-    #       }
-    #     }
-    #   },
-    #   "definitions": {
-    #     "Pet": {
-    #       "properties": {
-    #         "category": {
-    #           "type": "array",
-    #           "items": {
-    #             "$ref": "#/definitions/Category"
+    #         "required": [
+    #           "name"
+    #         ]
+    #       },
+    #       "Pet": {
+    #         "type": "object",
+    #         "properties": {
+    #           "name": {
+    #             "type": "string"
+    #           },
+    #           "category": {
+    #             "type": "array",
+    #             "items": {
+    #               "$ref": "#/components/schemas/Category"
+    #             }
     #           }
-    #         },
-    #         "name": {
-    #           "type": "string"
-    #         }
-    #       }
-    #     },
-    #     "Category": {
-    #       "required": [
-    #         "name"
-    #       ],
-    #       "properties": {
-    #         "name": {
-    #           "type": "string"
-    #         },
-    #         "id": {
-    #           "type": "integer",
-    #           "format": "int32"
     #         }
     #       }
     #     }
-    #   },
+    #   }
     # }
 
-    spec.to_yaml()
-    # definitions:
-    #   Pet:
-    #     enum: [name, photoUrls]
-    #     properties:
-    #       id: {format: int64, type: integer}
-    #       name: {example: doggie, type: string}
-    # info: {description: 'This is a sample Petstore server.  You can find out more ', title: Swagger Petstore, version: 1.0.0}
-    # parameters: {}
-    # paths: {}
-    # security:
-    # - apiKey: []
-    # swagger: '2.0'
+    print(spec.to_yaml())
+    # components:
+    #   parameters: {}
+    #   responses: {}
+    #   schemas:
+    #     Category:
+    #       properties:
+    #         id: {format: int32, type: integer}
+    #         name: {type: string}
+    #       required: [name]
+    #       type: object
+    #     Pet:
+    #       properties:
+    #         category:
+    #           items: {$ref: '#/components/schemas/Category'}
+    #           type: array
+    #         name: {type: string}
+    #       type: object
+    # info: {title: Swagger Petstore, version: 1.0.0}
+    # openapi: 3.0.2
+    # paths:
+    #   /random:
+    #     get:
+    #       description: Get a random pet
+    #       responses:
+    #         200:
+    #           content:
+    #             application/json:
+    #               schema: {$ref: '#/components/schemas/Pet'}
     # tags: []
 
 
 Documentation
 =============
 
-Documentation is available at http://apispec.readthedocs.io/ .
+Documentation is available at https://apispec.readthedocs.io/ .
 
 Ecosystem
 =========
