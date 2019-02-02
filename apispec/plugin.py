@@ -29,7 +29,7 @@ class BasePlugin(object):
 
         :param str path: Path to the resource
         :param dict operations: A `dict` mapping HTTP methods to operation object. See
-            https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject
+            https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#operationObject
 
         Return value should be a string or None. If a string is returned, it
         is set as the path.

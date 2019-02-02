@@ -29,7 +29,7 @@ def clean_operations(operations, openapi_major_version):
     as required by the OpenAPI specification, as well as normalizing any
     references to global parameters. Also checks for invalid HTTP methods.
 
-    See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject.
+    See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject.
 
     :param dict operations: Dict mapping status codes to operations
     :param int openapi_major_version: The major version of the OpenAPI standard
@@ -90,8 +90,8 @@ def clean_operations(operations, openapi_major_version):
 class Components(object):
     """Stores OpenAPI components
 
-    Components are top-level fields in Openapi v2.
-    They became sub-fields of "components" top-level field in Openapi v3.
+    Components are top-level fields in OAS v2.
+    They became sub-fields of "components" top-level field in OAS v3.
     """
     def __init__(self, plugins, openapi_version):
         self._plugins = plugins
@@ -127,7 +127,7 @@ class Components(object):
                     description='Status (open or closed)',
                 )
 
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#definitionsObject
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schemaObject
         """
         if name in self._schemas:
             raise DuplicateComponentNameError(
@@ -201,11 +201,11 @@ class APISpec(object):
     :param str title: API title
     :param str version: API version
     :param list|tuple plugins: Plugin instances.
-        See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#infoObject
+        See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#infoObject
     :param str|OpenAPIVersion openapi_version: The OpenAPI version to use.
         Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
     :param dict options: Optional top-level keys
-        See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
+        See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#openapi-object
     """
     def __init__(self, title, version, openapi_version, plugins=(), **options):
         self.title = title
@@ -259,7 +259,7 @@ class APISpec(object):
     def path(self, path=None, operations=None, **kwargs):
         """Add a new path object to the spec.
 
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathsObject
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#path-item-object
 
         :param str|None path: URL path component
         :param dict|None operations: describes the http methods and options for `path`

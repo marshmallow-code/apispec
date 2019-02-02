@@ -49,9 +49,6 @@ def find_version(fname):
     return version
 
 
-__version__ = find_version('apispec/__init__.py')
-
-
 def read(fname):
     with open(fname) as fp:
         content = fp.read()
@@ -60,9 +57,9 @@ def read(fname):
 
 setup(
     name='apispec',
-    version=__version__,
+    version=find_version('apispec/__init__.py'),
     description='A pluggable API specification generator. Currently supports the '
-                'OpenAPI specification (f.k.a. the Swagger specification).',
+                'OpenAPI Specification (f.k.a. the Swagger specification).',
     long_description=read('README.rst'),
     author='Steven Loria',
     author_email='sloria1@gmail.com',
@@ -73,7 +70,7 @@ setup(
     extras_require=EXTRAS_REQUIRE,
     license='MIT',
     zip_safe=False,
-    keywords='apispec swagger openapi specification documentation spec rest api',
+    keywords='apispec swagger openapi specification oas documentation spec rest api',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

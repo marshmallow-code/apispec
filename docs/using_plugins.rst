@@ -22,7 +22,7 @@ To enable a plugin, pass an instance to the constructor of `APISpec <apispec.API
     spec = APISpec(
         title='Gisty',
         version='1.0.0',
-        openapi_version='2.0',
+        openapi_version='3.0.2',
         info=dict(
             description='A minimal gist API'
         ),
@@ -56,6 +56,7 @@ We can now use the marshmallow and Flask plugins.
     spec = APISpec(
         title='Gisty',
         version='1.0.0',
+        openapi_version='3.0.2',
         info=dict(
             description='A minimal gist API'
         ),
@@ -91,22 +92,17 @@ The marshmallow plugin allows us to pass this `Schema` to
 The schema is now added to the spec.
 
 .. code-block:: python
-    :emphasize-lines: 4,5,6,7
 
     from pprint import pprint
 
     pprint(spec.to_dict())
-    # {'definitions': {'Gist': {'properties': {'content': {'type': 'string'},
-    #                                         'id': {'format': 'int32',
-    #                                                 'type': 'integer'}},
-    #                         'type': 'object'}},
-    # 'info': {'description': 'A minimal gist API',
-    #         'title': 'Gisty',
-    #         'version': '1.0.0'},
-    # 'parameters': {},
-    # 'paths': {},
-    # 'swagger': '2.0',
-    # 'tags': []}
+    # {'components': {'parameters': {}, 'responses': {}, 'schemas': {}},
+    #  'info': {'description': 'A minimal gist API',
+    #           'title': 'Gisty',
+    #           'version': '1.0.0'},
+    #  'openapi': '3.0.2',
+    #  'paths': OrderedDict(),
+    #  'tags': []}
 
 Our application will have a Flask route for the gist detail endpoint.
 
@@ -149,22 +145,25 @@ Our OpenAPI spec now looks like this:
 .. code-block:: python
 
     pprint(spec.to_dict())
-    # {'definitions': {'Gist': {'properties': {'content': {'type': 'string'},
-    #                                         'id': {'format': 'int32',
-    #                                                 'type': 'integer'}},
-    #                         'type': 'object'}},
-    # 'info': {'description': 'A minimal gist API',
-    #         'title': 'Gisty',
-    #         'version': '1.0.0'},
-    # 'parameters': {},
-    # 'paths': {'/gists/{gist_id}': {'get': {'parameters': [{'format': 'int32',
-    #                                                        'in': 'path',
+    # {'components': {'parameters': {},
+    #                 'responses': {},
+    #                 'schemas': {'Gist': {'properties': {'content': {'type': 'string'},
+    #                                                     'id': {'format': 'int32',
+    #                                                            'type': 'integer'}},
+    #                                      'type': 'object'}}},
+    #  'info': {'description': 'A minimal gist API',
+    #           'title': 'Gisty',
+    #           'version': '1.0.0'},
+    #  'openapi': '3.0.2',
+    #  'paths': OrderedDict([('/gists/{gist_id}',
+    #                         OrderedDict([('get',
+    #                                       {'parameters': [{'in': 'path',
     #                                                        'name': 'gist_id',
     #                                                        'required': True,
-    #                                                        'type': 'integer'}],
-    #                                        'responses': {200: {'schema': {'$ref': '#/definitions/Gist'}}}}}},
-    # 'swagger': '2.0',
-    # 'tags': []}
+    #                                                        'schema': {'format': 'int32',
+    #                                                                   'type': 'integer'}}],
+    #                                        'responses': {200: {'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Gist'}}}}}})]))]),
+    #  'tags': []}
 
 If your API uses `method-based dispatching <http://flask.pocoo.org/docs/0.12/views/#method-based-dispatching>`_, the process is similar. Note that the method no longer needs to be included in the docstring.
 
@@ -178,9 +177,10 @@ If your API uses `method-based dispatching <http://flask.pocoo.org/docs/0.12/vie
             ---
             description: get a gist
             responses:
-               200:
-                   schema:
-                       $ref: '#/definitions/Gist'
+            200:
+                content:
+                application/json:
+                    schema: GistSchema
             '''
             pass
 
@@ -191,11 +191,10 @@ If your API uses `method-based dispatching <http://flask.pocoo.org/docs/0.12/vie
     app.add_url_rule("/gist", view_func=method_view)
     with app.test_request_context():
         spec.path(view=method_view)
-    print(spec.to_dict()['paths'])
-    # {'/gist': {'get': {'description': 'get a gist',
-    #                    'responses': {200: {'schema': {'$ref': '#/definitions/Gist'}}}},
-    #            'post': {}}}
-    #
+    pprint(dict(spec.to_dict()['paths']['/gist']))
+    # {'get': {'description': 'get a gist',
+    #          'responses': {200: {'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Gist'}}}}}},
+    #  'post': {}}
 
 
 Marshmallow Plugin
@@ -205,7 +204,7 @@ Nesting Schemas
 ***************
 
 By default, Marshmallow `Nested` fields are represented by a `JSON Reference object
-<https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#referenceObject>`_.
+<https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#referenceObject>`_.
 If the schema has been added to the spec via `spec.components.schema <apispec.core.Components.schema>`,
 the user-supplied name will be used in the reference. Otherwise apispec will
 add the nested schema to the spec using an automatically resolved name for the
@@ -252,7 +251,7 @@ schemas with custom fields, use the
     spec = APISpec(
         title='Gisty',
         version='1.0.0',
-        openapi_version='2.0',
+        openapi_version='3.0.2',
         info=dict(
             description='A minimal gist API'
         ),
