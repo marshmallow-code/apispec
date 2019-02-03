@@ -14,7 +14,7 @@ Enabling Plugins
 To enable a plugin, pass an instance to the constructor of `APISpec <apispec.APISpec>`.
 
 .. code-block:: python
-    :emphasize-lines: 11
+    :emphasize-lines: 9
 
     from apispec import APISpec
     from apispec.ext.marshmallow import MarshmallowPlugin
@@ -115,12 +115,14 @@ We'll add some YAML in the docstring to add response information.
         """Gist detail view.
         ---
         get:
-            parameters:
-                - in: path
-                  schema: GistParameter
-            responses:
-                200:
-                    schema: GistSchema
+          parameters:
+          - in: path
+            schema: GistParameter
+          responses:
+            200:
+              content:
+                application/json:
+                  schema: GistSchema
         """
         return "details about gist {}".format(gist_id)
 
@@ -174,9 +176,9 @@ If your API uses `method-based dispatching <http://flask.pocoo.org/docs/0.12/vie
             description: get a gist
             responses:
             200:
-                content:
+              content:
                 application/json:
-                    schema: GistSchema
+                  schema: GistSchema
             """
             pass
 

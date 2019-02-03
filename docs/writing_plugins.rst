@@ -94,9 +94,9 @@ To use the plugin:
         """Gist detail view.
         ---
         get:
-        responses:
+          responses:
             200:
-            content:
+              content:
                 application/json:
                 schema: '#/definitions/Gist'
         """

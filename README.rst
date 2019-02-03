@@ -75,7 +75,7 @@ Example Application
           description: Get a random pet
           responses:
             200:
-            content:
+              content:
                 application/json:
                   schema: PetSchema
         """
