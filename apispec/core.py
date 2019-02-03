@@ -99,13 +99,20 @@ class Components(object):
         self._schemas = {}
         self._parameters = {}
         self._responses = {}
+        self._security_schemes = {}
 
     def to_dict(self):
-        schemas_key = 'definitions' if self.openapi_version.major < 3 else 'schemas'
+        if self.openapi_version.major < 3:
+            schemas_key = 'definitions'
+            security_key = 'securityDefinitions'
+        else:
+            schemas_key = 'schemas'
+            security_key = 'securitySchemes'
         return {
             'parameters': self._parameters,
             'responses': self._responses,
             schemas_key: self._schemas,
+            security_key: self._security_schemes,
         }
 
     def schema(
@@ -192,6 +199,19 @@ class Components(object):
             except PluginMethodNotImplementedError:
                 continue
         self._responses[ref_id] = ret
+        return self
+
+    def security_scheme(self, sec_id, **kwargs):
+        """Add a security scheme which can be referenced.
+
+        :param str sec_id: sec_id to use as reference
+        :param dict kwargs: security scheme fields
+        """
+        if sec_id in self._security_schemes:
+            raise DuplicateComponentNameError(
+                'Another security scheme with name "{}" is already registered.'.format(sec_id),
+            )
+        self._security_schemes[sec_id] = kwargs
         return self
 
 
