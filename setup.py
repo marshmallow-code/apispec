@@ -60,10 +60,7 @@ setup(
     zip_safe=False,
     keywords="apispec swagger openapi specification oas documentation spec rest api",
     classifiers=[
-        "Development Status :: 4 - Beta",
-        "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
-        "Natural Language :: English",
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
