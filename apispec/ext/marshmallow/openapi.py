@@ -599,7 +599,7 @@ class OpenAPIConverter(object):
 
     def schema2jsonschema(self, schema):
         """Return the JSON Schema Object for a given marshmallow
-        :class:`Schema <marshmallow.Schema>`. Schema may optionally provide the ``title`` and
+        :class:`Schema <marshmallow.Schema>` instance. Schema may optionally provide the ``title`` and
         ``description`` class Meta options.
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schemaObject

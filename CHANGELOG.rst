@@ -13,6 +13,12 @@ Features:
 - A `DuplicateComponentNameError` is raised when registering two
   components with the same name (:issue:`340`).
 
+Deprecations/Removals:
+
+- *Backwards-incompatible*: The ``ref`` argument passed to fields is no
+  longer used (:issue:`354`). References for nested ``Schema`` are
+  stored automatically.
+
 1.0.0rc1 (2018-01-29)
 +++++++++++++++++++++
 
