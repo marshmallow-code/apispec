@@ -583,11 +583,7 @@ class PageSchema(Schema):
     limit = fields.Int()
 
 class PetSchema(Schema):
-    category = fields.Nested(CategorySchema, many=True, ref='#/definitions/Category')
-    name = fields.Str()
-
-class PetSchemaV3(Schema):
-    category = fields.Nested(CategorySchema, many=True, ref='#/components/schemas/Category')
+    category = fields.Nested(CategorySchema, many=True)
     name = fields.Str()
 
 class TestNesting:
@@ -621,9 +617,10 @@ class TestNesting:
         assert ret['type'] == 'array'
         assert ret['items'] == {'$ref': ref_path(spec_fixture.spec) + 'Category'}
 
-    def test_field2property_nested_ref(self, openapi):
-        cat_with_ref = fields.Nested(CategorySchema, ref='Category')
-        assert openapi.field2property(cat_with_ref) == {'$ref': 'Category'}
+    def test_field2property_nested_ref(self, spec_fixture):
+        category = fields.Nested(CategorySchema)
+        ref = spec_fixture.openapi.field2property(category)
+        assert ref == {'$ref': ref_path(spec_fixture.spec) + 'Category'}
 
     def test_field2property_nested_many(self, spec_fixture):
         categories = fields.Nested(CategorySchema, many=True)
@@ -631,39 +628,8 @@ class TestNesting:
         assert res['type'] == 'array'
         assert res['items'] == {'$ref': ref_path(spec_fixture.spec) + 'Category'}
 
-    def test_field2property_nested_self_without_name_raises_error(self, openapi):
-        self_nesting = fields.Nested('self')
-        with pytest.raises(ValueError):
-            openapi.field2property(self_nesting)
-
-    def test_field2property_nested_self(self, openapi):
-        self_nesting = fields.Nested('self')
-        res = openapi.field2property(self_nesting, name='Foo')
-        if openapi.openapi_version.major < 3:
-            assert res == {'$ref': '#/definitions/Foo'}
-        else:
-            assert res == {'$ref': '#/components/schemas/Foo'}
-
-    def test_field2property_nested_self_many(self, openapi):
-        self_nesting = fields.Nested('self', many=True)
-        res = openapi.field2property(self_nesting, name='Foo')
-        if openapi.openapi_version.major < 3:
-            assert res == {'type': 'array', 'items': {'$ref': '#/definitions/Foo'}}
-        else:
-            assert res == {'type': 'array', 'items': {'$ref': '#/components/schemas/Foo'}}
-
-    def test_field2property_nested_self_ref_with_meta(self, openapi):
-        self_nesting = fields.Nested('self', ref='#/definitions/Bar')
-        res = openapi.field2property(self_nesting)
-        assert res == {'$ref': '#/definitions/Bar'}
-
-        self_nesting2 = fields.Nested('self', ref='#/definitions/Bar')
-        # name is passed
-        res = openapi.field2property(self_nesting2, name='Foo')
-        assert res == {'$ref': '#/definitions/Bar'}
-
     def test_schema2jsonschema_with_nested_fields(self, spec_fixture):
-        res = spec_fixture.openapi.schema2jsonschema(PetSchema, use_refs=False)
+        res = spec_fixture.openapi.schema2jsonschema(PetSchema)
         props = res['properties']
 
         assert props['category']['items'] == {'$ref': ref_path(spec_fixture.spec) + 'Category'}
@@ -714,37 +680,21 @@ class TestNesting:
         r_path = ref_path(spec_fixture.spec)
 
         category_1 = fields.Nested(CategorySchema)
-        category_2 = fields.Nested(CategorySchema, ref=r_path + 'Category')
-        category_3 = fields.Nested(CategorySchema, dump_only=True)
-        category_4 = fields.Nested(CategorySchema, dump_only=True, ref=r_path + 'Category')
-        category_5 = fields.Nested(CategorySchema, many=True)
-        category_6 = fields.Nested(CategorySchema, many=True, ref=r_path + 'Category')
-        category_7 = fields.Nested(CategorySchema, many=True, dump_only=True)
-        category_8 = fields.Nested(CategorySchema, many=True, dump_only=True, ref=r_path + 'Category')
+        category_2 = fields.Nested(CategorySchema, dump_only=True)
+        category_3 = fields.Nested(CategorySchema, many=True)
+        category_4 = fields.Nested(CategorySchema, many=True, dump_only=True)
         spec_fixture.spec.components.schema('Category', schema=CategorySchema)
 
         assert spec_fixture.openapi.field2property(category_1) == {
             '$ref': r_path + 'Category',
         }
         assert spec_fixture.openapi.field2property(category_2) == {
-            '$ref': r_path + 'Category',
+            'allOf': [{'$ref': r_path + 'Category'}], 'readOnly': True,
         }
         assert spec_fixture.openapi.field2property(category_3) == {
-            'allOf': [{'$ref': r_path + 'Category'}], 'readOnly': True,
+            'items': {'$ref': r_path + 'Category'}, 'type': 'array',
         }
         assert spec_fixture.openapi.field2property(category_4) == {
-            'allOf': [{'$ref': r_path + 'Category'}], 'readOnly': True,
-        }
-        assert spec_fixture.openapi.field2property(category_5) == {
-            'items': {'$ref': r_path + 'Category'}, 'type': 'array',
-        }
-        assert spec_fixture.openapi.field2property(category_6) == {
-            'items': {'$ref': r_path + 'Category'}, 'type': 'array',
-        }
-        assert spec_fixture.openapi.field2property(category_7) == {
-            'items': {'$ref': r_path + 'Category'}, 'readOnly': True, 'type': 'array',
-        }
-        assert spec_fixture.openapi.field2property(category_8) == {
             'items': {'$ref': r_path + 'Category'}, 'readOnly': True, 'type': 'array',
         }
 
@@ -776,7 +726,6 @@ def test_openapi_tools_validate_v2():
                             location='querystring',
                         ),
                         name='body',
-                        use_refs=False,
                     ),
                 ] + openapi.schema2parameters(PageSchema, default_in='query'),
                 'responses': {
@@ -816,7 +765,7 @@ def test_openapi_tools_validate_v3():
     openapi = ma_plugin.openapi
 
     spec.components.schema('Category', schema=CategorySchema)
-    spec.components.schema('Pet', schema=PetSchemaV3)
+    spec.components.schema('Pet', schema=PetSchema)
 
     spec.path(
         view=None,
@@ -842,7 +791,6 @@ def test_openapi_tools_validate_v3():
                             location='querystring',
                         ),
                         name='body',
-                        use_refs=False,
                     ),
                 ] + openapi.schema2parameters(PageSchema, default_in='query'),
                 'responses': {
@@ -850,7 +798,7 @@ def test_openapi_tools_validate_v3():
                         'description': 'success',
                         'content': {
                             'application/json': {
-                                'schema': PetSchemaV3,
+                                'schema': PetSchema,
                             },
                         },
                     },
@@ -879,7 +827,7 @@ def test_openapi_tools_validate_v3():
                         'description': 'created',
                         'content': {
                             'application/json': {
-                                'schema': PetSchemaV3,
+                                'schema': PetSchema,
                             },
                         },
                     },

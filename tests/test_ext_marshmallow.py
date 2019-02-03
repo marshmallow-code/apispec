@@ -335,7 +335,7 @@ class TestOperationHelper:
         p = get_paths(spec_fixture.spec)['/pet']
         get = p['get']
         assert get['parameters'] == spec_fixture.openapi.schema2parameters(
-            PetSchema, default_in='query',
+            PetSchema(), default_in='query',
         )
         post = p['post']
         assert post['parameters'] == spec_fixture.openapi.schema2parameters(
@@ -370,7 +370,7 @@ class TestOperationHelper:
         p = get_paths(spec_fixture.spec)['/pet']
         get = p['get']
         assert get['parameters'] == spec_fixture.openapi.schema2parameters(
-            PetSchema, default_in='query',
+            PetSchema(), default_in='query',
         )
         for parameter in get['parameters']:
             description = parameter.get('description', False)
@@ -720,19 +720,6 @@ class TestSelfReference:
             'type': 'array',
             'items': {'$ref': ref_path(spec) + 'SelfReference'},
         }
-
-    def test_self_referencing_with_ref(self, spec):
-        version = 'v2' if spec.openapi_version.version[0] < 3 else 'v3'
-        spec.components.schema('SelfReference', schema=SelfReferencingSchema)
-        definitions = get_definitions(spec)
-        result = definitions['SelfReference']['properties'][
-            'single_with_ref_{}'.format(version)
-        ]
-        assert result == {'$ref': ref_path(spec) + 'Self'}
-        result = definitions['SelfReference']['properties'][
-            'many_with_ref_{}'.format(version)
-        ]
-        assert result == {'type': 'array', 'items': {'$ref': ref_path(spec) + 'Selves'}}
 
 
 class TestOrderedSchema:

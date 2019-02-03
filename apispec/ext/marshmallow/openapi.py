@@ -380,7 +380,7 @@ class OpenAPIConverter(object):
         }
         return ret
 
-    def field2property(self, field, use_refs=True, name=None):
+    def field2property(self, field):
         """Return the JSON Schema property definition given a marshmallow
         :class:`Field <marshmallow.fields.Field>`.
 
@@ -390,8 +390,6 @@ class OpenAPIConverter(object):
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schemaObject
 
         :param Field field: A marshmallow field.
-        :param bool use_refs: Use JSONSchema ``refs``.
-        :param str name: The definition name, if applicable, used to construct the $ref value.
         :rtype: dict, a Property Object
         """
         ret = {}
@@ -415,43 +413,18 @@ class OpenAPIConverter(object):
             # marshmallow>=2.7.0 compat
             field.metadata.pop('many', None)
 
-            is_unbound_self_referencing = not getattr(field, 'parent', None) and field.nested == 'self'
-            if (use_refs and 'ref' in field.metadata) or is_unbound_self_referencing:
-                if 'ref' in field.metadata:
-                    ref_name = field.metadata['ref']
-                else:
-                    if not name:
-                        raise ValueError(
-                            'Must pass `name` argument for self-referencing Nested fields.',
-                        )
-                    # We need to use the `name` argument when the field is self-referencing and
-                    # unbound (doesn't have `parent` set) because we can't access field.schema
-                    ref_path = self.get_ref_path()
-                    ref_name = '#/{ref_path}/{name}'.format(ref_path=ref_path, name=name)
-                ref_schema = {'$ref': ref_name}
-                if field.many:
-                    ret['type'] = 'array'
-                    ret['items'] = ref_schema
-                else:
-                    if ret:
-                        ret.update({'allOf': [ref_schema]})
-                    else:
-                        ret.update(ref_schema)
+            schema_dict = self.resolve_nested_schema(field.schema)
+            if ret and '$ref' in schema_dict:
+                ret.update({'allOf': [schema_dict]})
             else:
-                schema_dict = self.resolve_nested_schema(field.schema)
-                if ret and '$ref' in schema_dict:
-                    ret.update({'allOf': [schema_dict]})
-                else:
-                    ret.update(schema_dict)
+                ret.update(schema_dict)
         elif isinstance(field, marshmallow.fields.List):
-            ret['items'] = self.field2property(
-                field.container, use_refs=use_refs,
-            )
+            ret['items'] = self.field2property(field.container)
         elif isinstance(field, marshmallow.fields.Dict):
             if MARSHMALLOW_VERSION_INFO[0] >= 3:
                 if field.value_container:
                     ret['additionalProperties'] = self.field2property(
-                        field.value_container, use_refs=use_refs,
+                        field.value_container,
                     )
 
         return ret
@@ -524,7 +497,7 @@ class OpenAPIConverter(object):
 
         return self.fields2parameters(fields, default_in=default_in)
 
-    def fields2parameters(self, fields, use_refs=True, default_in='body'):
+    def fields2parameters(self, fields, default_in='body'):
         """Return an array of OpenAPI parameters given a mapping between field names and
         :class:`Field <marshmallow.Field>` objects. If `default_in` is "body", then return an array
         of a single parameter; else return an array of a parameter for each included field in
@@ -546,7 +519,6 @@ class OpenAPIConverter(object):
             param = self.field2parameter(
                 field_obj,
                 name=self._observed_name(field_obj, field_name),
-                use_refs=use_refs,
                 default_in=default_in,
             )
             if self.openapi_version.major < 3 and param['in'] == 'body' and body_param is not None:
@@ -560,14 +532,14 @@ class OpenAPIConverter(object):
                 parameters.append(param)
         return parameters
 
-    def field2parameter(self, field, name='body', use_refs=True, default_in='body'):
+    def field2parameter(self, field, name='body', default_in='body'):
         """Return an OpenAPI parameter as a `dict`, given a marshmallow
         :class:`Field <marshmallow.Field>`.
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
         """
         location = field.metadata.get('location', None)
-        prop = self.field2property(field, use_refs=use_refs)
+        prop = self.field2property(field)
         return self.property2parameter(
             prop,
             name=name,
@@ -625,7 +597,7 @@ class OpenAPIConverter(object):
                 ret['schema'] = prop
         return ret
 
-    def schema2jsonschema(self, schema, **kwargs):
+    def schema2jsonschema(self, schema):
         """Return the JSON Schema Object for a given marshmallow
         :class:`Schema <marshmallow.Schema>`. Schema may optionally provide the ``title`` and
         ``description`` class Meta options.
@@ -654,7 +626,7 @@ class OpenAPIConverter(object):
             #  'title': 'User',
             #  'type': 'object'}
 
-        :param Schema schema: A marshmallow Schema instance or a class object
+        :param Schema schema: A marshmallow Schema instance
         :rtype: dict, a JSON Schema Object
         """
         fields = get_fields(schema)
@@ -662,7 +634,7 @@ class OpenAPIConverter(object):
         partial = getattr(schema, 'partial', None)
         ordered = getattr(schema, 'ordered', False)
 
-        jsonschema = self.fields2jsonschema(fields, partial=partial, ordered=ordered, **kwargs)
+        jsonschema = self.fields2jsonschema(fields, partial=partial, ordered=ordered)
 
         if hasattr(Meta, 'title'):
             jsonschema['title'] = Meta.title
@@ -677,7 +649,7 @@ class OpenAPIConverter(object):
 
         return jsonschema
 
-    def fields2jsonschema(self, fields, ordered=False, partial=None, use_refs=True, name=None):
+    def fields2jsonschema(self, fields, ordered=False, partial=None):
         """Return the JSON Schema Object given a mapping between field names and
         :class:`Field <marshmallow.Field>` objects.
 
@@ -695,9 +667,7 @@ class OpenAPIConverter(object):
 
         for field_name, field_obj in iteritems(fields):
             observed_field_name = self._observed_name(field_obj, field_name)
-            property = self.field2property(
-                field_obj, use_refs=use_refs, name=name,
-            )
+            property = self.field2property(field_obj)
             jsonschema['properties'][observed_field_name] = property
 
             if field_obj.required:
