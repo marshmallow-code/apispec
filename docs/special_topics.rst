@@ -12,11 +12,13 @@ To add additional fields (e.g. ``"discriminator"``) to Schema objects generated 
 .. code-block:: python
 
     properties = {
-        'id': {'type': 'integer', 'format': 'int64'},
-        'name': {'type': 'string', 'example': 'doggie'},
+        "id": {"type": "integer", "format": "int64"},
+        "name": {"type": "string", "example": "doggie"},
     }
 
-    spec.components.schema('Pet', properties=properties, extra_fields={'discriminator': 'petType'})
+    spec.components.schema(
+        "Pet", properties=properties, extra_fields={"discriminator": "petType"}
+    )
 
 
 .. note::
@@ -91,17 +93,15 @@ Here is an example that includes a `Server Object <https://github.com/OAI/OpenAP
 
     settings = yaml.safe_load(OPENAPI_SPEC)
     # retrieve  title, version, and openapi version
-    title = settings['info'].pop('title')
-    spec_version = settings['info'].pop('version')
-    openapi_version = settings.pop('openapi')
+    title = settings["info"].pop("title")
+    spec_version = settings["info"].pop("version")
+    openapi_version = settings.pop("openapi")
 
     spec = APISpec(
         title=title,
         version=spec_version,
         openapi_version=openapi_version,
-        plugins=(
-            MarshmallowPlugin(),
-        ),
+        plugins=(MarshmallowPlugin(),),
         **settings
     )
 
@@ -124,18 +124,14 @@ to document `Security Scheme Objects <https://github.com/OAI/OpenAPI-Specificati
     from pprint import pprint
     from apispec import APISpec
 
-    spec = APISpec(
-        title='Swagger Petstore',
-        version='1.0.0',
-        openapi_version='3.0.2',
-    )
+    spec = APISpec(title="Swagger Petstore", version="1.0.0", openapi_version="3.0.2")
 
-    api_key_scheme = {'type': 'apiKey', 'in': 'header', 'name': 'X-API-Key'}
-    jwt_scheme = {'type': 'http', 'scheme': 'bearer', 'bearerFormat': 'JWT'}
+    api_key_scheme = {"type": "apiKey", "in": "header", "name": "X-API-Key"}
+    jwt_scheme = {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}
 
     spec.components.security_scheme("api_key", **api_key_scheme)
     spec.components.security_scheme("jwt", **jwt_scheme)
 
-    pprint(spec.to_dict()['components']['securitySchemes'], indent=2)
+    pprint(spec.to_dict()["components"]["securitySchemes"], indent=2)
     # { 'api_key': {'in': 'header', 'name': 'X-API-Key', 'type': 'apiKey'},
     #   'jwt': {'bearerFormat': 'JWT', 'scheme': 'bearer', 'type': 'http'}}

@@ -9,6 +9,7 @@ from distutils import version
 
 from apispec import exceptions
 
+
 def validate_spec(spec):
     """Validate the output of an :class:`APISpec` object against the
     OpenAPI specification.
@@ -25,13 +26,13 @@ def validate_spec(spec):
     except ImportError as error:  # re-raise with a more verbose message
         exc_class = type(error)
         raise exc_class(
-            'validate_spec requires prance to be installed. '
-            'You can install all validation requirements using:\n'
-            "    pip install 'apispec[validation]'",
+            "validate_spec requires prance to be installed. "
+            "You can install all validation requirements using:\n"
+            "    pip install 'apispec[validation]'"
         )
     parser_kwargs = {}
     if spec.openapi_version.version[0] == 3:
-        parser_kwargs['backend'] = 'openapi-spec-validator'
+        parser_kwargs["backend"] = "openapi-spec-validator"
     try:
         prance.BaseParser(spec_string=json.dumps(spec.to_dict()), **parser_kwargs)
     except prance.ValidationError as err:
@@ -57,15 +58,20 @@ class OpenAPIVersion(version.LooseVersion, object):
             assert ver.vstring == '3.0.2'
             assert str(ver) == '3.0.2'
     """
-    MIN_INCLUSIVE_VERSION = version.LooseVersion('2.0')
-    MAX_EXCLUSIVE_VERSION = version.LooseVersion('4.0')
+
+    MIN_INCLUSIVE_VERSION = version.LooseVersion("2.0")
+    MAX_EXCLUSIVE_VERSION = version.LooseVersion("4.0")
 
     def __init__(self, openapi_version):
         if isinstance(openapi_version, version.LooseVersion):
             openapi_version = openapi_version.vstring
-        if not self.MIN_INCLUSIVE_VERSION <= openapi_version < self.MAX_EXCLUSIVE_VERSION:
+        if (
+            not self.MIN_INCLUSIVE_VERSION
+            <= openapi_version
+            < self.MAX_EXCLUSIVE_VERSION
+        ):
             raise exceptions.APISpecError(
-                'Not a valid OpenAPI version number: {}'.format(openapi_version),
+                "Not a valid OpenAPI version number: {}".format(openapi_version)
             )
         super(OpenAPIVersion, self).__init__(openapi_version)
 
@@ -81,6 +87,7 @@ class OpenAPIVersion(version.LooseVersion, object):
     def patch(self):
         return self.version[2]
 
+
 # from django.contrib.admindocs.utils
 def trim_docstring(docstring):
     """Uniformly trims leading/trailing whitespace from docstrings.
@@ -88,12 +95,13 @@ def trim_docstring(docstring):
     Based on http://www.python.org/peps/pep-0257.html#handling-docstring-indentation
     """
     if not docstring or not docstring.strip():
-        return ''
+        return ""
     # Convert tabs to spaces and split into lines
     lines = docstring.expandtabs().splitlines()
     indent = min(len(line) - len(line.lstrip()) for line in lines if line.lstrip())
     trimmed = [lines[0].lstrip()] + [line[indent:].rstrip() for line in lines[1:]]
-    return '\n'.join(trimmed).strip()
+    return "\n".join(trimmed).strip()
+
 
 # from rest_framework.utils.formatting
 def dedent(content):
@@ -104,13 +112,16 @@ def dedent(content):
     as it fails to dedent multiline docstrings that include
     unindented text on the initial line.
     """
-    whitespace_counts = [len(line) - len(line.lstrip(' '))
-                         for line in content.splitlines()[1:] if line.lstrip()]
+    whitespace_counts = [
+        len(line) - len(line.lstrip(" "))
+        for line in content.splitlines()[1:]
+        if line.lstrip()
+    ]
 
     # unindent the content if needed
     if whitespace_counts:
-        whitespace_pattern = '^' + (' ' * min(whitespace_counts))
-        content = re.sub(re.compile(whitespace_pattern, re.MULTILINE), '', content)
+        whitespace_pattern = "^" + (" " * min(whitespace_counts))
+        content = re.sub(re.compile(whitespace_pattern, re.MULTILINE), "", content)
 
     return content.strip()
 

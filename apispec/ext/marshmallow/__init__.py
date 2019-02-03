@@ -41,7 +41,7 @@ def resolver(schema):
     """Default implementation of a schema name resolver function
     """
     name = schema.__name__
-    if name.endswith('Schema'):
+    if name.endswith("Schema"):
         return name[:-6] or name
     return name
 
@@ -59,6 +59,7 @@ class MarshmallowPlugin(BasePlugin):
             def schema_name_resolver(schema):
                 return schema.__name__
     """
+
     def __init__(self, schema_name_resolver=None):
         super(MarshmallowPlugin, self).__init__()
         self.schema_name_resolver = schema_name_resolver or resolver
@@ -79,13 +80,12 @@ class MarshmallowPlugin(BasePlugin):
     def resolve_parameters(self, parameters):
         resolved = []
         for parameter in parameters:
-            if not isinstance(parameter.get('schema', {}), dict):
-                schema_instance = resolve_schema_instance(parameter['schema'])
-                if 'in' in parameter:
-                    del parameter['schema']
+            if not isinstance(parameter.get("schema", {}), dict):
+                schema_instance = resolve_schema_instance(parameter["schema"])
+                if "in" in parameter:
+                    del parameter["schema"]
                     resolved += self.openapi.schema2parameters(
-                        schema_instance,
-                        default_in=parameter.pop('in'), **parameter
+                        schema_instance, default_in=parameter.pop("in"), **parameter
                     )
                     continue
             self.resolve_schema(parameter)
@@ -96,10 +96,10 @@ class MarshmallowPlugin(BasePlugin):
         """Function to resolve a schema in a requestBody object - modifies then
         response dict to convert Marshmallow Schema object or class into dict
         """
-        content = request_body['content']
+        content = request_body["content"]
         for content_type in content:
-            schema = content[content_type]['schema']
-            content[content_type]['schema'] = self.openapi.resolve_schema_dict(schema)
+            schema = content[content_type]["schema"]
+            content[content_type]["schema"] = self.openapi.resolve_schema_dict(schema)
 
     def resolve_schema(self, data):
         """Function to resolve a schema in a parameter or response - modifies the
@@ -109,15 +109,15 @@ class MarshmallowPlugin(BasePlugin):
         :param dict data: the parameter or response dictionary that may contain a schema
         """
         if self.openapi_version.major < 3:
-            if 'schema' in data:
-                data['schema'] = self.openapi.resolve_schema_dict(data['schema'])
+            if "schema" in data:
+                data["schema"] = self.openapi.resolve_schema_dict(data["schema"])
         else:
-            if 'content' in data:
-                for content_type in data['content']:
-                    schema = data['content'][content_type]['schema']
-                    data['content'][content_type]['schema'] = self.openapi.resolve_schema_dict(
-                        schema,
-                    )
+            if "content" in data:
+                for content_type in data["content"]:
+                    schema = data["content"][content_type]["schema"]
+                    data["content"][content_type][
+                        "schema"
+                    ] = self.openapi.resolve_schema_dict(schema)
 
     def map_to_openapi_type(self, *args):
         """Decorator to set mapping for custom fields.
@@ -182,12 +182,14 @@ class MarshmallowPlugin(BasePlugin):
         for operation in operations.values():
             if not isinstance(operation, dict):
                 continue
-            if 'parameters' in operation:
-                operation['parameters'] = self.resolve_parameters(operation['parameters'])
+            if "parameters" in operation:
+                operation["parameters"] = self.resolve_parameters(
+                    operation["parameters"]
+                )
             if self.openapi_version.major >= 3:
-                if 'requestBody' in operation:
-                    self.resolve_schema_in_request_body(operation['requestBody'])
-            for response in operation.get('responses', {}).values():
+                if "requestBody" in operation:
+                    self.resolve_schema_in_request_body(operation["requestBody"])
+            for response in operation.get("responses", {}).values():
                 self.resolve_schema(response)
 
     def warn_if_schema_already_in_spec(self, schema_key):
@@ -196,7 +198,7 @@ class MarshmallowPlugin(BasePlugin):
         """
         if schema_key in self.openapi.refs:
             warnings.warn(
-                '{} has already been added to the spec. Adding it twice may '
-                'cause references to not resove properly'.format(schema_key[0]),
+                "{} has already been added to the spec. Adding it twice may "
+                "cause references to not resove properly".format(schema_key[0]),
                 UserWarning,
             )

@@ -3,25 +3,18 @@
 from collections import OrderedDict
 
 from apispec.compat import iterkeys, iteritems
-from .exceptions import APISpecError, PluginMethodNotImplementedError, DuplicateComponentNameError
+from .exceptions import (
+    APISpecError,
+    PluginMethodNotImplementedError,
+    DuplicateComponentNameError,
+)
 from .utils import OpenAPIVersion, deepupdate
 
-VALID_METHODS_OPENAPI_V2 = [
-    'get',
-    'post',
-    'put',
-    'patch',
-    'delete',
-    'head',
-    'options',
-]
+VALID_METHODS_OPENAPI_V2 = ["get", "post", "put", "patch", "delete", "head", "options"]
 
-VALID_METHODS_OPENAPI_V3 = VALID_METHODS_OPENAPI_V2 + ['trace']
+VALID_METHODS_OPENAPI_V3 = VALID_METHODS_OPENAPI_V2 + ["trace"]
 
-VALID_METHODS = {
-    2: VALID_METHODS_OPENAPI_V2,
-    3: VALID_METHODS_OPENAPI_V3,
-}
+VALID_METHODS = {2: VALID_METHODS_OPENAPI_V2, 3: VALID_METHODS_OPENAPI_V3}
 
 
 def clean_operations(operations, openapi_major_version):
@@ -35,12 +28,14 @@ def clean_operations(operations, openapi_major_version):
     :param int openapi_major_version: The major version of the OpenAPI standard
         to use. Supported values are 2 and 3.
     """
-    invalid = {key for key in
-               set(iterkeys(operations)) - set(VALID_METHODS[openapi_major_version])
-               if not key.startswith('x-')}
+    invalid = {
+        key
+        for key in set(iterkeys(operations)) - set(VALID_METHODS[openapi_major_version])
+        if not key.startswith("x-")
+    }
     if invalid:
         raise APISpecError(
-            'One or more HTTP methods are invalid: {0}'.format(', '.join(invalid)),
+            "One or more HTTP methods are invalid: {}".format(", ".join(invalid))
         )
 
     def get_ref(obj_type, obj, openapi_major_version):
@@ -58,33 +53,30 @@ def clean_operations(operations, openapi_major_version):
             return obj
 
         ref_paths = {
-            'parameter': {
-                2: 'parameters',
-                3: 'components/parameters',
-            },
-            'response': {
-                2: 'responses',
-                3: 'components/responses',
-            },
+            "parameter": {2: "parameters", 3: "components/parameters"},
+            "response": {2: "responses", 3: "components/responses"},
         }
         ref_path = ref_paths[obj_type][openapi_major_version]
-        return {'$ref': '#/{0}/{1}'.format(ref_path, obj)}
+        return {"$ref": "#/{}/{}".format(ref_path, obj)}
 
     for operation in (operations or {}).values():
-        if 'parameters' in operation:
-            parameters = operation['parameters']
+        if "parameters" in operation:
+            parameters = operation["parameters"]
             for parameter in parameters:
                 if (
-                        isinstance(parameter, dict) and
-                        'in' in parameter and parameter['in'] == 'path'
+                    isinstance(parameter, dict)
+                    and "in" in parameter
+                    and parameter["in"] == "path"
                 ):
-                    parameter['required'] = True
-            operation['parameters'] = [
-                get_ref('parameter', p, openapi_major_version) for p in parameters
+                    parameter["required"] = True
+            operation["parameters"] = [
+                get_ref("parameter", p, openapi_major_version) for p in parameters
             ]
-        if 'responses' in operation:
-            for code, response in iteritems(operation['responses']):
-                operation['responses'][code] = get_ref('response', response, openapi_major_version)
+        if "responses" in operation:
+            for code, response in iteritems(operation["responses"]):
+                operation["responses"][code] = get_ref(
+                    "response", response, openapi_major_version
+                )
 
 
 class Components(object):
@@ -93,6 +85,7 @@ class Components(object):
     Components are top-level fields in OAS v2.
     They became sub-fields of "components" top-level field in OAS v3.
     """
+
     def __init__(self, plugins, openapi_version):
         self._plugins = plugins
         self.openapi_version = openapi_version
@@ -103,20 +96,25 @@ class Components(object):
 
     def to_dict(self):
         if self.openapi_version.major < 3:
-            schemas_key = 'definitions'
-            security_key = 'securityDefinitions'
+            schemas_key = "definitions"
+            security_key = "securityDefinitions"
         else:
-            schemas_key = 'schemas'
-            security_key = 'securitySchemes'
+            schemas_key = "schemas"
+            security_key = "securitySchemes"
         return {
-            'parameters': self._parameters,
-            'responses': self._responses,
+            "parameters": self._parameters,
+            "responses": self._responses,
             schemas_key: self._schemas,
             security_key: self._security_schemes,
         }
 
     def schema(
-        self, name, properties=None, enum=None, description=None, extra_fields=None,
+        self,
+        name,
+        properties=None,
+        enum=None,
+        description=None,
+        extra_fields=None,
         **kwargs
     ):
         """Add a new definition to the spec.
@@ -138,7 +136,7 @@ class Components(object):
         """
         if name in self._schemas:
             raise DuplicateComponentNameError(
-                'Another schema with name "{}" is already registered.'.format(name),
+                'Another schema with name "{}" is already registered.'.format(name)
             )
         ret = {}
         # Execute all helpers from plugins
@@ -148,11 +146,11 @@ class Components(object):
             except PluginMethodNotImplementedError:
                 continue
         if properties:
-            ret['properties'] = properties
+            ret["properties"] = properties
         if enum:
-            ret['enum'] = enum
+            ret["enum"] = enum
         if description:
-            ret['description'] = description
+            ret["description"] = description
         if extra_fields:
             ret.update(extra_fields)
         self._schemas[name] = ret
@@ -167,11 +165,13 @@ class Components(object):
         """
         if param_id in self._parameters:
             raise DuplicateComponentNameError(
-                'Another parameter with name "{}" is already registered.'.format(param_id),
+                'Another parameter with name "{}" is already registered.'.format(
+                    param_id
+                )
             )
         ret = kwargs.copy()
-        ret.setdefault('name', param_id)
-        ret['in'] = location
+        ret.setdefault("name", param_id)
+        ret["in"] = location
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
@@ -189,7 +189,7 @@ class Components(object):
         """
         if ref_id in self._responses:
             raise DuplicateComponentNameError(
-                'Another response with name "{}" is already registered.'.format(ref_id),
+                'Another response with name "{}" is already registered.'.format(ref_id)
             )
         ret = kwargs.copy()
         # Execute all helpers from plugins
@@ -209,7 +209,9 @@ class Components(object):
         """
         if sec_id in self._security_schemes:
             raise DuplicateComponentNameError(
-                'Another security scheme with name "{}" is already registered.'.format(sec_id),
+                'Another security scheme with name "{}" is already registered.'.format(
+                    sec_id
+                )
             )
         self._security_schemes[sec_id] = kwargs
         return self
@@ -227,6 +229,7 @@ class APISpec(object):
     :param dict options: Optional top-level keys
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#openapi-object
     """
+
     def __init__(self, title, version, openapi_version, plugins=(), **options):
         self.title = title
         self.version = version
@@ -247,25 +250,23 @@ class APISpec(object):
 
     def to_dict(self):
         ret = {
-            'paths': self._paths,
-            'tags': self._tags,
-            'info': {
-                'title': self.title,
-                'version': self.version,
-            },
+            "paths": self._paths,
+            "tags": self._tags,
+            "info": {"title": self.title, "version": self.version},
         }
         if self.openapi_version.major < 3:
-            ret['swagger'] = self.openapi_version.vstring
+            ret["swagger"] = self.openapi_version.vstring
             ret.update(self.components.to_dict())
         else:
-            ret['openapi'] = self.openapi_version.vstring
-            ret.update({'components': self.components.to_dict()})
+            ret["openapi"] = self.openapi_version.vstring
+            ret.update({"components": self.components.to_dict()})
         ret = deepupdate(ret, self.options)
         return ret
 
     def to_yaml(self):
         """Render the spec to YAML. Requires PyYAML to be installed."""
         from .yaml_utils import dict_to_yaml
+
         return dict_to_yaml(self.to_dict())
 
     def tag(self, tag):
@@ -296,7 +297,7 @@ class APISpec(object):
             if ret is not None:
                 path = ret
         if not path:
-            raise APISpecError('Path template is not specified.')
+            raise APISpecError("Path template is not specified.")
 
         # Execute operation helpers
         for plugin in self.plugins:

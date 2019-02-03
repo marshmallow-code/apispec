@@ -18,6 +18,10 @@ apispec
     :target: https://marshmallow.readthedocs.io/en/latest/upgrading.html
     :alt: marshmallow 2/3 compatible
 
+.. image:: https://badgen.net/badge/code%20style/black/000
+    :target: https://github.com/ambv/black
+    :alt: code style: black
+
 A pluggable API specification generator. Currently supports the `OpenAPI Specification <https://github.com/OAI/OpenAPI-Specification>`_ (f.k.a. the Swagger specification).
 
 Features
@@ -42,13 +46,10 @@ Example Application
 
     # Create an APISpec
     spec = APISpec(
-        title='Swagger Petstore',
-        version='1.0.0',
-        openapi_version='3.0.2',
-        plugins=[
-            FlaskPlugin(),
-            MarshmallowPlugin(),
-        ],
+        title="Swagger Petstore",
+        version="1.0.0",
+        openapi_version="3.0.2",
+        plugins=[FlaskPlugin(), MarshmallowPlugin()],
     )
 
     # Optional marshmallow support
@@ -56,14 +57,17 @@ Example Application
         id = fields.Int()
         name = fields.Str(required=True)
 
+
     class PetSchema(Schema):
         category = fields.Nested(CategorySchema, many=True)
         name = fields.Str()
 
+
     # Optional Flask support
     app = Flask(__name__)
 
-    @app.route('/random')
+
+    @app.route("/random")
     def random_pet():
         """A cute furry animal endpoint.
         ---
@@ -71,16 +75,17 @@ Example Application
           description: Get a random pet
           responses:
             200:
-            content:
+              content:
                 application/json:
                   schema: PetSchema
         """
         pet = get_random_pet()
         return jsonify(PetSchema().dump(pet).data)
 
+
     # Register entities and paths
-    spec.components.schema('Category', schema=CategorySchema)
-    spec.components.schema('Pet', schema=PetSchema)
+    spec.components.schema("Category", schema=CategorySchema)
+    spec.components.schema("Pet", schema=PetSchema)
     with app.test_request_context():
         spec.path(view=random_pet)
 
@@ -91,6 +96,7 @@ Generated OpenAPI Spec
 .. code-block:: python
 
     import json
+
     print(json.dumps(spec.to_dict(), indent=2))
     # {
     #   "paths": {
