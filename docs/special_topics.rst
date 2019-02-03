@@ -54,7 +54,7 @@ Documenting Top-level Components
 
 The ``APISpec`` object contains helpers to add top-level components.
 
-To add a schema (a.k.a. "definition" in OpenAPI v2 termionology), use
+To add a schema (f.k.a. "definition" in OAS v2), use
 `spec.components.schema <apispec.core.Components.schema>`.
 
 Likewise, parameters and responses can be added using
@@ -63,17 +63,17 @@ Likewise, parameters and responses can be added using
 
 To add other top-level objects, pass them to the ``APISpec`` as keyword arguments.
 
-Here is an example that includes a `Security Scheme Object <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#securitySchemeObject>`_.
+Here is an example that includes a `Server Object <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#serverObject>`_.
 
 .. code-block:: python
 
     import yaml
     from apispec import APISpec
     from apispec.ext.marshmallow import MarshmallowPlugin
-    from apispec.utils import validate_swagger
+    from apispec.utils import validate_spec
 
     OPENAPI_SPEC = """
-    openapi: 3.0.1
+    openapi: 3.0.2
     info:
       description: Server API document
       title: Server API
@@ -87,12 +87,6 @@ Here is an example that includes a `Security Scheme Object <https://github.com/O
           - '3000'
           - '8888'
           default: '3000'
-    components:
-      securitySchemes:
-        bearerAuth:
-          type: http
-          scheme: bearer
-          bearerFormat: JWT
     """
 
     settings = yaml.safe_load(OPENAPI_SPEC)
@@ -111,10 +105,37 @@ Here is an example that includes a `Security Scheme Object <https://github.com/O
         **settings
     )
 
-    validate_swagger(spec)
+    validate_spec(spec)
 
 
 When adding components, the main advantage of using dedicated methods over
 passing them as kwargs is the ability to use plugin helpers. For instance,
 `MarshmallowPlugin <apispec.ext.marshmallow.MarshmallowPlugin>` has helpers to
 resolve schemas in parameters and responses.
+
+Documenting Security Schemes
+----------------------------
+
+Use `spec.components.security_scheme <apispec.core.Components.security_scheme>`
+to document `Security Scheme Objects <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#securitySchemeObject>`_.
+
+.. code-block:: python
+
+    from pprint import pprint
+    from apispec import APISpec
+
+    spec = APISpec(
+        title='Swagger Petstore',
+        version='1.0.0',
+        openapi_version='3.0.2',
+    )
+
+    api_key_scheme = {'type': 'apiKey', 'in': 'header', 'name': 'X-API-Key'}
+    jwt_scheme = {'type': 'http', 'scheme': 'bearer', 'bearerFormat': 'JWT'}
+
+    spec.components.security_scheme("api_key", **api_key_scheme)
+    spec.components.security_scheme("jwt", **jwt_scheme)
+
+    pprint(spec.to_dict()['components']['securitySchemes'], indent=2)
+    # { 'api_key': {'in': 'header', 'name': 'X-API-Key', 'type': 'apiKey'},
+    #   'jwt': {'bearerFormat': 'JWT', 'scheme': 'bearer', 'type': 'http'}}
