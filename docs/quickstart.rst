@@ -11,22 +11,23 @@ First, create an `APISpec <apispec.APISpec>` object, passing basic information a
     from apispec import APISpec
 
     spec = APISpec(
-        title='Gisty',
-        version='1.0.0',
-        openapi_version='3.0.2',
-        info=dict(
-            description='A minimal gist API'
-        )
+        title="Gisty",
+        version="1.0.0",
+        openapi_version="3.0.2",
+        info=dict(description="A minimal gist API"),
     )
 
 Add schemas to your spec using `spec.components.schema <apispec.core.Components.schema>`.
 
 .. code-block:: python
 
-    spec.components.schema('Gist', properties={
-        'id': {'type': 'integer', 'format': 'int64'},
-        'name': {'type': 'string'}
-    })
+    spec.components.schema(
+        "Gist",
+        properties={
+            "id": {"type": "integer", "format": "int64"},
+            "name": {"type": "string"},
+        },
+    )
 
 
 Add paths to your spec using `path <apispec.APISpec.path>`.
@@ -35,20 +36,18 @@ Add paths to your spec using `path <apispec.APISpec.path>`.
 
 
     spec.path(
-        path='/gist/{gist_id}',
+        path="/gist/{gist_id}",
         operations=dict(
             get=dict(
                 responses={
-                    '200': {
-                        'content': {
-                            'application/json': {
-                                'schema': {'$ref': '#/definitions/Gist'}
-                            }
+                    "200": {
+                        "content": {
+                            "application/json": {"schema": {"$ref": "#/definitions/Gist"}}
                         }
                     }
                 }
             )
-        )
+        ),
     )
 
 
@@ -57,12 +56,9 @@ one statement:
 
 .. code-block:: python
 
-    spec.path(...)\
-        .path(...)\
-        .tag(...)
+    spec.path(...).path(...).tag(...)
 
-    spec.components.schema(...)\
-                   .parameter(...)
+    spec.components.schema(...).parameter(...)
 
 To output your OpenAPI spec, invoke the `to_dict <apispec.APISpec.to_dict>` method.
 

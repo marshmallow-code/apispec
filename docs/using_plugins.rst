@@ -20,13 +20,11 @@ To enable a plugin, pass an instance to the constructor of `APISpec <apispec.API
     from apispec.ext.marshmallow import MarshmallowPlugin
 
     spec = APISpec(
-        title='Gisty',
-        version='1.0.0',
-        openapi_version='3.0.2',
-        info=dict(
-            description='A minimal gist API'
-        ),
-        plugins=[MarshmallowPlugin()]
+        title="Gisty",
+        version="1.0.0",
+        openapi_version="3.0.2",
+        info=dict(description="A minimal gist API"),
+        plugins=[MarshmallowPlugin()],
     )
 
 
@@ -54,16 +52,11 @@ We can now use the marshmallow and Flask plugins.
     from apispec_webframeworks.flask import FlaskPlugin
 
     spec = APISpec(
-        title='Gisty',
-        version='1.0.0',
-        openapi_version='3.0.2',
-        info=dict(
-            description='A minimal gist API'
-        ),
-        plugins=[
-            FlaskPlugin(),
-            MarshmallowPlugin(),
-        ]
+        title="Gisty",
+        version="1.0.0",
+        openapi_version="3.0.2",
+        info=dict(description="A minimal gist API"),
+        plugins=[FlaskPlugin(), MarshmallowPlugin()],
     )
 
 
@@ -73,8 +66,10 @@ Our application will have a marshmallow `Schema <marshmallow.Schema>` for gists.
 
     from marshmallow import Schema, fields
 
+
     class GistParameter(Schema):
         gist_id = fields.Int()
+
 
     class GistSchema(Schema):
         id = fields.Int()
@@ -87,7 +82,7 @@ The marshmallow plugin allows us to pass this `Schema` to
 
 .. code-block:: python
 
-    spec.components.schema('Gist', schema=GistSchema)
+    spec.components.schema("Gist", schema=GistSchema)
 
 The schema is now added to the spec.
 
@@ -115,7 +110,7 @@ We'll add some YAML in the docstring to add response information.
     app = Flask(__name__)
 
     # NOTE: Plugins may inspect docstrings to gather more information for the spec
-    @app.route('/gists/<gist_id>')
+    @app.route("/gists/<gist_id>")
     def gist_detail(gist_id):
         """Gist detail view.
         ---
@@ -127,7 +122,7 @@ We'll add some YAML in the docstring to add response information.
                 200:
                     schema: GistSchema
         """
-        return 'details about gist {}'.format(gist_id)
+        return "details about gist {}".format(gist_id)
 
 The Flask plugin allows us to pass this view to `spec.path <apispec.APISpec.path>`.
 
@@ -171,9 +166,10 @@ If your API uses `method-based dispatching <http://flask.pocoo.org/docs/0.12/vie
 
     from flask.views import MethodView
 
+
     class GistApi(MethodView):
         def get(self):
-            '''Gist view
+            """Gist view
             ---
             description: get a gist
             responses:
@@ -181,17 +177,18 @@ If your API uses `method-based dispatching <http://flask.pocoo.org/docs/0.12/vie
                 content:
                 application/json:
                     schema: GistSchema
-            '''
+            """
             pass
 
         def post(self):
             pass
 
-    method_view = GistApi.as_view('gist')
+
+    method_view = GistApi.as_view("gist")
     app.add_url_rule("/gist", view_func=method_view)
     with app.test_request_context():
         spec.path(view=method_view)
-    pprint(dict(spec.to_dict()['paths']['/gist']))
+    pprint(dict(spec.to_dict()["paths"]["/gist"]))
     # {'get': {'description': 'get a gist',
     #          'responses': {200: {'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Gist'}}}}}},
     #  'post': {}}
@@ -249,23 +246,22 @@ schemas with custom fields, use the
     ma_plugin = MarshmallowPlugin()
 
     spec = APISpec(
-        title='Gisty',
-        version='1.0.0',
-        openapi_version='3.0.2',
-        info=dict(
-            description='A minimal gist API'
-        ),
-        plugins=[ma_plugin]
+        title="Gisty",
+        version="1.0.0",
+        openapi_version="3.0.2",
+        info=dict(description="A minimal gist API"),
+        plugins=[ma_plugin],
     )
 
 
-    @ma_plugin.map_to_openapi_type('string', 'uuid')
+    @ma_plugin.map_to_openapi_type("string", "uuid")
     class MyCustomField(Integer):
-        # ...
+        pass
+
 
     @ma_plugin.map_to_openapi_type(Integer)  # will map to ('integer', 'int32')
     class MyCustomFieldThatsKindaLikeAnInteger(Integer):
-        # ...
+        pass
 
 
 
