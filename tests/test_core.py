@@ -8,7 +8,7 @@ from apispec import APISpec, BasePlugin
 from apispec.exceptions import APISpecError, DuplicateComponentNameError
 
 from .utils import (
-    get_definitions,
+    get_schemas,
     get_paths,
     get_parameters,
     get_responses,
@@ -133,7 +133,7 @@ class TestComponents:
 
     def test_schema(self, spec):
         spec.components.schema("Pet", {"properties": self.properties})
-        defs = get_definitions(spec)
+        defs = get_schemas(spec)
         assert "Pet" in defs
         assert defs["Pet"]["properties"] == self.properties
 
@@ -141,7 +141,7 @@ class TestComponents:
         spec.components.schema("Pet", {"properties": {}}).schema(
             "Plant", {"properties": {}}
         )
-        defs = get_definitions(spec)
+        defs = get_schemas(spec)
         assert "Pet" in defs
         assert "Plant" in defs
 
@@ -150,20 +150,20 @@ class TestComponents:
         spec.components.schema(
             "Pet", {"properties": self.properties, "description": model_description}
         )
-        defs = get_definitions(spec)
+        defs = get_schemas(spec)
         assert defs["Pet"]["description"] == model_description
 
     def test_schema_stores_enum(self, spec):
         enum = ["name", "photoUrls"]
         spec.components.schema("Pet", {"properties": self.properties, "enum": enum})
-        defs = get_definitions(spec)
+        defs = get_schemas(spec)
         assert defs["Pet"]["enum"] == enum
 
     def test_schema_extra_fields(self, spec):
         spec.components.schema(
             "Pet", {"properties": self.properties, "discriminator": "name"}
         )
-        defs = get_definitions(spec)
+        defs = get_schemas(spec)
         assert defs["Pet"]["discriminator"] == "name"
 
     def test_schema_duplicate_name(self, spec):
@@ -464,7 +464,7 @@ class TestPlugins:
             plugins=(self.test_plugin_factory(return_none),),
         )
         spec.components.schema("Pet")
-        definitions = get_definitions(spec)
+        definitions = get_schemas(spec)
         if return_none:
             assert definitions["Pet"] == {}
         else:
