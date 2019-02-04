@@ -159,24 +159,26 @@ class MarshmallowPlugin(BasePlugin):
 
         return json_schema
 
-    def parameter_helper(self, **kwargs):
+    def parameter_helper(self, parameter, **kwargs):
         """Parameter component helper that allows using a marshmallow
         :class:`Schema <marshmallow.Schema>` in parameter definition.
 
-        :param type|Schema schema: A marshmallow Schema class or instance.
+        :param dict parameter: parameter fields. May contain a marshmallow
+            Schema class or instance.
         """
         # In OpenAPIv3, this only works when using the complex form using "content"
-        self.resolve_schema(kwargs)
-        return kwargs
+        self.resolve_schema(parameter)
+        return parameter
 
-    def response_helper(self, **kwargs):
+    def response_helper(self, response, **kwargs):
         """Response component helper that allows using a marshmallow
         :class:`Schema <marshmallow.Schema>` in response definition.
 
-        :param type|Schema schema: A marshmallow Schema class or instance.
+        :param dict parameter: response fields. May contain a marshmallow
+            Schema class or instance.
         """
-        self.resolve_schema(kwargs)
-        return kwargs
+        self.resolve_schema(response)
+        return response
 
     def operation_helper(self, operations, **kwargs):
         for operation in operations.values():

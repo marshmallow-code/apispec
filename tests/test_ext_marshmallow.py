@@ -167,10 +167,10 @@ class TestComponentParameterHelper:
     @pytest.mark.parametrize("schema", [PetSchema, PetSchema()])
     def test_can_use_schema_in_parameter(self, spec, schema):
         if spec.openapi_version.major < 3:
-            kwargs = {"schema": schema}
+            param = {"schema": schema}
         else:
-            kwargs = {"content": {"application/json": {"schema": schema}}}
-        spec.components.parameter("Pet", "body", **kwargs)
+            param = {"content": {"application/json": {"schema": schema}}}
+        spec.components.parameter("Pet", "body", param)
         parameter = get_parameters(spec)["Pet"]
         assert parameter["in"] == "body"
         if spec.openapi_version.major < 3:
@@ -190,10 +190,10 @@ class TestComponentResponseHelper:
     @pytest.mark.parametrize("schema", [PetSchema, PetSchema()])
     def test_can_use_schema_in_response(self, spec, schema):
         if spec.openapi_version.major < 3:
-            kwargs = {"schema": schema}
+            resp = {"schema": schema}
         else:
-            kwargs = {"content": {"application/json": {"schema": schema}}}
-        spec.components.response("GetPetOk", **kwargs)
+            resp = {"content": {"application/json": {"schema": schema}}}
+        spec.components.response("GetPetOk", resp)
         response = get_responses(spec)["GetPetOk"]
         if spec.openapi_version.major < 3:
             reference = response["schema"]

@@ -18,11 +18,11 @@ class BasePlugin(object):
         """May return definition as a dict."""
         raise PluginMethodNotImplementedError
 
-    def parameter_helper(self, **kwargs):
+    def parameter_helper(self, parameter, **kwargs):
         """May return parameter component description as a dict."""
         raise PluginMethodNotImplementedError
 
-    def response_helper(self, **kwargs):
+    def response_helper(self, response, **kwargs):
         """May return response component description as a dict."""
         raise PluginMethodNotImplementedError
 

@@ -156,12 +156,13 @@ class Components(object):
         self._schemas[name] = ret
         return self
 
-    def parameter(self, param_id, location, **kwargs):
+    def parameter(self, param_id, location, param=None, **kwargs):
         """ Add a parameter which can be referenced.
 
         :param str param_id: identifier by which parameter may be referenced.
         :param str location: location of the parameter.
-        :param dict kwargs: parameter fields.
+        :param dict param: parameter fields.
+        :param dict kwargs: plugin-specific arguments
         """
         if param_id in self._parameters:
             raise DuplicateComponentNameError(
@@ -169,39 +170,42 @@ class Components(object):
                     param_id
                 )
             )
-        ret = kwargs.copy()
+        param = param or {}
+        ret = param.copy()
         ret.setdefault("name", param_id)
         ret["in"] = location
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
-                ret.update(plugin.parameter_helper(**kwargs) or {})
+                ret.update(plugin.parameter_helper(param, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
         self._parameters[param_id] = ret
         return self
 
-    def response(self, ref_id, **kwargs):
+    def response(self, ref_id, resp=None, **kwargs):
         """Add a response which can be referenced.
 
         :param str ref_id: ref_id to use as reference
-        :param dict kwargs: response fields
+        :param dict resp: response fields
+        :param dict kwargs: plugin-specific arguments
         """
         if ref_id in self._responses:
             raise DuplicateComponentNameError(
                 'Another response with name "{}" is already registered.'.format(ref_id)
             )
-        ret = kwargs.copy()
+        resp = resp or {}
+        ret = resp.copy()
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
-                ret.update(plugin.response_helper(**kwargs) or {})
+                ret.update(plugin.response_helper(resp, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
         self._responses[ref_id] = ret
         return self
 
-    def security_scheme(self, sec_id, **kwargs):
+    def security_scheme(self, sec_id, sec_scheme):
         """Add a security scheme which can be referenced.
 
         :param str sec_id: sec_id to use as reference
@@ -213,7 +217,7 @@ class Components(object):
                     sec_id
                 )
             )
-        self._security_schemes[sec_id] = kwargs
+        self._security_schemes[sec_id] = sec_scheme
         return self
 
 
