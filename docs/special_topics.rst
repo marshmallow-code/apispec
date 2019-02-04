@@ -129,8 +129,8 @@ to document `Security Scheme Objects <https://github.com/OAI/OpenAPI-Specificati
     api_key_scheme = {"type": "apiKey", "in": "header", "name": "X-API-Key"}
     jwt_scheme = {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}
 
-    spec.components.security_scheme("api_key", **api_key_scheme)
-    spec.components.security_scheme("jwt", **jwt_scheme)
+    spec.components.security_scheme("api_key", api_key_scheme)
+    spec.components.security_scheme("jwt", jwt_scheme)
 
     pprint(spec.to_dict()["components"]["securitySchemes"], indent=2)
     # { 'api_key': {'in': 'header', 'name': 'X-API-Key', 'type': 'apiKey'},
