@@ -180,7 +180,9 @@ class Components(object):
         """
         if component_id in self._responses:
             raise DuplicateComponentNameError(
-                'Another response with name "{}" is already registered.'.format(component_id)
+                'Another response with name "{}" is already registered.'.format(
+                    component_id
+                )
             )
         component = component or {}
         ret = component.copy()
