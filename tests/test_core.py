@@ -453,7 +453,7 @@ class TestPlugins:
             openapi_version=openapi_version,
             plugins=(self.test_plugin_factory(return_none),),
         )
-        spec.components.schema("Pet", {})
+        spec.components.schema("Pet")
         definitions = get_definitions(spec)
         if return_none:
             assert definitions["Pet"] == {}

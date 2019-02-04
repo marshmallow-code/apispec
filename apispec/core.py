@@ -108,15 +108,7 @@ class Components(object):
             security_key: self._security_schemes,
         }
 
-    def schema(
-        self,
-        name,
-        properties=None,
-        enum=None,
-        description=None,
-        extra_fields=None,
-        **kwargs
-    ):
+    def schema(self, name, **kwargs):
         """Add a new definition to the spec.
 
         .. note::
@@ -139,20 +131,19 @@ class Components(object):
                 'Another schema with name "{}" is already registered.'.format(name)
             )
         ret = {}
+        ret.update(
+            {
+                key: kwargs.pop(key)
+                for key in ('properties', 'enum', 'description')
+                if key in kwargs
+            })
+        ret.update(kwargs.pop('extra_fields', {}))
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
                 ret.update(plugin.schema_helper(name, definition=ret, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
-        if properties:
-            ret["properties"] = properties
-        if enum:
-            ret["enum"] = enum
-        if description:
-            ret["description"] = description
-        if extra_fields:
-            ret.update(extra_fields)
         self._schemas[name] = ret
         return self
 
