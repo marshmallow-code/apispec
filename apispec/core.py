@@ -108,8 +108,11 @@ class Components(object):
             security_key: self._security_schemes,
         }
 
-    def schema(self, name, definition=None, **kwargs):
-        """Add a new definition to the spec.
+    def schema(self, name, component=None, **kwargs):
+        """Add a new schema to the spec.
+
+        :param str name: identifier by which schema may be referenced.
+        :param dict component: schema definition.
 
         .. note::
 
@@ -130,79 +133,79 @@ class Components(object):
             raise DuplicateComponentNameError(
                 'Another schema with name "{}" is already registered.'.format(name)
             )
-        definition = definition or {}
-        ret = definition.copy()
+        component = component or {}
+        ret = component.copy()
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
-                ret.update(plugin.schema_helper(name, definition, **kwargs) or {})
+                ret.update(plugin.schema_helper(name, component, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
         self._schemas[name] = ret
         return self
 
-    def parameter(self, param_id, location, param=None, **kwargs):
+    def parameter(self, component_id, location, component=None, **kwargs):
         """ Add a parameter which can be referenced.
 
         :param str param_id: identifier by which parameter may be referenced.
         :param str location: location of the parameter.
-        :param dict param: parameter fields.
+        :param dict component: parameter fields.
         :param dict kwargs: plugin-specific arguments
         """
-        if param_id in self._parameters:
+        if component_id in self._parameters:
             raise DuplicateComponentNameError(
                 'Another parameter with name "{}" is already registered.'.format(
-                    param_id
+                    component_id
                 )
             )
-        param = param or {}
-        ret = param.copy()
-        ret.setdefault("name", param_id)
+        component = component or {}
+        ret = component.copy()
+        ret.setdefault("name", component_id)
         ret["in"] = location
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
-                ret.update(plugin.parameter_helper(param, **kwargs) or {})
+                ret.update(plugin.parameter_helper(component, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
-        self._parameters[param_id] = ret
+        self._parameters[component_id] = ret
         return self
 
-    def response(self, ref_id, resp=None, **kwargs):
+    def response(self, component_id, component=None, **kwargs):
         """Add a response which can be referenced.
 
-        :param str ref_id: ref_id to use as reference
-        :param dict resp: response fields
+        :param str component_id: ref_id to use as reference
+        :param dict component: response fields
         :param dict kwargs: plugin-specific arguments
         """
-        if ref_id in self._responses:
+        if component_id in self._responses:
             raise DuplicateComponentNameError(
-                'Another response with name "{}" is already registered.'.format(ref_id)
+                'Another response with name "{}" is already registered.'.format(component_id)
             )
-        resp = resp or {}
-        ret = resp.copy()
+        component = component or {}
+        ret = component.copy()
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
-                ret.update(plugin.response_helper(resp, **kwargs) or {})
+                ret.update(plugin.response_helper(component, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
-        self._responses[ref_id] = ret
+        self._responses[component_id] = ret
         return self
 
-    def security_scheme(self, sec_id, sec_scheme):
+    def security_scheme(self, component_id, component):
         """Add a security scheme which can be referenced.
 
-        :param str sec_id: sec_id to use as reference
+        :param str component_id: component_id to use as reference
         :param dict kwargs: security scheme fields
         """
-        if sec_id in self._security_schemes:
+        if component_id in self._security_schemes:
             raise DuplicateComponentNameError(
                 'Another security scheme with name "{}" is already registered.'.format(
-                    sec_id
+                    component_id
                 )
             )
-        self._security_schemes[sec_id] = sec_scheme
+        self._security_schemes[component_id] = component
         return self
 
 
