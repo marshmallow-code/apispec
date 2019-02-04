@@ -36,7 +36,7 @@ class TestDefinitionHelper:
         assert props["name"]["type"] == "string"
 
     def test_schema_helper_without_schema(self, spec):
-        spec.components.schema("Pet", properties={"key": {"type": "integer"}})
+        spec.components.schema("Pet", {"properties": {"key": {"type": "integer"}}})
         definitions = get_definitions(spec)
         assert definitions["Pet"]["properties"] == {"key": {"type": "integer"}}
 

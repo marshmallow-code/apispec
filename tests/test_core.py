@@ -100,7 +100,7 @@ class TestMetadata:
             }
         }
         spec.components.schema(
-            "definition", properties=properties, description="definiton description"
+            "definition", {'properties': properties, 'description': "definiton description"}
         )
         metadata = spec.to_dict()
         assert metadata["components"]["schemas"].get("ErrorResponse", False)
@@ -132,13 +132,13 @@ class TestDefinitions:
     }
 
     def test_definition(self, spec):
-        spec.components.schema("Pet", properties=self.properties)
+        spec.components.schema("Pet", {"properties": self.properties})
         defs = get_definitions(spec)
         assert "Pet" in defs
         assert defs["Pet"]["properties"] == self.properties
 
     def test_definition_is_chainable(self, spec):
-        spec.components.schema("Pet", properties={}).schema("Plant", properties={})
+        spec.components.schema("Pet", {"properties": {}}).schema("Plant", {"properties": {}})
         defs = get_definitions(spec)
         assert "Pet" in defs
         assert "Plant" in defs
@@ -146,27 +146,26 @@ class TestDefinitions:
     def test_definition_description(self, spec):
         model_description = "An animal which lives with humans."
         spec.components.schema(
-            "Pet", properties=self.properties, description=model_description
+            "Pet", {"properties": self.properties, "description": model_description}
         )
         defs = get_definitions(spec)
         assert defs["Pet"]["description"] == model_description
 
     def test_definition_stores_enum(self, spec):
         enum = ["name", "photoUrls"]
-        spec.components.schema("Pet", properties=self.properties, enum=enum)
+        spec.components.schema("Pet", {"properties": self.properties, "enum": enum})
         defs = get_definitions(spec)
         assert defs["Pet"]["enum"] == enum
 
     def test_definition_extra_fields(self, spec):
-        extra_fields = {"discriminator": "name"}
         spec.components.schema(
-            "Pet", properties=self.properties, extra_fields=extra_fields
+            "Pet", {"properties": self.properties, "discriminator": "name"}
         )
         defs = get_definitions(spec)
         assert defs["Pet"]["discriminator"] == "name"
 
     def test_definition_duplicate_name(self, spec):
-        spec.components.schema("Pet", properties=self.properties)
+        spec.components.schema("Pet", {"properties": self.properties})
         with pytest.raises(
             DuplicateComponentNameError,
             match='Another schema with name "Pet" is already registered.',
