@@ -18,6 +18,10 @@ apispec
     :target: https://marshmallow.readthedocs.io/en/latest/upgrading.html
     :alt: marshmallow 2/3 compatible
 
+.. image:: https://badgen.net/badge/OAS/2,3?list=1&color=cyan
+    :target: https://github.com/OAI/OpenAPI-Specification
+    :alt: OpenAPI Specification 2/3 compatible
+
 .. image:: https://badgen.net/badge/code%20style/black/000
     :target: https://github.com/ambv/black
     :alt: code style: black
