@@ -7,6 +7,8 @@ Changelog
 Features:
 
 - Expanded support for OpenAPI Specification version 3 (:issue:`165`).
+- Add ``summary`` and ``description`` parameters to ``APISpec.path``
+  (:issue:`227`). Thanks :user:`timakro` for the suggestion.
 - Add ``apispec.core.Components.security_scheme`` for adding Security
   Scheme Objects (:issue:`245`).
 - [apispec.ext.marshmallow]: Add support for outputting field patterns
