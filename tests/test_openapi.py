@@ -720,9 +720,7 @@ def test_openapi_tools_validate_v2():
     openapi = ma_plugin.openapi
 
     spec.components.schema("Category", schema=CategorySchema)
-    spec.components.schema(
-        "Pet", schema=PetSchema, extra_fields={"discriminator": "name"}
-    )
+    spec.components.schema("Pet", {"discriminator": "name"}, schema=PetSchema)
 
     spec.path(
         view=None,

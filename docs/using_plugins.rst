@@ -173,12 +173,12 @@ If your API uses `method-based dispatching <http://flask.pocoo.org/docs/0.12/vie
         def get(self):
             """Gist view
             ---
-            description: get a gist
+            description: Get a gist
             responses:
-            200:
-              content:
-                application/json:
-                  schema: GistSchema
+              200:
+                content:
+                  application/json:
+                    schema: GistSchema
             """
             pass
 
@@ -207,29 +207,25 @@ By default, Marshmallow `Nested` fields are represented by a `JSON Reference obj
 If the schema has been added to the spec via `spec.components.schema <apispec.core.Components.schema>`,
 the user-supplied name will be used in the reference. Otherwise apispec will
 add the nested schema to the spec using an automatically resolved name for the
-nested schema. The default `schema_name_resolver <apispec.ext.marshmallow.resolver>`
+nested schema. The default `resolver <apispec.ext.marshmallow.resolver>`
 function will resolve a name based on the schema's class `__name__`, dropping a
 trailing "Schema" so that `class PetSchema(Schema)` resolves to "Pet".
 
-To change the behavior of the name resolution simply pass an alternative
+To change the behavior of the name resolution simply pass a
 function accepting a `Schema` class and returning a string to the plugin's
 constructor. If the `schema_name_resolver` function returns a value that
 evaluates to `False` in a boolean context the nested schema will not be added to
 the spec and instead defined in-line.
 
-Note: Circular-referencing schemas cannot be defined in-line due to infinite
-recursion so a `schema_name_resolver` function must return a string name when
-working with circular-referencing schemas.
+.. note::
+    Circular-referencing schemas cannot be defined in-line due to infinite
+    recursion so a `schema_name_resolver` function must return a string name when
+    working with circular-referencing schemas.
 
 Schema Modifiers
 ****************
 
-`Schema` instances can be initialized with modifier parameters to exclude
-fields or ignore the absence of required fields. apispec will respect
-schema modifiers in the generated schema definition. If a particular schema is
-initialized in an application with modifiers, it may be added to the spec with
-each set of modifiers and apispec will treat each unique set of modifiers --
-including no modifiers - as a unique schema definition.
+apispec will respect schema modifiers such as ``exclude`` and ``partial`` in the generated schema definition. If a schema is initialized with modifiers, apispec will treat each combination of modifiers as a unique schema definition.
 
 Custom Fields
 ***************

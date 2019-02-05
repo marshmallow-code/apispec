@@ -40,12 +40,9 @@ A plugin with a path helper function may look something like this:
 The ``init_spec`` Method
 ------------------------
 
-`BasePlugin` has an `init_spec` method that `APISpec` calls on each plugin at initialization with the spec object itself as parameter. It is no-op by default, but a plugin may override it to access and store useful information from the spec object.
+`BasePlugin` has an `init_spec` method that `APISpec` calls on each plugin at initialization with the spec object itself as parameter. It is no-op by default, but a plugin may override it to access and store useful information on the spec object.
 
-A typical use case is conditional code depending on the OpenAPI version, which is stored as ``openapi_version`` attribute of the spec object. See source code for `apispec.ext.marshmallow.MarshmallowPlugin </_modules/apispec/ext/marshmallow.html>`_ for an example.
-
-Note that the OpenAPI version is stored in the spec object as an `apispec.utils.OpenAPIVersion`. An ``OpenAPIVersion`` instance provides the version as string as well as shortcuts to version digits.
-
+A typical use case is conditional code depending on the OpenAPI version, which is stored as ``openapi_version`` on the `spec` object. See source code for `apispec.ext.marshmallow.MarshmallowPlugin </_modules/apispec/ext/marshmallow.html>`_ for an example.
 
 Example: Docstring-parsing Plugin
 ---------------------------------
@@ -98,7 +95,7 @@ To use the plugin:
             200:
               content:
                 application/json:
-                schema: '#/definitions/Gist'
+                  schema: '#/definitions/Gist'
         """
         pass
 
@@ -111,7 +108,7 @@ To use the plugin:
 Next Steps
 ----------
 
-To learn more about how to write plugins
+To learn more about how to write plugins:
 
 * Consult the :doc:`Core API docs <api_core>` for `BasePlugin <apispec.BasePlugin>`
 * View the source for an existing apispec plugin, e.g. `FlaskPlugin <https://github.com/marshmallow-code/apispec-webframeworks/blob/master/apispec_webframeworks/flask.py>`_.

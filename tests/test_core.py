@@ -159,7 +159,7 @@ class TestComponents:
         defs = get_schemas(spec)
         assert defs["Pet"]["enum"] == enum
 
-    def test_schema_extra_fields(self, spec):
+    def test_schema_discriminator(self, spec):
         spec.components.schema(
             "Pet", {"properties": self.properties, "discriminator": "name"}
         )

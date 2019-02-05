@@ -23,9 +23,11 @@ Add schemas to your spec using `spec.components.schema <apispec.core.Components.
 
     spec.components.schema(
         "Gist",
-        properties={
-            "id": {"type": "integer", "format": "int64"},
-            "name": {"type": "string"},
+        {
+            "properties": {
+                "id": {"type": "integer", "format": "int64"},
+                "name": {"type": "string"},
+            }
         },
     )
 

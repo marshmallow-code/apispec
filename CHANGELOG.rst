@@ -7,19 +7,46 @@ Changelog
 Features:
 
 - Expanded support for OpenAPI Specification version 3 (:issue:`165`).
-- Add ``apispec.core.Components.security_scheme`` for adding Security
+- Add `apispec.core.Components.security_scheme` for adding Security
   Scheme Objects (:issue:`245`).
 - [apispec.ext.marshmallow]: Add support for outputting field patterns
   from ``Regexp`` validators (:pr:`364`).
   Thanks :user:`DStape` for the PR.
-- A `DuplicateComponentNameError` is raised when registering two
+- A `apispec.exceptions.DuplicateComponentNameError` is raised when registering two
   components with the same name (:issue:`340`).
+
+Other changes:
+
+- *Backwards-incompatible*: Components properties are now passed as dictionaries rather than keyword arguments (:pr:`381`).
+
+.. code-block:: python
+
+    # <1.0.0
+    spec.components.schema("Pet", properties={"name": {"type": "string"}})
+    spec.components.parameter("PetId", "path", format="int64", type="integer")
+    spec.component.response("NotFound", description="Pet not found")
+
+    # >=1.0.0
+    spec.components.schema("Pet", {"properties": {"name": {"type": "string"}}})
+    spec.components.parameter("PetId", "path", {"format": "int64", "type": "integer"})
+    spec.component.response("NotFound", {"description": "Pet not found"})
 
 Deprecations/Removals:
 
 - *Backwards-incompatible*: The ``ref`` argument passed to fields is no
   longer used (:issue:`354`). References for nested ``Schema`` are
   stored automatically.
+- *Backwards-incompatible*: The ``extra_fields`` argument of
+  `apispec.core.Components.schema` is removed. All properties may be
+  passed in the ``component`` argument.
+
+.. code-block:: python
+
+    # <1.0.0
+    spec.components.schema("Pet", schema=PetSchema, extra_fields={"discriminator": "name"})
+
+    # >=1.0.0
+    spec.components.schema("Pet", component={"discriminator": "name"}, schema=PetSchema)
 
 1.0.0rc1 (2018-01-29)
 +++++++++++++++++++++
