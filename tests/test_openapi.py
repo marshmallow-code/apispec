@@ -12,7 +12,7 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec.ext.marshmallow.openapi import MARSHMALLOW_VERSION_INFO
 from apispec import exceptions, utils, APISpec
 
-from .utils import get_definitions, ref_path
+from .utils import get_schemas, ref_path
 
 
 class TestMarshmallowFieldToOpenAPI:
@@ -647,7 +647,7 @@ class TestNesting:
             child = fields.Nested(Child, **{modifier: ("i",)})
 
         spec_fixture.openapi.schema2jsonschema(Parent)
-        props = get_definitions(spec_fixture.spec)["Child"]["properties"]
+        props = get_schemas(spec_fixture.spec)["Child"]["properties"]
         assert ("i" in props) == (modifier == "only")
         assert ("j" not in props) == (modifier == "only")
 
@@ -662,7 +662,7 @@ class TestNesting:
             name = fields.Str()
 
         spec_fixture.spec.components.schema("Pet", schema=PetSchema)
-        props = get_definitions(spec_fixture.spec)
+        props = get_schemas(spec_fixture.spec)
 
         assert props["Category"] == spec_fixture.openapi.schema2jsonschema(
             category_schema
@@ -682,7 +682,7 @@ class TestNesting:
 
         spec.components.schema("Pet", schema=PetSchema)
 
-        category_props = get_definitions(spec)["Category"]["properties"]
+        category_props = get_schemas(spec)["Category"]["properties"]
         assert "breed" not in category_props
 
     def test_nested_field_with_property(self, spec_fixture):
@@ -720,9 +720,7 @@ def test_openapi_tools_validate_v2():
     openapi = ma_plugin.openapi
 
     spec.components.schema("Category", schema=CategorySchema)
-    spec.components.schema(
-        "Pet", schema=PetSchema, extra_fields={"discriminator": "name"}
-    )
+    spec.components.schema("Pet", {"discriminator": "name"}, schema=PetSchema)
 
     spec.path(
         view=None,
@@ -869,7 +867,7 @@ class ValidationSchema(Schema):
 class TestFieldValidation:
     def test_range(self, spec):
         spec.components.schema("Validation", schema=ValidationSchema)
-        result = get_definitions(spec)["Validation"]["properties"]["range"]
+        result = get_schemas(spec)["Validation"]["properties"]["range"]
 
         assert "minimum" in result
         assert result["minimum"] == 1
@@ -878,7 +876,7 @@ class TestFieldValidation:
 
     def test_multiple_ranges(self, spec):
         spec.components.schema("Validation", schema=ValidationSchema)
-        result = get_definitions(spec)["Validation"]["properties"]["multiple_ranges"]
+        result = get_schemas(spec)["Validation"]["properties"]["multiple_ranges"]
 
         assert "minimum" in result
         assert result["minimum"] == 3
@@ -887,7 +885,7 @@ class TestFieldValidation:
 
     def test_list_length(self, spec):
         spec.components.schema("Validation", schema=ValidationSchema)
-        result = get_definitions(spec)["Validation"]["properties"]["list_length"]
+        result = get_schemas(spec)["Validation"]["properties"]["list_length"]
 
         assert "minItems" in result
         assert result["minItems"] == 1
@@ -896,7 +894,7 @@ class TestFieldValidation:
 
     def test_string_length(self, spec):
         spec.components.schema("Validation", schema=ValidationSchema)
-        result = get_definitions(spec)["Validation"]["properties"]["string_length"]
+        result = get_schemas(spec)["Validation"]["properties"]["string_length"]
 
         assert "minLength" in result
         assert result["minLength"] == 1
@@ -905,7 +903,7 @@ class TestFieldValidation:
 
     def test_multiple_lengths(self, spec):
         spec.components.schema("Validation", schema=ValidationSchema)
-        result = get_definitions(spec)["Validation"]["properties"]["multiple_lengths"]
+        result = get_schemas(spec)["Validation"]["properties"]["multiple_lengths"]
 
         assert "minLength" in result
         assert result["minLength"] == 3
@@ -914,7 +912,7 @@ class TestFieldValidation:
 
     def test_equal_length(self, spec):
         spec.components.schema("Validation", schema=ValidationSchema)
-        result = get_definitions(spec)["Validation"]["properties"]["equal_length"]
+        result = get_schemas(spec)["Validation"]["properties"]["equal_length"]
 
         assert "minLength" in result
         assert result["minLength"] == 5

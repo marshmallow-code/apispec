@@ -8,7 +8,7 @@ from apispec import APISpec, BasePlugin
 from apispec.exceptions import APISpecError, DuplicateComponentNameError
 
 from .utils import (
-    get_definitions,
+    get_schemas,
     get_paths,
     get_parameters,
     get_responses,
@@ -100,7 +100,7 @@ class TestMetadata:
             }
         }
         spec.components.schema(
-            "definition", properties=properties, description="definiton description"
+            "definition", {"properties": properties, "description": "description"}
         )
         metadata = spec.to_dict()
         assert metadata["components"]["schemas"].get("ErrorResponse", False)
@@ -124,54 +124,121 @@ class TestTags:
         assert spec.to_dict()["tags"] == [{"name": "tag1"}, {"name": "tag2"}]
 
 
-class TestDefinitions:
+class TestComponents:
 
     properties = {
         "id": {"type": "integer", "format": "int64"},
         "name": {"type": "string", "example": "doggie"},
     }
 
-    def test_definition(self, spec):
-        spec.components.schema("Pet", properties=self.properties)
-        defs = get_definitions(spec)
+    def test_schema(self, spec):
+        spec.components.schema("Pet", {"properties": self.properties})
+        defs = get_schemas(spec)
         assert "Pet" in defs
         assert defs["Pet"]["properties"] == self.properties
 
-    def test_definition_is_chainable(self, spec):
-        spec.components.schema("Pet", properties={}).schema("Plant", properties={})
-        defs = get_definitions(spec)
+    def test_schema_is_chainable(self, spec):
+        spec.components.schema("Pet", {"properties": {}}).schema(
+            "Plant", {"properties": {}}
+        )
+        defs = get_schemas(spec)
         assert "Pet" in defs
         assert "Plant" in defs
 
-    def test_definition_description(self, spec):
+    def test_schema_description(self, spec):
         model_description = "An animal which lives with humans."
         spec.components.schema(
-            "Pet", properties=self.properties, description=model_description
+            "Pet", {"properties": self.properties, "description": model_description}
         )
-        defs = get_definitions(spec)
+        defs = get_schemas(spec)
         assert defs["Pet"]["description"] == model_description
 
-    def test_definition_stores_enum(self, spec):
+    def test_schema_stores_enum(self, spec):
         enum = ["name", "photoUrls"]
-        spec.components.schema("Pet", properties=self.properties, enum=enum)
-        defs = get_definitions(spec)
+        spec.components.schema("Pet", {"properties": self.properties, "enum": enum})
+        defs = get_schemas(spec)
         assert defs["Pet"]["enum"] == enum
 
-    def test_definition_extra_fields(self, spec):
-        extra_fields = {"discriminator": "name"}
+    def test_schema_discriminator(self, spec):
         spec.components.schema(
-            "Pet", properties=self.properties, extra_fields=extra_fields
+            "Pet", {"properties": self.properties, "discriminator": "name"}
         )
-        defs = get_definitions(spec)
+        defs = get_schemas(spec)
         assert defs["Pet"]["discriminator"] == "name"
 
-    def test_definition_duplicate_name(self, spec):
-        spec.components.schema("Pet", properties=self.properties)
+    def test_schema_duplicate_name(self, spec):
+        spec.components.schema("Pet", {"properties": self.properties})
         with pytest.raises(
             DuplicateComponentNameError,
             match='Another schema with name "Pet" is already registered.',
         ):
             spec.components.schema("Pet", properties=self.properties)
+
+    def test_parameter(self, spec):
+        parameter = {"format": "int64", "type": "integer"}
+        spec.components.parameter("PetId", "path", parameter)
+        params = get_parameters(spec)
+        assert params["PetId"] == {
+            "format": "int64",
+            "type": "integer",
+            "in": "path",
+            "name": "PetId",
+        }
+
+    def test_parameter_is_chainable(self, spec):
+        spec.components.parameter("param1", "path").parameter("param2", "path")
+        params = get_parameters(spec)
+        assert "param1" in params
+        assert "param2" in params
+
+    def test_parameter_duplicate_name(self, spec):
+        spec.components.parameter("test_parameter", "path")
+        with pytest.raises(
+            DuplicateComponentNameError,
+            match='Another parameter with name "test_parameter" is already registered.',
+        ):
+            spec.components.parameter("test_parameter", "path")
+
+    def test_response(self, spec):
+        response = {"description": "Pet not found"}
+        spec.components.response("NotFound", response)
+        responses = get_responses(spec)
+        assert responses["NotFound"] == response
+
+    def test_response_is_chainable(self, spec):
+        spec.components.response("resp1").response("resp2")
+        responses = get_responses(spec)
+        assert "resp1" in responses
+        assert "resp2" in responses
+
+    def test_response_duplicate_name(self, spec):
+        spec.components.response("test_response")
+        with pytest.raises(
+            DuplicateComponentNameError,
+            match='Another response with name "test_response" is already registered.',
+        ):
+            spec.components.response("test_response")
+
+    def test_security_scheme(self, spec):
+        sec_scheme = {"type": "apiKey", "in": "header", "name": "X-API-Key"}
+        spec.components.security_scheme("ApiKeyAuth", sec_scheme)
+        assert get_security_schemes(spec)["ApiKeyAuth"] == sec_scheme
+
+    def test_security_scheme_is_chainable(self, spec):
+        spec.components.security_scheme("sec_1", {}).security_scheme("sec_2", {})
+        security_schemes = get_security_schemes(spec)
+        assert "sec_1" in security_schemes
+        assert "sec_2" in security_schemes
+
+    def test_security_scheme_duplicate_name(self, spec):
+        sec_scheme_1 = {"type": "apiKey", "in": "header", "name": "X-API-Key"}
+        sec_scheme_2 = {"type": "apiKey", "in": "header", "name": "X-API-Key-2"}
+        spec.components.security_scheme("ApiKeyAuth", sec_scheme_1)
+        with pytest.raises(
+            DuplicateComponentNameError,
+            match='Another security scheme with name "ApiKeyAuth" is already registered.',
+        ):
+            spec.components.security_scheme("ApiKeyAuth", sec_scheme_2)
 
     def test_to_yaml(self, spec):
         enum = ["name", "photoUrls"]
@@ -310,9 +377,7 @@ class TestPath:
     def test_parameter(self, spec):
         route_spec = self.paths["/pet/{petId}"]["get"]
 
-        spec.components.parameter(
-            "test_parameter", "path", **route_spec["parameters"][0]
-        )
+        spec.components.parameter("test_parameter", "path", route_spec["parameters"][0])
 
         spec.path(
             path="/pet/{petId}", operations={"get": {"parameters": ["test_parameter"]}}
@@ -335,29 +400,10 @@ class TestPath:
                 == metadata["components"]["parameters"]["test_parameter"]
             )
 
-    def test_parameter_is_chainable(self, spec):
-        spec.components.parameter("param1", "path").parameter("param2", "path")
-        params = get_parameters(spec)
-        assert "param1" in params
-        assert "param2" in params
-
-    def test_parameter_duplicate_name(self, spec):
-        route_spec = self.paths["/pet/{petId}"]["get"]
-        spec.components.parameter(
-            "test_parameter", "path", **route_spec["parameters"][0]
-        )
-        with pytest.raises(
-            DuplicateComponentNameError,
-            match='Another parameter with name "test_parameter" is already registered.',
-        ):
-            spec.components.parameter(
-                "test_parameter", "path", **route_spec["parameters"][0]
-            )
-
     def test_response(self, spec):
         route_spec = self.paths["/pet/{petId}"]["get"]
 
-        spec.components.response("test_response", **route_spec["responses"]["200"])
+        spec.components.response("test_response", route_spec["responses"]["200"])
 
         spec.path(
             path="/pet/{petId}",
@@ -381,42 +427,6 @@ class TestPath:
                 == metadata["components"]["responses"]["test_response"]
             )
 
-    def test_response_is_chainable(self, spec):
-        spec.components.response("resp1").response("resp2")
-        responses = get_responses(spec)
-        assert "resp1" in responses
-        assert "resp2" in responses
-
-    def test_response_duplicate_name(self, spec):
-        route_spec = self.paths["/pet/{petId}"]["get"]
-        spec.components.response("test_response", **route_spec["responses"]["200"])
-        with pytest.raises(
-            DuplicateComponentNameError,
-            match='Another response with name "test_response" is already registered.',
-        ):
-            spec.components.response("test_response", **route_spec["responses"]["200"])
-
-    def test_security_scheme(self, spec):
-        sec_scheme = {"type": "apiKey", "in": "header", "name": "X-API-Key"}
-        spec.components.security_scheme("ApiKeyAuth", **sec_scheme)
-        assert get_security_schemes(spec)["ApiKeyAuth"] == sec_scheme
-
-    def test_security_scheme_is_chainable(self, spec):
-        spec.components.security_scheme("sec_1").security_scheme("sec_2")
-        security_schemes = get_security_schemes(spec)
-        assert "sec_1" in security_schemes
-        assert "sec_2" in security_schemes
-
-    def test_security_scheme_duplicate_name(self, spec):
-        sec_scheme_1 = {"type": "apiKey", "in": "header", "name": "X-API-Key"}
-        sec_scheme_2 = {"type": "apiKey", "in": "header", "name": "X-API-Key-2"}
-        spec.components.security_scheme("ApiKeyAuth", **sec_scheme_1)
-        with pytest.raises(
-            DuplicateComponentNameError,
-            match='Another security scheme with name "ApiKeyAuth" is already registered.',
-        ):
-            spec.components.security_scheme("ApiKeyAuth", **sec_scheme_2)
-
     def test_path_check_invalid_http_method(self, spec):
         spec.path("/pet/{petId}", operations={"get": {}})
         spec.path("/pet/{petId}", operations={"x-dummy": {}})
@@ -433,11 +443,11 @@ class TestPlugins:
                 if not return_none:
                     return {"properties": {"name": {"type": "string"}}}
 
-            def parameter_helper(self, **kwargs):
+            def parameter_helper(self, parameter, **kwargs):
                 if not return_none:
                     return {"description": "some parameter"}
 
-            def response_helper(self, **kwargs):
+            def response_helper(self, response, **kwargs):
                 if not return_none:
                     return {"description": "42"}
 
@@ -462,8 +472,8 @@ class TestPlugins:
             openapi_version=openapi_version,
             plugins=(self.test_plugin_factory(return_none),),
         )
-        spec.components.schema("Pet", {})
-        definitions = get_definitions(spec)
+        spec.components.schema("Pet")
+        definitions = get_schemas(spec)
         if return_none:
             assert definitions["Pet"] == {}
         else:
@@ -478,7 +488,7 @@ class TestPlugins:
             openapi_version=openapi_version,
             plugins=(self.test_plugin_factory(return_none),),
         )
-        spec.components.parameter("Pet", "body", **{})
+        spec.components.parameter("Pet", "body", {})
         parameters = get_parameters(spec)
         if return_none:
             assert parameters["Pet"] == {"in": "body", "name": "Pet"}
@@ -498,7 +508,7 @@ class TestPlugins:
             openapi_version=openapi_version,
             plugins=(self.test_plugin_factory(return_none),),
         )
-        spec.components.response("Pet", **{})
+        spec.components.response("Pet", {})
         responses = get_responses(spec)
         if return_none:
             assert responses["Pet"] == {}
