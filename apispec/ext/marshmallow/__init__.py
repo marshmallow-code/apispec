@@ -201,6 +201,6 @@ class MarshmallowPlugin(BasePlugin):
         if schema_key in self.openapi.refs:
             warnings.warn(
                 "{} has already been added to the spec. Adding it twice may "
-                "cause references to not resove properly".format(schema_key[0]),
+                "cause references to not resolve properly.".format(schema_key[0]),
                 UserWarning,
             )
