@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 """Utilities for generating OpenAPI Specification (fka Swagger) entities from
 marshmallow :class:`Schemas <marshmallow.Schema>` and :class:`Fields <marshmallow.fields.Field>`.
+
+.. warning::
+
+    This module is treated as private API.
+    Users should not need to use this module directly.
 """
 from __future__ import absolute_import, unicode_literals
 import operator
