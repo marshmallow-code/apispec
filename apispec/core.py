@@ -271,13 +271,17 @@ class APISpec(object):
         self._tags.append(tag)
         return self
 
-    def path(self, path=None, operations=None, **kwargs):
+    def path(
+        self, path=None, operations=None, summary=None, description=None, **kwargs
+    ):
         """Add a new path object to the spec.
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#path-item-object
 
         :param str|None path: URL path component
         :param dict|None operations: describes the http methods and options for `path`
+        :param str summary: short summary relevant to all operations in this path
+        :param str description: long description relevant to all operations in this path
         :param dict kwargs: parameters used by any path helpers see :meth:`register_path_helper`
         """
         operations = operations or OrderedDict()
@@ -303,4 +307,8 @@ class APISpec(object):
         clean_operations(operations, self.openapi_version.major)
 
         self._paths.setdefault(path, operations).update(operations)
+        if summary is not None:
+            self._paths[path]["summary"] = summary
+        if description is not None:
+            self._paths[path]["description"] = description
         return self

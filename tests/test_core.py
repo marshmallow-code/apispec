@@ -365,6 +365,15 @@ class TestPath:
             spec.path()
         assert "Path template is not specified" in str(excinfo)
 
+    def test_path_summary_description(self, spec):
+        summary = "Operations on a Pet"
+        description = "Operations on a Pet identified by its ID"
+        spec.path(path="/pet/{petId}", summary=summary, description=description)
+
+        p = get_paths(spec)["/pet/{petId}"]
+        assert p["summary"] == summary
+        assert p["description"] == description
+
     def test_parameter(self, spec):
         route_spec = self.paths["/pet/{petId}"]["get"]
 
