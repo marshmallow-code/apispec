@@ -15,6 +15,12 @@ Features:
   from ``Regexp`` validators (:pr:`364`).
   Thanks :user:`DStape` for the PR.
 
+Bug fixes:
+
+- [apispec.ext.marshmallow]: Fix automatic documentation of schemas when
+  using ``Nested(MySchema, many==True)`` (:issue:`383`). Thanks
+  :user:`whoiswes` for reporting.
+
 Other changes:
 
 - *Backwards-incompatible*: Components properties are now passed as dictionaries rather than keyword arguments (:pr:`381`).
