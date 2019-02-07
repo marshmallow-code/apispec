@@ -413,23 +413,14 @@ class TestMarshmallowSchemaToModelDefinition:
         res = openapi.fields2jsonschema(fields_dict)
         assert res["required"] == ["id"]
 
-    def test_schema_instance_inspection(self, openapi):
+    @pytest.mark.parametrize("many", (True, False))
+    def test_schema_instance_inspection(self, openapi, many):
         class UserSchema(Schema):
             _id = fields.Int()
 
-        res = openapi.schema2jsonschema(UserSchema())
+        res = openapi.schema2jsonschema(UserSchema(many=many))
         assert res["type"] == "object"
         props = res["properties"]
-        assert "_id" in props
-
-    def test_schema_instance_inspection_with_many(self, openapi):
-        class UserSchema(Schema):
-            _id = fields.Int()
-
-        res = openapi.schema2jsonschema(UserSchema(many=True))
-        assert res["type"] == "array"
-        assert "items" in res
-        props = res["items"]["properties"]
         assert "_id" in props
 
     def test_raises_error_if_no_declared_fields(self, openapi):
@@ -654,7 +645,7 @@ class TestNesting:
     def test_schema2jsonschema_with_nested_fields_with_adhoc_changes(
         self, spec_fixture
     ):
-        category_schema = CategorySchema(many=True)
+        category_schema = CategorySchema()
         category_schema.fields["id"].required = True
 
         class PetSchema(Schema):
@@ -667,10 +658,10 @@ class TestNesting:
         assert props["Category"] == spec_fixture.openapi.schema2jsonschema(
             category_schema
         )
-        assert set(props["Category"]["items"]["required"]) == {"id", "name"}
+        assert set(props["Category"]["required"]) == {"id", "name"}
 
-        props["Category"]["items"]["required"] = ["name"]
-        assert props["Category"]["items"] == spec_fixture.openapi.schema2jsonschema(
+        props["Category"]["required"] = ["name"]
+        assert props["Category"] == spec_fixture.openapi.schema2jsonschema(
             CategorySchema
         )
 

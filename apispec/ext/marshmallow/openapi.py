@@ -450,7 +450,7 @@ class OpenAPIConverter(object):
             name = self.schema_name_resolver(schema_cls)
             if not name:
                 try:
-                    return self.schema2jsonschema(schema)
+                    json_schema = self.schema2jsonschema(schema)
                 except RuntimeError:
                     raise APISpecError(
                         "Name resolver returned None for schema {schema} which is "
@@ -459,6 +459,9 @@ class OpenAPIConverter(object):
                         " MarshmallowPlugin returns a string for all circular"
                         " referencing schemas.".format(schema=schema)
                     )
+                if getattr(schema, "many", False):
+                    return {"type": "array", "items": json_schema}
+                return json_schema
             name = get_unique_schema_name(self.spec.components, name)
             self.spec.components.schema(name, schema=schema)
         return self.get_ref_dict(schema_instance)
@@ -648,9 +651,6 @@ class OpenAPIConverter(object):
             jsonschema["title"] = Meta.title
         if hasattr(Meta, "description"):
             jsonschema["description"] = Meta.description
-
-        if getattr(schema, "many", False):
-            jsonschema = {"type": "array", "items": jsonschema}
 
         return jsonschema
 

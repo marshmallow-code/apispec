@@ -102,7 +102,6 @@ class TestDefinitionHelper:
 
     @pytest.mark.parametrize("schema", [AnalysisSchema, AnalysisSchema()])
     def test_resolve_schema_dict_auto_reference_return_none(self, schema):
-        # this resolver return None
         def resolver(schema):
             return None
 
@@ -161,6 +160,27 @@ class TestDefinitionHelper:
 
         assert "Pet" in definitions
         assert "Pet1" in definitions
+
+    def test_resolve_nested_schema_many_true_resolver_return_none(self):
+        def resolver(schema):
+            return None
+
+        class PetFamilySchema(Schema):
+            pets_1 = Nested(PetSchema, many=True)
+            pets_2 = List(Nested(PetSchema))
+
+        spec = APISpec(
+            title="Test auto-reference",
+            version="0.1",
+            openapi_version="2.0",
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
+        )
+
+        spec.components.schema("PetFamily", schema=PetFamilySchema)
+        props = get_schemas(spec)["PetFamily"]["properties"]
+        pets_1 = props["pets_1"]
+        pets_2 = props["pets_2"]
+        assert pets_1["type"] == pets_2["type"] == "array"
 
 
 class TestComponentParameterHelper:
@@ -250,7 +270,8 @@ class TestCustomField:
 
 class TestOperationHelper:
     @pytest.mark.parametrize(
-        "pet_schema", (PetSchema, PetSchema(), "tests.schemas.PetSchema")
+        "pet_schema",
+        (PetSchema, PetSchema(), PetSchema(many=True), "tests.schemas.PetSchema"),
     )
     @pytest.mark.parametrize("spec_fixture", ("2.0",), indirect=True)
     def test_schema_v2(self, spec_fixture, pet_schema):
@@ -268,7 +289,11 @@ class TestOperationHelper:
             },
         )
         get = get_paths(spec_fixture.spec)["/pet"]["get"]
-        reference = get["responses"][200]["schema"]
+        if isinstance(pet_schema, Schema) and pet_schema.many is True:
+            assert get["responses"][200]["schema"]["type"] == "array"
+            reference = get["responses"][200]["schema"]["items"]
+        else:
+            reference = get["responses"][200]["schema"]
         assert reference == {"$ref": ref_path(spec_fixture.spec) + "Pet"}
         assert len(spec_fixture.spec.components._schemas) == 1
         resolved_schema = spec_fixture.spec.components._schemas["Pet"]
@@ -276,7 +301,8 @@ class TestOperationHelper:
         assert get["responses"][200]["description"] == "successful operation"
 
     @pytest.mark.parametrize(
-        "pet_schema", (PetSchema, PetSchema(), "tests.schemas.PetSchema")
+        "pet_schema",
+        (PetSchema, PetSchema(), PetSchema(many=True), "tests.schemas.PetSchema"),
     )
     @pytest.mark.parametrize("spec_fixture", ("3.0.0",), indirect=True)
     def test_schema_v3(self, spec_fixture, pet_schema):
@@ -294,7 +320,16 @@ class TestOperationHelper:
             },
         )
         get = get_paths(spec_fixture.spec)["/pet"]["get"]
-        reference = get["responses"][200]["content"]["application/json"]["schema"]
+        if isinstance(pet_schema, Schema) and pet_schema.many is True:
+            assert (
+                get["responses"][200]["content"]["application/json"]["schema"]["type"]
+                == "array"
+            )
+            reference = get["responses"][200]["content"]["application/json"]["schema"][
+                "items"
+            ]
+        else:
+            reference = get["responses"][200]["content"]["application/json"]["schema"]
 
         assert reference == {"$ref": ref_path(spec_fixture.spec) + "Pet"}
         assert len(spec_fixture.spec.components._schemas) == 1
