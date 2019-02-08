@@ -412,9 +412,6 @@ class OpenAPIConverter(object):
 
         if isinstance(field, marshmallow.fields.Nested):
             del ret["type"]
-            # marshmallow>=2.7.0 compat
-            field.metadata.pop("many", None)
-
             schema_dict = self.resolve_nested_schema(field.schema)
             if ret and "$ref" in schema_dict:
                 ret.update({"allOf": [schema_dict]})
