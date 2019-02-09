@@ -218,7 +218,7 @@ class APISpec(object):
     :param str version: API version
     :param list|tuple plugins: Plugin instances.
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#infoObject
-    :param str|OpenAPIVersion openapi_version: The OpenAPI version to use.
+    :param str|OpenAPIVersion openapi_version: OpenAPI Specification version.
         Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
     :param dict options: Optional top-level keys
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#openapi-object
