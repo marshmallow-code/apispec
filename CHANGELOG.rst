@@ -181,7 +181,7 @@ Features:
 - [apispec.core]: *Backwards-incompatible*: YAML support is optional. To
   install with YAML support, use ``pip install 'apispec[yaml]'``. You
   will need to do this if you use ``FlaskPlugin``,
-  ``BottlePlugin``, or ``TornadoPlugin``.
+  ``BottlePlugin``, or ``TornadoPlugin`` (:pr:`251`).
 - [apispec.ext.marshmallow]: Allow overriding the documentation for
   a field's default. This is especially useful for documenting
   callable defaults (:issue:`196`).
