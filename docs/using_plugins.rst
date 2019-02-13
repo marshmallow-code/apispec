@@ -199,8 +199,10 @@ If your API uses `method-based dispatching <http://flask.pocoo.org/docs/0.12/vie
 Marshmallow Plugin
 ------------------
 
-Nesting Schemas
-***************
+.. _marshmallow_nested_schemas:
+
+Nested Schemas
+**************
 
 By default, Marshmallow `Nested` fields are represented by a `JSON Reference object
 <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#referenceObject>`_.
@@ -218,9 +220,9 @@ evaluates to `False` in a boolean context the nested schema will not be added to
 the spec and instead defined in-line.
 
 .. note::
-    Circular-referencing schemas cannot be defined in-line due to infinite
-    recursion so a `schema_name_resolver` function must return a string name when
-    working with circular-referencing schemas.
+    A `schema_name_resolver` function must return a string name when
+    working with circular-referencing schemas in order to avoid infinite
+    recursion.
 
 Schema Modifiers
 ****************

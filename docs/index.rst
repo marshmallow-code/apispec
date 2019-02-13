@@ -207,6 +207,7 @@ Project Info
    :maxdepth: 1
 
    changelog
+   upgrading
    ecosystem
    authors
    contributing

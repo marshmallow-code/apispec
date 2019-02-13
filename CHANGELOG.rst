@@ -30,12 +30,12 @@ Other changes:
     # <1.0.0
     spec.components.schema("Pet", properties={"name": {"type": "string"}})
     spec.components.parameter("PetId", "path", format="int64", type="integer")
-    spec.component.response("NotFound", description="Pet not found")
+    spec.components.response("NotFound", description="Pet not found")
 
     # >=1.0.0
     spec.components.schema("Pet", {"properties": {"name": {"type": "string"}}})
     spec.components.parameter("PetId", "path", {"format": "int64", "type": "integer"})
-    spec.component.response("NotFound", {"description": "Pet not found"})
+    spec.components.response("NotFound", {"description": "Pet not found"})
 
 Deprecations/Removals:
 
@@ -49,10 +49,10 @@ Deprecations/Removals:
 .. code-block:: python
 
     # <1.0.0
-    spec.components.schema("Pet", schema=PetSchema, extra_fields={"discriminator": "name"})
+    spec.definition("Pet", schema=PetSchema, extra_fields={"discriminator": "name"})
 
     # >=1.0.0
-    spec.components.schema("Pet", component={"discriminator": "name"}, schema=PetSchema)
+    spec.components.schema("Pet", schema=PetSchema, component={"discriminator": "name"})
 
 1.0.0rc1 (2018-01-29)
 +++++++++++++++++++++
@@ -63,8 +63,8 @@ Features:
   ``fields.Nested(PetSchema())`` -> ``#components/schemas/Pet``.
 - Automatically generate references for ``requestBody`` using the above mechanism.
 - Ability to opt out of the above behavior by passing a ``schema_name_resolver``
-  function that returns ``None`` to ``api.ext.MarshmallowPlugin`` on initialization.
-- References now respect Schema initialization modifiers such as exclude.
+  function that returns ``None`` to ``api.ext.MarshmallowPlugin``.
+- References now respect Schema modifiers, including ``exclude`` and ``partial``.
 - *Backwards-incompatible*: A `apispec.exceptions.DuplicateComponentNameError` is raised
   when registering two components with the same name (:issue:`340`).
 
