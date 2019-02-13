@@ -99,10 +99,10 @@ Nested Schemas Are Referenced
 *****************************
 
 When using the `MarshmallowPlugin
-<apispec.ext.marshmallow.MarshmallowPlugin>`_`, nested `Schema
-<marshmallow.Schema>`_ classes referenced (with ``"$ref"``)in the output spec.
-By default, The name in the spec will be the class name with the "Schema" suffix
-removed, e.g. ``fields.Nested(PetSchema())`` -> ``#components/schemas/Pet``.
+<apispec.ext.marshmallow.MarshmallowPlugin>`, nested `Schema
+<marshmallow.Schema>` classes are referenced (with ``"$ref"``) in the output spec.
+By default, the name in the spec will be the class name with the "Schema" suffix
+removed, e.g. ``fields.Nested(PetSchema())`` -> ``"#components/schemas/Pet"``.
 
 The `ref` argument to `fields.Nested <marshmallow.fields.Nested>`_ is no
 longer respected.
