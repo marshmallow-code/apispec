@@ -702,6 +702,12 @@ class OpenAPIConverter(object):
 
     def resolve_schema_dict(self, schema):
         if isinstance(schema, dict):
+            for keyword in ("oneOf", "anyOf", "allOf"):
+                if keyword in schema:
+                    schema[keyword] = [
+                        self.resolve_schema_dict(v) for v in schema[keyword]
+                    ]
+
             if schema.get("type") == "array" and "items" in schema:
                 schema["items"] = self.resolve_schema_dict(schema["items"])
             if schema.get("type") == "object" and "properties" in schema:
