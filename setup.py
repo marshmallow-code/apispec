@@ -7,7 +7,7 @@ EXTRAS_REQUIRE = {
     "validation": ["prance[osv]>=0.11"],
     "webframeworks-tests": ["apispec-webframeworks[tests]>=0.3.0"],
     "lint": [
-        "flake8==3.7.6",
+        "flake8==3.7.7",
         'flake8-bugbear==18.8.0; python_version >= "3.5"',
         "pre-commit==1.14.4",
     ],
