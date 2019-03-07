@@ -129,10 +129,6 @@ class Components(object):
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schemaObject
         """
-        if name in self._schemas:
-            raise DuplicateComponentNameError(
-                'Another schema with name "{}" is already registered.'.format(name)
-            )
         component = component or {}
         ret = component.copy()
         # Execute all helpers from plugins
@@ -141,6 +137,12 @@ class Components(object):
                 ret.update(plugin.schema_helper(name, component, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
+
+        if name in self._schemas and ret != self._schemas[name]:
+            raise DuplicateComponentNameError(
+                'A different schema with name "{}" is already registered.'.format(name)
+            )
+
         self._schemas[name] = ret
         return self
 

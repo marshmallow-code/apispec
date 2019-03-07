@@ -168,11 +168,18 @@ class TestComponents:
 
     def test_schema_duplicate_name(self, spec):
         spec.components.schema("Pet", {"properties": self.properties})
+
+        # Registering the same identical schema with the same name is fine
+        spec.components.schema("Pet", {"properties": self.properties})
+
+        # Registering a different component with the same name is an error
         with pytest.raises(
             DuplicateComponentNameError,
-            match='Another schema with name "Pet" is already registered.',
+            match='A different schema with name "Pet" is already registered.',
         ):
-            spec.components.schema("Pet", properties=self.properties)
+            spec.components.schema(
+                "Pet", properties={"name": {"type": "string", "example": "foobar"}}
+            )
 
     def test_parameter(self, spec):
         parameter = {"format": "int64", "type": "integer"}

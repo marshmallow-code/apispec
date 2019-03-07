@@ -11,7 +11,7 @@ class PluginMethodNotImplementedError(APISpecError, NotImplementedError):
 
 
 class DuplicateComponentNameError(APISpecError):
-    """Raised when registering two components with the same name"""
+    """Raised when registering two different components with the same name"""
 
 
 class OpenAPIError(APISpecError):
