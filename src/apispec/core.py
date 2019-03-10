@@ -220,6 +220,29 @@ class Components(object):
         self._security_schemes[component_id] = component
         return self
 
+    def build_ref(self, component_type, component_id):
+        """Build component reference
+
+        Provides an abstraction to reference a component without having to deal with
+        component paths that depend on OAS version.
+
+        :param str component_type: Component type
+            Must be one of ["schema", "parameter", "response", "security_scheme"]
+        :param str component_id: ID of the component to reference
+
+        Example: ::
+
+            spec.components.build_ref('schema', 'MySchema')
+            # '#/components/schemas/MySchema'
+            spec.components.build_ref('security_scheme', 'MySecurityScheme')
+            # '#/components/securitySchemes/MySecurityScheme')
+        """
+        return '#/{path}{subsection}/{component_id}'.format(
+            path=('components/' if self.openapi_version.major >= 3 else ''),
+            subsection=self.COMPONENT_SUBSECTIONS[self.openapi_version.major][component_type],
+            component_id=component_id,
+        )
+
 
 class APISpec(object):
     """Stores metadata that describes a RESTful API using the OpenAPI specification.

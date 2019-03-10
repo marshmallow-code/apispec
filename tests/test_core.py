@@ -245,6 +245,26 @@ class TestComponents:
         spec.components.schema("Pet", properties=self.properties, enum=enum)
         assert spec.to_dict() == yaml.safe_load(spec.to_yaml())
 
+    @pytest.mark.parametrize("spec", ("2.0",), indirect=True)
+    def test_build_ref_v2(self, spec):
+        assert spec.components.build_ref('schema', 'Schema') == '#/definitions/Schema'
+        assert spec.components.build_ref('parameter', 'Parameter') == '#/parameters/Parameter'
+        assert spec.components.build_ref('response', 'Response') == '#/responses/Response'
+        assert spec.components.build_ref('security_scheme', 'SecurityScheme') == (
+            '#/securityDefinitions/SecurityScheme')
+
+    @pytest.mark.parametrize("spec", ("3.0",), indirect=True)
+    def test_build_ref_v3(self, spec):
+        assert spec.components.build_ref(
+            'schema', 'Schema') == '#/components/schemas/Schema'
+        assert spec.components.build_ref(
+            'parameter', 'Parameter') == '#/components/parameters/Parameter'
+        assert spec.components.build_ref(
+            'response', 'Response') == '#/components/responses/Response'
+        assert spec.components.build_ref(
+            'security_scheme', 'SecurityScheme') == (
+            '#/components/securitySchemes/SecurityScheme')
+
 
 class TestPath:
     paths = {
