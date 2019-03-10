@@ -86,6 +86,21 @@ class Components(object):
     They became sub-fields of "components" top-level field in OAS v3.
     """
 
+    COMPONENT_SUBSECTIONS = {
+        2: {
+            'schema': 'definitions',
+            'parameter': 'parameters',
+            'response': 'responses',
+            'security_scheme': 'securityDefinitions',
+        },
+        3: {
+            'schema': 'schemas',
+            'parameter': 'parameters',
+            'response': 'responses',
+            'security_scheme': 'securitySchemes',
+        },
+    }
+
     def __init__(self, plugins, openapi_version):
         self._plugins = plugins
         self.openapi_version = openapi_version
@@ -95,17 +110,12 @@ class Components(object):
         self._security_schemes = {}
 
     def to_dict(self):
-        if self.openapi_version.major < 3:
-            schemas_key = "definitions"
-            security_key = "securityDefinitions"
-        else:
-            schemas_key = "schemas"
-            security_key = "securitySchemes"
+        component_subsections = self.COMPONENT_SUBSECTIONS[self.openapi_version.major]
         return {
-            "parameters": self._parameters,
-            "responses": self._responses,
-            schemas_key: self._schemas,
-            security_key: self._security_schemes,
+            component_subsections["schema"]: self._schemas,
+            component_subsections["parameter"]: self._parameters,
+            component_subsections["response"]: self._responses,
+            component_subsections["security_scheme"]: self._security_schemes,
         }
 
     def schema(self, name, component=None, **kwargs):
