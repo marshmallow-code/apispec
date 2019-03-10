@@ -45,15 +45,15 @@ def read(fname):
 
 setup(
     name="apispec",
-    version=find_version("apispec/__init__.py"),
+    version=find_version("src/apispec/__init__.py"),
     description="A pluggable API specification generator. Currently supports the "
     "OpenAPI Specification (f.k.a. the Swagger specification).",
     long_description=read("README.rst"),
     author="Steven Loria",
     author_email="sloria1@gmail.com",
     url="https://github.com/marshmallow-code/apispec",
-    packages=find_packages(exclude=("test*",)),
-    package_dir={"apispec": "apispec"},
+    packages=find_packages("src"),
+    package_dir={"": "src"},
     include_package_data=True,
     extras_require=EXTRAS_REQUIRE,
     license="MIT",
