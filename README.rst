@@ -42,7 +42,6 @@ Example Application
 .. code-block:: python
 
     import json
-    import yaml
     from collections import Counter
     from apispec import APISpec
     from apispec.ext.marshmallow import MarshmallowPlugin
