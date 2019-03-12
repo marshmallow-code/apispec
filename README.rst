@@ -41,13 +41,16 @@ Example Application
 
 .. code-block:: python
 
+    import json
+    import yaml
+    from collections import Counter
     from apispec import APISpec
     from apispec.ext.marshmallow import MarshmallowPlugin
     from apispec_webframeworks.flask import FlaskPlugin
-    from flask import Flask, jsonify
+    from flask import Flask, Response, jsonify
     from marshmallow import Schema, fields
-
-
+    
+    
     # Create an APISpec
     spec = APISpec(
         title="Swagger Petstore",
@@ -55,24 +58,29 @@ Example Application
         openapi_version="3.0.2",
         plugins=[FlaskPlugin(), MarshmallowPlugin()],
     )
-
+    
+    
     # Optional marshmallow support
     class CategorySchema(Schema):
         id = fields.Int()
         name = fields.Str(required=True)
-
-
+    
+    
     class PetSchema(Schema):
         category = fields.Nested(CategorySchema, many=True)
         name = fields.Str()
-
-
+        hits = fields.Int()
+    
+    
     # Optional Flask support
+    # navigate to /swagger.json or /swagger.yml for genreated spec.
     app = Flask(__name__)
-
-
-    @app.route("/random")
-    def random_pet():
+    
+    pet_hits = Counter()
+    
+    
+    @app.route("/pets/<name>")
+    def pet_counter(name):
         """A cute furry animal endpoint.
         ---
         get:
@@ -83,15 +91,40 @@ Example Application
                 application/json:
                   schema: PetSchema
         """
-        pet = get_random_pet()
+        pet_hits[name] += 1
+        pet = {"name": name, "hits": pet_hits[name]}
+    
         return jsonify(PetSchema().dump(pet).data)
-
-
+    
+    
     # Register entities and paths
     spec.components.schema("Category", schema=CategorySchema)
     spec.components.schema("Pet", schema=PetSchema)
     with app.test_request_context():
-        spec.path(view=random_pet)
+        spec.path(view=pet_counter)
+    
+    
+    # Flask route to generated spec as JSON.
+    @app.route("/swagger.json")
+    def get_apispec_json():
+        swagger_spec_json = json.dumps(spec.to_dict(), indent=2)
+    
+        return Response(
+            swagger_spec_json,
+            mimetype="text/json"
+        )
+    
+    
+    # Flask route to generated spec as YAML.
+    @app.route("/swagger.yml")
+    def get_apispec_yaml():
+        swagger_spec_yaml = spec.to_yaml()
+    
+        return Response(
+            swagger_spec_yaml,
+            mimetype="text/yaml"
+        )
+
 
 
 Generated OpenAPI Spec
