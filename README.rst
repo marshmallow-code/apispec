@@ -72,7 +72,7 @@ Example Application
     
     
     # Optional Flask support
-    # navigate to /swagger.json or /swagger.yml for generated spec.
+    # navigate to /swagger.json or /swagger.yml for genreated spec.
     app = Flask(__name__)
     
     pet_hits = Counter()
@@ -108,10 +108,7 @@ Example Application
     def get_apispec_json():
         swagger_spec_json = json.dumps(spec.to_dict(), indent=2)
     
-        return Response(
-            swagger_spec_json,
-            mimetype="text/json"
-        )
+        return Response(swagger_spec_json, mimetype="text/json")
     
     
     # Flask route to generated spec as YAML.
@@ -119,11 +116,7 @@ Example Application
     def get_apispec_yaml():
         swagger_spec_yaml = spec.to_yaml()
     
-        return Response(
-            swagger_spec_yaml,
-            mimetype="text/yaml"
-        )
-
+        return Response(swagger_spec_yaml, mimetype="text/yaml")
 
 
 Generated OpenAPI Spec
