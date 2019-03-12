@@ -73,7 +73,7 @@ Example Application
     
     
     # Optional Flask support
-    # navigate to /swagger.json or /swagger.yml for genreated spec.
+    # navigate to /swagger.json or /swagger.yml for generated spec.
     app = Flask(__name__)
     
     pet_hits = Counter()
