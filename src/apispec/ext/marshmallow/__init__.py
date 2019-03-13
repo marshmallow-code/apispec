@@ -108,10 +108,11 @@ class MarshmallowPlugin(BasePlugin):
         :param APISpec spec: `APISpec` containing refs.
         :param dict data: the parameter or response dictionary that may contain a schema
         """
-        if self.openapi_version.major < 3:
-            if "schema" in data:
-                data["schema"] = self.openapi.resolve_schema_dict(data["schema"])
-        else:
+        # OAS 2 component or OAS 3 header
+        if "schema" in data:
+            data["schema"] = self.openapi.resolve_schema_dict(data["schema"])
+        # OAS 3 component except header
+        if self.openapi_version.major >= 3:
             if "content" in data:
                 for content_type in data["content"]:
                     schema = data["content"][content_type]["schema"]
@@ -178,6 +179,9 @@ class MarshmallowPlugin(BasePlugin):
             Schema class or instance.
         """
         self.resolve_schema(response)
+        if 'headers' in response:
+            for header in response['headers'].values():
+                self.resolve_schema(header)
         return response
 
     def operation_helper(self, operations, **kwargs):
@@ -193,6 +197,9 @@ class MarshmallowPlugin(BasePlugin):
                     self.resolve_schema_in_request_body(operation["requestBody"])
             for response in operation.get("responses", {}).values():
                 self.resolve_schema(response)
+                if 'headers' in response:
+                    for header in response['headers'].values():
+                        self.resolve_schema(header)
 
     def warn_if_schema_already_in_spec(self, schema_key):
         """Method to warn the user if the schema has already been added to the
