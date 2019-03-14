@@ -1,5 +1,5 @@
 marshmallow==2.19.0
-pyyaml==3.13
+pyyaml==5.1
 sphinx==1.8.5
 sphinx-issues==1.2.0
 sphinx-rtd-theme==0.4.3
