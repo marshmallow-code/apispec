@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 """Marshmallow plugin for apispec. Allows passing a marshmallow
-`Schema` to `APISpec.definition <apispec.APISpec.definition>`
-and `APISpec.path <apispec.APISpec.path>` (for responses).
+`Schema` to `spec.components.schema <apispec.core.Components.schema>`,
+`spec.components.parameter <apispec.core.Components.parameter>`,
+`spec.components.response <apispec.core.Components.response>`
+(for response and headers schemas) and
+`spec.path <apispec.APISpec.path>` (for responses and responses headers).
 
 Requires marshmallow>=2.15.2.
 
