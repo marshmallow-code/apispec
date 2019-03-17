@@ -238,6 +238,7 @@ class TestComponentResponseHelper:
         assert resolved_schema["properties"]["name"]["type"] == "string"
         assert resolved_schema["properties"]["password"]["type"] == "string"
 
+
 class TestCustomField:
     def test_can_use_custom_field_decorator(self, spec_fixture):
         @spec_fixture.marshmallow_plugin.map_to_openapi_type(DateTime)
@@ -293,7 +294,7 @@ class TestOperationHelper:
                         200: {
                             "schema": pet_schema,
                             "description": "successful operation",
-                            "headers": {"PetHeader": {"schema": pet_schema}}
+                            "headers": {"PetHeader": {"schema": pet_schema}},
                         }
                     }
                 }
@@ -303,8 +304,13 @@ class TestOperationHelper:
         if isinstance(pet_schema, Schema) and pet_schema.many is True:
             assert get["responses"][200]["schema"]["type"] == "array"
             schema_reference = get["responses"][200]["schema"]["items"]
-            assert get["responses"][200]["headers"]["PetHeader"]["schema"]["type"] == "array"
-            header_reference = get["responses"][200]["headers"]["PetHeader"]["schema"]["items"]
+            assert (
+                get["responses"][200]["headers"]["PetHeader"]["schema"]["type"]
+                == "array"
+            )
+            header_reference = get["responses"][200]["headers"]["PetHeader"]["schema"][
+                "items"
+            ]
         else:
             schema_reference = get["responses"][200]["schema"]
             header_reference = get["responses"][200]["headers"]["PetHeader"]["schema"]
@@ -329,7 +335,7 @@ class TestOperationHelper:
                         200: {
                             "content": {"application/json": {"schema": pet_schema}},
                             "description": "successful operation",
-                            "headers": {"PetHeader": {"schema": pet_schema}}
+                            "headers": {"PetHeader": {"schema": pet_schema}},
                         }
                     }
                 }
@@ -341,13 +347,20 @@ class TestOperationHelper:
                 get["responses"][200]["content"]["application/json"]["schema"]["type"]
                 == "array"
             )
-            schema_reference = get["responses"][200]["content"]["application/json"]["schema"][
+            schema_reference = get["responses"][200]["content"]["application/json"][
+                "schema"
+            ]["items"]
+            assert (
+                get["responses"][200]["headers"]["PetHeader"]["schema"]["type"]
+                == "array"
+            )
+            header_reference = get["responses"][200]["headers"]["PetHeader"]["schema"][
                 "items"
             ]
-            assert get["responses"][200]["headers"]["PetHeader"]["schema"]["type"] == "array"
-            header_reference = get["responses"][200]["headers"]["PetHeader"]["schema"]["items"]
         else:
-            schema_reference = get["responses"][200]["content"]["application/json"]["schema"]
+            schema_reference = get["responses"][200]["content"]["application/json"][
+                "schema"
+            ]
             header_reference = get["responses"][200]["headers"]["PetHeader"]["schema"]
 
         assert schema_reference == {"$ref": ref_path(spec_fixture.spec) + "Pet"}

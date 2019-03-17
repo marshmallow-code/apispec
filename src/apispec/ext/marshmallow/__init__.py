@@ -4,7 +4,7 @@
 `spec.components.parameter <apispec.core.Components.parameter>`,
 `spec.components.response <apispec.core.Components.response>`
 (for response and headers schemas) and
-`spec.path <apispec.APISpec.path>` (for responses and responses headers).
+`spec.path <apispec.APISpec.path>` (for responses and response headers).
 
 Requires marshmallow>=2.15.2.
 
@@ -182,8 +182,8 @@ class MarshmallowPlugin(BasePlugin):
             Schema class or instance.
         """
         self.resolve_schema(response)
-        if 'headers' in response:
-            for header in response['headers'].values():
+        if "headers" in response:
+            for header in response["headers"].values():
                 self.resolve_schema(header)
         return response
 
@@ -200,8 +200,8 @@ class MarshmallowPlugin(BasePlugin):
                     self.resolve_schema_in_request_body(operation["requestBody"])
             for response in operation.get("responses", {}).values():
                 self.resolve_schema(response)
-                if 'headers' in response:
-                    for header in response['headers'].values():
+                if "headers" in response:
+                    for header in response["headers"].values():
                         self.resolve_schema(header)
 
     def warn_if_schema_already_in_spec(self, schema_key):
