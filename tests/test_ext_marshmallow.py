@@ -197,7 +197,6 @@ class TestComponentParameterHelper:
             reference = parameter["schema"]
         else:
             reference = parameter["content"]["application/json"]["schema"]
-
         assert reference == {"$ref": ref_path(spec) + "Pet"}
 
         resolved_schema = spec.components._schemas["Pet"]
@@ -219,7 +218,19 @@ class TestComponentResponseHelper:
             reference = response["schema"]
         else:
             reference = response["content"]["application/json"]["schema"]
+        assert reference == {"$ref": ref_path(spec) + "Pet"}
 
+        resolved_schema = spec.components._schemas["Pet"]
+        assert resolved_schema["properties"]["id"]["type"] == "integer"
+        assert resolved_schema["properties"]["name"]["type"] == "string"
+        assert resolved_schema["properties"]["password"]["type"] == "string"
+
+    @pytest.mark.parametrize("schema", [PetSchema, PetSchema()])
+    def test_can_use_schema_in_response_header(self, spec, schema):
+        resp = {"headers": {"PetHeader": {"schema": schema}}}
+        spec.components.response("GetPetOk", resp)
+        response = get_responses(spec)["GetPetOk"]
+        reference = response["headers"]["PetHeader"]["schema"]
         assert reference == {"$ref": ref_path(spec) + "Pet"}
 
         resolved_schema = spec.components._schemas["Pet"]
@@ -283,6 +294,7 @@ class TestOperationHelper:
                         200: {
                             "schema": pet_schema,
                             "description": "successful operation",
+                            "headers": {"PetHeader": {"schema": pet_schema}},
                         }
                     }
                 }
@@ -291,10 +303,19 @@ class TestOperationHelper:
         get = get_paths(spec_fixture.spec)["/pet"]["get"]
         if isinstance(pet_schema, Schema) and pet_schema.many is True:
             assert get["responses"][200]["schema"]["type"] == "array"
-            reference = get["responses"][200]["schema"]["items"]
+            schema_reference = get["responses"][200]["schema"]["items"]
+            assert (
+                get["responses"][200]["headers"]["PetHeader"]["schema"]["type"]
+                == "array"
+            )
+            header_reference = get["responses"][200]["headers"]["PetHeader"]["schema"][
+                "items"
+            ]
         else:
-            reference = get["responses"][200]["schema"]
-        assert reference == {"$ref": ref_path(spec_fixture.spec) + "Pet"}
+            schema_reference = get["responses"][200]["schema"]
+            header_reference = get["responses"][200]["headers"]["PetHeader"]["schema"]
+        assert schema_reference == {"$ref": ref_path(spec_fixture.spec) + "Pet"}
+        assert header_reference == {"$ref": ref_path(spec_fixture.spec) + "Pet"}
         assert len(spec_fixture.spec.components._schemas) == 1
         resolved_schema = spec_fixture.spec.components._schemas["Pet"]
         assert resolved_schema == spec_fixture.openapi.schema2jsonschema(PetSchema)
@@ -314,6 +335,7 @@ class TestOperationHelper:
                         200: {
                             "content": {"application/json": {"schema": pet_schema}},
                             "description": "successful operation",
+                            "headers": {"PetHeader": {"schema": pet_schema}},
                         }
                     }
                 }
@@ -325,13 +347,24 @@ class TestOperationHelper:
                 get["responses"][200]["content"]["application/json"]["schema"]["type"]
                 == "array"
             )
-            reference = get["responses"][200]["content"]["application/json"]["schema"][
+            schema_reference = get["responses"][200]["content"]["application/json"][
+                "schema"
+            ]["items"]
+            assert (
+                get["responses"][200]["headers"]["PetHeader"]["schema"]["type"]
+                == "array"
+            )
+            header_reference = get["responses"][200]["headers"]["PetHeader"]["schema"][
                 "items"
             ]
         else:
-            reference = get["responses"][200]["content"]["application/json"]["schema"]
+            schema_reference = get["responses"][200]["content"]["application/json"][
+                "schema"
+            ]
+            header_reference = get["responses"][200]["headers"]["PetHeader"]["schema"]
 
-        assert reference == {"$ref": ref_path(spec_fixture.spec) + "Pet"}
+        assert schema_reference == {"$ref": ref_path(spec_fixture.spec) + "Pet"}
+        assert header_reference == {"$ref": ref_path(spec_fixture.spec) + "Pet"}
         assert len(spec_fixture.spec.components._schemas) == 1
         resolved_schema = spec_fixture.spec.components._schemas["Pet"]
         assert resolved_schema == spec_fixture.openapi.schema2jsonschema(PetSchema)

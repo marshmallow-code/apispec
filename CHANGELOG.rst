@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+1.1.0 (unreleased)
+++++++++++++++++++
+
+Features:
+
+- Resolve ``Schema`` classes in response headers (:pr:`409`).
+
 1.0.0 (2019-02-08)
 ++++++++++++++++++
 
