@@ -571,7 +571,7 @@ class TestOperationHelper:
             },
         )
         get = get_paths(spec_fixture.spec)["/pet"]["get"]
-        len(get["parameters"]) == 1
+        assert len(get["parameters"]) == 1
         resolved_schema = {
             "type": "array",
             "items": {"$ref": ref_path(spec_fixture.spec) + "Pet"},
@@ -608,16 +608,15 @@ class TestOperationHelper:
                 }
             },
         )
-        p = get_paths(spec_fixture.spec)["/pet"]
-        assert "get" in p
-        op = p["get"]
+        get = get_paths(spec_fixture.spec)["/pet"]["get"]
+        assert len(get["parameters"]) == 1
         resolved_schema = {
             "type": "array",
             "items": {"$ref": ref_path(spec_fixture.spec) + "Pet"},
         }
-        request_schema = op["parameters"][0]["content"]["application/json"]["schema"]
+        request_schema = get["parameters"][0]["content"]["application/json"]["schema"]
         assert request_schema == resolved_schema
-        response_schema = op["responses"][200]["content"]["application/json"]["schema"]
+        response_schema = get["responses"][200]["content"]["application/json"]["schema"]
         assert response_schema == resolved_schema
 
     @pytest.mark.parametrize("spec_fixture", ("2.0",), indirect=True)
