@@ -683,6 +683,34 @@ class TestOperationHelper:
             },
         }
 
+    def test_parameter_reference(self, spec_fixture):
+        if spec_fixture.spec.openapi_version.major < 3:
+            param = {"schema": PetSchema}
+            reference = "#/parameters/Pet"
+        else:
+            param = {"content": {"application/json": {"schema": PetSchema}}}
+            reference = "#/components/parameters/Pet"
+        spec_fixture.spec.components.parameter("Pet", "body", param)
+        spec_fixture.spec.path(
+            path="/parents", operations={"get": {"parameters": ["Pet"]}}
+        )
+        get = get_paths(spec_fixture.spec)["/parents"]["get"]
+        assert get["parameters"] == [{"$ref": reference}]
+
+    def test_response_reference(self, spec_fixture):
+        if spec_fixture.spec.openapi_version.major < 3:
+            resp = {"schema": PetSchema}
+            reference = "#/responses/Pet"
+        else:
+            resp = {"content": {"application/json": {"schema": PetSchema}}}
+            reference = "#/components/responses/Pet"
+        spec_fixture.spec.components.response("Pet", resp)
+        spec_fixture.spec.path(
+            path="/parents", operations={"get": {"responses": {"200": "Pet"}}}
+        )
+        get = get_paths(spec_fixture.spec)["/parents"]["get"]
+        assert get["responses"] == {"200": {"$ref": reference}}
+
     def test_schema_global_state_untouched_2json(self, spec_fixture):
         assert RunSchema._declared_fields["sample"]._Nested__schema is None
         data = spec_fixture.openapi.schema2jsonschema(RunSchema)
