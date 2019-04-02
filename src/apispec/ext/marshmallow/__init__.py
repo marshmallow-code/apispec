@@ -83,7 +83,9 @@ class MarshmallowPlugin(BasePlugin):
     def resolve_parameters(self, parameters):
         resolved = []
         for parameter in parameters:
-            if not isinstance(parameter.get("schema", {}), dict):
+            if isinstance(parameter, dict) and not isinstance(
+                parameter.get("schema", {}), dict
+            ):
                 schema_instance = resolve_schema_instance(parameter["schema"])
                 if "in" in parameter:
                     del parameter["schema"]
@@ -109,8 +111,12 @@ class MarshmallowPlugin(BasePlugin):
         corresponding dict to convert Marshmallow Schema object or class into dict
 
         :param APISpec spec: `APISpec` containing refs.
-        :param dict data: the parameter or response dictionary that may contain a schema
+        :param dict|str data: either a parameter or response dictionary that may
+            contain a schema, or a reference provided as string
         """
+        if not isinstance(data, dict):
+            return
+
         # OAS 2 component or OAS 3 header
         if "schema" in data:
             data["schema"] = self.openapi.resolve_schema_dict(data["schema"])

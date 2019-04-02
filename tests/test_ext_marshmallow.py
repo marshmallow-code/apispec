@@ -571,7 +571,7 @@ class TestOperationHelper:
             },
         )
         get = get_paths(spec_fixture.spec)["/pet"]["get"]
-        len(get["parameters"]) == 1
+        assert len(get["parameters"]) == 1
         resolved_schema = {
             "type": "array",
             "items": {"$ref": ref_path(spec_fixture.spec) + "Pet"},
@@ -608,16 +608,15 @@ class TestOperationHelper:
                 }
             },
         )
-        p = get_paths(spec_fixture.spec)["/pet"]
-        assert "get" in p
-        op = p["get"]
+        get = get_paths(spec_fixture.spec)["/pet"]["get"]
+        assert len(get["parameters"]) == 1
         resolved_schema = {
             "type": "array",
             "items": {"$ref": ref_path(spec_fixture.spec) + "Pet"},
         }
-        request_schema = op["parameters"][0]["content"]["application/json"]["schema"]
+        request_schema = get["parameters"][0]["content"]["application/json"]["schema"]
         assert request_schema == resolved_schema
-        response_schema = op["responses"][200]["content"]["application/json"]["schema"]
+        response_schema = get["responses"][200]["content"]["application/json"]["schema"]
         assert response_schema == resolved_schema
 
     @pytest.mark.parametrize("spec_fixture", ("2.0",), indirect=True)
@@ -683,6 +682,34 @@ class TestOperationHelper:
                 "father": {"$ref": ref_path(spec_fixture.spec) + "Pet"},
             },
         }
+
+    def test_parameter_reference(self, spec_fixture):
+        if spec_fixture.spec.openapi_version.major < 3:
+            param = {"schema": PetSchema}
+            reference = "#/parameters/Pet"
+        else:
+            param = {"content": {"application/json": {"schema": PetSchema}}}
+            reference = "#/components/parameters/Pet"
+        spec_fixture.spec.components.parameter("Pet", "body", param)
+        spec_fixture.spec.path(
+            path="/parents", operations={"get": {"parameters": ["Pet"]}}
+        )
+        get = get_paths(spec_fixture.spec)["/parents"]["get"]
+        assert get["parameters"] == [{"$ref": reference}]
+
+    def test_response_reference(self, spec_fixture):
+        if spec_fixture.spec.openapi_version.major < 3:
+            resp = {"schema": PetSchema}
+            reference = "#/responses/Pet"
+        else:
+            resp = {"content": {"application/json": {"schema": PetSchema}}}
+            reference = "#/components/responses/Pet"
+        spec_fixture.spec.components.response("Pet", resp)
+        spec_fixture.spec.path(
+            path="/parents", operations={"get": {"responses": {"200": "Pet"}}}
+        )
+        get = get_paths(spec_fixture.spec)["/parents"]["get"]
+        assert get["responses"] == {"200": {"$ref": reference}}
 
     def test_schema_global_state_untouched_2json(self, spec_fixture):
         assert RunSchema._declared_fields["sample"]._Nested__schema is None
