@@ -10,6 +10,34 @@ from distutils import version
 from apispec import exceptions
 
 
+COMPONENT_SUBSECTIONS = {
+    2: {
+        'schema': 'definitions',
+        'parameter': 'parameters',
+        'response': 'responses',
+        'security_scheme': 'securityDefinitions',
+    },
+    3: {
+        'schema': 'schemas',
+        'parameter': 'parameters',
+        'response': 'responses',
+        'security_scheme': 'securitySchemes',
+    },
+}
+
+
+def reference_path(component_type, openapi_major_version):
+    """Return path to reference
+
+    :param str component_type: Component type (schema, parameter, response, security_scheme)
+    :param int openapi_major_version: OpenAPI major version (2 or 3)
+    """
+    return '#/{}{}/'.format(
+        'components/' if openapi_major_version >= 3 else '',
+        COMPONENT_SUBSECTIONS[openapi_major_version][component_type]
+    )
+
+
 def validate_spec(spec):
     """Validate the output of an :class:`APISpec` object against the
     OpenAPI specification.
