@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+1.1.1 (unreleased)
+++++++++++++++++++
+
+Bug fixes:
+
+- Fix passing references for parameters/responses when using
+  ``MarshmallowPlugin`` (:pr:`414`).
+
 1.1.0 (2019-03-17)
 ++++++++++++++++++
 
