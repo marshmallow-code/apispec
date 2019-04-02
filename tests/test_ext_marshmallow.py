@@ -51,7 +51,7 @@ class TestDefinitionHelper:
             openapi_version="2.0",
             plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
         )
-        assert {} == get_schemas(spec)
+        assert get_schemas(spec) is None
 
         spec.components.schema("analysis", schema=schema)
         spec.path(
@@ -82,7 +82,7 @@ class TestDefinitionHelper:
             openapi_version="2.0",
             plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
         )
-        assert {} == get_schemas(spec)
+        assert get_schemas(spec) is None
 
         spec.components.schema("analysis", schema=schema)
         spec.path(
@@ -111,7 +111,7 @@ class TestDefinitionHelper:
             openapi_version="2.0",
             plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
         )
-        assert {} == get_schemas(spec)
+        assert get_schemas(spec) is None
 
         with pytest.raises(
             APISpecError, match="Name resolver returned None for schema"
