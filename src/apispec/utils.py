@@ -26,16 +26,20 @@ COMPONENT_SUBSECTIONS = {
 }
 
 
-def reference_path(component_type, openapi_major_version):
+def build_reference(component_type, openapi_major_version, component_name):
     """Return path to reference
 
     :param str component_type: Component type (schema, parameter, response, security_scheme)
     :param int openapi_major_version: OpenAPI major version (2 or 3)
+    :param str component_name: Name of component to reference
     """
-    return "#/{}{}/".format(
-        "components/" if openapi_major_version >= 3 else "",
-        COMPONENT_SUBSECTIONS[openapi_major_version][component_type],
-    )
+    return {
+        "$ref": "#/{}{}/{}".format(
+            "components/" if openapi_major_version >= 3 else "",
+            COMPONENT_SUBSECTIONS[openapi_major_version][component_type],
+            component_name,
+        )
+    }
 
 
 def validate_spec(spec):
