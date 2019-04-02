@@ -22,7 +22,7 @@ from .schemas import (
     AnalysisWithListSchema,
 )
 
-from .utils import get_schemas, get_parameters, get_responses, get_paths, ref_path
+from .utils import get_schemas, get_parameters, get_responses, get_paths, build_ref
 
 
 class TestDefinitionHelper:
@@ -58,7 +58,9 @@ class TestDefinitionHelper:
             "/test",
             operations={
                 "get": {
-                    "responses": {"200": {"schema": {"$ref": "#/definitions/analysis"}}}
+                    "responses": {
+                        "200": {"schema": build_ref(spec, "schema", "analysis")}
+                    }
                 }
             },
         )
@@ -89,7 +91,9 @@ class TestDefinitionHelper:
             "/test",
             operations={
                 "get": {
-                    "responses": {"200": {"schema": {"$ref": "#/definitions/analysis"}}}
+                    "responses": {
+                        "200": {"schema": build_ref(spec, "schema", "analysis")}
+                    }
                 }
             },
         )
@@ -138,10 +142,10 @@ class TestDefinitionHelper:
         pet_unmodified_ref = definitions["MultiModifierSchema"]["properties"][
             "pet_unmodified"
         ]
-        assert pet_unmodified_ref == {"$ref": ref_path(spec) + "Pet"}
+        assert pet_unmodified_ref == build_ref(spec, "schema", "Pet")
 
         pet_exclude = definitions["MultiModifierSchema"]["properties"]["pet_exclude"]
-        assert pet_exclude == {"$ref": ref_path(spec) + "Pet_Exclude"}
+        assert pet_exclude == build_ref(spec, "schema", "Pet_Exclude")
 
     def test_schema_with_clashing_names(self, spec):
         class Pet(PetSchema):
@@ -197,7 +201,7 @@ class TestComponentParameterHelper:
             reference = parameter["schema"]
         else:
             reference = parameter["content"]["application/json"]["schema"]
-        assert reference == {"$ref": ref_path(spec) + "Pet"}
+        assert reference == build_ref(spec, "schema", "Pet")
 
         resolved_schema = spec.components._schemas["Pet"]
         assert resolved_schema["properties"]["name"]["type"] == "string"
@@ -218,7 +222,7 @@ class TestComponentResponseHelper:
             reference = response["schema"]
         else:
             reference = response["content"]["application/json"]["schema"]
-        assert reference == {"$ref": ref_path(spec) + "Pet"}
+        assert reference == build_ref(spec, "schema", "Pet")
 
         resolved_schema = spec.components._schemas["Pet"]
         assert resolved_schema["properties"]["id"]["type"] == "integer"
@@ -231,7 +235,7 @@ class TestComponentResponseHelper:
         spec.components.response("GetPetOk", resp)
         response = get_responses(spec)["GetPetOk"]
         reference = response["headers"]["PetHeader"]["schema"]
-        assert reference == {"$ref": ref_path(spec) + "Pet"}
+        assert reference == build_ref(spec, "schema", "Pet")
 
         resolved_schema = spec.components._schemas["Pet"]
         assert resolved_schema["properties"]["id"]["type"] == "integer"
@@ -314,8 +318,8 @@ class TestOperationHelper:
         else:
             schema_reference = get["responses"][200]["schema"]
             header_reference = get["responses"][200]["headers"]["PetHeader"]["schema"]
-        assert schema_reference == {"$ref": ref_path(spec_fixture.spec) + "Pet"}
-        assert header_reference == {"$ref": ref_path(spec_fixture.spec) + "Pet"}
+        assert schema_reference == build_ref(spec_fixture.spec, "schema", "Pet")
+        assert header_reference == build_ref(spec_fixture.spec, "schema", "Pet")
         assert len(spec_fixture.spec.components._schemas) == 1
         resolved_schema = spec_fixture.spec.components._schemas["Pet"]
         assert resolved_schema == spec_fixture.openapi.schema2jsonschema(PetSchema)
@@ -363,8 +367,8 @@ class TestOperationHelper:
             ]
             header_reference = get["responses"][200]["headers"]["PetHeader"]["schema"]
 
-        assert schema_reference == {"$ref": ref_path(spec_fixture.spec) + "Pet"}
-        assert header_reference == {"$ref": ref_path(spec_fixture.spec) + "Pet"}
+        assert schema_reference == build_ref(spec_fixture.spec, "schema", "Pet")
+        assert header_reference == build_ref(spec_fixture.spec, "schema", "Pet")
         assert len(spec_fixture.spec.components._schemas) == 1
         resolved_schema = spec_fixture.spec.components._schemas["Pet"]
         assert resolved_schema == spec_fixture.openapi.schema2jsonschema(PetSchema)
@@ -443,9 +447,8 @@ class TestOperationHelper:
             path="/pet", operations={"get": {"responses": {200: {"schema": PetSchema}}}}
         )
         get = get_paths(spec_fixture.spec)["/pet"]["get"]
-        assert (
-            get["responses"][200]["schema"]["$ref"]
-            == ref_path(spec_fixture.spec) + "Pet"
+        assert get["responses"][200]["schema"] == build_ref(
+            spec_fixture.spec, "schema", "Pet"
         )
 
     @pytest.mark.parametrize("spec_fixture", ("3.0.0",), indirect=True)
@@ -462,10 +465,9 @@ class TestOperationHelper:
             },
         )
         get = get_paths(spec_fixture.spec)["/pet"]["get"]
-        assert (
-            get["responses"][200]["content"]["application/json"]["schema"]["$ref"]
-            == ref_path(spec_fixture.spec) + "Pet"
-        )
+        assert get["responses"][200]["content"]["application/json"][
+            "schema"
+        ] == build_ref(spec_fixture.spec, "schema", "Pet")
 
     def test_schema_uses_ref_if_available_name_resolver_returns_none_v2(self):
         def resolver(schema):
@@ -482,7 +484,7 @@ class TestOperationHelper:
             path="/pet", operations={"get": {"responses": {200: {"schema": PetSchema}}}}
         )
         get = get_paths(spec)["/pet"]["get"]
-        assert get["responses"][200]["schema"]["$ref"] == ref_path(spec) + "Pet"
+        assert get["responses"][200]["schema"] == build_ref(spec, "schema", "Pet")
 
     def test_schema_uses_ref_if_available_name_resolver_returns_none_v3(self):
         def resolver(schema):
@@ -506,10 +508,9 @@ class TestOperationHelper:
             },
         )
         get = get_paths(spec)["/pet"]["get"]
-        assert (
-            get["responses"][200]["content"]["application/json"]["schema"]["$ref"]
-            == ref_path(spec) + "Pet"
-        )
+        assert get["responses"][200]["content"]["application/json"][
+            "schema"
+        ] == build_ref(spec, "schema", "Pet")
 
     @pytest.mark.parametrize("spec_fixture", ("2.0",), indirect=True)
     def test_schema_uses_ref_in_parameters_and_request_body_if_available_v2(
@@ -527,9 +528,8 @@ class TestOperationHelper:
         assert "schema" not in p["get"]["parameters"][0]
         post = p["post"]
         assert len(post["parameters"]) == 1
-        assert (
-            post["parameters"][0]["schema"]["$ref"]
-            == ref_path(spec_fixture.spec) + "Pet"
+        assert post["parameters"][0]["schema"] == build_ref(
+            spec_fixture.spec, "schema", "Pet"
         )
 
     @pytest.mark.parametrize("spec_fixture", ("3.0.0",), indirect=True)
@@ -552,7 +552,7 @@ class TestOperationHelper:
         assert "schema" in p["get"]["parameters"][0]
         post = p["post"]
         schema_ref = post["requestBody"]["content"]["application/json"]["schema"]
-        assert schema_ref == {"$ref": ref_path(spec_fixture.spec) + "Pet"}
+        assert schema_ref == build_ref(spec_fixture.spec, "schema", "Pet")
 
     @pytest.mark.parametrize("spec_fixture", ("2.0",), indirect=True)
     def test_schema_array_uses_ref_if_available_v2(self, spec_fixture):
@@ -574,7 +574,7 @@ class TestOperationHelper:
         assert len(get["parameters"]) == 1
         resolved_schema = {
             "type": "array",
-            "items": {"$ref": ref_path(spec_fixture.spec) + "Pet"},
+            "items": build_ref(spec_fixture.spec, "schema", "Pet"),
         }
         assert get["parameters"][0]["schema"] == resolved_schema
         assert get["responses"][200]["schema"] == resolved_schema
@@ -612,7 +612,7 @@ class TestOperationHelper:
         assert len(get["parameters"]) == 1
         resolved_schema = {
             "type": "array",
-            "items": {"$ref": ref_path(spec_fixture.spec) + "Pet"},
+            "items": build_ref(spec_fixture.spec, "schema", "Pet"),
         }
         request_schema = get["parameters"][0]["content"]["application/json"]["schema"]
         assert request_schema == resolved_schema
@@ -644,8 +644,8 @@ class TestOperationHelper:
         assert get["responses"][200]["schema"] == {
             "type": "object",
             "properties": {
-                "mother": {"$ref": ref_path(spec_fixture.spec) + "Pet"},
-                "father": {"$ref": ref_path(spec_fixture.spec) + "Pet"},
+                "mother": build_ref(spec_fixture.spec, "schema", "Pet"),
+                "father": build_ref(spec_fixture.spec, "schema", "Pet"),
             },
         }
 
@@ -678,38 +678,36 @@ class TestOperationHelper:
         assert get["responses"][200]["content"]["application/json"]["schema"] == {
             "type": "object",
             "properties": {
-                "mother": {"$ref": ref_path(spec_fixture.spec) + "Pet"},
-                "father": {"$ref": ref_path(spec_fixture.spec) + "Pet"},
+                "mother": build_ref(spec_fixture.spec, "schema", "Pet"),
+                "father": build_ref(spec_fixture.spec, "schema", "Pet"),
             },
         }
 
     def test_parameter_reference(self, spec_fixture):
         if spec_fixture.spec.openapi_version.major < 3:
             param = {"schema": PetSchema}
-            reference = "#/parameters/Pet"
         else:
             param = {"content": {"application/json": {"schema": PetSchema}}}
-            reference = "#/components/parameters/Pet"
         spec_fixture.spec.components.parameter("Pet", "body", param)
         spec_fixture.spec.path(
             path="/parents", operations={"get": {"parameters": ["Pet"]}}
         )
         get = get_paths(spec_fixture.spec)["/parents"]["get"]
-        assert get["parameters"] == [{"$ref": reference}]
+        assert get["parameters"] == [build_ref(spec_fixture.spec, "parameter", "Pet")]
 
     def test_response_reference(self, spec_fixture):
         if spec_fixture.spec.openapi_version.major < 3:
             resp = {"schema": PetSchema}
-            reference = "#/responses/Pet"
         else:
             resp = {"content": {"application/json": {"schema": PetSchema}}}
-            reference = "#/components/responses/Pet"
         spec_fixture.spec.components.response("Pet", resp)
         spec_fixture.spec.path(
             path="/parents", operations={"get": {"responses": {"200": "Pet"}}}
         )
         get = get_paths(spec_fixture.spec)["/parents"]["get"]
-        assert get["responses"] == {"200": {"$ref": reference}}
+        assert get["responses"] == {
+            "200": build_ref(spec_fixture.spec, "response", "Pet")
+        }
 
     def test_schema_global_state_untouched_2json(self, spec_fixture):
         assert RunSchema._declared_fields["sample"]._Nested__schema is None
@@ -728,8 +726,8 @@ class TestCircularReference:
     def test_circular_referencing_schemas(self, spec):
         spec.components.schema("Analysis", schema=AnalysisSchema)
         definitions = get_schemas(spec)
-        ref = definitions["Analysis"]["properties"]["sample"]["$ref"]
-        assert ref == ref_path(spec) + "Sample"
+        ref = definitions["Analysis"]["properties"]["sample"]
+        assert ref == build_ref(spec, "schema", "Sample")
 
 
 # Regression tests for issue #55
@@ -737,8 +735,8 @@ class TestSelfReference:
     def test_self_referencing_field_single(self, spec):
         spec.components.schema("SelfReference", schema=SelfReferencingSchema)
         definitions = get_schemas(spec)
-        ref = definitions["SelfReference"]["properties"]["single"]["$ref"]
-        assert ref == ref_path(spec) + "SelfReference"
+        ref = definitions["SelfReference"]["properties"]["single"]
+        assert ref == build_ref(spec, "schema", "SelfReference")
 
     def test_self_referencing_field_many(self, spec):
         spec.components.schema("SelfReference", schema=SelfReferencingSchema)
@@ -746,7 +744,7 @@ class TestSelfReference:
         result = definitions["SelfReference"]["properties"]["many"]
         assert result == {
             "type": "array",
-            "items": {"$ref": ref_path(spec) + "SelfReference"},
+            "items": build_ref(spec, "schema", "SelfReference"),
         }
 
 
@@ -813,7 +811,7 @@ class TestDictValues:
 
         result = get_schemas(spec)["SchemaWithDict"]["properties"]["dict_field"]
         assert result == {
-            "additionalProperties": {"$ref": ref_path(spec) + "Pet"},
+            "additionalProperties": build_ref(spec, "schema", "Pet"),
             "type": "object",
         }
 
@@ -828,4 +826,4 @@ class TestList:
         assert len(get_schemas(spec)) == 2
 
         result = get_schemas(spec)["SchemaWithList"]["properties"]["list_field"]
-        assert result == {"items": {"$ref": ref_path(spec) + "Pet"}, "type": "array"}
+        assert result == {"items": build_ref(spec, "schema", "Pet"), "type": "array"}
