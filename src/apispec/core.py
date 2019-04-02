@@ -98,6 +98,7 @@ class Components(object):
         return {
             COMPONENT_SUBSECTIONS[self.openapi_version.major][k]: v
             for k, v in iteritems(subsections)
+            if v != {}
         }
 
     def schema(self, name, component=None, **kwargs):
@@ -245,7 +246,9 @@ class APISpec(object):
             ret.update(self.components.to_dict())
         else:
             ret["openapi"] = self.openapi_version.vstring
-            ret.update({"components": self.components.to_dict()})
+            components_dict = self.components.to_dict()
+            if components_dict:
+                ret["components"] = components_dict
         ret = deepupdate(ret, self.options)
         return ret
 
