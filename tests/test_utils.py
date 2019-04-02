@@ -25,12 +25,20 @@ class TestOpenAPIVersion:
         assert str(ver) == "3.0.1"
 
 
-def test_reference_path():
-    assert utils.reference_path('schema', 2) == '#/definitions/'
-    assert utils.reference_path('parameter', 2) == '#/parameters/'
-    assert utils.reference_path('response', 2) == '#/responses/'
-    assert utils.reference_path('security_scheme', 2) == '#/securityDefinitions/'
-    assert utils.reference_path('schema', 3) == '#/components/schemas/'
-    assert utils.reference_path('parameter', 3) == '#/components/parameters/'
-    assert utils.reference_path('response', 3) == '#/components/responses/'
-    assert utils.reference_path('security_scheme', 3) == '#/components/securitySchemes/'
+def test_build_reference():
+    assert utils.build_reference("schema", 2, "Test") == {
+        "$ref": "#/definitions/Test"}
+    assert utils.build_reference("parameter", 2, "Test") == {
+        "$ref": "#/parameters/Test"}
+    assert utils.build_reference("response", 2, "Test") == {
+        "$ref": "#/responses/Test"}
+    assert utils.build_reference("security_scheme", 2, "Test") == {
+        "$ref": "#/securityDefinitions/Test"}
+    assert utils.build_reference("schema", 3, "Test") == {
+        "$ref": "#/components/schemas/Test"}
+    assert utils.build_reference("parameter", 3, "Test") == {
+        "$ref": "#/components/parameters/Test"}
+    assert utils.build_reference("response", 3, "Test") == {
+        "$ref": "#/components/responses/Test"}
+    assert utils.build_reference("security_scheme", 3, "Test") == {
+        "$ref": "#/components/securitySchemes/Test"}

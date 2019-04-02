@@ -8,7 +8,7 @@ from .exceptions import (
     PluginMethodNotImplementedError,
     DuplicateComponentNameError,
 )
-from .utils import OpenAPIVersion, deepupdate, COMPONENT_SUBSECTIONS, reference_path
+from .utils import OpenAPIVersion, deepupdate, COMPONENT_SUBSECTIONS, build_reference
 
 VALID_METHODS_OPENAPI_V2 = ["get", "post", "put", "patch", "delete", "head", "options"]
 
@@ -51,7 +51,7 @@ def clean_operations(operations, openapi_major_version):
         """
         if isinstance(obj, dict):
             return obj
-        return {"$ref": reference_path(obj_type, openapi_major_version) + obj}
+        return build_reference(obj_type, openapi_major_version, obj)
 
     for operation in (operations or {}).values():
         if "parameters" in operation:
