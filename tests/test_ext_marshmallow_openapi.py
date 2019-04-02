@@ -12,7 +12,7 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec.ext.marshmallow.openapi import MARSHMALLOW_VERSION_INFO
 from apispec import exceptions, utils, APISpec
 
-from .utils import get_schemas, ref_path
+from .utils import get_schemas, build_ref
 
 
 class TestMarshmallowFieldToOpenAPI:
@@ -482,7 +482,7 @@ class TestMarshmallowSchemaToParameters:
         assert len(res_nodump) == 1
         param = res_nodump[0]
         assert param["in"] == "body"
-        assert param["schema"] == {"$ref": ref_path(openapi.spec) + "User"}
+        assert param["schema"] == build_ref(openapi.spec, "schema", "User")
 
     # json/body is invalid for OpenAPI 3
     @pytest.mark.parametrize("openapi", ("2.0",), indirect=True)
@@ -588,7 +588,7 @@ class TestNesting:
         )
         result = spec_fixture.openapi.field2property(category)
         assert result == {
-            "allOf": [{"$ref": ref_path(spec_fixture.spec) + "Category"}],
+            "allOf": [build_ref(spec_fixture.spec, "schema", "Category")],
             "description": "A category",
             "x-extension": "A great extension",
         }
@@ -596,35 +596,32 @@ class TestNesting:
     def test_field2property_nested_spec(self, spec_fixture):
         spec_fixture.spec.components.schema("Category", schema=CategorySchema)
         category = fields.Nested(CategorySchema)
-        assert spec_fixture.openapi.field2property(category) == {
-            "$ref": ref_path(spec_fixture.spec) + "Category"
-        }
+        assert spec_fixture.openapi.field2property(category) == build_ref(
+            spec_fixture.spec, "schema", "Category")
 
     def test_field2property_nested_many_spec(self, spec_fixture):
         spec_fixture.spec.components.schema("Category", schema=CategorySchema)
         category = fields.Nested(CategorySchema, many=True)
         ret = spec_fixture.openapi.field2property(category)
         assert ret["type"] == "array"
-        assert ret["items"] == {"$ref": ref_path(spec_fixture.spec) + "Category"}
+        assert ret["items"] == build_ref(spec_fixture.spec, "schema", "Category")
 
     def test_field2property_nested_ref(self, spec_fixture):
         category = fields.Nested(CategorySchema)
         ref = spec_fixture.openapi.field2property(category)
-        assert ref == {"$ref": ref_path(spec_fixture.spec) + "Category"}
+        assert ref == build_ref(spec_fixture.spec, "schema", "Category")
 
     def test_field2property_nested_many(self, spec_fixture):
         categories = fields.Nested(CategorySchema, many=True)
         res = spec_fixture.openapi.field2property(categories)
         assert res["type"] == "array"
-        assert res["items"] == {"$ref": ref_path(spec_fixture.spec) + "Category"}
+        assert res["items"] == build_ref(spec_fixture.spec, "schema", "Category")
 
     def test_schema2jsonschema_with_nested_fields(self, spec_fixture):
         res = spec_fixture.openapi.schema2jsonschema(PetSchema)
         props = res["properties"]
 
-        assert props["category"]["items"] == {
-            "$ref": ref_path(spec_fixture.spec) + "Category"
-        }
+        assert props["category"]["items"] == build_ref(spec_fixture.spec, "schema", "Category")
 
     @pytest.mark.parametrize("modifier", ("only", "exclude"))
     def test_schema2jsonschema_with_nested_fields_only_exclude(
@@ -677,27 +674,24 @@ class TestNesting:
         assert "breed" not in category_props
 
     def test_nested_field_with_property(self, spec_fixture):
-        r_path = ref_path(spec_fixture.spec)
-
         category_1 = fields.Nested(CategorySchema)
         category_2 = fields.Nested(CategorySchema, dump_only=True)
         category_3 = fields.Nested(CategorySchema, many=True)
         category_4 = fields.Nested(CategorySchema, many=True, dump_only=True)
         spec_fixture.spec.components.schema("Category", schema=CategorySchema)
 
-        assert spec_fixture.openapi.field2property(category_1) == {
-            "$ref": r_path + "Category"
-        }
+        assert spec_fixture.openapi.field2property(category_1) == build_ref(
+            spec_fixture.spec, "schema", "Category")
         assert spec_fixture.openapi.field2property(category_2) == {
-            "allOf": [{"$ref": r_path + "Category"}],
+            "allOf": [build_ref(spec_fixture.spec, "schema", "Category")],
             "readOnly": True,
         }
         assert spec_fixture.openapi.field2property(category_3) == {
-            "items": {"$ref": r_path + "Category"},
+            "items": build_ref(spec_fixture.spec, "schema", "Category"),
             "type": "array",
         }
         assert spec_fixture.openapi.field2property(category_4) == {
-            "items": {"$ref": r_path + "Category"},
+            "items": build_ref(spec_fixture.spec, "schema", "Category"),
             "readOnly": True,
             "type": "array",
         }

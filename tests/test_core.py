@@ -13,6 +13,7 @@ from .utils import (
     get_parameters,
     get_responses,
     get_security_schemes,
+    build_ref,
 )
 
 
@@ -386,15 +387,12 @@ class TestPath:
         metadata = spec.to_dict()
         p = get_paths(spec)["/pet/{petId}"]["get"]
 
+        assert p["parameters"][0] == build_ref(spec, "parameter", "test_parameter")
         if spec.openapi_version.major < 3:
-            assert p["parameters"][0] == {"$ref": "#/parameters/test_parameter"}
             assert (
                 route_spec["parameters"][0] == metadata["parameters"]["test_parameter"]
             )
         else:
-            assert p["parameters"][0] == {
-                "$ref": "#/components/parameters/test_parameter"
-            }
             assert (
                 route_spec["parameters"][0]
                 == metadata["components"]["parameters"]["test_parameter"]
@@ -413,15 +411,12 @@ class TestPath:
         metadata = spec.to_dict()
         p = get_paths(spec)["/pet/{petId}"]["get"]
 
+        assert p["responses"]["200"] == build_ref(spec, "response", "test_response")
         if spec.openapi_version.major < 3:
-            assert p["responses"]["200"] == {"$ref": "#/responses/test_response"}
             assert (
                 route_spec["responses"]["200"] == metadata["responses"]["test_response"]
             )
         else:
-            assert p["responses"]["200"] == {
-                "$ref": "#/components/responses/test_response"
-            }
             assert (
                 route_spec["responses"]["200"]
                 == metadata["components"]["responses"]["test_response"]

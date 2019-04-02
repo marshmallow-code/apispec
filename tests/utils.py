@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Utilities to get elements of generated spec"""
 
+from apispec.utils import build_reference
+
 
 def get_schemas(spec):
     if spec.openapi_version.major < 3:
@@ -30,7 +32,5 @@ def get_paths(spec):
     return spec.to_dict()["paths"]
 
 
-def ref_path(spec):
-    if spec.openapi_version.version[0] < 3:
-        return "#/definitions/"
-    return "#/components/schemas/"
+def build_ref(spec, component_type, obj):
+    return build_reference(component_type, spec.openapi_version.major, obj)
