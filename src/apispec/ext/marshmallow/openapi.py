@@ -19,7 +19,7 @@ from marshmallow.compat import iteritems
 from marshmallow.orderedset import OrderedSet
 
 from apispec.compat import RegexType
-from apispec.utils import OpenAPIVersion
+from apispec.utils import OpenAPIVersion, reference_path
 from .common import (
     resolve_schema_cls,
     get_fields,
@@ -684,21 +684,12 @@ class OpenAPIConverter(object):
         """Method to create a dictionary containing a JSON reference to the
         schema in the spec
         """
-        ref_path = self.get_ref_path()
+        ref_path = reference_path("schema", self.openapi_version.major)
         schema_key = make_schema_key(schema)
-        ref_schema = {"$ref": "#/{}/{}".format(ref_path, self.refs[schema_key])}
+        ref_schema = {"$ref": ref_path + self.refs[schema_key]}
         if getattr(schema, "many", False):
             return {"type": "array", "items": ref_schema}
         return ref_schema
-
-    def get_ref_path(self):
-        """Return the path for references based on the openapi version
-
-        :param int openapi_version.major: The major version of the OpenAPI standard
-            to use. Supported values are 2 and 3.
-        """
-        ref_paths = {2: "definitions", 3: "components/schemas"}
-        return ref_paths[self.openapi_version.major]
 
     def resolve_schema_dict(self, schema):
         if isinstance(schema, dict):

@@ -8,7 +8,7 @@ from .exceptions import (
     PluginMethodNotImplementedError,
     DuplicateComponentNameError,
 )
-from .utils import OpenAPIVersion, deepupdate
+from .utils import OpenAPIVersion, deepupdate, COMPONENT_SUBSECTIONS, reference_path
 
 VALID_METHODS_OPENAPI_V2 = ["get", "post", "put", "patch", "delete", "head", "options"]
 
@@ -51,13 +51,7 @@ def clean_operations(operations, openapi_major_version):
         """
         if isinstance(obj, dict):
             return obj
-
-        ref_paths = {
-            "parameter": {2: "parameters", 3: "components/parameters"},
-            "response": {2: "responses", 3: "components/responses"},
-        }
-        ref_path = ref_paths[obj_type][openapi_major_version]
-        return {"$ref": "#/{}/{}".format(ref_path, obj)}
+        return {"$ref": reference_path(obj_type, openapi_major_version) + obj}
 
     for operation in (operations or {}).values():
         if "parameters" in operation:
@@ -95,17 +89,15 @@ class Components(object):
         self._security_schemes = {}
 
     def to_dict(self):
-        if self.openapi_version.major < 3:
-            schemas_key = "definitions"
-            security_key = "securityDefinitions"
-        else:
-            schemas_key = "schemas"
-            security_key = "securitySchemes"
+        subsections = {
+            "schema": self._schemas,
+            "parameter": self._parameters,
+            "response": self._responses,
+            "security_scheme": self._security_schemes,
+        }
         return {
-            "parameters": self._parameters,
-            "responses": self._responses,
-            schemas_key: self._schemas,
-            security_key: self._security_schemes,
+            COMPONENT_SUBSECTIONS[self.openapi_version.major][k]: v
+            for k, v in iteritems(subsections)
         }
 
     def schema(self, name, component=None, **kwargs):
