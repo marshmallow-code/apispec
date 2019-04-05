@@ -68,7 +68,7 @@ def clean_operations(operations, openapi_major_version):
             ]
         if "responses" in operation:
             for code, response in iteritems(operation["responses"]):
-                operation["responses"][code] = get_ref(
+                operation["responses"][str(code)] = get_ref(
                     "response", response, openapi_major_version
                 )
 
