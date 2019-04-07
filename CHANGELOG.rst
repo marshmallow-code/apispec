@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+1.1.2 (2019-04-07)
+++++++++++++++++++
+
+Bug fixes:
+
+- Fix behavior when using "2xx", 3xx", etc. for response keys (:issue:`422`).
+  Thanks :user:`zachmullen` for reporting.
+
 1.1.1 (2019-04-02)
 ++++++++++++++++++
 
