@@ -45,7 +45,7 @@ def clean_operations(operations, openapi_major_version):
         Otherwise, it is assumed to be a reference name as string and the corresponding $ref
         string is returned.
 
-        :param str obj_type: 'parameter' or 'response'
+        :param str obj_type: "parameter" or "response"
         :param dict|str obj: parameter or response in dict form or as ref_id string
         :param int openapi_major_version: The major version of the OpenAPI standard
         """
@@ -67,10 +67,12 @@ def clean_operations(operations, openapi_major_version):
                 get_ref("parameter", p, openapi_major_version) for p in parameters
             ]
         if "responses" in operation:
+            responses = OrderedDict()
             for code, response in iteritems(operation["responses"]):
-                operation["responses"][code] = get_ref(
+                responses[str(code)] = get_ref(
                     "response", response, openapi_major_version
                 )
+            operation["responses"] = responses
 
 
 class Components(object):
