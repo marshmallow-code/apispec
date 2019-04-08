@@ -240,9 +240,10 @@ class APISpec(object):
     def to_dict(self):
         ret = {
             "paths": self._paths,
-            "tags": self._tags,
             "info": {"title": self.title, "version": self.version},
         }
+        if self._tags:
+            ret["tags"] = self._tags
         if self.openapi_version.major < 3:
             ret["swagger"] = self.openapi_version.vstring
             ret.update(self.components.to_dict())
