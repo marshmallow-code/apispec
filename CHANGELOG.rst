@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+1.2.0 (2019-04-08)
+++++++++++++++++++
+
+Features:
+
+- Strip empty sections (components, tags) from generated documentation
+  (:pr:`421` and :pr:`425`).
+
 1.1.2 (2019-04-07)
 ++++++++++++++++++
 
