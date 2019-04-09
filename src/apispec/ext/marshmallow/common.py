@@ -95,7 +95,7 @@ def filter_excluded_fields(fields, Meta, exclude_dump_only):
     :param Meta: the schema's Meta class
     :param bool exclude_dump_only: whether to filter fields in Meta.dump_only
     """
-    exclude = getattr(Meta, "exclude", [])
+    exclude = list(getattr(Meta, "exclude", []))
     if exclude_dump_only:
         exclude += getattr(Meta, "dump_only", [])
 
