@@ -97,7 +97,7 @@ def filter_excluded_fields(fields, Meta, exclude_dump_only):
     """
     exclude = list(getattr(Meta, "exclude", []))
     if exclude_dump_only:
-        exclude += getattr(Meta, "dump_only", [])
+        exclude.extend(getattr(Meta, "dump_only", []))
 
     filtered_fields = OrderedDict(
         (key, value) for key, value in fields.items() if key not in exclude
