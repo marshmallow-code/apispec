@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 import pytest
 
-from apispec.ext.marshmallow.common import make_schema_key, get_unique_schema_name
-from .schemas import PetSchema, SampleSchema
+from apispec.ext.marshmallow.common import (
+    make_schema_key,
+    get_unique_schema_name,
+    get_fields,
+)
+from .schemas import PetSchema, SampleSchema, ExcludeSchema, ExcludeSchema2
 
 
 class TestMakeSchemaKey:
@@ -43,3 +47,21 @@ class TestUniqueName:
         ):
             name_2 = get_unique_schema_name(spec.components, "Pet")
         assert name_2 == "Pet2"
+
+
+class TestMetaExclude:
+    def test_meta_tuple_in_exclude(self):
+        keys = set(get_fields(ExcludeSchema).keys())
+        assert keys == {"field1", "field3", "field5"}
+
+    def test_meta_list_in_exclude(self):
+        keys = set(get_fields(ExcludeSchema2).keys())
+        assert keys == {"field1", "field2", "field4"}
+
+    def test_meta_tuple_in_dump_only(self):
+        keys = set(get_fields(ExcludeSchema, exclude_dump_only=True).keys())
+        assert keys == {"field1", "field5"}
+
+    def test_meta_list_in_dump_only(self):
+        keys = set(get_fields(ExcludeSchema2, exclude_dump_only=True).keys())
+        assert keys == {"field2", "field4"}
