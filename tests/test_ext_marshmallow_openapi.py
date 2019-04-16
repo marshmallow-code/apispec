@@ -853,56 +853,22 @@ class ValidationSchema(Schema):
 
 
 class TestFieldValidation:
-    def test_range(self, spec):
+
+    @pytest.mark.parametrize(
+        ("field", "properties"),
+        [
+            ("range", {"minimum": 1, "maximum": 10}),
+            ("multiple_ranges", {"minimum": 3, "maximum": 7}),
+            ("list_length", {"minItems": 1, "maxItems": 10}),
+            ("string_length", {"minLength": 1, "maxLength": 10}),
+            ("multiple_lengths", {"minLength": 3, "maxLength": 7}),
+            ("equal_length", {"minLength": 5, "maxLength": 5}),
+        ],
+    )
+    def test_properties(self, field, properties, spec):
         spec.components.schema("Validation", schema=ValidationSchema)
-        result = get_schemas(spec)["Validation"]["properties"]["range"]
+        result = get_schemas(spec)["Validation"]["properties"][field]
 
-        assert "minimum" in result
-        assert result["minimum"] == 1
-        assert "maximum" in result
-        assert result["maximum"] == 10
-
-    def test_multiple_ranges(self, spec):
-        spec.components.schema("Validation", schema=ValidationSchema)
-        result = get_schemas(spec)["Validation"]["properties"]["multiple_ranges"]
-
-        assert "minimum" in result
-        assert result["minimum"] == 3
-        assert "maximum" in result
-        assert result["maximum"] == 7
-
-    def test_list_length(self, spec):
-        spec.components.schema("Validation", schema=ValidationSchema)
-        result = get_schemas(spec)["Validation"]["properties"]["list_length"]
-
-        assert "minItems" in result
-        assert result["minItems"] == 1
-        assert "maxItems" in result
-        assert result["maxItems"] == 10
-
-    def test_string_length(self, spec):
-        spec.components.schema("Validation", schema=ValidationSchema)
-        result = get_schemas(spec)["Validation"]["properties"]["string_length"]
-
-        assert "minLength" in result
-        assert result["minLength"] == 1
-        assert "maxLength" in result
-        assert result["maxLength"] == 10
-
-    def test_multiple_lengths(self, spec):
-        spec.components.schema("Validation", schema=ValidationSchema)
-        result = get_schemas(spec)["Validation"]["properties"]["multiple_lengths"]
-
-        assert "minLength" in result
-        assert result["minLength"] == 3
-        assert "maxLength" in result
-        assert result["maxLength"] == 7
-
-    def test_equal_length(self, spec):
-        spec.components.schema("Validation", schema=ValidationSchema)
-        result = get_schemas(spec)["Validation"]["properties"]["equal_length"]
-
-        assert "minLength" in result
-        assert result["minLength"] == 5
-        assert "maxLength" in result
-        assert result["maxLength"] == 5
+        for attr, expected_value in properties.items():
+            assert attr in result
+            assert result[attr] == expected_value
