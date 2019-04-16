@@ -826,33 +826,31 @@ def test_openapi_tools_validate_v3():
         pytest.fail(str(error))
 
 
-class ValidationSchema(Schema):
-    id = fields.Int(dump_only=True)
-    range = fields.Int(validate=validate.Range(min=1, max=10))
-    multiple_ranges = fields.Int(
-        validate=[
-            validate.Range(min=1),
-            validate.Range(min=3),
-            validate.Range(max=10),
-            validate.Range(max=7),
-        ]
-    )
-    list_length = fields.List(fields.Str, validate=validate.Length(min=1, max=10))
-    string_length = fields.Str(validate=validate.Length(min=1, max=10))
-    multiple_lengths = fields.Str(
-        validate=[
-            validate.Length(min=1),
-            validate.Length(min=3),
-            validate.Length(max=10),
-            validate.Length(max=7),
-        ]
-    )
-    equal_length = fields.Str(
-        validate=[validate.Length(equal=5), validate.Length(min=1, max=10)]
-    )
-
-
 class TestFieldValidation:
+    class ValidationSchema(Schema):
+        id = fields.Int(dump_only=True)
+        range = fields.Int(validate=validate.Range(min=1, max=10))
+        multiple_ranges = fields.Int(
+            validate=[
+                validate.Range(min=1),
+                validate.Range(min=3),
+                validate.Range(max=10),
+                validate.Range(max=7),
+            ]
+        )
+        list_length = fields.List(fields.Str, validate=validate.Length(min=1, max=10))
+        string_length = fields.Str(validate=validate.Length(min=1, max=10))
+        multiple_lengths = fields.Str(
+            validate=[
+                validate.Length(min=1),
+                validate.Length(min=3),
+                validate.Length(max=10),
+                validate.Length(max=7),
+            ]
+        )
+        equal_length = fields.Str(
+            validate=[validate.Length(equal=5), validate.Length(min=1, max=10)]
+        )
 
     @pytest.mark.parametrize(
         ("field", "properties"),
@@ -866,7 +864,7 @@ class TestFieldValidation:
         ],
     )
     def test_properties(self, field, properties, spec):
-        spec.components.schema("Validation", schema=ValidationSchema)
+        spec.components.schema("Validation", schema=self.ValidationSchema)
         result = get_schemas(spec)["Validation"]["properties"][field]
 
         for attr, expected_value in properties.items():
