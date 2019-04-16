@@ -4,7 +4,6 @@ import re
 import warnings
 
 import pytest
-from pytest import mark
 
 from marshmallow import fields, Schema, validate
 
@@ -21,7 +20,7 @@ class TestMarshmallowFieldToOpenAPI:
         field = fields.String(validate=validate.OneOf(choices))
         assert openapi.field2choices(field) == {"enum": choices}
 
-    @mark.parametrize(
+    @pytest.mark.parametrize(
         ("FieldClass", "jsontype"),
         [
             (fields.Integer, "integer"),
@@ -53,7 +52,7 @@ class TestMarshmallowFieldToOpenAPI:
         assert res["type"] == "array"
         assert res["items"] == openapi.field2property(fields.String())
 
-    @mark.parametrize(
+    @pytest.mark.parametrize(
         ("FieldClass", "expected_format"),
         [
             (fields.Integer, "int32"),
