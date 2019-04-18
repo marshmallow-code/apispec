@@ -73,7 +73,7 @@ def warn_if_fields_defined_in_meta(fields, Meta):
     """Warns user that fields defined in Meta.fields or Meta.additional will
     be ignored
 
-    :param dict fields: A dictionary of of fields name field object pairs
+    :param dict fields: A dictionary of fields name field object pairs
     :param Meta: the schema's Meta class
     """
     if getattr(Meta, "fields", None) or getattr(Meta, "additional", None):
@@ -91,13 +91,13 @@ def warn_if_fields_defined_in_meta(fields, Meta):
 def filter_excluded_fields(fields, Meta, exclude_dump_only):
     """Filter fields that should be ignored in the OpenAPI spec
 
-    :param dict fields: A dictionary of of fields name field object pairs
+    :param dict fields: A dictionary of fields name field object pairs
     :param Meta: the schema's Meta class
     :param bool exclude_dump_only: whether to filter fields in Meta.dump_only
     """
-    exclude = getattr(Meta, "exclude", [])
+    exclude = list(getattr(Meta, "exclude", []))
     if exclude_dump_only:
-        exclude += getattr(Meta, "dump_only", [])
+        exclude.extend(getattr(Meta, "dump_only", []))
 
     filtered_fields = OrderedDict(
         (key, value) for key, value in fields.items() if key not in exclude

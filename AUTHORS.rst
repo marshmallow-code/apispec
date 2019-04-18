@@ -54,3 +54,4 @@ Contributors (chronological)
 - Marcin Lulek `@ergo <https://github.com/ergo>`_
 - Jonathan Beezley `@jbeezley <https://github.com/jbeezley>`_
 - David Stapleton `@dstape <https://github.com/DStape>`_
+- Szabolcs Blága `@blagasz <https://github.com/blagasz>`_
