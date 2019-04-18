@@ -14,6 +14,18 @@ from apispec import exceptions, utils, APISpec
 from .utils import get_schemas, build_ref
 
 
+class CustomList(fields.List):
+    pass
+
+
+class CustomStringField(fields.String):
+    pass
+
+
+class CustomIntegerField(fields.Integer):
+    pass
+
+
 class TestMarshmallowFieldToOpenAPI:
     def test_field2choices_preserving_order(self, openapi):
         choices = ["a", "b", "c", "aa", "0", "cc"]
@@ -39,6 +51,9 @@ class TestMarshmallowFieldToOpenAPI:
             # Assume base Field and Raw are strings
             (fields.Field, "string"),
             (fields.Raw, "string"),
+            # Custom fields inherit types from their parents
+            (CustomStringField, "string"),
+            (CustomIntegerField, "integer"),
         ],
     )
     def test_field2property_type(self, FieldClass, jsontype, openapi):
@@ -46,8 +61,9 @@ class TestMarshmallowFieldToOpenAPI:
         res = openapi.field2property(field)
         assert res["type"] == jsontype
 
-    def test_formatted_field_translates_to_array(self, openapi):
-        field = fields.List(fields.String)
+    @pytest.mark.parametrize("ListClass", [fields.List, CustomList])
+    def test_formatted_field_translates_to_array(self, ListClass, openapi):
+        field = ListClass(fields.String)
         res = openapi.field2property(field)
         assert res["type"] == "array"
         assert res["items"] == openapi.field2property(fields.String())
@@ -434,8 +450,9 @@ class TestMarshmallowSchemaToModelDefinition:
 
 
 class TestMarshmallowSchemaToParameters:
-    def test_field_multiple(self, openapi):
-        field = fields.List(fields.Str, location="querystring")
+    @pytest.mark.parametrize("ListClass", [fields.List, CustomList])
+    def test_field_multiple(self, ListClass, openapi):
+        field = ListClass(fields.Str, location="querystring")
         res = openapi.field2parameter(field, name="field")
         assert res["in"] == "query"
         if openapi.openapi_version.major < 3:
@@ -839,7 +856,11 @@ class TestFieldValidation:
             ]
         )
         list_length = fields.List(fields.Str, validate=validate.Length(min=1, max=10))
+        custom_list_length = CustomList(
+            fields.Str, validate=validate.Length(min=1, max=10)
+        )
         string_length = fields.Str(validate=validate.Length(min=1, max=10))
+        custom_field_length = CustomStringField(validate=validate.Length(min=1, max=10))
         multiple_lengths = fields.Str(
             validate=[
                 validate.Length(min=1),
@@ -858,7 +879,9 @@ class TestFieldValidation:
             ("range", {"minimum": 1, "maximum": 10}),
             ("multiple_ranges", {"minimum": 3, "maximum": 7}),
             ("list_length", {"minItems": 1, "maxItems": 10}),
+            ("custom_list_length", {"minItems": 1, "maxItems": 10}),
             ("string_length", {"minLength": 1, "maxLength": 10}),
+            ("custom_field_length", {"minLength": 1, "maxLength": 10}),
             ("multiple_lengths", {"minLength": 3, "maxLength": 7}),
             ("equal_length", {"minLength": 5, "maxLength": 5}),
         ],

@@ -163,7 +163,20 @@ class OpenAPIConverter(object):
         :param Field field: A marshmallow field.
         :rtype: dict
         """
-        type_, fmt = self.field_mapping.get(type(field), ("string", None))
+        # If this type isn't directly in the field mapping then check the
+        # hierarchy until we find something that does.
+        for field_class in type(field).__mro__:
+            if field_class in self.field_mapping:
+                type_, fmt = self.field_mapping[field_class]
+                break
+        else:
+            warnings.warn(
+                "Field of type {} does not inherit from marshmallow.Field.".format(
+                    type(field)
+                ),
+                UserWarning,
+            )
+            type_, fmt = "string", None
 
         ret = {"type": type_}
 
