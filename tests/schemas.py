@@ -53,30 +53,6 @@ class OrderedSchema(Schema):
         ordered = True
 
 
-class ExcludeSchema(Schema):
-    field1 = fields.Int()
-    field2 = fields.Int()
-    field3 = fields.Int()
-    field4 = fields.Int()
-    field5 = fields.Int()
-
-    class Meta:
-        exclude = ("field2", "field4")
-        dump_only = ["field3"]
-
-
-class ExcludeSchema2(Schema):
-    field1 = fields.Int()
-    field2 = fields.Int()
-    field3 = fields.Int()
-    field4 = fields.Int()
-    field5 = fields.Int()
-
-    class Meta:
-        exclude = ["field3", "field5"]
-        dump_only = ("field1",)
-
-
 class DefaultValuesSchema(Schema):
     number_auto_default = fields.Int(missing=12)
     number_manual_default = fields.Int(missing=12, doc_default=42)
