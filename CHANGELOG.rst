@@ -1,6 +1,15 @@
 Changelog
 ---------
 
+1.2.1 (2019-04-18)
+++++++++++++++++++
+
+Bug fixes:
+
+- Fix error in ``MarshmallowPlugin`` when passing ``exclude`` and ``dump_only``
+  as ``class Meta`` attributes mixing ``list`` and ``tuple`` (:pr:`431`).
+  Thanks :user:`blagasz` for the PR.
+
 1.2.0 (2019-04-08)
 ++++++++++++++++++
 
