@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 """Core apispec classes and functions."""
 from collections import OrderedDict
+import warnings
 
-from apispec.compat import iterkeys, iteritems
+from apispec.compat import iterkeys, iteritems, PY2
 from .exceptions import (
     APISpecError,
     PluginMethodNotImplementedError,
     DuplicateComponentNameError,
 )
 from .utils import OpenAPIVersion, deepupdate, COMPONENT_SUBSECTIONS, build_reference
+
+if not PY2:
+    from http import HTTPStatus
 
 VALID_METHODS_OPENAPI_V2 = ["get", "post", "put", "patch", "delete", "head", "options"]
 
@@ -69,6 +73,15 @@ def clean_operations(operations, openapi_major_version):
         if "responses" in operation:
             responses = OrderedDict()
             for code, response in iteritems(operation["responses"]):
+                if openapi_major_version < 3:
+                    try:
+                        code = int(code)
+                    except (TypeError, ValueError):
+                        warnings.warn("Non-integer code not allowed in OpenAPI < 3")
+                elif not PY2:
+                    if isinstance(code, HTTPStatus):
+                        code = code.value
+
                 responses[str(code)] = get_ref(
                     "response", response, openapi_major_version
                 )
