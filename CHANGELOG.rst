@@ -1,6 +1,15 @@
 Changelog
 ---------
 
+1.3.0 (2019-04-24)
+++++++++++++++++++
+
+Features:
+
+- [apispec.ext.marshmallow]: Use class hierarchy to 
+  infer ``type`` and ``format`` properties (:issue:`433`, :issue:`250`).
+  Thanks :user:`andrjohn` for the PR.
+
 1.2.1 (2019-04-18)
 ++++++++++++++++++
 
