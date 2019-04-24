@@ -55,3 +55,4 @@ Contributors (chronological)
 - Jonathan Beezley `@jbeezley <https://github.com/jbeezley>`_
 - David Stapleton `@dstape <https://github.com/DStape>`_
 - Szabolcs Blága `@blagasz <https://github.com/blagasz>`_
+- Andrew Johnson `@andrjohn <https://github.com/andrjohn>`_

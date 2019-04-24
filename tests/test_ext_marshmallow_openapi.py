@@ -4,7 +4,6 @@ import re
 import warnings
 
 import pytest
-from pytest import mark
 
 from marshmallow import fields, Schema, validate
 
@@ -15,13 +14,25 @@ from apispec import exceptions, utils, APISpec
 from .utils import get_schemas, build_ref
 
 
+class CustomList(fields.List):
+    pass
+
+
+class CustomStringField(fields.String):
+    pass
+
+
+class CustomIntegerField(fields.Integer):
+    pass
+
+
 class TestMarshmallowFieldToOpenAPI:
     def test_field2choices_preserving_order(self, openapi):
         choices = ["a", "b", "c", "aa", "0", "cc"]
         field = fields.String(validate=validate.OneOf(choices))
         assert openapi.field2choices(field) == {"enum": choices}
 
-    @mark.parametrize(
+    @pytest.mark.parametrize(
         ("FieldClass", "jsontype"),
         [
             (fields.Integer, "integer"),
@@ -40,6 +51,9 @@ class TestMarshmallowFieldToOpenAPI:
             # Assume base Field and Raw are strings
             (fields.Field, "string"),
             (fields.Raw, "string"),
+            # Custom fields inherit types from their parents
+            (CustomStringField, "string"),
+            (CustomIntegerField, "integer"),
         ],
     )
     def test_field2property_type(self, FieldClass, jsontype, openapi):
@@ -47,13 +61,14 @@ class TestMarshmallowFieldToOpenAPI:
         res = openapi.field2property(field)
         assert res["type"] == jsontype
 
-    def test_formatted_field_translates_to_array(self, openapi):
-        field = fields.List(fields.String)
+    @pytest.mark.parametrize("ListClass", [fields.List, CustomList])
+    def test_formatted_field_translates_to_array(self, ListClass, openapi):
+        field = ListClass(fields.String)
         res = openapi.field2property(field)
         assert res["type"] == "array"
         assert res["items"] == openapi.field2property(fields.String())
 
-    @mark.parametrize(
+    @pytest.mark.parametrize(
         ("FieldClass", "expected_format"),
         [
             (fields.Integer, "int32"),
@@ -435,8 +450,9 @@ class TestMarshmallowSchemaToModelDefinition:
 
 
 class TestMarshmallowSchemaToParameters:
-    def test_field_multiple(self, openapi):
-        field = fields.List(fields.Str, location="querystring")
+    @pytest.mark.parametrize("ListClass", [fields.List, CustomList])
+    def test_field_multiple(self, ListClass, openapi):
+        field = ListClass(fields.Str, location="querystring")
         res = openapi.field2parameter(field, name="field")
         assert res["in"] == "query"
         if openapi.openapi_version.major < 3:
@@ -827,83 +843,53 @@ def test_openapi_tools_validate_v3():
         pytest.fail(str(error))
 
 
-class ValidationSchema(Schema):
-    id = fields.Int(dump_only=True)
-    range = fields.Int(validate=validate.Range(min=1, max=10))
-    multiple_ranges = fields.Int(
-        validate=[
-            validate.Range(min=1),
-            validate.Range(min=3),
-            validate.Range(max=10),
-            validate.Range(max=7),
-        ]
-    )
-    list_length = fields.List(fields.Str, validate=validate.Length(min=1, max=10))
-    string_length = fields.Str(validate=validate.Length(min=1, max=10))
-    multiple_lengths = fields.Str(
-        validate=[
-            validate.Length(min=1),
-            validate.Length(min=3),
-            validate.Length(max=10),
-            validate.Length(max=7),
-        ]
-    )
-    equal_length = fields.Str(
-        validate=[validate.Length(equal=5), validate.Length(min=1, max=10)]
-    )
-
-
 class TestFieldValidation:
-    def test_range(self, spec):
-        spec.components.schema("Validation", schema=ValidationSchema)
-        result = get_schemas(spec)["Validation"]["properties"]["range"]
+    class ValidationSchema(Schema):
+        id = fields.Int(dump_only=True)
+        range = fields.Int(validate=validate.Range(min=1, max=10))
+        multiple_ranges = fields.Int(
+            validate=[
+                validate.Range(min=1),
+                validate.Range(min=3),
+                validate.Range(max=10),
+                validate.Range(max=7),
+            ]
+        )
+        list_length = fields.List(fields.Str, validate=validate.Length(min=1, max=10))
+        custom_list_length = CustomList(
+            fields.Str, validate=validate.Length(min=1, max=10)
+        )
+        string_length = fields.Str(validate=validate.Length(min=1, max=10))
+        custom_field_length = CustomStringField(validate=validate.Length(min=1, max=10))
+        multiple_lengths = fields.Str(
+            validate=[
+                validate.Length(min=1),
+                validate.Length(min=3),
+                validate.Length(max=10),
+                validate.Length(max=7),
+            ]
+        )
+        equal_length = fields.Str(
+            validate=[validate.Length(equal=5), validate.Length(min=1, max=10)]
+        )
 
-        assert "minimum" in result
-        assert result["minimum"] == 1
-        assert "maximum" in result
-        assert result["maximum"] == 10
+    @pytest.mark.parametrize(
+        ("field", "properties"),
+        [
+            ("range", {"minimum": 1, "maximum": 10}),
+            ("multiple_ranges", {"minimum": 3, "maximum": 7}),
+            ("list_length", {"minItems": 1, "maxItems": 10}),
+            ("custom_list_length", {"minItems": 1, "maxItems": 10}),
+            ("string_length", {"minLength": 1, "maxLength": 10}),
+            ("custom_field_length", {"minLength": 1, "maxLength": 10}),
+            ("multiple_lengths", {"minLength": 3, "maxLength": 7}),
+            ("equal_length", {"minLength": 5, "maxLength": 5}),
+        ],
+    )
+    def test_properties(self, field, properties, spec):
+        spec.components.schema("Validation", schema=self.ValidationSchema)
+        result = get_schemas(spec)["Validation"]["properties"][field]
 
-    def test_multiple_ranges(self, spec):
-        spec.components.schema("Validation", schema=ValidationSchema)
-        result = get_schemas(spec)["Validation"]["properties"]["multiple_ranges"]
-
-        assert "minimum" in result
-        assert result["minimum"] == 3
-        assert "maximum" in result
-        assert result["maximum"] == 7
-
-    def test_list_length(self, spec):
-        spec.components.schema("Validation", schema=ValidationSchema)
-        result = get_schemas(spec)["Validation"]["properties"]["list_length"]
-
-        assert "minItems" in result
-        assert result["minItems"] == 1
-        assert "maxItems" in result
-        assert result["maxItems"] == 10
-
-    def test_string_length(self, spec):
-        spec.components.schema("Validation", schema=ValidationSchema)
-        result = get_schemas(spec)["Validation"]["properties"]["string_length"]
-
-        assert "minLength" in result
-        assert result["minLength"] == 1
-        assert "maxLength" in result
-        assert result["maxLength"] == 10
-
-    def test_multiple_lengths(self, spec):
-        spec.components.schema("Validation", schema=ValidationSchema)
-        result = get_schemas(spec)["Validation"]["properties"]["multiple_lengths"]
-
-        assert "minLength" in result
-        assert result["minLength"] == 3
-        assert "maxLength" in result
-        assert result["maxLength"] == 7
-
-    def test_equal_length(self, spec):
-        spec.components.schema("Validation", schema=ValidationSchema)
-        result = get_schemas(spec)["Validation"]["properties"]["equal_length"]
-
-        assert "minLength" in result
-        assert result["minLength"] == 5
-        assert "maxLength" in result
-        assert result["maxLength"] == 5
+        for attr, expected_value in properties.items():
+            assert attr in result
+            assert result[attr] == expected_value
