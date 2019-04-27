@@ -113,12 +113,11 @@ def make_schema_key(schema):
     for modifier in MODIFIERS:
         attribute = getattr(schema, modifier)
         try:
-            if isinstance(attribute, set):
-                attribute = hash(frozenset(attribute))
-            else:
-                attribute = hash(attribute)
+            # Hashable (string, tuple)
+            hash(attribute)
         except TypeError:
-            attribute = tuple(attribute)
+            # Unhashable iterable (list, set)
+            attribute = frozenset(attribute)
         modifiers.append(attribute)
     return SchemaKey(schema.__class__, *modifiers)
 
