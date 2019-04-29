@@ -19,10 +19,12 @@ class TestMakeSchemaKey:
     def test_same_schemas_instances_equal(self):
         assert make_schema_key(PetSchema()) == make_schema_key(PetSchema())
 
-    def test_same_schemas_instances_with_sets_equal(self):
-        # Note: this test relies on non-deterministic hashing behaviour:
-        for i in range(0, 50):
-            assert make_schema_key(PetSchema(load_only=('1', '2', '3', '4'))) == make_schema_key(PetSchema(load_only=('4', '3', '2', '1')))
+    @pytest.mark.parametrize("structure", (list, set))
+    def test_same_schemas_instances_unhashable_modifiers_equal(self, structure):
+        modifier = [str(i) for i in range(1000)]
+        assert make_schema_key(
+            PetSchema(load_only=structure(modifier))
+        ) == make_schema_key(PetSchema(load_only=structure(modifier[::-1])))
 
     def test_different_schemas_not_equal(self):
         assert make_schema_key(PetSchema()) != make_schema_key(SampleSchema())
