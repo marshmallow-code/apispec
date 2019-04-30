@@ -1,6 +1,16 @@
 Changelog
 ---------
 
+1.3.1 (2019-04-29)
+++++++++++++++++++
+
+Bug fixes:
+
+- Fix handling of `http.HTTPStatus` objects (:issue:`426`). Thanks
+  :user:`DStape`.
+- [apispec.ext.marshmallow]: Ensure make_schema_key returns a unique key on 
+  unhashable iterables (:pr:`416`, :pr:`439`). Thanks :user:`zedrdave`.
+
 1.3.0 (2019-04-24)
 ++++++++++++++++++
 
