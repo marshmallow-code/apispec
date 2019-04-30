@@ -3,7 +3,6 @@ from collections import OrderedDict
 
 import pytest
 import sys
-import warnings
 import yaml
 
 from apispec import APISpec, BasePlugin
@@ -438,20 +437,17 @@ class TestPath:
 
         assert "200" in get_paths(spec)["/pet/{petId}"]["get"]["responses"]
 
-    def test_response_with_status_code_range(self, spec):
+    def test_response_with_status_code_range(self, spec, recwarn):
         status_code = "2XX"
 
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-
-            spec.path(
-                path="/pet/{petId}",
-                operations={"get": {"responses": {status_code: "test_response"}}},
-            )
+        spec.path(
+            path="/pet/{petId}",
+            operations={"get": {"responses": {status_code: "test_response"}}},
+        )
 
         if spec.openapi_version.major < 3:
-            assert len(w) == 1
-            assert issubclass(w[-1].category, UserWarning)
+            assert len(recwarn) == 1
+            assert recwarn.pop(UserWarning)
 
         assert status_code in get_paths(spec)["/pet/{petId}"]["get"]["responses"]
 
