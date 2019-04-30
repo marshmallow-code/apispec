@@ -2,6 +2,7 @@
 from collections import OrderedDict
 
 import pytest
+import sys
 import yaml
 
 from apispec import APISpec, BasePlugin
@@ -421,6 +422,34 @@ class TestPath:
                 route_spec["responses"]["200"]
                 == metadata["components"]["responses"]["test_response"]
             )
+
+    @pytest.mark.skipif(
+        int(sys.version[0]) == 2, reason="HTTPStatus only available in Python3"
+    )
+    def test_response_with_HTTPStatus_code(self, spec):
+        from http import HTTPStatus
+
+        code = HTTPStatus(200)
+        spec.path(
+            path="/pet/{petId}",
+            operations={"get": {"responses": {code: "test_response"}}},
+        )
+
+        assert "200" in get_paths(spec)["/pet/{petId}"]["get"]["responses"]
+
+    def test_response_with_status_code_range(self, spec, recwarn):
+        status_code = "2XX"
+
+        spec.path(
+            path="/pet/{petId}",
+            operations={"get": {"responses": {status_code: "test_response"}}},
+        )
+
+        if spec.openapi_version.major < 3:
+            assert len(recwarn) == 1
+            assert recwarn.pop(UserWarning)
+
+        assert status_code in get_paths(spec)["/pet/{petId}"]["get"]["responses"]
 
     def test_path_check_invalid_http_method(self, spec):
         spec.path("/pet/{petId}", operations={"get": {}})

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import re
-import warnings
 
 import pytest
 
@@ -395,7 +394,7 @@ class TestMarshmallowSchemaToModelDefinition:
         res = openapi.schema2jsonschema(WhiteStripesSchema)
         assert set(res["properties"].keys()) == {"guitarist", "drummer"}
 
-    def test_only_explicitly_declared_fields_are_translated(self, recwarn, openapi):
+    def test_only_explicitly_declared_fields_are_translated(self, openapi):
         class UserSchema(Schema):
             _id = fields.Int()
 
@@ -403,19 +402,15 @@ class TestMarshmallowSchemaToModelDefinition:
                 title = "User"
                 fields = ("_id", "email")
 
-        with warnings.catch_warnings():
-            warnings.simplefilter("always")
+        with pytest.warns(
+            UserWarning,
+            match="Only explicitly-declared fields will be included in the Schema Object.",
+        ):
             res = openapi.schema2jsonschema(UserSchema)
             assert res["type"] == "object"
             props = res["properties"]
             assert "_id" in props
             assert "email" not in props
-            warning = recwarn.pop()
-            expected_msg = (
-                "Only explicitly-declared fields will be included in the Schema Object."
-            )
-            assert expected_msg in str(warning.message)
-            assert issubclass(warning.category, UserWarning)
 
     def test_observed_field_name_for_required_field(self, openapi):
         if MARSHMALLOW_VERSION_INFO[0] < 3:

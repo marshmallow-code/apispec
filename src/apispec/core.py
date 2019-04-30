@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Core apispec classes and functions."""
 from collections import OrderedDict
+import warnings
 
 from apispec.compat import iterkeys, iteritems
 from .exceptions import (
@@ -69,6 +70,12 @@ def clean_operations(operations, openapi_major_version):
         if "responses" in operation:
             responses = OrderedDict()
             for code, response in iteritems(operation["responses"]):
+                try:
+                    code = int(code)  # handles IntEnums like http.HTTPStatus
+                except (TypeError, ValueError):
+                    if openapi_major_version < 3:
+                        warnings.warn("Non-integer code not allowed in OpenAPI < 3")
+
                 responses[str(code)] = get_ref(
                     "response", response, openapi_major_version
                 )
