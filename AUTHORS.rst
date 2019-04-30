@@ -56,3 +56,4 @@ Contributors (chronological)
 - David Stapleton `@dstape <https://github.com/DStape>`_
 - Szabolcs Blága `@blagasz <https://github.com/blagasz>`_
 - Andrew Johnson `@andrjohn <https://github.com/andrjohn>`_
+- Dave `@zedrdave <https://github.com/zedrdave>`_
