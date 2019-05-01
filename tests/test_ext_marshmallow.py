@@ -245,6 +245,13 @@ class TestComponentResponseHelper:
         assert resolved_schema["properties"]["name"]["type"] == "string"
         assert resolved_schema["properties"]["password"]["type"] == "string"
 
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_content_without_schema(self, spec):
+        resp = {"content": {"application/json": {"example": {"name": "Example"}}}}
+        spec.components.response("GetPetOk", resp)
+        response = get_responses(spec)["GetPetOk"]
+        assert response == resp
+
 
 class TestCustomField:
     def test_can_use_custom_field_decorator(self, spec_fixture):

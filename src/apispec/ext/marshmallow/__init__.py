@@ -36,6 +36,7 @@ from __future__ import absolute_import
 import warnings
 
 from apispec import BasePlugin
+from apispec.compat import itervalues
 from .common import resolve_schema_instance, make_schema_key
 from .openapi import OpenAPIConverter
 
@@ -123,11 +124,11 @@ class MarshmallowPlugin(BasePlugin):
         # OAS 3 component except header
         if self.openapi_version.major >= 3:
             if "content" in data:
-                for content_type in data["content"]:
-                    schema = data["content"][content_type]["schema"]
-                    data["content"][content_type][
-                        "schema"
-                    ] = self.openapi.resolve_schema_dict(schema)
+                for content in itervalues(data["content"]):
+                    if "schema" in content:
+                        content["schema"] = self.openapi.resolve_schema_dict(
+                            content["schema"]
+                        )
 
     def map_to_openapi_type(self, *args):
         """Decorator to set mapping for custom fields.
