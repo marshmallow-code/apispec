@@ -232,35 +232,36 @@ apispec will respect schema modifiers such as ``exclude`` and ``partial`` in the
 Custom Fields
 ***************
 
-By default, apispec only knows how to set the type of
-built-in marshmallow fields. If you want to generate definitions for
-schemas with custom fields, use the
-`apispec.ext.marshmallow.MarshmallowPlugin.map_to_openapi_type` decorator.
+By default, apispec knows how to map class of the provided marshmallow fields to the
+correct OpenAPI type. If your custom field sub-classes a standard marshmallow field
+class then it will inherit the default mapping. If you want to override the OpenAPI
+type in the generated definitions for schemas with custom fields, use the
+`apispec.ext.marshmallow.MarshmallowPlugin.map_to_openapi_type` decorator. This can
+be invoked with either a pair of strings which provide the OpenAPI type, or a
+marshmallow field that has the same target mapping.
 
 .. code-block:: python
 
     from apispec import APISpec
     from apispec.ext.marshmallow import MarshmallowPlugin
-    from marshmallow.fields import Integer
+    from marshmallow.fields import Integer, Field
 
     ma_plugin = MarshmallowPlugin()
 
-    spec = APISpec(
-        title="Gisty",
-        version="1.0.0",
-        openapi_version="3.0.2",
-        info=dict(description="A minimal gist API"),
-        plugins=[ma_plugin],
-    )
+
+    # Inherits Integer mapping of ('integer', 'int32')
+    class MyCustomInteger(Integer):
+        pass
 
 
+    # Override Integer mapping
     @ma_plugin.map_to_openapi_type("string", "uuid")
     class MyCustomField(Integer):
         pass
 
 
     @ma_plugin.map_to_openapi_type(Integer)  # will map to ('integer', 'int32')
-    class MyCustomFieldThatsKindaLikeAnInteger(Integer):
+    class MyCustomFieldThatsKindaLikeAnInteger(Field):
         pass
 
 
