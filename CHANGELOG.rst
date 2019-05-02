@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+1.3.2 (2019-05-02)
+++++++++++++++++++
+
+Bug fixes:
+
+- Fix handling of OpenAPI v3 components content without schema in
+  ``MarshmallowPlugin`` (:pr:`443`).
+
 1.3.1 (2019-04-29)
 ++++++++++++++++++
 
