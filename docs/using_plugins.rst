@@ -232,7 +232,7 @@ apispec will respect schema modifiers such as ``exclude`` and ``partial`` in the
 Custom Fields
 *************
 
-apispec maps built-in marshmallow fields to OpenAPI types and formats. If your
+apispec maps standard marshmallow fields to OpenAPI types and formats. If your
 custom field subclasses a standard marshmallow `Field` class then it will
 inherit the default mapping. If you want to override the OpenAPI type and format
 for custom fields, use the
