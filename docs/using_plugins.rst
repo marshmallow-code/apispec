@@ -230,15 +230,15 @@ Schema Modifiers
 apispec will respect schema modifiers such as ``exclude`` and ``partial`` in the generated schema definition. If a schema is initialized with modifiers, apispec will treat each combination of modifiers as a unique schema definition.
 
 Custom Fields
-***************
+*************
 
-By default, apispec knows how to map class of the provided marshmallow fields to the
-correct OpenAPI type. If your custom field sub-classes a standard marshmallow field
-class then it will inherit the default mapping. If you want to override the OpenAPI
-type in the generated definitions for schemas with custom fields, use the
-`apispec.ext.marshmallow.MarshmallowPlugin.map_to_openapi_type` decorator. This can
-be invoked with either a pair of strings which provide the OpenAPI type, or a
-marshmallow field that has the same target mapping.
+apispec maps built-in marshmallow fields to OpenAPI types and formats. If your
+custom field subclasses a standard marshmallow `Field` class then it will
+inherit the default mapping. If you want to override the OpenAPI type and format
+for custom fields, use the
+`map_to_openapi_type <apispec.ext.marshmallow.MarshmallowPlugin.map_to_openapi_type>`
+decorator. It can be invoked with either a pair of strings providing the
+OpenAPI type and format, or a marshmallow `Field` that has the desired target mapping.
 
 .. code-block:: python
 
