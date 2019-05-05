@@ -15,10 +15,9 @@ from collections import OrderedDict
 
 import marshmallow
 from marshmallow.utils import is_collection
-from marshmallow.compat import iteritems
 from marshmallow.orderedset import OrderedSet
 
-from apispec.compat import RegexType
+from apispec.compat import RegexType, iteritems
 from apispec.utils import OpenAPIVersion, build_reference
 from .common import (
     resolve_schema_cls,
