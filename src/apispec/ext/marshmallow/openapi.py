@@ -473,6 +473,8 @@ class OpenAPIConverter(object):
                 return json_schema
             name = get_unique_schema_name(self.spec.components, name)
             self.spec.components.schema(name, schema=schema)
+            # add nested schema name to the refs dict, otherwise get_ref_dict() fails
+            self.refs[schema_key] = name
         return self.get_ref_dict(schema_instance)
 
     def schema2parameters(
