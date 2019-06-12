@@ -8,6 +8,7 @@ from .exceptions import (
     APISpecError,
     PluginMethodNotImplementedError,
     DuplicateComponentNameError,
+    DuplicateParameterError,
 )
 from .utils import OpenAPIVersion, deepupdate, COMPONENT_SUBSECTIONS, build_reference
 
@@ -59,7 +60,7 @@ def clean_parameters(parameters, openapi_major_version):
     seen = set()
     for p in param_objs:
         if p in seen:
-            raise APISpecError(
+            raise DuplicateParameterError(
                 "Duplicate parameter with name {} and location {}".format(p[0], p[1])
             )
         seen.add(p)

@@ -6,7 +6,11 @@ import sys
 import yaml
 
 from apispec import APISpec, BasePlugin
-from apispec.exceptions import APISpecError, DuplicateComponentNameError
+from apispec.exceptions import (
+    APISpecError,
+    DuplicateComponentNameError,
+    DuplicateParameterError,
+)
 
 from .utils import (
     get_schemas,
@@ -399,6 +403,7 @@ class TestPath:
                 == metadata["components"]["parameters"]["test_parameter"]
             )
 
+    def test_parameter_duplicate(self, spec):
         spec.path(
             path="/pet/{petId}",
             operations={
@@ -411,7 +416,7 @@ class TestPath:
             },
         )
 
-        with pytest.raises(APISpecError):
+        with pytest.raises(DuplicateParameterError):
             spec.path(
                 path="/pet/{petId}",
                 operations={
@@ -435,17 +440,13 @@ class TestPath:
             parameters=[{"name": "petId", "in": "path"}, "test_parameter"],
         )
 
-        if spec.openapi_version.major < 3:
-            assert get_paths(spec)[path]["parameters"] == [
-                {"name": "petId", "in": "path", "required": True},
-                {"$ref": "#/parameters/test_parameter"},
-            ]
-        else:
-            assert get_paths(spec)[path]["parameters"] == [
-                {"name": "petId", "in": "path", "required": True},
-                {"$ref": "#/components/parameters/test_parameter"},
-            ]
+        assert get_paths(spec)[path]["parameters"] == [
+            {"name": "petId", "in": "path", "required": True},
+            build_ref(spec, "parameter", "test_parameter"),
+        ]
 
+    def test_global_parameter_duplicate(self, spec):
+        path = "/pet/{petId}"
         spec.path(
             path=path,
             operations=dict(put={}, get={}),
@@ -455,18 +456,12 @@ class TestPath:
             ],
         )
 
-        if spec.openapi_version.major < 3:
-            assert get_paths(spec)[path]["parameters"] == [
-                {"name": "petId", "in": "path", "required": True},
-                {"name": "petId", "in": "query"},
-            ]
-        else:
-            assert get_paths(spec)[path]["parameters"] == [
-                {"name": "petId", "in": "path", "required": True},
-                {"name": "petId", "in": "query"},
-            ]
+        assert get_paths(spec)[path]["parameters"] == [
+            {"name": "petId", "in": "path", "required": True},
+            {"name": "petId", "in": "query"},
+        ]
 
-        with pytest.raises(APISpecError):
+        with pytest.raises(DuplicateParameterError):
             spec.path(
                 path=path,
                 operations=dict(put={}, get={}),

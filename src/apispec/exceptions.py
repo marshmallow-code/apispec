@@ -14,5 +14,9 @@ class DuplicateComponentNameError(APISpecError):
     """Raised when registering two components with the same name"""
 
 
+class DuplicateParameterError(APISpecError):
+    """Raised when registering a parameter already existing in a given scope"""
+
+
 class OpenAPIError(APISpecError):
     """Raised when a OpenAPI spec validation fails."""
