@@ -84,18 +84,18 @@ class MarshmallowPlugin(BasePlugin):
     def resolve_parameters(self, parameters):
         resolved = []
         for parameter in parameters:
-            if isinstance(parameter, dict) and not isinstance(
-                parameter.get("schema", {}), dict
+            if (
+                isinstance(parameter, dict)
+                and not isinstance(parameter.get("schema", {}), dict)
+                and "in" in parameter
             ):
-                schema_instance = resolve_schema_instance(parameter["schema"])
-                if "in" in parameter:
-                    del parameter["schema"]
-                    resolved += self.openapi.schema2parameters(
-                        schema_instance, default_in=parameter.pop("in"), **parameter
-                    )
-                    continue
-            self.resolve_schema(parameter)
-            resolved.append(parameter)
+                schema_instance = resolve_schema_instance(parameter.pop("schema"))
+                resolved += self.openapi.schema2parameters(
+                    schema_instance, default_in=parameter.pop("in"), **parameter
+                )
+            else:
+                self.resolve_schema(parameter)
+                resolved.append(parameter)
         return resolved
 
     def resolve_schema_in_request_body(self, request_body):
