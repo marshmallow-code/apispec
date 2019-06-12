@@ -9,6 +9,7 @@ from .exceptions import (
     PluginMethodNotImplementedError,
     DuplicateComponentNameError,
     DuplicateParameterError,
+    InvalidParameterError,
 )
 from .utils import OpenAPIVersion, deepupdate, COMPONENT_SUBSECTIONS, build_reference
 
@@ -45,18 +46,17 @@ def clean_parameters(parameters, openapi_major_version):
     :param list parameters: List of parameters mapping
     :param int openapi_major_version: The major version of the OpenAPI standard
     """
-    unique_keys = ("name", "in")
     for parameter in parameters:
         if isinstance(parameter, dict) and parameter.get("in") == "path":
             parameter["required"] = True
 
     # OpenAPI Spec 3 and 2 don't allow for duplicated parameters
     # A unique parameter is defined by a combination of a name and location
-    param_objs = [
-        (p["name"], p["in"])
-        for p in parameters
-        if isinstance(p, dict) and all(uk in p for uk in unique_keys)
-    ]
+    try:
+        param_objs = [(p["name"], p["in"]) for p in parameters if isinstance(p, dict)]
+    except KeyError as e:
+        raise InvalidParameterError("Missing key {} for parameter".format(e))
+
     seen = set()
     for p in param_objs:
         if p in seen:

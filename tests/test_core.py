@@ -10,6 +10,7 @@ from apispec.exceptions import (
     APISpecError,
     DuplicateComponentNameError,
     DuplicateParameterError,
+    InvalidParameterError,
 )
 
 from .utils import (
@@ -401,6 +402,30 @@ class TestPath:
             assert (
                 route_spec["parameters"][0]
                 == metadata["components"]["parameters"]["test_parameter"]
+            )
+
+    def test_invalid_parameter(self, spec):
+        path = "/pet/{petId}"
+
+        with pytest.raises(InvalidParameterError):
+            spec.path(
+                path=path,
+                operations=dict(put={}, get={}),
+                parameters=[{"name": "petId", "in": "path"}, {"in": "query"}],
+            )
+
+        with pytest.raises(InvalidParameterError):
+            spec.path(
+                path=path,
+                operations=dict(put={}, get={}),
+                parameters=[{"name": "petId"}],
+            )
+
+        with pytest.raises(InvalidParameterError):
+            spec.path(
+                path=path,
+                operations=dict(put={}, get={}),
+                parameters=[{"name": "petId", "path": "test"}],
             )
 
     def test_parameter_duplicate(self, spec):
