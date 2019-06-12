@@ -399,6 +399,84 @@ class TestPath:
                 == metadata["components"]["parameters"]["test_parameter"]
             )
 
+        spec.path(
+            path="/pet/{petId}",
+            operations={
+                "get": {
+                    "parameters": [
+                        {"name": "petId", "in": "path"},
+                        {"name": "petId", "in": "query"},
+                    ]
+                }
+            },
+        )
+
+        with pytest.raises(APISpecError):
+            spec.path(
+                path="/pet/{petId}",
+                operations={
+                    "get": {
+                        "parameters": [
+                            {"name": "petId", "in": "path"},
+                            {"name": "petId", "in": "path"},
+                        ]
+                    }
+                },
+            )
+
+    def test_global_parameters(self, spec):
+        path = "/pet/{petId}"
+        route_spec = self.paths["/pet/{petId}"]["get"]
+
+        spec.components.parameter("test_parameter", "path", route_spec["parameters"][0])
+        spec.path(
+            path=path,
+            operations=dict(put={}, get={}),
+            parameters=[{"name": "petId", "in": "path"}, "test_parameter"],
+        )
+
+        if spec.openapi_version.major < 3:
+            assert get_paths(spec)[path]["parameters"] == [
+                {"name": "petId", "in": "path", "required": True},
+                {"$ref": "#/parameters/test_parameter"},
+            ]
+        else:
+            assert get_paths(spec)[path]["parameters"] == [
+                {"name": "petId", "in": "path", "required": True},
+                {"$ref": "#/components/parameters/test_parameter"},
+            ]
+
+        spec.path(
+            path=path,
+            operations=dict(put={}, get={}),
+            parameters=[
+                {"name": "petId", "in": "path"},
+                {"name": "petId", "in": "query"},
+            ],
+        )
+
+        if spec.openapi_version.major < 3:
+            assert get_paths(spec)[path]["parameters"] == [
+                {"name": "petId", "in": "path", "required": True},
+                {"name": "petId", "in": "query"},
+            ]
+        else:
+            assert get_paths(spec)[path]["parameters"] == [
+                {"name": "petId", "in": "path", "required": True},
+                {"name": "petId", "in": "query"},
+            ]
+
+        with pytest.raises(APISpecError):
+            spec.path(
+                path=path,
+                operations=dict(put={}, get={}),
+                parameters=[
+                    {"name": "petId", "in": "path"},
+                    {"name": "petId", "in": "path"},
+                    "test_parameter",
+                ],
+            )
+
     def test_response(self, spec):
         route_spec = self.paths["/pet/{petId}"]["get"]
 
