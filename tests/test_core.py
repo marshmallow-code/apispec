@@ -415,9 +415,6 @@ class TestPath:
         with pytest.raises(InvalidParameterError):
             spec.path(path=path, operations=dict(put={}, get={}), parameters=parameters)
 
-        with pytest.raises(InvalidParameterError):
-            spec.path(path=path, operations=dict(put={}, get={}), parameters=parameters)
-
     def test_parameter_duplicate(self, spec):
         spec.path(
             path="/pet/{petId}",
