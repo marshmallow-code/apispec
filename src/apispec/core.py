@@ -21,7 +21,7 @@ VALID_METHODS = {2: VALID_METHODS_OPENAPI_V2, 3: VALID_METHODS_OPENAPI_V3}
 
 
 def get_ref(obj_type, obj, openapi_major_version):
-    """Return object or rererence
+    """Return object or reference
 
     If obj is a dict, it is assumed to be a complete description and it is returned as is.
     Otherwise, it is assumed to be a reference name as string and the corresponding $ref
@@ -46,24 +46,30 @@ def clean_parameters(parameters, openapi_major_version):
     :param list parameters: List of parameters mapping
     :param int openapi_major_version: The major version of the OpenAPI standard
     """
-    for parameter in parameters:
-        if isinstance(parameter, dict) and parameter.get("in") == "path":
-            parameter["required"] = True
-
-    # OpenAPI Spec 3 and 2 don't allow for duplicated parameters
-    # A unique parameter is defined by a combination of a name and location
-    try:
-        param_objs = [(p["name"], p["in"]) for p in parameters if isinstance(p, dict)]
-    except KeyError as e:
-        raise InvalidParameterError("Missing key {} for parameter".format(e))
-
     seen = set()
-    for p in param_objs:
-        if p in seen:
-            raise DuplicateParameterError(
-                "Duplicate parameter with name {} and location {}".format(p[0], p[1])
+    for parameter in [p for p in parameters if isinstance(p, dict)]:
+
+        # check missing name / location
+        missing_attrs = [attr for attr in ("name", "in") if attr not in parameter]
+        if missing_attrs:
+            raise InvalidParameterError(
+                "Missing keys {} for parameter".format(missing_attrs)
             )
-        seen.add(p)
+
+        # OpenAPI Spec 3 and 2 don't allow for duplicated parameters
+        # A unique parameter is defined by a combination of a name and location
+        unique_key = (parameter["name"], parameter["in"])
+        if unique_key in seen:
+            raise DuplicateParameterError(
+                "Duplicate parameter with name {} and location {}".format(
+                    parameter["name"], parameter["in"]
+                )
+            )
+        seen.add(unique_key)
+
+        # Add "required" attribute to path parameters
+        if parameter["in"] == "path":
+            parameter["required"] = True
 
     return [get_ref("parameter", p, openapi_major_version) for p in parameters]
 

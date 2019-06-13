@@ -404,29 +404,18 @@ class TestPath:
                 == metadata["components"]["parameters"]["test_parameter"]
             )
 
-    def test_invalid_parameter(self, spec):
+    @pytest.mark.parametrize(
+        "parameters",
+        ([{"name": "petId"}], [{"in": "path"}]),  # missing "in"  # missing "name"
+    )
+    def test_invalid_parameter(self, spec, parameters):
         path = "/pet/{petId}"
 
         with pytest.raises(InvalidParameterError):
-            spec.path(
-                path=path,
-                operations=dict(put={}, get={}),
-                parameters=[{"name": "petId", "in": "path"}, {"in": "query"}],
-            )
+            spec.path(path=path, operations=dict(put={}, get={}), parameters=parameters)
 
         with pytest.raises(InvalidParameterError):
-            spec.path(
-                path=path,
-                operations=dict(put={}, get={}),
-                parameters=[{"name": "petId"}],
-            )
-
-        with pytest.raises(InvalidParameterError):
-            spec.path(
-                path=path,
-                operations=dict(put={}, get={}),
-                parameters=[{"name": "petId", "path": "test"}],
-            )
+            spec.path(path=path, operations=dict(put={}, get={}), parameters=parameters)
 
     def test_parameter_duplicate(self, spec):
         spec.path(
