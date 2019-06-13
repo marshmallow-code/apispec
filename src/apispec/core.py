@@ -197,6 +197,11 @@ class Components(object):
         ret = component.copy()
         ret.setdefault("name", component_id)
         ret["in"] = location
+
+        # if "in" is set to "path", enforce required flag to True
+        if location == "path":
+            ret["required"] = True
+
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:

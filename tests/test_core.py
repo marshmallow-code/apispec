@@ -190,6 +190,7 @@ class TestComponents:
             "type": "integer",
             "in": "path",
             "name": "PetId",
+            "required": True,
         }
 
     def test_parameter_is_chainable(self, spec):
