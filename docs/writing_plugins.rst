@@ -29,12 +29,62 @@ A plugin with a path helper function may look something like this:
 
 
     class MyPlugin(BasePlugin):
-        def path_helper(self, path, func, **kwargs):
+        def path_helper(self, path, func, parameters, **kwargs):
             """Path helper that parses docstrings for operations. Adds a
             ``func`` parameter to `apispec.APISpec.path`.
             """
             operations = load_operations_from_docstring(func.__doc__)
             return Path(path=path, operations=operations)
+
+
+All helpers take `**kwargs` arguments that are passed to `apispec.APISpec` methods by users and forwarded to plugins methods,
+allowing them to take extra arguments if required.
+
+A plugin with an operations helper that add `deprecated` flag may look like this
+
+.. code-block:: python
+
+   # deprecated_plugin.py
+
+   from apispec import BasePlugin
+   from apispec.compat import iteritems
+   from apispec.yaml_utils import load_operations_from_docstring
+
+
+   class DeprecatedPlugin(BasePlugin):
+       def operation_helper(self, path, operations, **kwargs):
+           """Operation helper that add `deprecated` flag if in `kwargs`
+           """
+           if kwargs.pop("deprecated", False) is True:
+               for key, value in iteritems(operations):
+                   value["deprecated"] = True
+
+
+Using this plugin
+
+
+.. code-block:: python
+
+   import json
+   from apispec import APISpec
+   from deprecated_plugin import DeprecatedPlugin
+
+   spec = APISpec(
+       title="Gisty",
+       version="1.0.0",
+       openapi_version="3.0.2",
+       plugins=[DeprecatedPlugin()],
+   )
+
+   # path will call operation_helper on his operations
+   spec.path(
+       path="/gists/{gist_id}",
+       operations={"get": {"responses": {"200": {"description": "standard response"}}}},
+       deprecated=True,
+   )
+   print(json.dumps(spec.to_dict()["paths"]))
+   # {"/gists/{gist_id}": {"get": {"responses": {"200": {"description": "standard response"}}, "deprecated": true}}}
+
 
 
 The ``init_spec`` Method
@@ -111,5 +161,5 @@ Next Steps
 To learn more about how to write plugins:
 
 * Consult the :doc:`Core API docs <api_core>` for `BasePlugin <apispec.BasePlugin>`
-* View the source for an existing apispec plugin, e.g. `FlaskPlugin <https://github.com/marshmallow-code/apispec-webframeworks/blob/master/apispec_webframeworks/flask.py>`_.
+* View the source for an existing apispec plugin, e.g. `FlaskPlugin <https://github.com/marshmallow-code/apispec-webframeworks/blob/master/src/apispec_webframeworks/flask.py>`_.
 * Check out some projects using apispec: https://github.com/marshmallow-code/apispec/wiki/Ecosystem

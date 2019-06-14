@@ -560,10 +560,11 @@ class TestPlugins:
                 if not return_none:
                     return {"description": "42"}
 
-            def path_helper(self, path, operations, **kwargs):
+            def path_helper(self, path, operations, parameters, **kwargs):
                 if not return_none:
                     if path == "/path_1":
                         operations.update({"get": {"responses": {"200": {}}}})
+                        parameters.append({"name": "page", "in": "query"})
                         return "/path_1_modified"
 
             def operation_helper(self, path, operations, **kwargs):
@@ -639,7 +640,10 @@ class TestPlugins:
         if return_none:
             assert paths["/path_1"] == {}
         else:
-            assert paths["/path_1_modified"] == {"get": {"responses": {"200": {}}}}
+            assert paths["/path_1_modified"] == {
+                "get": {"responses": {"200": {}}},
+                "parameters": [{"in": "query", "name": "page"}],
+            }
 
     @pytest.mark.parametrize("openapi_version", ("2.0", "3.0.0"))
     def test_plugin_operation_helper_is_used(self, openapi_version):
