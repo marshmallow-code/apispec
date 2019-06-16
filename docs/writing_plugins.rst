@@ -29,7 +29,7 @@ A plugin with a path helper function may look something like this:
 
 
     class MyPlugin(BasePlugin):
-        def path_helper(self, path, func, parameters, **kwargs):
+        def path_helper(self, path, func, **kwargs):
             """Path helper that parses docstrings for operations. Adds a
             ``func`` parameter to `apispec.APISpec.path`.
             """
@@ -37,10 +37,9 @@ A plugin with a path helper function may look something like this:
             return Path(path=path, operations=operations)
 
 
-All helpers take `**kwargs` arguments that are passed to `apispec.APISpec` methods by users and forwarded to plugins methods,
-allowing them to take extra arguments if required.
+All plugin helpers must accept extra `**kwargs`, allowing custom plugins to define new arguments if required.
 
-A plugin with an operations helper that add `deprecated` flag may look like this
+A plugin with an operation helper that adds `deprecated` flag may look like this
 
 .. code-block:: python
 
@@ -61,7 +60,6 @@ A plugin with an operations helper that add `deprecated` flag may look like this
 
 
 Using this plugin
-
 
 .. code-block:: python
 
