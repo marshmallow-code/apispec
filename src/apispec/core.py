@@ -8,6 +8,8 @@ from .exceptions import (
     APISpecError,
     PluginMethodNotImplementedError,
     DuplicateComponentNameError,
+    DuplicateParameterError,
+    InvalidParameterError,
 )
 from .utils import OpenAPIVersion, deepupdate, COMPONENT_SUBSECTIONS, build_reference
 
@@ -16,6 +18,60 @@ VALID_METHODS_OPENAPI_V2 = ["get", "post", "put", "patch", "delete", "head", "op
 VALID_METHODS_OPENAPI_V3 = VALID_METHODS_OPENAPI_V2 + ["trace"]
 
 VALID_METHODS = {2: VALID_METHODS_OPENAPI_V2, 3: VALID_METHODS_OPENAPI_V3}
+
+
+def get_ref(obj_type, obj, openapi_major_version):
+    """Return object or reference
+
+    If obj is a dict, it is assumed to be a complete description and it is returned as is.
+    Otherwise, it is assumed to be a reference name as string and the corresponding $ref
+    string is returned.
+
+    :param str obj_type: "parameter" or "response"
+    :param dict|str obj: parameter or response in dict form or as ref_id string
+    :param int openapi_major_version: The major version of the OpenAPI standard
+    """
+    if isinstance(obj, dict):
+        return obj
+    return build_reference(obj_type, openapi_major_version, obj)
+
+
+def clean_parameters(parameters, openapi_major_version):
+    """Ensure that all parameters with "in" equal to "path" are also required
+    as required by the OpenAPI specification, as well as normalizing any
+    references to global parameters and checking for duplicates parameters
+
+    See https ://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject.
+
+    :param list parameters: List of parameters mapping
+    :param int openapi_major_version: The major version of the OpenAPI standard
+    """
+    seen = set()
+    for parameter in [p for p in parameters if isinstance(p, dict)]:
+
+        # check missing name / location
+        missing_attrs = [attr for attr in ("name", "in") if attr not in parameter]
+        if missing_attrs:
+            raise InvalidParameterError(
+                "Missing keys {} for parameter".format(missing_attrs)
+            )
+
+        # OpenAPI Spec 3 and 2 don't allow for duplicated parameters
+        # A unique parameter is defined by a combination of a name and location
+        unique_key = (parameter["name"], parameter["in"])
+        if unique_key in seen:
+            raise DuplicateParameterError(
+                "Duplicate parameter with name {} and location {}".format(
+                    parameter["name"], parameter["in"]
+                )
+            )
+        seen.add(unique_key)
+
+        # Add "required" attribute to path parameters
+        if parameter["in"] == "path":
+            parameter["required"] = True
+
+    return [get_ref("parameter", p, openapi_major_version) for p in parameters]
 
 
 def clean_operations(operations, openapi_major_version):
@@ -39,34 +95,11 @@ def clean_operations(operations, openapi_major_version):
             "One or more HTTP methods are invalid: {}".format(", ".join(invalid))
         )
 
-    def get_ref(obj_type, obj, openapi_major_version):
-        """Return object or rererence
-
-        If obj is a dict, it is assumed to be a complete description and it is returned as is.
-        Otherwise, it is assumed to be a reference name as string and the corresponding $ref
-        string is returned.
-
-        :param str obj_type: "parameter" or "response"
-        :param dict|str obj: parameter or response in dict form or as ref_id string
-        :param int openapi_major_version: The major version of the OpenAPI standard
-        """
-        if isinstance(obj, dict):
-            return obj
-        return build_reference(obj_type, openapi_major_version, obj)
-
     for operation in (operations or {}).values():
         if "parameters" in operation:
-            parameters = operation["parameters"]
-            for parameter in parameters:
-                if (
-                    isinstance(parameter, dict)
-                    and "in" in parameter
-                    and parameter["in"] == "path"
-                ):
-                    parameter["required"] = True
-            operation["parameters"] = [
-                get_ref("parameter", p, openapi_major_version) for p in parameters
-            ]
+            operation["parameters"] = clean_parameters(
+                operation["parameters"], openapi_major_version
+            )
         if "responses" in operation:
             responses = OrderedDict()
             for code, response in iteritems(operation["responses"]):
@@ -164,6 +197,11 @@ class Components(object):
         ret = component.copy()
         ret.setdefault("name", component_id)
         ret["in"] = location
+
+        # if "in" is set to "path", enforce required flag to True
+        if location == "path":
+            ret["required"] = True
+
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
@@ -277,7 +315,13 @@ class APISpec(object):
         return self
 
     def path(
-        self, path=None, operations=None, summary=None, description=None, **kwargs
+        self,
+        path=None,
+        operations=None,
+        summary=None,
+        description=None,
+        parameters=None,
+        **kwargs
     ):
         """Add a new path object to the spec.
 
@@ -287,14 +331,18 @@ class APISpec(object):
         :param dict|None operations: describes the http methods and options for `path`
         :param str summary: short summary relevant to all operations in this path
         :param str description: long description relevant to all operations in this path
+        :param list|None parameters: list of parameters relevant in this path
         :param dict kwargs: parameters used by any path helpers see :meth:`register_path_helper`
         """
         operations = operations or OrderedDict()
+        parameters = parameters or []
 
         # Execute path helpers
         for plugin in self.plugins:
             try:
-                ret = plugin.path_helper(path=path, operations=operations, **kwargs)
+                ret = plugin.path_helper(
+                    path=path, operations=operations, parameters=parameters, **kwargs
+                )
             except PluginMethodNotImplementedError:
                 continue
             if ret is not None:
@@ -316,4 +364,7 @@ class APISpec(object):
             self._paths[path]["summary"] = summary
         if description is not None:
             self._paths[path]["description"] = description
+        if parameters:
+            parameters = clean_parameters(parameters, self.openapi_version.major)
+            self._paths[path]["parameters"] = parameters
         return self

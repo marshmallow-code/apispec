@@ -6,7 +6,12 @@ import sys
 import yaml
 
 from apispec import APISpec, BasePlugin
-from apispec.exceptions import APISpecError, DuplicateComponentNameError
+from apispec.exceptions import (
+    APISpecError,
+    DuplicateComponentNameError,
+    DuplicateParameterError,
+    InvalidParameterError,
+)
 
 from .utils import (
     get_schemas,
@@ -185,6 +190,7 @@ class TestComponents:
             "type": "integer",
             "in": "path",
             "name": "PetId",
+            "required": True,
         }
 
     def test_parameter_is_chainable(self, spec):
@@ -399,6 +405,85 @@ class TestPath:
                 == metadata["components"]["parameters"]["test_parameter"]
             )
 
+    @pytest.mark.parametrize(
+        "parameters",
+        ([{"name": "petId"}], [{"in": "path"}]),  # missing "in"  # missing "name"
+    )
+    def test_invalid_parameter(self, spec, parameters):
+        path = "/pet/{petId}"
+
+        with pytest.raises(InvalidParameterError):
+            spec.path(path=path, operations=dict(put={}, get={}), parameters=parameters)
+
+    def test_parameter_duplicate(self, spec):
+        spec.path(
+            path="/pet/{petId}",
+            operations={
+                "get": {
+                    "parameters": [
+                        {"name": "petId", "in": "path"},
+                        {"name": "petId", "in": "query"},
+                    ]
+                }
+            },
+        )
+
+        with pytest.raises(DuplicateParameterError):
+            spec.path(
+                path="/pet/{petId}",
+                operations={
+                    "get": {
+                        "parameters": [
+                            {"name": "petId", "in": "path"},
+                            {"name": "petId", "in": "path"},
+                        ]
+                    }
+                },
+            )
+
+    def test_global_parameters(self, spec):
+        path = "/pet/{petId}"
+        route_spec = self.paths["/pet/{petId}"]["get"]
+
+        spec.components.parameter("test_parameter", "path", route_spec["parameters"][0])
+        spec.path(
+            path=path,
+            operations=dict(put={}, get={}),
+            parameters=[{"name": "petId", "in": "path"}, "test_parameter"],
+        )
+
+        assert get_paths(spec)[path]["parameters"] == [
+            {"name": "petId", "in": "path", "required": True},
+            build_ref(spec, "parameter", "test_parameter"),
+        ]
+
+    def test_global_parameter_duplicate(self, spec):
+        path = "/pet/{petId}"
+        spec.path(
+            path=path,
+            operations=dict(put={}, get={}),
+            parameters=[
+                {"name": "petId", "in": "path"},
+                {"name": "petId", "in": "query"},
+            ],
+        )
+
+        assert get_paths(spec)[path]["parameters"] == [
+            {"name": "petId", "in": "path", "required": True},
+            {"name": "petId", "in": "query"},
+        ]
+
+        with pytest.raises(DuplicateParameterError):
+            spec.path(
+                path=path,
+                operations=dict(put={}, get={}),
+                parameters=[
+                    {"name": "petId", "in": "path"},
+                    {"name": "petId", "in": "path"},
+                    "test_parameter",
+                ],
+            )
+
     def test_response(self, spec):
         route_spec = self.paths["/pet/{petId}"]["get"]
 
@@ -475,10 +560,11 @@ class TestPlugins:
                 if not return_none:
                     return {"description": "42"}
 
-            def path_helper(self, path, operations, **kwargs):
+            def path_helper(self, path, operations, parameters, **kwargs):
                 if not return_none:
                     if path == "/path_1":
                         operations.update({"get": {"responses": {"200": {}}}})
+                        parameters.append({"name": "page", "in": "query"})
                         return "/path_1_modified"
 
             def operation_helper(self, path, operations, **kwargs):
@@ -554,7 +640,10 @@ class TestPlugins:
         if return_none:
             assert paths["/path_1"] == {}
         else:
-            assert paths["/path_1_modified"] == {"get": {"responses": {"200": {}}}}
+            assert paths["/path_1_modified"] == {
+                "get": {"responses": {"200": {}}},
+                "parameters": [{"in": "query", "name": "page"}],
+            }
 
     @pytest.mark.parametrize("openapi_version", ("2.0", "3.0.0"))
     def test_plugin_operation_helper_is_used(self, openapi_version):
