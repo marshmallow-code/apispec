@@ -1,6 +1,25 @@
 Changelog
 ---------
 
+2.0.0 (2019-06-18)
+++++++++++++++++++
+
+Features:
+
+- Add support for path level parameters (:issue:`453`).
+  Thanks :user:`karec` for the PR.
+- *Backwards-incompatible*: A `apispec.exceptions.DuplicateParameterError` is
+  raised when two parameters with same name and location are passed to a path
+  or an operation (:pr:`455`).
+- *Backwards-incompatible*: A `apispec.exceptions.InvalidParameterError` is
+  raised when a parameter is missing required ``name`` and ``in`` attributes
+  after helpers have been executed (:pr:`455`).
+
+Other changes:
+
+- *Backwards-incompatible*: All plugin helpers must accept extra `**kwargs`
+  (:issue:`453`).
+
 1.3.3 (2019-05-05)
 ++++++++++++++++++
 
@@ -23,7 +42,7 @@ Bug fixes:
 
 - Fix handling of `http.HTTPStatus` objects (:issue:`426`). Thanks
   :user:`DStape`.
-- [apispec.ext.marshmallow]: Ensure make_schema_key returns a unique key on 
+- [apispec.ext.marshmallow]: Ensure make_schema_key returns a unique key on
   unhashable iterables (:pr:`416`, :pr:`439`). Thanks :user:`zedrdave`.
 
 1.3.0 (2019-04-24)
@@ -31,8 +50,8 @@ Bug fixes:
 
 Features:
 
-- [apispec.ext.marshmallow]: Use class hierarchy to 
-  infer ``type`` and ``format`` properties (:issue:`433`, :issue:`250`).
+- [apispec.ext.marshmallow]: Use class hierarchy to infer
+  ``type`` and ``format`` properties (:issue:`433`, :issue:`250`).
   Thanks :user:`andrjohn` for the PR.
 
 1.2.1 (2019-04-18)
