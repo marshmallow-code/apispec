@@ -74,7 +74,7 @@ Using this plugin
        plugins=[DeprecatedPlugin()],
    )
 
-   # path will call operation_helper on his operations
+   # path will call operation_helper on operations
    spec.path(
        path="/gists/{gist_id}",
        operations={"get": {"responses": {"200": {"description": "standard response"}}}},
