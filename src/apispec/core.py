@@ -331,7 +331,7 @@ class APISpec(object):
         :param dict|None operations: describes the http methods and options for `path`
         :param str summary: short summary relevant to all operations in this path
         :param str description: long description relevant to all operations in this path
-        :param list|None parameters: list of parameters relevant in this path
+        :param list|None parameters: list of parameters relevant to all operations in this path
         :param dict kwargs: parameters used by any path helpers see :meth:`register_path_helper`
         """
         operations = operations or OrderedDict()
