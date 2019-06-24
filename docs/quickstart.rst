@@ -41,13 +41,7 @@ Add paths to your spec using `path <apispec.APISpec.path>`.
         path="/gist/{gist_id}",
         operations=dict(
             get=dict(
-                responses={
-                    "200": {
-                        "content": {
-                            "application/json": {"schema": {"$ref": "#/definitions/Gist"}}
-                        }
-                    }
-                }
+                responses={"200": {"content": {"application/json": {"schema": "Gist"}}}}
             )
         ),
     )

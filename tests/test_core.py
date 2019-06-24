@@ -269,10 +269,7 @@ class TestPath:
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "schema": {"$ref": "#/definitions/Pet"},
-                        "description": "successful operation",
-                    },
+                    "200": {"schema": "Pet", "description": "successful operation"},
                     "400": {"description": "Invalid ID supplied"},
                     "404": {"description": "Pet not found"},
                 },

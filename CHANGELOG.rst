@@ -19,6 +19,8 @@ Other changes:
 
 - *Backwards-incompatible*: All plugin helpers must accept extra `**kwargs`
   (:issue:`453`).
+- *Backwards-incompatible*: Components must be referenced by ID, not full path
+  (:issue:`463`).
 
 1.3.3 (2019-05-05)
 ++++++++++++++++++
