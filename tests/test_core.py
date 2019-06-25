@@ -360,6 +360,51 @@ class TestPath:
         assert "get" in p
         assert "put" in p
 
+    @pytest.mark.parametrize("openapi_version", ("2.0", "3.0.0"))
+    def test_path_called_twice_with_same_operations_parameters(self, openapi_version):
+        """Test calling path twice with same operations or parameters
+
+        operations and parameters being mutated by clean_operations and plugin helpers
+        should not make path fail on second call
+        """
+
+        class TestPlugin(BasePlugin):
+            def path_helper(self, path, operations, parameters, **kwargs):
+                """Mutate operations and parameters"""
+                operations.update({"post": {"responses": {"201": "201ResponseRef"}}})
+                parameters.append("ParamRef_3")
+                return path
+
+        spec = APISpec(
+            title="Swagger Petstore",
+            version="1.0.0",
+            openapi_version=openapi_version,
+            plugins=[TestPlugin()],
+        )
+
+        path = "/pet/{petId}"
+        parameters = ["ParamRef_1"]
+        operation = {
+            "parameters": ["ParamRef_2"],
+            "responses": {"200": "200ResponseRef"},
+        }
+
+        spec.path(path=path, operations={"get": operation}, parameters=parameters)
+        spec.path(path=path, operations={"put": operation}, parameters=parameters)
+        operations = (get_paths(spec))[path]
+        assert (
+            operations["get"]
+            == operations["put"]
+            == {
+                "parameters": [build_ref(spec, "parameter", "ParamRef_2")],
+                "responses": {"200": build_ref(spec, "response", "200ResponseRef")},
+            }
+        )
+        assert operations["parameters"] == [
+            build_ref(spec, "parameter", "ParamRef_1"),
+            build_ref(spec, "parameter", "ParamRef_3"),
+        ]
+
     def test_path_ensures_path_parameters_required(self, spec):
         path = "/pet/{petId}"
         spec.path(

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Core apispec classes and functions."""
 from collections import OrderedDict
+from copy import deepcopy
 import warnings
 
 from apispec.compat import iterkeys, iteritems
@@ -334,8 +335,10 @@ class APISpec(object):
         :param list|None parameters: list of parameters relevant to all operations in this path
         :param dict kwargs: parameters used by any path helpers see :meth:`register_path_helper`
         """
-        operations = operations or OrderedDict()
-        parameters = parameters or []
+        # operations and parameters must be deepcopied because they are mutated
+        # in clean_operations and operation helpers and path may be called twice
+        operations = deepcopy(operations) or OrderedDict()
+        parameters = deepcopy(parameters) or []
 
         # Execute path helpers
         for plugin in self.plugins:
