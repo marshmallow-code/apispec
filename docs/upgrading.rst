@@ -3,6 +3,69 @@ Upgrading to Newer Releases
 
 This section documents migration paths to new releases.
 
+Upgrading to 2.0.0
+------------------
+
+plugin helpers must accept extra `**kwargs`
+*******************************************
+
+Since custom plugins helpers may define extra kwargs and those kwargs are passed
+to all plugin helpers by :meth:`APISpec.path <APISpec.path>`, all plugins should
+accept unknown kwargs.
+
+The example plugin below defines an additional `func` argument and accepts extra
+`**kwargs`.
+
+.. code-block:: python
+    :emphasize-lines: 2
+
+    class MyPlugin(BasePlugin):
+        def path_helper(self, path, func, **kwargs):
+            """Path helper that parses docstrings for operations. Adds a
+            ``func`` parameter to `apispec.APISpec.path`.
+            """
+            operations = load_operations_from_docstring(func.__doc__)
+            return Path(path=path, operations=operations)
+
+Components must be referenced by ID, not full path
+**************************************************
+
+While apispec 1.x would let the user reference components by path or ID,
+apispec 2.x only accepts references by ID.
+
+.. code-block:: python
+
+    # apispec<2.0.0
+    spec.path(
+        path="/gist/{gist_id}",
+        operations=dict(
+            get=dict(
+                responses={
+                    "200": {
+                        "content": {
+                            "application/json": {"schema": {"$ref": "#/definitions/Gist"}}
+                        }
+                    }
+                }
+            )
+        ),
+    )
+
+    # apispec>=2.0.0
+    spec.path(
+        path="/gist/{gist_id}",
+        operations=dict(
+            get=dict(
+                responses={"200": {"content": {"application/json": {"schema": "Gist"}}}}
+            )
+        ),
+    )
+
+References by ID are accepted by both apispec 1.x ad 2.x and are a better
+choice because they delegate the creation of the full component path to apispec.
+This allows more flexibility as apispec creates the component path according to
+the OpenAPI version.
+
 Upgrading to 1.0.0
 ------------------
 
