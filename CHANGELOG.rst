@@ -1,6 +1,15 @@
 Changelog
 ---------
 
+2.0.1 (2019-06-26)
+++++++++++++++++++
+
+Bug fixes:
+
+- Don't mutate ``operations`` and ``parameters`` in ``APISpec.path`` to avoid
+  issues when calling it twice with the same ``operations`` or ``parameters``
+  (:pr:`464`).
+
 2.0.0 (2019-06-18)
 ++++++++++++++++++
 
