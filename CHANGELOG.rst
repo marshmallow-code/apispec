@@ -1,12 +1,16 @@
 Changelog
 ---------
 
-2.0.2 (unreleased)
+2.0.2 (2019-07-04)
 ++++++++++++++++++
 
 Bug fixes:
 
-- Fix compatibility with marshmallow 3.0.0rc8.
+- Fix compatibility with marshmallow 3.0.0rc8 (:pr:`469`).
+
+Other changes:
+
+- Switch to Azure Pipelines (:pr:`468`).
 
 2.0.1 (2019-06-26)
 ++++++++++++++++++
