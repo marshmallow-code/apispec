@@ -9,7 +9,14 @@ EXTRAS_REQUIRE = {
     "lint": [
         "flake8==3.7.7",
         'flake8-bugbear==19.3.0; python_version >= "3.5"',
-        "pre-commit==1.17.0",
+        "pre-commit~=1.17",
+    ],
+    "docs": [
+        "marshmallow>=2.19.2",
+        "pyyaml==5.1.1",
+        "sphinx==2.1.2",
+        "sphinx-issues==1.2.0",
+        "sphinx-rtd-theme==0.4.3",
     ],
 }
 EXTRAS_REQUIRE["tests"] = (
