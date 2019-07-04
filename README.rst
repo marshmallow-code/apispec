@@ -6,9 +6,9 @@ apispec
     :target: https://pypi.org/project/apispec/
     :alt: PyPI version
 
-.. image:: https://badgen.net/travis/marshmallow-code/apispec/dev
-    :target: https://travis-ci.org/marshmallow-code/apispec
-    :alt: TravisCI build status
+.. image:: https://dev.azure.com/sloria/sloria/_apis/build/status/marshmallow-code.apispec?branchName=dev
+    :target: https://dev.azure.com/sloria/sloria/_build/latest?definitionId=8&branchName=dev
+    :alt: Build status
 
 .. image:: https://readthedocs.org/projects/apispec/badge/
    :target: https://apispec.readthedocs.io/

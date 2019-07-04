@@ -96,7 +96,9 @@ Pull Requests
 - If the pull request adds functionality, it is tested and the docs are updated.
 - You've added yourself to ``AUTHORS.rst``.
 
-4. Submit a pull request to ``marshmallow-code:dev`` or the appropriate maintenance branch. The `Travis CI <https://travis-ci.org/marshmallow-code/apispec>`_ build must be passing before your pull request is merged.
+4. Submit a pull request to ``marshmallow-code:dev`` or the appropriate maintenance branch. 
+    The `CI <https://dev.azure.com/sloria/sloria/_build/latest?definitionId=8&branchName=dev>`_ 
+    build must be passing before your pull request is merged.
 
 Running Tests
 *************
