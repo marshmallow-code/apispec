@@ -66,7 +66,8 @@ def spec(request):
 
 class TestAPISpecInit:
     def test_raises_wrong_apispec_version(self):
-        with pytest.raises(APISpecError) as excinfo:
+        message = "Not a valid OpenAPI version number:"
+        with pytest.raises(APISpecError, match=message):
             APISpec(
                 "Swagger Petstore",
                 version="1.0.0",
@@ -74,7 +75,6 @@ class TestAPISpecInit:
                 info={"description": description},
                 security=[{"apiKey": []}],
             )
-        assert "Not a valid OpenAPI version number:" in str(excinfo)
 
 
 class TestMetadata:
@@ -411,9 +411,9 @@ class TestPath:
         assert get_paths(spec)[path]["put"]["parameters"][0]["required"] is True
 
     def test_path_with_no_path_raises_error(self, spec):
-        with pytest.raises(APISpecError) as excinfo:
+        message = "Path template is not specified"
+        with pytest.raises(APISpecError, match=message):
             spec.path()
-        assert "Path template is not specified" in str(excinfo)
 
     def test_path_summary_description(self, spec):
         summary = "Operations on a Pet"
@@ -581,9 +581,9 @@ class TestPath:
     def test_path_check_invalid_http_method(self, spec):
         spec.path("/pet/{petId}", operations={"get": {}})
         spec.path("/pet/{petId}", operations={"x-dummy": {}})
-        with pytest.raises(APISpecError) as excinfo:
+        message = "One or more HTTP methods are invalid"
+        with pytest.raises(APISpecError, match=message):
             spec.path("/pet/{petId}", operations={"dummy": {}})
-        assert "One or more HTTP methods are invalid" in str(excinfo)
 
 
 class TestPlugins:
