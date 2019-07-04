@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+2.0.2 (unreleased)
+++++++++++++++++++
+
+Bug fixes:
+
+- Fix compatibility with marshmallow 3.0.0rc8.
+
 2.0.1 (2019-06-26)
 ++++++++++++++++++
 

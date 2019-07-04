@@ -430,13 +430,19 @@ class OpenAPIConverter(object):
             else:
                 ret.update(schema_dict)
         elif isinstance(field, marshmallow.fields.List):
-            ret["items"] = self.field2property(field.container)
+            # field.container was renamed to field.inner in marshmallow 3.0.0rc8
+            inner_field = field.inner if hasattr(field, "inner") else field.container
+            ret["items"] = self.field2property(inner_field)
         elif isinstance(field, marshmallow.fields.Dict):
             if MARSHMALLOW_VERSION_INFO[0] >= 3:
-                if field.value_container:
-                    ret["additionalProperties"] = self.field2property(
-                        field.value_container
-                    )
+                # field.value_container was renamed to field.value_field in marshmallow 3.0.0rc8
+                value_field = (
+                    field.value_field
+                    if hasattr(field, "value_field")
+                    else field.value_container
+                )
+                if value_field:
+                    ret["additionalProperties"] = self.field2property(value_field)
 
         return ret
 
