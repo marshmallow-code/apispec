@@ -13,23 +13,38 @@ Requires marshmallow>=2.15.2.
     from pprint import pprint
     import datetime as dt
 
+    from apispec import APISpec
+    from apispec.ext.marshmallow import MarshmallowPlugin
     from marshmallow import Schema, fields
+
+    spec = APISpec(
+        title="Example App",
+        version="1.0.0",
+        openapi_version="3.0.2",
+        plugins=[MarshmallowPlugin()],
+    )
+
 
     class UserSchema(Schema):
         id = fields.Int(dump_only=True)
         name = fields.Str(description="The user's name")
-        created = fields.Datetime(
-            dump_only=True,
-            default=dt.datetime.utcnow,
-            default_doc="The current datetime"
+        created = fields.DateTime(
+            dump_only=True, default=dt.datetime.utcnow, doc_default="The current datetime"
         )
 
-    spec.components.schema('User', schema=UserSchema)
-    pprint(spec.to_dict()['definitions'])
-    # {'User': {'properties': {'id': {'format': 'int32', 'type': 'integer'},
-    #                         'name': {'description': "The user's name",
-    #                                 'type': 'string'}},
-    #         'type': 'object'}}
+
+    spec.components.schema("User", schema=UserSchema)
+    pprint(spec.to_dict()["components"]["schemas"])
+    # {'User': {'properties': {'created': {'default': 'The current datetime',
+    #                                      'format': 'date-time',
+    #                                      'readOnly': True,
+    #                                      'type': 'string'},
+    #                          'id': {'format': 'int32',
+    #                                 'readOnly': True,
+    #                                 'type': 'integer'},
+    #                          'name': {'description': "The user's name",
+    #                                   'type': 'string'}},
+    #           'type': 'object'}}
 
 """
 from __future__ import absolute_import
