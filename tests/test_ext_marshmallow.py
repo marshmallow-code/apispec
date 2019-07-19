@@ -10,6 +10,7 @@ from marshmallow import Schema
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec.ext.marshmallow.openapi import MARSHMALLOW_VERSION_INFO
+from apispec.ext.marshmallow import common
 from apispec.exceptions import APISpecError
 from .schemas import (
     PetSchema,
@@ -43,7 +44,8 @@ class TestDefinitionHelper:
     @pytest.mark.parametrize("schema", [AnalysisSchema, AnalysisSchema()])
     def test_resolve_schema_dict_auto_reference(self, schema):
         def resolver(schema):
-            return schema.__name__
+            schema_cls = common.resolve_schema_cls(schema)
+            return schema_cls.__name__
 
         spec = APISpec(
             title="Test auto-reference",
@@ -77,7 +79,8 @@ class TestDefinitionHelper:
     )
     def test_resolve_schema_dict_auto_reference_in_list(self, schema):
         def resolver(schema):
-            return schema.__name__
+            schema_cls = common.resolve_schema_cls(schema)
+            return schema_cls.__name__
 
         spec = APISpec(
             title="Test auto-reference",
@@ -149,6 +152,32 @@ class TestDefinitionHelper:
 
         pet_exclude = definitions["MultiModifierSchema"]["properties"]["pet_exclude"]
         assert pet_exclude == build_ref(spec, "schema", "Pet_Exclude")
+
+    def test_schema_instance_with_different_modifers_custom_resolver(self):
+        class MultiModifierSchema(Schema):
+            pet_unmodified = Nested(PetSchema)
+            pet_exclude = Nested(PetSchema(partial=True))
+
+        def resolver(schema):
+            schema_instance = common.resolve_schema_instance(schema)
+            prefix = "Partial-" if schema_instance.partial else ""
+            schema_cls = common.resolve_schema_cls(schema)
+            name = prefix + schema_cls.__name__
+            if name.endswith("Schema"):
+                return name[:-6] or name
+            return name
+
+        spec = APISpec(
+            title="Test Custom Resolver for Partial",
+            version="0.1",
+            openapi_version="2.0",
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
+        )
+
+        with pytest.warns(None) as record:
+            spec.components.schema("NameClashSchema", schema=MultiModifierSchema)
+
+        assert len(record) == 0
 
     def test_schema_with_clashing_names(self, spec):
         class Pet(PetSchema):

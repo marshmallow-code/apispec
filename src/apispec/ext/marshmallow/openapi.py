@@ -461,8 +461,7 @@ class OpenAPIConverter(object):
         schema_instance = resolve_schema_instance(schema)
         schema_key = make_schema_key(schema_instance)
         if schema_key not in self.refs:
-            schema_cls = self.resolve_schema_class(schema)
-            name = self.schema_name_resolver(schema_cls)
+            name = self.schema_name_resolver(schema)
             if not name:
                 try:
                     json_schema = self.schema2jsonschema(schema)
