@@ -76,8 +76,11 @@ class MarshmallowPlugin(BasePlugin):
 
         Example: ::
 
+            from apispec.ext.marshmallow.common import resolve_schema_cls
+
             def schema_name_resolver(schema):
-                return schema.__name__
+                schema_cls = resolve_schema_cls(schema)
+                return schema_cls.__name__
     """
 
     def __init__(self, schema_name_resolver=None):

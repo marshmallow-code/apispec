@@ -214,8 +214,12 @@ function will resolve a name based on the schema's class `__name__`, dropping a
 trailing "Schema" so that `class PetSchema(Schema)` resolves to "Pet".
 
 To change the behavior of the name resolution simply pass a
-function accepting a `Schema` class and returning a string to the plugin's
-constructor. If the `schema_name_resolver` function returns a value that
+function accepting a `Schema` class, `Schema` instance or a string that resolves
+to a `Schema` class and returning a string to the plugin's
+constructor. To easily work with these argument types the marshmallow plugin provides
+`resolve_schema_cls <apispec.ext.marshmallow.common.resolve_schema_cls>`
+and `resolve_schema_instance <apispec.ext.marshmallow.common.resolve_schema_instance>`
+functions. If the `schema_name_resolver` function returns a value that
 evaluates to `False` in a boolean context the nested schema will not be added to
 the spec and instead defined in-line.
 

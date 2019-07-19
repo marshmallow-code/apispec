@@ -12,3 +12,8 @@ apispec.ext.marshmallow.openapi
 
 .. automodule:: apispec.ext.marshmallow.openapi
     :members:
+
+apispec.ext.marshmallow.common
+++++++++++++++++++++++++++++++
+.. automodule:: apispec.ext.marshmallow.common
+    :members:
