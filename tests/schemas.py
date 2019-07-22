@@ -59,3 +59,21 @@ class DefaultValuesSchema(Schema):
     string_callable_default = fields.Str(missing=lambda: "Callable")
     string_manual_default = fields.Str(missing=lambda: "Callable", doc_default="Manual")
     numbers = fields.List(fields.Int, missing=list)
+
+
+class CategorySchema(Schema):
+    id = fields.Int()
+    name = fields.Str(required=True)
+    breed = fields.Str(dump_only=True)
+
+
+class CustomList(fields.List):
+    pass
+
+
+class CustomStringField(fields.String):
+    pass
+
+
+class CustomIntegerField(fields.Integer):
+    pass

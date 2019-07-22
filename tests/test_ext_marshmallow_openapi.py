@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-
-import re
-
 import pytest
 
 from marshmallow import fields, Schema, validate
@@ -10,120 +7,11 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec.ext.marshmallow.openapi import MARSHMALLOW_VERSION_INFO
 from apispec import exceptions, utils, APISpec
 
+from .schemas import CustomList, CustomStringField
 from .utils import get_schemas, build_ref
 
 
-class CustomList(fields.List):
-    pass
-
-
-class CustomStringField(fields.String):
-    pass
-
-
-class CustomIntegerField(fields.Integer):
-    pass
-
-
 class TestMarshmallowFieldToOpenAPI:
-    def test_field2choices_preserving_order(self, openapi):
-        choices = ["a", "b", "c", "aa", "0", "cc"]
-        field = fields.String(validate=validate.OneOf(choices))
-        assert openapi.field2choices(field) == {"enum": choices}
-
-    @pytest.mark.parametrize(
-        ("FieldClass", "jsontype"),
-        [
-            (fields.Integer, "integer"),
-            (fields.Number, "number"),
-            (fields.Float, "number"),
-            (fields.String, "string"),
-            (fields.Str, "string"),
-            (fields.Boolean, "boolean"),
-            (fields.Bool, "boolean"),
-            (fields.UUID, "string"),
-            (fields.DateTime, "string"),
-            (fields.Date, "string"),
-            (fields.Time, "string"),
-            (fields.Email, "string"),
-            (fields.URL, "string"),
-            # Assume base Field and Raw are strings
-            (fields.Field, "string"),
-            (fields.Raw, "string"),
-            # Custom fields inherit types from their parents
-            (CustomStringField, "string"),
-            (CustomIntegerField, "integer"),
-        ],
-    )
-    def test_field2property_type(self, FieldClass, jsontype, openapi):
-        field = FieldClass()
-        res = openapi.field2property(field)
-        assert res["type"] == jsontype
-
-    @pytest.mark.parametrize("ListClass", [fields.List, CustomList])
-    def test_formatted_field_translates_to_array(self, ListClass, openapi):
-        field = ListClass(fields.String)
-        res = openapi.field2property(field)
-        assert res["type"] == "array"
-        assert res["items"] == openapi.field2property(fields.String())
-
-    @pytest.mark.parametrize(
-        ("FieldClass", "expected_format"),
-        [
-            (fields.Integer, "int32"),
-            (fields.Float, "float"),
-            (fields.UUID, "uuid"),
-            (fields.DateTime, "date-time"),
-            (fields.Date, "date"),
-            (fields.Email, "email"),
-            (fields.URL, "url"),
-        ],
-    )
-    def test_field2property_formats(self, FieldClass, expected_format, openapi):
-        field = FieldClass()
-        res = openapi.field2property(field)
-        assert res["format"] == expected_format
-
-    def test_field_with_description(self, openapi):
-        field = fields.Str(description="a username")
-        res = openapi.field2property(field)
-        assert res["description"] == "a username"
-
-    def test_field_with_missing(self, openapi):
-        field = fields.Str(default="foo", missing="bar")
-        res = openapi.field2property(field)
-        assert res["default"] == "bar"
-
-    def test_field_with_boolean_false_missing(self, openapi):
-        field = fields.Boolean(default=None, missing=False)
-        res = openapi.field2property(field)
-        assert res["default"] is False
-
-    def test_field_with_missing_load(self, openapi):
-        field = fields.Str(default="foo", missing="bar")
-        res = openapi.field2property(field)
-        assert res["default"] == "bar"
-
-    def test_field_with_boolean_false_missing_load(self, openapi):
-        field = fields.Boolean(default=None, missing=False)
-        res = openapi.field2property(field)
-        assert res["default"] is False
-
-    def test_field_with_missing_callable(self, openapi):
-        field = fields.Str(missing=lambda: "dummy")
-        res = openapi.field2property(field)
-        assert "default" not in res
-
-    def test_field_with_doc_default(self, openapi):
-        field = fields.Str(doc_default="Manual default")
-        res = openapi.field2property(field)
-        assert res["default"] == "Manual default"
-
-    def test_field_with_doc_default_and_missing(self, openapi):
-        field = fields.Int(doc_default=42, missing=12)
-        res = openapi.field2property(field)
-        assert res["default"] == 42
-
     def test_fields_with_missing_load(self, openapi):
         field_dict = {"field": fields.Str(default="foo", missing="bar")}
         res = openapi.fields2parameters(field_dict, default_in="query")
@@ -202,79 +90,6 @@ class TestMarshmallowFieldToOpenAPI:
 
         res = openapi.schema2parameters(schema=UserSchema, default_in="query")
         assert len(res) == 0
-
-    def test_field_with_choices(self, openapi):
-        field = fields.Str(validate=validate.OneOf(["freddie", "brian", "john"]))
-        res = openapi.field2property(field)
-        assert set(res["enum"]) == {"freddie", "brian", "john"}
-
-    def test_field_with_equal(self, openapi):
-        field = fields.Str(validate=validate.Equal("only choice"))
-        res = openapi.field2property(field)
-        assert res["enum"] == ["only choice"]
-
-    def test_only_allows_valid_properties_in_metadata(self, openapi):
-        field = fields.Str(
-            missing="foo",
-            description="foo",
-            enum=["red", "blue"],
-            allOf=["bar"],
-            not_valid="lol",
-        )
-        res = openapi.field2property(field)
-        assert res["default"] == field.missing
-        assert "description" in res
-        assert "enum" in res
-        assert "allOf" in res
-        assert "not_valid" not in res
-
-    def test_field_with_choices_multiple(self, openapi):
-        field = fields.Str(
-            validate=[
-                validate.OneOf(["freddie", "brian", "john"]),
-                validate.OneOf(["brian", "john", "roger"]),
-            ]
-        )
-        res = openapi.field2property(field)
-        assert set(res["enum"]) == {"brian", "john"}
-
-    def test_field_with_additional_metadata(self, openapi):
-        field = fields.Str(minLength=6, maxLength=100)
-        res = openapi.field2property(field)
-        assert res["maxLength"] == 100
-        assert res["minLength"] == 6
-
-    def test_field_with_allow_none(self, openapi):
-        field = fields.Str(allow_none=True)
-        res = openapi.field2property(field)
-        if openapi.openapi_version.major < 3:
-            assert res["x-nullable"] is True
-        else:
-            assert res["nullable"] is True
-
-    def test_field_with_str_regex(self, openapi):
-        regex_str = "^[a-zA-Z0-9]$"
-        field = fields.Str(validate=validate.Regexp(regex_str))
-        ret = openapi.field2property(field)
-        assert ret["pattern"] == regex_str
-
-    def test_field_with_pattern_obj_regex(self, openapi):
-        regex_str = "^[a-zA-Z0-9]$"
-        field = fields.Str(validate=validate.Regexp(re.compile(regex_str)))
-        ret = openapi.field2property(field)
-        assert ret["pattern"] == regex_str
-
-    def test_field_with_no_pattern(self, openapi):
-        field = fields.Str()
-        ret = openapi.field2property(field)
-        assert "pattern" not in ret
-
-    def test_field_with_multiple_patterns(self, recwarn, openapi):
-        regex_validators = [validate.Regexp("winner"), validate.Regexp("loser")]
-        field = fields.Str(validate=regex_validators)
-        with pytest.warns(UserWarning, match="More than one regex validator"):
-            ret = openapi.field2property(field)
-        assert ret["pattern"] == "winner"
 
 
 class TestMarshmallowSchemaToModelDefinition:
@@ -589,46 +404,6 @@ class PetSchema(Schema):
 
 
 class TestNesting:
-    def test_field2property_nested_spec_metadatas(self, spec_fixture):
-        spec_fixture.spec.components.schema("Category", schema=CategorySchema)
-        category = fields.Nested(
-            CategorySchema,
-            description="A category",
-            invalid_property="not in the result",
-            x_extension="A great extension",
-        )
-        result = spec_fixture.openapi.field2property(category)
-        assert result == {
-            "allOf": [build_ref(spec_fixture.spec, "schema", "Category")],
-            "description": "A category",
-            "x-extension": "A great extension",
-        }
-
-    def test_field2property_nested_spec(self, spec_fixture):
-        spec_fixture.spec.components.schema("Category", schema=CategorySchema)
-        category = fields.Nested(CategorySchema)
-        assert spec_fixture.openapi.field2property(category) == build_ref(
-            spec_fixture.spec, "schema", "Category"
-        )
-
-    def test_field2property_nested_many_spec(self, spec_fixture):
-        spec_fixture.spec.components.schema("Category", schema=CategorySchema)
-        category = fields.Nested(CategorySchema, many=True)
-        ret = spec_fixture.openapi.field2property(category)
-        assert ret["type"] == "array"
-        assert ret["items"] == build_ref(spec_fixture.spec, "schema", "Category")
-
-    def test_field2property_nested_ref(self, spec_fixture):
-        category = fields.Nested(CategorySchema)
-        ref = spec_fixture.openapi.field2property(category)
-        assert ref == build_ref(spec_fixture.spec, "schema", "Category")
-
-    def test_field2property_nested_many(self, spec_fixture):
-        categories = fields.Nested(CategorySchema, many=True)
-        res = spec_fixture.openapi.field2property(categories)
-        assert res["type"] == "array"
-        assert res["items"] == build_ref(spec_fixture.spec, "schema", "Category")
-
     def test_schema2jsonschema_with_nested_fields(self, spec_fixture):
         res = spec_fixture.openapi.schema2jsonschema(PetSchema)
         props = res["properties"]
@@ -686,30 +461,6 @@ class TestNesting:
 
         category_props = get_schemas(spec)["Category"]["properties"]
         assert "breed" not in category_props
-
-    def test_nested_field_with_property(self, spec_fixture):
-        category_1 = fields.Nested(CategorySchema)
-        category_2 = fields.Nested(CategorySchema, dump_only=True)
-        category_3 = fields.Nested(CategorySchema, many=True)
-        category_4 = fields.Nested(CategorySchema, many=True, dump_only=True)
-        spec_fixture.spec.components.schema("Category", schema=CategorySchema)
-
-        assert spec_fixture.openapi.field2property(category_1) == build_ref(
-            spec_fixture.spec, "schema", "Category"
-        )
-        assert spec_fixture.openapi.field2property(category_2) == {
-            "allOf": [build_ref(spec_fixture.spec, "schema", "Category")],
-            "readOnly": True,
-        }
-        assert spec_fixture.openapi.field2property(category_3) == {
-            "items": build_ref(spec_fixture.spec, "schema", "Category"),
-            "type": "array",
-        }
-        assert spec_fixture.openapi.field2property(category_4) == {
-            "items": build_ref(spec_fixture.spec, "schema", "Category"),
-            "readOnly": True,
-            "type": "array",
-        }
 
 
 def test_openapi_tools_validate_v2():

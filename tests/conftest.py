@@ -15,9 +15,9 @@ def make_spec(openapi_version):
         openapi_version=openapi_version,
         plugins=(ma_plugin,),
     )
-    return namedtuple("Spec", ("spec", "marshmallow_plugin", "openapi"))(
-        spec, ma_plugin, ma_plugin.openapi
-    )
+    return namedtuple(
+        "Spec", ("spec", "marshmallow_plugin", "openapi", "field_converter")
+    )(spec, ma_plugin, ma_plugin.openapi, ma_plugin.openapi.field_converter)
 
 
 @pytest.fixture(params=("2.0", "3.0.0"))

@@ -167,7 +167,7 @@ class MarshmallowPlugin(BasePlugin):
             class MyCustomFieldThatsKindaLikeAnInteger(Integer):
                 # ...
         """
-        return self.openapi.map_to_openapi_type(*args)
+        return self.openapi.field_converter.map_to_openapi_type(*args)
 
     def schema_helper(self, name, _, schema=None, **kwargs):
         """Definition helper that allows using a marshmallow
