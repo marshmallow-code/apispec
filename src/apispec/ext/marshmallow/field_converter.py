@@ -143,34 +143,15 @@ class FieldConverter(object):
             self.field2length,
             self.field2pattern,
             self.metadata2properties,
+            self.nested2properties,
+            self.list2properties,
+            self.dict2properties,
         ):
-            ret.update(attr_func(field))
-
-        if isinstance(field, marshmallow.fields.Nested):
-            del ret["type"]
-            schema_dict = self.resolve_nested_schema(field.schema)
-            if ret and "$ref" in schema_dict:
-                ret.update({"allOf": [schema_dict]})
-            else:
-                ret.update(schema_dict)
-        elif isinstance(field, marshmallow.fields.List):
-            # field.container was renamed to field.inner in marshmallow 3.0.0rc8
-            inner_field = field.inner if hasattr(field, "inner") else field.container
-            ret["items"] = self.field2property(inner_field)
-        elif isinstance(field, marshmallow.fields.Dict):
-            if MARSHMALLOW_VERSION_INFO[0] >= 3:
-                # field.value_container was renamed to field.value_field in marshmallow 3.0.0rc8
-                value_field = (
-                    field.value_field
-                    if hasattr(field, "value_field")
-                    else field.value_container
-                )
-                if value_field:
-                    ret["additionalProperties"] = self.field2property(value_field)
+            ret.update(attr_func(field, ret=ret))
 
         return ret
 
-    def field2type_and_format(self, field):
+    def field2type_and_format(self, field, **kwargs):
         """Return the dictionary of OpenAPI type and format based on the field
         type
 
@@ -199,7 +180,7 @@ class FieldConverter(object):
 
         return ret
 
-    def field2default(self, field):
+    def field2default(self, field, **kwargs):
         """Return the dictionary containing the field's default value
 
         Will first look for a `doc_default` key in the field's metadata and then
@@ -378,7 +359,7 @@ class FieldConverter(object):
 
         return attributes
 
-    def metadata2properties(self, field):
+    def metadata2properties(self, field, **kwargs):
         """Return a dictionary of properties extracted from field Metadata
 
         Will include field metadata that are valid properties of `OpenAPI schema
@@ -407,4 +388,64 @@ class FieldConverter(object):
             for key, value in metadata.items()
             if key in _VALID_PROPERTIES or key.startswith(_VALID_PREFIX)
         }
+        return ret
+
+    def nested2properties(self, field, ret):
+        """Return a dictionary of properties from :class:`Nested <marshmallow.fields.Nested`
+        fields
+
+        Typically provides a reference object and will add the schema to the spec
+        if it is not already present
+        If a custom `schema_name_resolver` function returns `None` for the nested
+        schema a JSON schema object will be returned
+
+        :param Field field: A marshmallow field.
+        :rtype: dict
+        """
+        if isinstance(field, marshmallow.fields.Nested):
+            del ret["type"]
+            schema_dict = self.resolve_nested_schema(field.schema)
+            if ret and "$ref" in schema_dict:
+                ret.update({"allOf": [schema_dict]})
+            else:
+                ret.update(schema_dict)
+        return ret
+
+    def list2properties(self, field, **kwargs):
+        """Return a dictionary of properties from :class:`List <marshmallow.fields.List`
+        fields
+
+        Will provide an `items` property based on the field's `inner` attribute
+
+        :param Field field: A marshmallow field.
+        :rtype: dict
+        """
+        ret = {}
+        if isinstance(field, marshmallow.fields.List):
+            # field.container was renamed to field.inner in marshmallow 3.0.0rc8
+            inner_field = field.inner if hasattr(field, "inner") else field.container
+            ret["items"] = self.field2property(inner_field)
+        return ret
+
+    def dict2properties(self, field, **kwargs):
+        """Return a dictionary of properties from :class:`Dict <marshmallow.fields.Dict`
+        fields
+
+        Only applicable for Marshmallow versions greater than 3. Will provide an
+        `additionalProperties` property based on the field's `value_field` attribute
+
+        :param Field field: A marshmallow field.
+        :rtype: dict
+        """
+        ret = {}
+        if isinstance(field, marshmallow.fields.Dict):
+            if MARSHMALLOW_VERSION_INFO[0] >= 3:
+                # field.value_container was renamed to field.value_field in marshmallow 3.0.0rc8
+                value_field = (
+                    field.value_field
+                    if hasattr(field, "value_field")
+                    else field.value_container
+                )
+                if value_field:
+                    ret["additionalProperties"] = self.field2property(value_field)
         return ret
