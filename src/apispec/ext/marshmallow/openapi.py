@@ -46,16 +46,26 @@ class OpenAPIConverter(object):
 
     :param str|OpenAPIVersion openapi_version: The OpenAPI version to use.
         Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
+    :param callable schema_name_resolver: Callable to generate the schema definition name.
+        Receives the `Schema` class and returns the name to be used in refs within
+        the generated spec. When working with circular referencing this function
+        must must not return `None` for schemas in a circular reference chain.
+    :param APISpec spec: An initalied spec. Nested schemas will be added to the
+        spec
+    :param tuple attribute_functions: tuple of attribute functions to add to the
+        builtin collection of attribute functions called on a field
     """
 
-    def __init__(self, openapi_version, schema_name_resolver, spec):
+    def __init__(
+        self, openapi_version, schema_name_resolver, spec, attribute_functions=()
+    ):
         self.openapi_version = OpenAPIVersion(openapi_version)
         self.schema_name_resolver = schema_name_resolver
         self.spec = spec
         # Schema references
         self.refs = {}
         self.field_converter = FieldConverter(
-            openapi_version, self.resolve_nested_schema
+            openapi_version, self.resolve_nested_schema, attribute_functions
         )
 
     @staticmethod

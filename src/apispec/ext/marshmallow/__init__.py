@@ -81,14 +81,17 @@ class MarshmallowPlugin(BasePlugin):
             def schema_name_resolver(schema):
                 schema_cls = resolve_schema_cls(schema)
                 return schema_cls.__name__
+    :param tuple attribute_functions: tuple of attribute functions to add to the
+        builtin collection of attribute functions called on a field
     """
 
-    def __init__(self, schema_name_resolver=None):
+    def __init__(self, schema_name_resolver=None, attribute_functions=()):
         super(MarshmallowPlugin, self).__init__()
         self.schema_name_resolver = schema_name_resolver or resolver
         self.spec = None
         self.openapi_version = None
         self.openapi = None
+        self.attribute_functions = attribute_functions
 
     def init_spec(self, spec):
         super(MarshmallowPlugin, self).init_spec(spec)
@@ -98,6 +101,7 @@ class MarshmallowPlugin(BasePlugin):
             openapi_version=spec.openapi_version,
             schema_name_resolver=self.schema_name_resolver,
             spec=spec,
+            attribute_functions=self.attribute_functions,
         )
 
     def resolve_parameters(self, parameters):

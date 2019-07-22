@@ -89,13 +89,32 @@ class FieldConverter(object):
         Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
     :param func resolve_nested_schema: callback function from OpenAPIConverter
         to call for nested fields
+    :param tuple attribute_functions: tuple of attribute functions to add to the
+        builtin collection of attribute functions called on a field
     """
 
     field_mapping = DEFAULT_FIELD_MAPPING
 
-    def __init__(self, openapi_version, resolve_nested_schema):
+    def __init__(self, openapi_version, resolve_nested_schema, attribute_functions=()):
         self.openapi_version = OpenAPIVersion(openapi_version)
         self.resolve_nested_schema = resolve_nested_schema
+
+        builtin_attribute_functions = (
+            self.field2type_and_format,
+            self.field2default,
+            self.field2choices,
+            self.field2read_only,
+            self.field2write_only,
+            self.field2nullable,
+            self.field2range,
+            self.field2length,
+            self.field2pattern,
+            self.metadata2properties,
+            self.nested2properties,
+            self.list2properties,
+            self.dict2properties,
+        )
+        self.attribute_functions = builtin_attribute_functions + attribute_functions
 
     def map_to_openapi_type(self, *args):
         """Decorator to set mapping for custom fields.
@@ -132,21 +151,7 @@ class FieldConverter(object):
         """
         ret = {}
 
-        for attr_func in (
-            self.field2type_and_format,
-            self.field2default,
-            self.field2choices,
-            self.field2read_only,
-            self.field2write_only,
-            self.field2nullable,
-            self.field2range,
-            self.field2length,
-            self.field2pattern,
-            self.metadata2properties,
-            self.nested2properties,
-            self.list2properties,
-            self.dict2properties,
-        ):
+        for attr_func in self.attribute_functions:
             ret.update(attr_func(field, ret=ret))
 
         return ret

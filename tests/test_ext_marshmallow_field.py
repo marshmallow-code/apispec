@@ -4,6 +4,9 @@ import re
 import pytest
 from marshmallow import fields, validate
 
+from apispec import APISpec
+from apispec.ext.marshmallow import MarshmallowPlugin
+
 from .schemas import CategorySchema, CustomList, CustomStringField, CustomIntegerField
 from .utils import build_ref
 
@@ -269,3 +272,18 @@ def test_nested_field_with_property(spec_fixture):
         "readOnly": True,
         "type": "array",
     }
+
+
+def test_custom_properties_for_custom_fields():
+    def custom_string2properties(field, **kwargs):
+        ret = {}
+        if isinstance(field, CustomStringField):
+            ret["x-customString"] = True
+        return ret
+
+    ma_plugin = MarshmallowPlugin(attribute_functions=(custom_string2properties,))
+    APISpec(
+        title="Validation", version="0.1", openapi_version="3.0.0", plugins=(ma_plugin,)
+    )
+    properties = ma_plugin.openapi.field_converter.field2property(CustomStringField())
+    assert properties["x-customString"]
