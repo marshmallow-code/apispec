@@ -281,9 +281,10 @@ def test_custom_properties_for_custom_fields():
             ret["x-customString"] = True
         return ret
 
-    ma_plugin = MarshmallowPlugin(attribute_functions=(custom_string2properties,))
+    ma_plugin = MarshmallowPlugin()
     APISpec(
         title="Validation", version="0.1", openapi_version="3.0.0", plugins=(ma_plugin,)
     )
+    ma_plugin.openapi.field_converter.add_attribute_function(custom_string2properties)
     properties = ma_plugin.openapi.field_converter.field2property(CustomStringField())
     assert properties["x-customString"]

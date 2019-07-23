@@ -52,20 +52,16 @@ class OpenAPIConverter(object):
         must must not return `None` for schemas in a circular reference chain.
     :param APISpec spec: An initalied spec. Nested schemas will be added to the
         spec
-    :param tuple attribute_functions: tuple of attribute functions to add to the
-        builtin collection of attribute functions called on a field
     """
 
-    def __init__(
-        self, openapi_version, schema_name_resolver, spec, attribute_functions=()
-    ):
+    def __init__(self, openapi_version, schema_name_resolver, spec):
         self.openapi_version = OpenAPIVersion(openapi_version)
         self.schema_name_resolver = schema_name_resolver
         self.spec = spec
         # Schema references
         self.refs = {}
         self.field_converter = FieldConverter(
-            openapi_version, self.resolve_nested_schema, attribute_functions
+            openapi_version, self.resolve_nested_schema
         )
 
     @staticmethod

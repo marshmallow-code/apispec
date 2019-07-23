@@ -89,17 +89,15 @@ class FieldConverter(object):
         Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
     :param func resolve_nested_schema: callback function from OpenAPIConverter
         to call for nested fields
-    :param tuple attribute_functions: tuple of attribute functions to add to the
-        builtin collection of attribute functions called on a field
     """
 
     field_mapping = DEFAULT_FIELD_MAPPING
 
-    def __init__(self, openapi_version, resolve_nested_schema, attribute_functions=()):
+    def __init__(self, openapi_version, resolve_nested_schema):
         self.openapi_version = OpenAPIVersion(openapi_version)
         self.resolve_nested_schema = resolve_nested_schema
 
-        builtin_attribute_functions = (
+        self.attribute_functions = [
             self.field2type_and_format,
             self.field2default,
             self.field2choices,
@@ -113,8 +111,7 @@ class FieldConverter(object):
             self.nested2properties,
             self.list2properties,
             self.dict2properties,
-        )
-        self.attribute_functions = builtin_attribute_functions + attribute_functions
+        ]
 
     def map_to_openapi_type(self, *args):
         """Decorator to set mapping for custom fields.
@@ -136,6 +133,17 @@ class FieldConverter(object):
             return field_type
 
         return inner
+
+    def add_attribute_function(self, func):
+        """Method to add an attribute function to the list of attribute functions
+        that will be called on a field to convert it from a field to an OpenAPI
+        property
+
+        :param func func: the attribute function to add - must accept a `field`
+            positional argument and optionally may accept `self` and `ret`
+            keyword arguments. Must return a dictionary of properties
+        """
+        self.attribute_functions.append(functools.partial(func, self=self))
 
     def field2property(self, field):
         """Return the JSON Schema property definition given a marshmallow
