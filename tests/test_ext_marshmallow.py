@@ -293,6 +293,13 @@ class TestCustomField:
         assert props_b["name"]["format"] == "int32"
 
 
+def get_nested_schema(schema, field_name):
+    try:
+        return schema._declared_fields[field_name]._schema
+    except AttributeError:
+        return schema._declared_fields[field_name]._Nested__schema
+
+
 class TestOperationHelper:
     @pytest.mark.parametrize(
         "pet_schema",
@@ -727,16 +734,16 @@ class TestOperationHelper:
         }
 
     def test_schema_global_state_untouched_2json(self, spec_fixture):
-        assert RunSchema._declared_fields["sample"]._Nested__schema is None
+        assert get_nested_schema(RunSchema, "sample") is None
         data = spec_fixture.openapi.schema2jsonschema(RunSchema)
         json.dumps(data)
-        assert RunSchema._declared_fields["sample"]._Nested__schema is None
+        assert get_nested_schema(RunSchema, "sample") is None
 
     def test_schema_global_state_untouched_2parameters(self, spec_fixture):
-        assert RunSchema._declared_fields["sample"]._Nested__schema is None
+        assert get_nested_schema(RunSchema, "sample") is None
         data = spec_fixture.openapi.schema2parameters(RunSchema)
         json.dumps(data)
-        assert RunSchema._declared_fields["sample"]._Nested__schema is None
+        assert get_nested_schema(RunSchema, "sample") is None
 
 
 class TestCircularReference:
