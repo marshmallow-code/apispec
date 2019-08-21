@@ -52,14 +52,15 @@ import warnings
 
 from apispec import BasePlugin
 from apispec.compat import itervalues
-from .common import resolve_schema_instance, make_schema_key
+from .common import resolve_schema_instance, make_schema_key, resolve_schema_cls
 from .openapi import OpenAPIConverter
 
 
 def resolver(schema):
     """Default implementation of a schema name resolver function
     """
-    name = schema.__name__
+    schema_cls = resolve_schema_cls(schema)
+    name = schema_cls.__name__
     if name.endswith("Schema"):
         return name[:-6] or name
     return name
@@ -75,8 +76,11 @@ class MarshmallowPlugin(BasePlugin):
 
         Example: ::
 
+            from apispec.ext.marshmallow.common import resolve_schema_cls
+
             def schema_name_resolver(schema):
-                return schema.__name__
+                schema_cls = resolve_schema_cls(schema)
+                return schema_cls.__name__
     """
 
     def __init__(self, schema_name_resolver=None):

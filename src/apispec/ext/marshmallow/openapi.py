@@ -20,7 +20,6 @@ from marshmallow.orderedset import OrderedSet
 from apispec.compat import RegexType, iteritems
 from apispec.utils import OpenAPIVersion, build_reference
 from .common import (
-    resolve_schema_cls,
     get_fields,
     make_schema_key,
     resolve_schema_instance,
@@ -461,8 +460,7 @@ class OpenAPIConverter(object):
         schema_instance = resolve_schema_instance(schema)
         schema_key = make_schema_key(schema_instance)
         if schema_key not in self.refs:
-            schema_cls = self.resolve_schema_class(schema)
-            name = self.schema_name_resolver(schema_cls)
+            name = self.schema_name_resolver(schema)
             if not name:
                 try:
                     json_schema = self.schema2jsonschema(schema)
@@ -722,11 +720,3 @@ class OpenAPIConverter(object):
             return schema
 
         return self.resolve_nested_schema(schema)
-
-    def resolve_schema_class(self, schema):
-        """Return schema class for given schema (instance or class)
-
-        :param type|Schema|str: instance, class or class name of marshmallow.Schema
-        :return: schema class of given schema (instance or class)
-        """
-        return resolve_schema_cls(schema)
