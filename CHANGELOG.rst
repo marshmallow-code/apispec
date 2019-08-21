@@ -1,6 +1,16 @@
 Changelog
 ---------
 
+3.0.0 (unreleased)
+++++++++++++++++++
+
+Features:
+
+- *Backwards-incompatible*: The ``schema_name_resolver`` function now receives
+  a ``Schema`` class, a ``Schema`` instance or a string that resolves to a
+  ``Schema`` class. This allows a custom resolver to generate different names
+  depending on schema modifiers used in a ``Schema`` instance. (:pr:`476`)
+
 2.0.2 (2019-07-04)
 ++++++++++++++++++
 
