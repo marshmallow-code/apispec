@@ -13,6 +13,11 @@ Features:
   ``Schema`` class. This allows a custom resolver to generate different names
   depending on schema modifiers used in a ``Schema`` instance. (:pr:`476`)
 
+Other changes:
+
+- Drop support for marshmallow pre-releases. Only stable 2.x and 3.x versions
+  are supported (:issue:`485`).
+
 2.0.2 (2019-07-04)
 ++++++++++++++++++
 
