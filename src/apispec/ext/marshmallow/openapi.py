@@ -15,14 +15,14 @@ from marshmallow.utils import is_collection
 
 from apispec.compat import iteritems
 from apispec.utils import OpenAPIVersion, build_reference
-from .field_converter import FieldConverter
+from apispec.exceptions import APISpecError
+from .field_converter import FieldConverterMixin
 from .common import (
     get_fields,
     make_schema_key,
     resolve_schema_instance,
     get_unique_schema_name,
 )
-from apispec.exceptions import APISpecError
 
 
 MARSHMALLOW_VERSION_INFO = tuple(
@@ -41,7 +41,7 @@ __location_map__ = {
 }
 
 
-class OpenAPIConverter(object):
+class OpenAPIConverter(FieldConverterMixin):
     """Converter generating OpenAPI specification from Marshmallow schemas and fields
 
     :param str|OpenAPIVersion openapi_version: The OpenAPI version to use.
@@ -58,11 +58,9 @@ class OpenAPIConverter(object):
         self.openapi_version = OpenAPIVersion(openapi_version)
         self.schema_name_resolver = schema_name_resolver
         self.spec = spec
+        self.init_attribute_functions()
         # Schema references
         self.refs = {}
-        self.field_converter = FieldConverter(
-            openapi_version, self.resolve_nested_schema
-        )
 
     @staticmethod
     def _observed_name(field, name):
@@ -195,7 +193,7 @@ class OpenAPIConverter(object):
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
         """
         location = field.metadata.get("location", None)
-        prop = self.field_converter.field2property(field)
+        prop = self.field2property(field)
         return self.property2parameter(
             prop,
             name=name,
@@ -316,7 +314,7 @@ class OpenAPIConverter(object):
 
         for field_name, field_obj in iteritems(fields):
             observed_field_name = self._observed_name(field_obj, field_name)
-            property = self.field_converter.field2property(field_obj)
+            property = self.field2property(field_obj)
             jsonschema["properties"][observed_field_name] = property
 
             if field_obj.required:

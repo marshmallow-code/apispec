@@ -13,7 +13,6 @@ import warnings
 import marshmallow
 from marshmallow.orderedset import OrderedSet
 
-from apispec.utils import OpenAPIVersion
 from apispec.compat import RegexType, iteritems
 
 
@@ -82,21 +81,12 @@ _VALID_PROPERTIES = {
 _VALID_PREFIX = "x-"
 
 
-class FieldConverter(object):
-    """Class to convert fields to an OpenAPI property
-
-    :param str|OpenAPIVersion openapi_version: The OpenAPI version to use.
-        Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
-    :param func resolve_nested_schema: callback function from OpenAPIConverter
-        to call for nested fields
-    """
+class FieldConverterMixin(object):
+    """Mixin class to convert fields to an OpenAPI property"""
 
     field_mapping = DEFAULT_FIELD_MAPPING
 
-    def __init__(self, openapi_version, resolve_nested_schema):
-        self.openapi_version = OpenAPIVersion(openapi_version)
-        self.resolve_nested_schema = resolve_nested_schema
-
+    def init_attribute_functions(self):
         self.attribute_functions = [
             self.field2type_and_format,
             self.field2default,
