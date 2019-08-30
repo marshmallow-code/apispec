@@ -13,6 +13,12 @@ apispec.ext.marshmallow.openapi
 .. automodule:: apispec.ext.marshmallow.openapi
     :members:
 
+apispec.ext.marshmallow.field_converter
++++++++++++++++++++++++++++++++++++++++
+
+.. automodule:: apispec.ext.marshmallow.field_converter
+    :members:
+
 apispec.ext.marshmallow.common
 ++++++++++++++++++++++++++++++
 .. automodule:: apispec.ext.marshmallow.common
