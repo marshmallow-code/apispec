@@ -6,6 +6,8 @@ Changelog
 
 Features:
 
+- Add support for generating user defined OpenAPI properties for custom field
+  classes via an ``add_attribute_function`` method. (:pr:`478`)
 - *Backwards-incompatible*: The ``schema_name_resolver`` function now receives
   a ``Schema`` class, a ``Schema`` instance or a string that resolves to a
   ``Schema`` class. This allows a custom resolver to generate different names
