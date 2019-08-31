@@ -54,8 +54,7 @@ from .openapi import OpenAPIConverter
 
 
 def resolver(schema):
-    """Default implementation of a schema name resolver function
-    """
+    """Default schema name resolver function that strips 'Schema' from the end of the class name."""
     schema_cls = resolve_schema_cls(schema)
     name = schema_cls.__name__
     if name.endswith("Schema"):
@@ -64,7 +63,7 @@ def resolver(schema):
 
 
 class MarshmallowPlugin(BasePlugin):
-    """APISpec plugin handling marshmallow schemas
+    """APISpec plugin for translating marshmallow schemas to OpenAPI/JSONSchema format.
 
     :param callable schema_name_resolver: Callable to generate the schema definition name.
         Receives the `Schema` class and returns the name to be used in refs within
