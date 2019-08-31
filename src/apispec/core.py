@@ -21,101 +21,6 @@ VALID_METHODS_OPENAPI_V3 = VALID_METHODS_OPENAPI_V2 + ["trace"]
 VALID_METHODS = {2: VALID_METHODS_OPENAPI_V2, 3: VALID_METHODS_OPENAPI_V3}
 
 
-def get_ref(obj_type, obj, openapi_major_version):
-    """Return object or reference
-
-    If obj is a dict, it is assumed to be a complete description and it is returned as is.
-    Otherwise, it is assumed to be a reference name as string and the corresponding $ref
-    string is returned.
-
-    :param str obj_type: "parameter" or "response"
-    :param dict|str obj: parameter or response in dict form or as ref_id string
-    :param int openapi_major_version: The major version of the OpenAPI standard
-    """
-    if isinstance(obj, dict):
-        return obj
-    return build_reference(obj_type, openapi_major_version, obj)
-
-
-def clean_parameters(parameters, openapi_major_version):
-    """Ensure that all parameters with "in" equal to "path" are also required
-    as required by the OpenAPI specification, as well as normalizing any
-    references to global parameters and checking for duplicates parameters
-
-    See https ://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject.
-
-    :param list parameters: List of parameters mapping
-    :param int openapi_major_version: The major version of the OpenAPI standard
-    """
-    seen = set()
-    for parameter in [p for p in parameters if isinstance(p, dict)]:
-
-        # check missing name / location
-        missing_attrs = [attr for attr in ("name", "in") if attr not in parameter]
-        if missing_attrs:
-            raise InvalidParameterError(
-                "Missing keys {} for parameter".format(missing_attrs)
-            )
-
-        # OpenAPI Spec 3 and 2 don't allow for duplicated parameters
-        # A unique parameter is defined by a combination of a name and location
-        unique_key = (parameter["name"], parameter["in"])
-        if unique_key in seen:
-            raise DuplicateParameterError(
-                "Duplicate parameter with name {} and location {}".format(
-                    parameter["name"], parameter["in"]
-                )
-            )
-        seen.add(unique_key)
-
-        # Add "required" attribute to path parameters
-        if parameter["in"] == "path":
-            parameter["required"] = True
-
-    return [get_ref("parameter", p, openapi_major_version) for p in parameters]
-
-
-def clean_operations(operations, openapi_major_version):
-    """Ensure that all parameters with "in" equal to "path" are also required
-    as required by the OpenAPI specification, as well as normalizing any
-    references to global parameters. Also checks for invalid HTTP methods.
-
-    See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject.
-
-    :param dict operations: Dict mapping status codes to operations
-    :param int openapi_major_version: The major version of the OpenAPI standard
-        to use. Supported values are 2 and 3.
-    """
-    invalid = {
-        key
-        for key in set(iterkeys(operations)) - set(VALID_METHODS[openapi_major_version])
-        if not key.startswith("x-")
-    }
-    if invalid:
-        raise APISpecError(
-            "One or more HTTP methods are invalid: {}".format(", ".join(invalid))
-        )
-
-    for operation in (operations or {}).values():
-        if "parameters" in operation:
-            operation["parameters"] = clean_parameters(
-                operation["parameters"], openapi_major_version
-            )
-        if "responses" in operation:
-            responses = OrderedDict()
-            for code, response in iteritems(operation["responses"]):
-                try:
-                    code = int(code)  # handles IntEnums like http.HTTPStatus
-                except (TypeError, ValueError):
-                    if openapi_major_version < 3:
-                        warnings.warn("Non-integer code not allowed in OpenAPI < 3")
-
-                responses[str(code)] = get_ref(
-                    "response", response, openapi_major_version
-                )
-            operation["responses"] = responses
-
-
 class Components(object):
     """Stores OpenAPI components
 
@@ -360,7 +265,7 @@ class APISpec(object):
             except PluginMethodNotImplementedError:
                 continue
 
-        clean_operations(operations, self.openapi_version.major)
+        self.clean_operations(operations)
 
         self._paths.setdefault(path, operations).update(operations)
         if summary is not None:
@@ -368,6 +273,91 @@ class APISpec(object):
         if description is not None:
             self._paths[path]["description"] = description
         if parameters:
-            parameters = clean_parameters(parameters, self.openapi_version.major)
+            parameters = self.clean_parameters(parameters)
             self._paths[path]["parameters"] = parameters
         return self
+
+    def get_ref(self, obj_type, obj):
+        """Return object or reference
+
+        If obj is a dict, it is assumed to be a complete description and it is returned as is.
+        Otherwise, it is assumed to be a reference name as string and the corresponding $ref
+        string is returned.
+
+        :param str obj_type: "parameter" or "response"
+        :param dict|str obj: parameter or response in dict form or as ref_id string
+        """
+        if isinstance(obj, dict):
+            return obj
+        return build_reference(obj_type, self.openapi_version.major, obj)
+
+    def clean_parameters(self, parameters):
+        """Ensure that all parameters with "in" equal to "path" are also required
+        as required by the OpenAPI specification, as well as normalizing any
+        references to global parameters and checking for duplicates parameters
+
+        See https ://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject.
+
+        :param list parameters: List of parameters mapping
+        """
+        seen = set()
+        for parameter in [p for p in parameters if isinstance(p, dict)]:
+
+            # check missing name / location
+            missing_attrs = [attr for attr in ("name", "in") if attr not in parameter]
+            if missing_attrs:
+                raise InvalidParameterError(
+                    "Missing keys {} for parameter".format(missing_attrs)
+                )
+
+            # OpenAPI Spec 3 and 2 don't allow for duplicated parameters
+            # A unique parameter is defined by a combination of a name and location
+            unique_key = (parameter["name"], parameter["in"])
+            if unique_key in seen:
+                raise DuplicateParameterError(
+                    "Duplicate parameter with name {} and location {}".format(
+                        parameter["name"], parameter["in"]
+                    )
+                )
+            seen.add(unique_key)
+
+            # Add "required" attribute to path parameters
+            if parameter["in"] == "path":
+                parameter["required"] = True
+
+        return [self.get_ref("parameter", p) for p in parameters]
+
+    def clean_operations(self, operations):
+        """Ensure that all parameters with "in" equal to "path" are also required
+        as required by the OpenAPI specification, as well as normalizing any
+        references to global parameters. Also checks for invalid HTTP methods.
+
+        See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject.
+
+        :param dict operations: Dict mapping status codes to operations
+        """
+        invalid = {
+            key
+            for key in set(iterkeys(operations))
+            - set(VALID_METHODS[self.openapi_version.major])
+            if not key.startswith("x-")
+        }
+        if invalid:
+            raise APISpecError(
+                "One or more HTTP methods are invalid: {}".format(", ".join(invalid))
+            )
+
+        for operation in (operations or {}).values():
+            if "parameters" in operation:
+                operation["parameters"] = self.clean_parameters(operation["parameters"])
+            if "responses" in operation:
+                responses = OrderedDict()
+                for code, response in iteritems(operation["responses"]):
+                    try:
+                        code = int(code)  # handles IntEnums like http.HTTPStatus
+                    except (TypeError, ValueError):
+                        if self.openapi_version.major < 3:
+                            warnings.warn("Non-integer code not allowed in OpenAPI < 3")
+
+                    responses[str(code)] = self.get_ref("response", response)
+                operation["responses"] = responses
