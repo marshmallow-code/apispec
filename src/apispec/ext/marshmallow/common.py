@@ -11,7 +11,7 @@ MODIFIERS = ["only", "exclude", "load_only", "dump_only", "partial"]
 
 
 def resolve_schema_instance(schema):
-    """Return schema instance for given schema (instance or class)
+    """Return schema instance for given schema (instance or class).
 
     :param type|Schema|str schema: instance, class or class name of marshmallow.Schema
     :return: schema instance of given schema (instance or class)
@@ -25,12 +25,12 @@ def resolve_schema_instance(schema):
     except marshmallow.exceptions.RegistryError:
         raise ValueError(
             "{!r} is not a marshmallow.Schema subclass or instance and has not"
-            " been registered in the Marshmallow class registry.".format(schema)
+            " been registered in the marshmallow class registry.".format(schema)
         )
 
 
 def resolve_schema_cls(schema):
-    """Return schema class for given schema (instance or class)
+    """Return schema class for given schema (instance or class).
 
     :param type|Schema|str: instance, class or class name of marshmallow.Schema
     :return: schema class of given schema (instance or class)
@@ -44,12 +44,12 @@ def resolve_schema_cls(schema):
     except marshmallow.exceptions.RegistryError:
         raise ValueError(
             "{!r} is not a marshmallow.Schema subclass or instance and has not"
-            " been registered in the Marshmallow class registry.".format(schema)
+            " been registered in the marshmallow class registry.".format(schema)
         )
 
 
 def get_fields(schema, exclude_dump_only=False):
-    """Return fields from schema
+    """Return fields from schema.
 
     :param Schema schema: A marshmallow Schema instance or a class object
     :param bool exclude_dump_only: whether to filter fields in Meta.dump_only
@@ -69,8 +69,7 @@ def get_fields(schema, exclude_dump_only=False):
 
 
 def warn_if_fields_defined_in_meta(fields, Meta):
-    """Warns user that fields defined in Meta.fields or Meta.additional will
-    be ignored
+    """Warns user that fields defined in Meta.fields or Meta.additional will be ignored.
 
     :param dict fields: A dictionary of fields name field object pairs
     :param Meta: the schema's Meta class
@@ -88,7 +87,7 @@ def warn_if_fields_defined_in_meta(fields, Meta):
 
 
 def filter_excluded_fields(fields, Meta, exclude_dump_only):
-    """Filter fields that should be ignored in the OpenAPI spec
+    """Filter fields that should be ignored in the OpenAPI spec.
 
     :param dict fields: A dictionary of fields name field object pairs
     :param Meta: the schema's Meta class

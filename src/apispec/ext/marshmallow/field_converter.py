@@ -83,7 +83,7 @@ _VALID_PREFIX = "x-"
 
 
 class FieldConverterMixin:
-    """Mixin class to convert fields to an OpenAPI property"""
+    """Adds methods for converting marshmallow fields to an OpenAPI properties."""
 
     field_mapping = DEFAULT_FIELD_MAPPING
 
@@ -138,7 +138,7 @@ class FieldConverterMixin:
     def add_attribute_function(self, func):
         """Method to add an attribute function to the list of attribute functions
         that will be called on a field to convert it from a field to an OpenAPI
-        property
+        property.
 
         :param func func: the attribute function to add - will be called for each
             field in a schema with a `field <marshmallow.fields.Field>` instance
@@ -173,8 +173,7 @@ class FieldConverterMixin:
         return ret
 
     def field2type_and_format(self, field, **kwargs):
-        """Return the dictionary of OpenAPI type and format based on the field
-        type
+        """Return the dictionary of OpenAPI type and format based on the field type.
 
         :param Field field: A marshmallow field.
         :rtype: dict
@@ -202,7 +201,7 @@ class FieldConverterMixin:
         return ret
 
     def field2default(self, field, **kwargs):
-        """Return the dictionary containing the field's default value
+        """Return the dictionary containing the field's default value.
 
         Will first look for a `doc_default` key in the field's metadata and then
         fall back on the field's `missing` parameter. A callable passed to the
@@ -222,7 +221,7 @@ class FieldConverterMixin:
         return ret
 
     def field2choices(self, field, **kwargs):
-        """Return the dictionary of OpenAPI field attributes for valid choices definition
+        """Return the dictionary of OpenAPI field attributes for valid choices definition.
 
         :param Field field: A marshmallow field.
         :rtype: dict
@@ -381,7 +380,7 @@ class FieldConverterMixin:
         return attributes
 
     def metadata2properties(self, field, **kwargs):
-        """Return a dictionary of properties extracted from field Metadata
+        """Return a dictionary of properties extracted from field metadata.
 
         Will include field metadata that are valid properties of `OpenAPI schema
         objects
@@ -412,8 +411,7 @@ class FieldConverterMixin:
         return ret
 
     def nested2properties(self, field, ret):
-        """Return a dictionary of properties from :class:`Nested <marshmallow.fields.Nested`
-        fields
+        """Return a dictionary of properties from :class:`Nested <marshmallow.fields.Nested` fields.
 
         Typically provides a reference object and will add the schema to the spec
         if it is not already present
@@ -433,8 +431,7 @@ class FieldConverterMixin:
         return ret
 
     def list2properties(self, field, **kwargs):
-        """Return a dictionary of properties from :class:`List <marshmallow.fields.List`
-        fields
+        """Return a dictionary of properties from :class:`List <marshmallow.fields.List>` fields.
 
         Will provide an `items` property based on the field's `inner` attribute
 
@@ -450,8 +447,7 @@ class FieldConverterMixin:
         return ret
 
     def dict2properties(self, field, **kwargs):
-        """Return a dictionary of properties from :class:`Dict <marshmallow.fields.Dict`
-        fields
+        """Return a dictionary of properties from :class:`Dict <marshmallow.fields.Dict>` fields.
 
         Only applicable for Marshmallow versions greater than 3. Will provide an
         `additionalProperties` property based on the field's `value_field` attribute
