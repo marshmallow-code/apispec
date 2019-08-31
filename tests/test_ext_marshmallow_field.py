@@ -1,3 +1,4 @@
+import datetime as dt
 import re
 
 import pytest
@@ -5,6 +6,7 @@ from marshmallow import fields, validate
 
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
+from apispec.ext.marshmallow.openapi import MARSHMALLOW_VERSION_INFO
 
 from .schemas import CategorySchema, CustomList, CustomStringField, CustomIntegerField
 from .utils import build_ref
@@ -84,10 +86,19 @@ def test_field_with_missing(spec_fixture):
     assert res["default"] == "bar"
 
 
-def test_field_with_boolean_false_missing(spec_fixture):
+def test_boolean_field_with_false_missing(spec_fixture):
     field = fields.Boolean(default=None, missing=False)
     res = spec_fixture.openapi.field2property(field)
     assert res["default"] is False
+
+
+def test_datetime_field_with_missing(spec_fixture):
+    if MARSHMALLOW_VERSION_INFO[0] < 3:
+        field = fields.Date(missing=dt.date(2014, 7, 18).isoformat())
+    else:
+        field = fields.Date(missing=dt.date(2014, 7, 18))
+    res = spec_fixture.openapi.field2property(field)
+    assert res["default"] == dt.date(2014, 7, 18).isoformat()
 
 
 def test_field_with_missing_callable(spec_fixture):
