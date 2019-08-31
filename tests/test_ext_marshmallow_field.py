@@ -90,18 +90,6 @@ def test_field_with_boolean_false_missing(spec_fixture):
     assert res["default"] is False
 
 
-def test_field_with_missing_load(spec_fixture):
-    field = fields.Str(default="foo", missing="bar")
-    res = spec_fixture.openapi.field2property(field)
-    assert res["default"] == "bar"
-
-
-def test_field_with_boolean_false_missing_load(spec_fixture):
-    field = fields.Boolean(default=None, missing=False)
-    res = spec_fixture.openapi.field2property(field)
-    assert res["default"] is False
-
-
 def test_field_with_missing_callable(spec_fixture):
     field = fields.Str(missing=lambda: "dummy")
     res = spec_fixture.openapi.field2property(field)
