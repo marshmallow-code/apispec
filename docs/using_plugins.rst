@@ -252,6 +252,9 @@ OpenAPI type and format, or a marshmallow `Field` that has the desired target ma
 
     ma_plugin = MarshmallowPlugin()
 
+    spec = APISpec(
+        title="Demo", version="0.1", openapi_version="3.0.0", plugins=(ma_plugin,)
+    )
 
     # Inherits Integer mapping of ('integer', 'int32')
     class MyCustomInteger(Integer):
@@ -268,7 +271,24 @@ OpenAPI type and format, or a marshmallow `Field` that has the desired target ma
     class MyCustomFieldThatsKindaLikeAnInteger(Field):
         pass
 
+In situations where greater control of the properties generated for a custom field
+is desired, users may add custom logic to the conversion of fields to OpenAPI properties
+through the use of the `add_attribute_function
+<apispec.ext.marshmallow.field_converter.FieldConverterMixin.add_attribute_function>`
+method. Continuing from the example above:
 
+.. code-block:: python
+
+    def my_custom_field2properties(field, **kwargs):
+        """Add an OpenAPI extension flag to MyCustomField instances
+        """
+        ret = {}
+        if isinstance(field, MyCustomField):
+            ret["x-customField"] = True
+        return ret
+
+
+    ma_plugin.openapi.add_attribute_function(my_custom_field2properties)
 
 Next Steps
 ----------
