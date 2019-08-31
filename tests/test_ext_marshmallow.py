@@ -282,17 +282,17 @@ class TestComponentResponseHelper:
 
 class TestCustomField:
     def test_can_use_custom_field_decorator(self, spec_fixture):
-        @spec_fixture.marshmallow_plugin.map_to_openapi_type(DateTime)
+        @spec_fixture.ma_plugin.map_to_openapi_type(DateTime)
         class CustomNameA(Field):
             pass
 
-        @spec_fixture.marshmallow_plugin.map_to_openapi_type("integer", "int32")
+        @spec_fixture.ma_plugin.map_to_openapi_type("integer", "int32")
         class CustomNameB(Field):
             pass
 
         with pytest.raises(TypeError):
 
-            @spec_fixture.marshmallow_plugin.map_to_openapi_type("integer")
+            @spec_fixture.ma_plugin.map_to_openapi_type("integer")
             class BadCustomField(Field):
                 pass
 
@@ -366,7 +366,7 @@ class TestOperationHelper:
         assert header_reference == build_ref(spec_fixture.spec, "schema", "Pet")
         assert len(spec_fixture.spec.components._schemas) == 1
         resolved_schema = spec_fixture.spec.components._schemas["Pet"]
-        assert resolved_schema == spec_fixture.openapi.schema2jsonschema(PetSchema)
+        assert resolved_schema == spec_fixture.ma_plugin.schema2jsonschema(PetSchema)
         assert get["responses"]["200"]["description"] == "successful operation"
 
     @pytest.mark.parametrize(
@@ -415,7 +415,7 @@ class TestOperationHelper:
         assert header_reference == build_ref(spec_fixture.spec, "schema", "Pet")
         assert len(spec_fixture.spec.components._schemas) == 1
         resolved_schema = spec_fixture.spec.components._schemas["Pet"]
-        assert resolved_schema == spec_fixture.openapi.schema2jsonschema(PetSchema)
+        assert resolved_schema == spec_fixture.ma_plugin.schema2jsonschema(PetSchema)
         assert get["responses"]["200"]["description"] == "successful operation"
 
     @pytest.mark.parametrize("spec_fixture", ("2.0",), indirect=True)
@@ -439,11 +439,11 @@ class TestOperationHelper:
         )
         p = get_paths(spec_fixture.spec)["/pet"]
         get = p["get"]
-        assert get["parameters"] == spec_fixture.openapi.schema2parameters(
+        assert get["parameters"] == spec_fixture.ma_plugin.schema2parameters(
             PetSchema(), default_in="query"
         )
         post = p["post"]
-        assert post["parameters"] == spec_fixture.openapi.schema2parameters(
+        assert post["parameters"] == spec_fixture.ma_plugin.schema2parameters(
             PetSchema,
             default_in="body",
             required=True,
@@ -468,7 +468,7 @@ class TestOperationHelper:
         )
         p = get_paths(spec_fixture.spec)["/pet"]
         get = p["get"]
-        assert get["parameters"] == spec_fixture.openapi.schema2parameters(
+        assert get["parameters"] == spec_fixture.ma_plugin.schema2parameters(
             PetSchema(), default_in="query"
         )
         for parameter in get["parameters"]:
@@ -477,7 +477,7 @@ class TestOperationHelper:
             name = parameter["name"]
             assert description == PetSchema.description[name]
         post = p["post"]
-        post_schema = spec_fixture.openapi.resolve_schema_dict(PetSchema)
+        post_schema = spec_fixture.ma_plugin.resolve_schema_dict(PetSchema)
         assert (
             post["requestBody"]["content"]["application/json"]["schema"] == post_schema
         )
@@ -760,15 +760,15 @@ class TestOperationHelper:
             "200": build_ref(spec_fixture.spec, "response", "Pet")
         }
 
-    def test_schema_global_state_untouched_2json(self, spec_fixture):
+    def test_schema_global_state_untouched_2json(self, ma_plugin):
         assert get_nested_schema(RunSchema, "sample") is None
-        data = spec_fixture.openapi.schema2jsonschema(RunSchema)
+        data = ma_plugin.schema2jsonschema(RunSchema)
         json.dumps(data)
         assert get_nested_schema(RunSchema, "sample") is None
 
-    def test_schema_global_state_untouched_2parameters(self, spec_fixture):
+    def test_schema_global_state_untouched_2parameters(self, ma_plugin):
         assert get_nested_schema(RunSchema, "sample") is None
-        data = spec_fixture.openapi.schema2parameters(RunSchema)
+        data = ma_plugin.schema2parameters(RunSchema)
         json.dumps(data)
         assert get_nested_schema(RunSchema, "sample") is None
 

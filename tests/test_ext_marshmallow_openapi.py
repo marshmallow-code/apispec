@@ -11,28 +11,28 @@ from .utils import get_schemas, build_ref
 
 
 class TestMarshmallowFieldToOpenAPI:
-    def test_fields_with_missing_load(self, openapi):
+    def test_fields_with_missing_load(self, ma_plugin):
         field_dict = {"field": fields.Str(default="foo", missing="bar")}
-        res = openapi.fields2parameters(field_dict, default_in="query")
-        if openapi.openapi_version.major < 3:
+        res = ma_plugin.fields2parameters(field_dict, default_in="query")
+        if ma_plugin.openapi_version.major < 3:
             assert res[0]["default"] == "bar"
         else:
             assert res[0]["schema"]["default"] == "bar"
 
-    def test_fields_with_location(self, openapi):
+    def test_fields_with_location(self, ma_plugin):
         field_dict = {"field": fields.Str(location="querystring")}
-        res = openapi.fields2parameters(field_dict, default_in="headers")
+        res = ma_plugin.fields2parameters(field_dict, default_in="headers")
         assert res[0]["in"] == "query"
 
     # json/body is invalid for OpenAPI 3
-    @pytest.mark.parametrize("openapi", ("2.0",), indirect=True)
-    def test_fields_with_multiple_json_locations(self, openapi):
+    @pytest.mark.parametrize("ma_plugin", ("2.0",), indirect=True)
+    def test_fields_with_multiple_json_locations(self, ma_plugin):
         field_dict = {
             "field1": fields.Str(location="json", required=True),
             "field2": fields.Str(location="json", required=True),
             "field3": fields.Str(location="json"),
         }
-        res = openapi.fields2parameters(field_dict, default_in=None)
+        res = ma_plugin.fields2parameters(field_dict, default_in=None)
         assert len(res) == 1
         assert res[0]["in"] == "body"
         assert res[0]["required"] is False
@@ -44,41 +44,43 @@ class TestMarshmallowFieldToOpenAPI:
         assert "field1" in res[0]["schema"]["required"]
         assert "field2" in res[0]["schema"]["required"]
 
-    def test_fields2parameters_does_not_modify_metadata(self, openapi):
+    def test_fields2parameters_does_not_modify_metadata(self, ma_plugin):
         field_dict = {"field": fields.Str(location="querystring")}
-        res = openapi.fields2parameters(field_dict, default_in="headers")
+        res = ma_plugin.fields2parameters(field_dict, default_in="headers")
         assert res[0]["in"] == "query"
 
-        res = openapi.fields2parameters(field_dict, default_in="headers")
+        res = ma_plugin.fields2parameters(field_dict, default_in="headers")
         assert res[0]["in"] == "query"
 
-    def test_fields_location_mapping(self, openapi):
+    def test_fields_location_mapping(self, ma_plugin):
         field_dict = {"field": fields.Str(location="cookies")}
-        res = openapi.fields2parameters(field_dict, default_in="headers")
+        res = ma_plugin.fields2parameters(field_dict, default_in="headers")
         assert res[0]["in"] == "cookie"
 
-    def test_fields_default_location_mapping(self, openapi):
+    def test_fields_default_location_mapping(self, ma_plugin):
         field_dict = {"field": fields.Str()}
-        res = openapi.fields2parameters(field_dict, default_in="headers")
+        res = ma_plugin.fields2parameters(field_dict, default_in="headers")
         assert res[0]["in"] == "header"
 
     # json/body is invalid for OpenAPI 3
-    @pytest.mark.parametrize("openapi", ("2.0",), indirect=True)
-    def test_fields_default_location_mapping_if_schema_many(self, openapi):
+    @pytest.mark.parametrize("ma_plugin", ("2.0",), indirect=True)
+    def test_fields_default_location_mapping_if_schema_many(self, ma_plugin):
         class ExampleSchema(Schema):
             id = fields.Int()
 
         schema = ExampleSchema(many=True)
-        res = openapi.schema2parameters(schema=schema, default_in="json")
+        res = ma_plugin.schema2parameters(schema=schema, default_in="json")
         assert res[0]["in"] == "body"
 
-    def test_fields_with_dump_only(self, openapi):
+    def test_fields_with_dump_only(self, ma_plugin):
         class UserSchema(Schema):
             name = fields.Str(dump_only=True)
 
-        res = openapi.fields2parameters(UserSchema._declared_fields, default_in="query")
+        res = ma_plugin.fields2parameters(
+            UserSchema._declared_fields, default_in="query"
+        )
         assert len(res) == 0
-        res = openapi.fields2parameters(UserSchema().fields, default_in="query")
+        res = ma_plugin.fields2parameters(UserSchema().fields, default_in="query")
         assert len(res) == 0
 
         class UserSchema(Schema):
@@ -87,16 +89,16 @@ class TestMarshmallowFieldToOpenAPI:
             class Meta:
                 dump_only = ("name",)
 
-        res = openapi.schema2parameters(schema=UserSchema, default_in="query")
+        res = ma_plugin.schema2parameters(schema=UserSchema, default_in="query")
         assert len(res) == 0
 
 
 class TestMarshmallowSchemaToModelDefinition:
-    def test_invalid_schema(self, openapi):
+    def test_invalid_schema(self, ma_plugin):
         with pytest.raises(ValueError):
-            openapi.schema2jsonschema(None)
+            ma_plugin.schema2jsonschema(None)
 
-    def test_schema2jsonschema_with_explicit_fields(self, openapi):
+    def test_schema2jsonschema_with_explicit_fields(self, ma_plugin):
         class UserSchema(Schema):
             _id = fields.Int()
             email = fields.Email(description="email address of the user")
@@ -105,7 +107,7 @@ class TestMarshmallowSchemaToModelDefinition:
             class Meta:
                 title = "User"
 
-        res = openapi.schema2jsonschema(UserSchema)
+        res = ma_plugin.schema2jsonschema(UserSchema)
         assert res["title"] == "User"
         assert res["type"] == "object"
         props = res["properties"]
@@ -117,7 +119,7 @@ class TestMarshmallowSchemaToModelDefinition:
     @pytest.mark.skipif(
         MARSHMALLOW_VERSION_INFO[0] >= 3, reason="Behaviour changed in marshmallow 3"
     )
-    def test_schema2jsonschema_override_name_ma2(self, openapi):
+    def test_schema2jsonschema_override_name_ma2(self, ma_plugin):
         class ExampleSchema(Schema):
             _id = fields.Int(load_from="id", dump_to="id")
             _dt = fields.Int(load_from="lf_no_match", dump_to="dt")
@@ -127,7 +129,7 @@ class TestMarshmallowSchemaToModelDefinition:
             class Meta:
                 exclude = ("_global",)
 
-        res = openapi.schema2jsonschema(ExampleSchema)
+        res = ma_plugin.schema2jsonschema(ExampleSchema)
         assert res["type"] == "object"
         props = res["properties"]
         # `_id` renamed to `id`
@@ -143,7 +145,7 @@ class TestMarshmallowSchemaToModelDefinition:
     @pytest.mark.skipif(
         MARSHMALLOW_VERSION_INFO[0] < 3, reason="Behaviour changed in marshmallow 3"
     )
-    def test_schema2jsonschema_override_name_ma3(self, openapi):
+    def test_schema2jsonschema_override_name_ma3(self, ma_plugin):
         class ExampleSchema(Schema):
             _id = fields.Int(data_key="id")
             _global = fields.Int(data_key="global")
@@ -151,7 +153,7 @@ class TestMarshmallowSchemaToModelDefinition:
             class Meta:
                 exclude = ("_global",)
 
-        res = openapi.schema2jsonschema(ExampleSchema)
+        res = ma_plugin.schema2jsonschema(ExampleSchema)
         assert res["type"] == "object"
         props = res["properties"]
         # `_id` renamed to `id`
@@ -159,44 +161,44 @@ class TestMarshmallowSchemaToModelDefinition:
         # `_global` excluded correctly
         assert "_global" not in props and "global" not in props
 
-    def test_required_fields(self, openapi):
+    def test_required_fields(self, ma_plugin):
         class BandSchema(Schema):
             drummer = fields.Str(required=True)
             bassist = fields.Str()
 
-        res = openapi.schema2jsonschema(BandSchema)
+        res = ma_plugin.schema2jsonschema(BandSchema)
         assert res["required"] == ["drummer"]
 
-    def test_partial(self, openapi):
+    def test_partial(self, ma_plugin):
         class BandSchema(Schema):
             drummer = fields.Str(required=True)
             bassist = fields.Str(required=True)
 
-        res = openapi.schema2jsonschema(BandSchema(partial=True))
+        res = ma_plugin.schema2jsonschema(BandSchema(partial=True))
         assert "required" not in res
 
-        res = openapi.schema2jsonschema(BandSchema(partial=("drummer",)))
+        res = ma_plugin.schema2jsonschema(BandSchema(partial=("drummer",)))
         assert res["required"] == ["bassist"]
 
-    def test_no_required_fields(self, openapi):
+    def test_no_required_fields(self, ma_plugin):
         class BandSchema(Schema):
             drummer = fields.Str()
             bassist = fields.Str()
 
-        res = openapi.schema2jsonschema(BandSchema)
+        res = ma_plugin.schema2jsonschema(BandSchema)
         assert "required" not in res
 
-    def test_title_and_description_may_be_added(self, openapi):
+    def test_title_and_description_may_be_added(self, ma_plugin):
         class UserSchema(Schema):
             class Meta:
                 title = "User"
                 description = "A registered user"
 
-        res = openapi.schema2jsonschema(UserSchema)
+        res = ma_plugin.schema2jsonschema(UserSchema)
         assert res["description"] == "A registered user"
         assert res["title"] == "User"
 
-    def test_excluded_fields(self, openapi):
+    def test_excluded_fields(self, ma_plugin):
         class WhiteStripesSchema(Schema):
             class Meta:
                 exclude = ("bassist",)
@@ -205,10 +207,10 @@ class TestMarshmallowSchemaToModelDefinition:
             drummer = fields.Str()
             bassist = fields.Str()
 
-        res = openapi.schema2jsonschema(WhiteStripesSchema)
+        res = ma_plugin.schema2jsonschema(WhiteStripesSchema)
         assert set(res["properties"].keys()) == {"guitarist", "drummer"}
 
-    def test_only_explicitly_declared_fields_are_translated(self, openapi):
+    def test_only_explicitly_declared_fields_are_translated(self, ma_plugin):
         class UserSchema(Schema):
             _id = fields.Int()
 
@@ -220,13 +222,13 @@ class TestMarshmallowSchemaToModelDefinition:
             UserWarning,
             match="Only explicitly-declared fields will be included in the Schema Object.",
         ):
-            res = openapi.schema2jsonschema(UserSchema)
+            res = ma_plugin.schema2jsonschema(UserSchema)
             assert res["type"] == "object"
             props = res["properties"]
             assert "_id" in props
             assert "email" not in props
 
-    def test_observed_field_name_for_required_field(self, openapi):
+    def test_observed_field_name_for_required_field(self, ma_plugin):
         if MARSHMALLOW_VERSION_INFO[0] < 3:
             fields_dict = {
                 "user_id": fields.Int(load_from="id", dump_to="id", required=True)
@@ -234,20 +236,20 @@ class TestMarshmallowSchemaToModelDefinition:
         else:
             fields_dict = {"user_id": fields.Int(data_key="id", required=True)}
 
-        res = openapi.fields2jsonschema(fields_dict)
+        res = ma_plugin.fields2jsonschema(fields_dict)
         assert res["required"] == ["id"]
 
     @pytest.mark.parametrize("many", (True, False))
-    def test_schema_instance_inspection(self, openapi, many):
+    def test_schema_instance_inspection(self, ma_plugin, many):
         class UserSchema(Schema):
             _id = fields.Int()
 
-        res = openapi.schema2jsonschema(UserSchema(many=many))
+        res = ma_plugin.schema2jsonschema(UserSchema(many=many))
         assert res["type"] == "object"
         props = res["properties"]
         assert "_id" in props
 
-    def test_raises_error_if_no_declared_fields(self, openapi):
+    def test_raises_error_if_no_declared_fields(self, ma_plugin):
         class NotASchema:
             pass
 
@@ -255,16 +257,16 @@ class TestMarshmallowSchemaToModelDefinition:
             NotASchema
         )
         with pytest.raises(ValueError, match=expected_error):
-            openapi.schema2jsonschema(NotASchema)
+            ma_plugin.schema2jsonschema(NotASchema)
 
 
 class TestMarshmallowSchemaToParameters:
     @pytest.mark.parametrize("ListClass", [fields.List, CustomList])
-    def test_field_multiple(self, ListClass, openapi):
+    def test_field_multiple(self, ListClass, ma_plugin):
         field = ListClass(fields.Str, location="querystring")
-        res = openapi.field2parameter(field, name="field")
+        res = ma_plugin.field2parameter(field, name="field")
         assert res["in"] == "query"
-        if openapi.openapi_version.major < 3:
+        if ma_plugin.openapi_version.major < 3:
             assert res["type"] == "array"
             assert res["items"]["type"] == "string"
             assert res["collectionFormat"] == "multi"
@@ -274,61 +276,61 @@ class TestMarshmallowSchemaToParameters:
             assert res["style"] == "form"
             assert res["explode"] is True
 
-    def test_field_required(self, openapi):
+    def test_field_required(self, ma_plugin):
         field = fields.Str(required=True, location="query")
-        res = openapi.field2parameter(field, name="field")
+        res = ma_plugin.field2parameter(field, name="field")
         assert res["required"] is True
 
-    def test_invalid_schema(self, openapi):
+    def test_invalid_schema(self, ma_plugin):
         with pytest.raises(ValueError):
-            openapi.schema2parameters(None)
+            ma_plugin.schema2parameters(None)
 
     # json/body is invalid for OpenAPI 3
-    @pytest.mark.parametrize("openapi", ("2.0",), indirect=True)
-    def test_schema_body(self, openapi):
+    @pytest.mark.parametrize("ma_plugin", ("2.0",), indirect=True)
+    def test_schema_body(self, ma_plugin):
         class UserSchema(Schema):
             name = fields.Str()
             email = fields.Email()
 
-        res = openapi.schema2parameters(UserSchema, default_in="body")
+        res = ma_plugin.schema2parameters(UserSchema, default_in="body")
         assert len(res) == 1
         param = res[0]
         assert param["in"] == "body"
         assert param["schema"] == {"$ref": "#/definitions/User"}
 
     # json/body is invalid for OpenAPI 3
-    @pytest.mark.parametrize("openapi", ("2.0",), indirect=True)
-    def test_schema_body_with_dump_only(self, openapi):
+    @pytest.mark.parametrize("ma_plugin", ("2.0",), indirect=True)
+    def test_schema_body_with_dump_only(self, ma_plugin):
         class UserSchema(Schema):
             name = fields.Str()
             email = fields.Email(dump_only=True)
 
-        res_nodump = openapi.schema2parameters(UserSchema, default_in="body")
+        res_nodump = ma_plugin.schema2parameters(UserSchema, default_in="body")
         assert len(res_nodump) == 1
         param = res_nodump[0]
         assert param["in"] == "body"
-        assert param["schema"] == build_ref(openapi.spec, "schema", "User")
+        assert param["schema"] == build_ref(ma_plugin.spec, "schema", "User")
 
     # json/body is invalid for OpenAPI 3
-    @pytest.mark.parametrize("openapi", ("2.0",), indirect=True)
-    def test_schema_body_many(self, openapi):
+    @pytest.mark.parametrize("ma_plugin", ("2.0",), indirect=True)
+    def test_schema_body_many(self, ma_plugin):
         class UserSchema(Schema):
             name = fields.Str()
             email = fields.Email()
 
-        res = openapi.schema2parameters(UserSchema(many=True), default_in="body")
+        res = ma_plugin.schema2parameters(UserSchema(many=True), default_in="body")
         assert len(res) == 1
         param = res[0]
         assert param["in"] == "body"
         assert param["schema"]["type"] == "array"
         assert param["schema"]["items"] == {"$ref": "#/definitions/User"}
 
-    def test_schema_query(self, openapi):
+    def test_schema_query(self, ma_plugin):
         class UserSchema(Schema):
             name = fields.Str()
             email = fields.Email()
 
-        res = openapi.schema2parameters(UserSchema, default_in="query")
+        res = ma_plugin.schema2parameters(UserSchema, default_in="query")
         assert len(res) == 2
         res.sort(key=lambda param: param["name"])
         assert res[0]["name"] == "email"
@@ -336,12 +338,12 @@ class TestMarshmallowSchemaToParameters:
         assert res[1]["name"] == "name"
         assert res[1]["in"] == "query"
 
-    def test_schema_query_instance(self, openapi):
+    def test_schema_query_instance(self, ma_plugin):
         class UserSchema(Schema):
             name = fields.Str()
             email = fields.Email()
 
-        res = openapi.schema2parameters(UserSchema(), default_in="query")
+        res = ma_plugin.schema2parameters(UserSchema(), default_in="query")
         assert len(res) == 2
         res.sort(key=lambda param: param["name"])
         assert res[0]["name"] == "email"
@@ -349,25 +351,25 @@ class TestMarshmallowSchemaToParameters:
         assert res[1]["name"] == "name"
         assert res[1]["in"] == "query"
 
-    def test_schema_query_instance_many_should_raise_exception(self, openapi):
+    def test_schema_query_instance_many_should_raise_exception(self, ma_plugin):
         class UserSchema(Schema):
             name = fields.Str()
             email = fields.Email()
 
         with pytest.raises(AssertionError):
-            openapi.schema2parameters(UserSchema(many=True), default_in="query")
+            ma_plugin.schema2parameters(UserSchema(many=True), default_in="query")
 
     # json/body is invalid for OpenAPI 3
-    @pytest.mark.parametrize("openapi", ("2.0",), indirect=True)
-    def test_fields_default_in_body(self, openapi):
+    @pytest.mark.parametrize("ma_plugin", ("2.0",), indirect=True)
+    def test_fields_default_in_body(self, ma_plugin):
         field_dict = {"name": fields.Str(), "email": fields.Email()}
-        res = openapi.fields2parameters(field_dict)
+        res = ma_plugin.fields2parameters(field_dict)
         assert len(res) == 1
         assert set(res[0]["schema"]["properties"].keys()) == {"name", "email"}
 
-    def test_fields_query(self, openapi):
+    def test_fields_query(self, ma_plugin):
         field_dict = {"name": fields.Str(), "email": fields.Email()}
-        res = openapi.fields2parameters(field_dict, default_in="query")
+        res = ma_plugin.fields2parameters(field_dict, default_in="query")
         assert len(res) == 2
         res.sort(key=lambda param: param["name"])
         assert res[0]["name"] == "email"
@@ -375,7 +377,7 @@ class TestMarshmallowSchemaToParameters:
         assert res[1]["name"] == "name"
         assert res[1]["in"] == "query"
 
-    def test_raises_error_if_not_a_schema(self, openapi):
+    def test_raises_error_if_not_a_schema(self, ma_plugin):
         class NotASchema:
             pass
 
@@ -383,7 +385,7 @@ class TestMarshmallowSchemaToParameters:
             NotASchema
         )
         with pytest.raises(ValueError, match=expected_error):
-            openapi.schema2jsonschema(NotASchema)
+            ma_plugin.schema2jsonschema(NotASchema)
 
 
 class CategorySchema(Schema):
@@ -404,7 +406,7 @@ class PetSchema(Schema):
 
 class TestNesting:
     def test_schema2jsonschema_with_nested_fields(self, spec_fixture):
-        res = spec_fixture.openapi.schema2jsonschema(PetSchema)
+        res = spec_fixture.ma_plugin.schema2jsonschema(PetSchema)
         props = res["properties"]
 
         assert props["category"]["items"] == build_ref(
@@ -422,7 +424,7 @@ class TestNesting:
         class Parent(Schema):
             child = fields.Nested(Child, **{modifier: ("i",)})
 
-        spec_fixture.openapi.schema2jsonschema(Parent)
+        spec_fixture.ma_plugin.schema2jsonschema(Parent)
         props = get_schemas(spec_fixture.spec)["Child"]["properties"]
         assert ("i" in props) == (modifier == "only")
         assert ("j" not in props) == (modifier == "only")
@@ -440,13 +442,13 @@ class TestNesting:
         spec_fixture.spec.components.schema("Pet", schema=PetSchema)
         props = get_schemas(spec_fixture.spec)
 
-        assert props["Category"] == spec_fixture.openapi.schema2jsonschema(
+        assert props["Category"] == spec_fixture.ma_plugin.schema2jsonschema(
             category_schema
         )
         assert set(props["Category"]["required"]) == {"id", "name"}
 
         props["Category"]["required"] = ["name"]
-        assert props["Category"] == spec_fixture.openapi.schema2jsonschema(
+        assert props["Category"] == spec_fixture.ma_plugin.schema2jsonschema(
             CategorySchema
         )
 
@@ -467,8 +469,6 @@ def test_openapi_tools_validate_v2():
     spec = APISpec(
         title="Pets", version="0.1", plugins=(ma_plugin,), openapi_version="2.0"
     )
-    openapi = ma_plugin.openapi
-
     spec.components.schema("Category", schema=CategorySchema)
     spec.components.schema("Pet", {"discriminator": "name"}, schema=PetSchema)
 
@@ -485,7 +485,7 @@ def test_openapi_tools_validate_v2():
                         "required": True,
                         "type": "string",
                     },
-                    openapi.field2parameter(
+                    ma_plugin.field2parameter(
                         field=fields.List(
                             fields.Str(),
                             validate=validate.OneOf(["freddie", "roger"]),
@@ -494,7 +494,7 @@ def test_openapi_tools_validate_v2():
                         name="body",
                     ),
                 ]
-                + openapi.schema2parameters(PageSchema, default_in="query"),
+                + ma_plugin.schema2parameters(PageSchema, default_in="query"),
                 "responses": {200: {"schema": PetSchema, "description": "A pet"}},
             },
             "post": {
@@ -507,7 +507,7 @@ def test_openapi_tools_validate_v2():
                             "type": "string",
                         }
                     ]
-                    + openapi.schema2parameters(CategorySchema, default_in="body")
+                    + ma_plugin.schema2parameters(CategorySchema, default_in="body")
                 ),
                 "responses": {201: {"schema": PetSchema, "description": "A pet"}},
             },
@@ -524,7 +524,6 @@ def test_openapi_tools_validate_v3():
     spec = APISpec(
         title="Pets", version="0.1", plugins=(ma_plugin,), openapi_version="3.0.0"
     )
-    openapi = ma_plugin.openapi
 
     spec.components.schema("Category", schema=CategorySchema)
     spec.components.schema("Pet", schema=PetSchema)
@@ -542,7 +541,7 @@ def test_openapi_tools_validate_v3():
                         "required": True,
                         "schema": {"type": "string"},
                     },
-                    openapi.field2parameter(
+                    ma_plugin.field2parameter(
                         field=fields.List(
                             fields.Str(),
                             validate=validate.OneOf(["freddie", "roger"]),
@@ -551,7 +550,7 @@ def test_openapi_tools_validate_v3():
                         name="body",
                     ),
                 ]
-                + openapi.schema2parameters(PageSchema, default_in="query"),
+                + ma_plugin.schema2parameters(PageSchema, default_in="query"),
                 "responses": {
                     200: {
                         "description": "success",
