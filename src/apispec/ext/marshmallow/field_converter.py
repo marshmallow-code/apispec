@@ -206,8 +206,9 @@ class FieldConverterMixin:
         else:
             default = field.missing
             if default is not marshmallow.missing and not callable(default):
+                if MARSHMALLOW_VERSION_INFO[0] >= 3:
+                    default = field._serialize(default, None, None)
                 ret["default"] = default
-
         return ret
 
     def field2choices(self, field, **kwargs):
