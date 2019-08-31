@@ -432,8 +432,9 @@ class FieldConverterMixin(object):
         """
         ret = {}
         if isinstance(field, marshmallow.fields.List):
-            # field.container was renamed to field.inner in marshmallow 3.0.0rc8
-            inner_field = field.inner if hasattr(field, "inner") else field.container
+            inner_field = (
+                field.inner if MARSHMALLOW_VERSION_INFO[0] >= 3 else field.container
+            )
             ret["items"] = self.field2property(inner_field)
         return ret
 
@@ -450,12 +451,7 @@ class FieldConverterMixin(object):
         ret = {}
         if isinstance(field, marshmallow.fields.Dict):
             if MARSHMALLOW_VERSION_INFO[0] >= 3:
-                # field.value_container was renamed to field.value_field in marshmallow 3.0.0rc8
-                value_field = (
-                    field.value_field
-                    if hasattr(field, "value_field")
-                    else field.value_container
-                )
+                value_field = field.value_field
                 if value_field:
                     ret["additionalProperties"] = self.field2property(value_field)
         return ret
