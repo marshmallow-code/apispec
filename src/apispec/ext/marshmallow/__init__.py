@@ -80,6 +80,8 @@ class MarshmallowPlugin(BasePlugin):
                 return schema_cls.__name__
     """
 
+    Converter = OpenAPIConverter
+
     def __init__(self, schema_name_resolver=None):
         super().__init__()
         self.schema_name_resolver = schema_name_resolver or resolver
@@ -91,7 +93,7 @@ class MarshmallowPlugin(BasePlugin):
         super().init_spec(spec)
         self.spec = spec
         self.openapi_version = spec.openapi_version
-        self.openapi = OpenAPIConverter(
+        self.openapi = self.Converter(
             openapi_version=spec.openapi_version,
             schema_name_resolver=self.schema_name_resolver,
             spec=spec,
