@@ -288,7 +288,7 @@ method. Continuing from the example above:
         return ret
 
 
-    ma_plugin.openapi.add_attribute_function(my_custom_field2properties)
+    ma_plugin.converter.add_attribute_function(my_custom_field2properties)
 
 Next Steps
 ----------
