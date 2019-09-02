@@ -46,7 +46,6 @@ Requires marshmallow>=2.15.2.
     #           'type': 'object'}}
 
 """
-from __future__ import absolute_import
 import warnings
 
 from apispec import BasePlugin

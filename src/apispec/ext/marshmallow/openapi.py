@@ -6,7 +6,6 @@ marshmallow :class:`Schemas <marshmallow.Schema>` and :class:`Fields <marshmallo
     This module is treated as private API.
     Users should not need to use this module directly.
 """
-from __future__ import absolute_import, unicode_literals
 from collections import OrderedDict
 
 import marshmallow
