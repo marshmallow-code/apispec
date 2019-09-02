@@ -3,7 +3,6 @@ from collections import OrderedDict
 from copy import deepcopy
 import warnings
 
-from apispec.compat import iterkeys, iteritems
 from .exceptions import (
     APISpecError,
     PluginMethodNotImplementedError,
@@ -44,7 +43,7 @@ class Components:
         }
         return {
             COMPONENT_SUBSECTIONS[self.openapi_version.major][k]: v
-            for k, v in iteritems(subsections)
+            for k, v in subsections.items()
             if v != {}
         }
 
@@ -335,11 +334,10 @@ class APISpec:
 
         :param dict operations: Dict mapping status codes to operations
         """
+        operation_names = set(operations)
+        valid_methods = set(VALID_METHODS[self.openapi_version.major])
         invalid = {
-            key
-            for key in set(iterkeys(operations))
-            - set(VALID_METHODS[self.openapi_version.major])
-            if not key.startswith("x-")
+            key for key in operation_names - valid_methods if not key.startswith("x-")
         }
         if invalid:
             raise APISpecError(
@@ -351,7 +349,7 @@ class APISpec:
                 operation["parameters"] = self.clean_parameters(operation["parameters"])
             if "responses" in operation:
                 responses = OrderedDict()
-                for code, response in iteritems(operation["responses"]):
+                for code, response in operation["responses"].items():
                     try:
                         code = int(code)  # handles IntEnums like http.HTTPStatus
                     except (TypeError, ValueError):

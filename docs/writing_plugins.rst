@@ -46,7 +46,6 @@ A plugin with an operation helper that adds `deprecated` flag may look like this
    # deprecated_plugin.py
 
    from apispec import BasePlugin
-   from apispec.compat import iteritems
    from apispec.yaml_utils import load_operations_from_docstring
 
 
@@ -55,7 +54,7 @@ A plugin with an operation helper that adds `deprecated` flag may look like this
            """Operation helper that add `deprecated` flag if in `kwargs`
            """
            if kwargs.pop("deprecated", False) is True:
-               for key, value in iteritems(operations):
+               for key, value in operations.items():
                    value["deprecated"] = True
 
 

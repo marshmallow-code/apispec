@@ -11,7 +11,6 @@ from collections import OrderedDict
 import marshmallow
 from marshmallow.utils import is_collection
 
-from apispec.compat import iteritems
 from apispec.utils import OpenAPIVersion, build_reference
 from apispec.exceptions import APISpecError
 from .field_converter import FieldConverterMixin
@@ -159,7 +158,7 @@ class OpenAPIConverter(FieldConverterMixin):
         """
         parameters = []
         body_param = None
-        for field_name, field_obj in iteritems(fields):
+        for field_name, field_obj in fields.items():
             if field_obj.dump_only:
                 continue
             param = self.field2parameter(
@@ -310,7 +309,7 @@ class OpenAPIConverter(FieldConverterMixin):
         """
         jsonschema = {"type": "object", "properties": OrderedDict() if ordered else {}}
 
-        for field_name, field_obj in iteritems(fields):
+        for field_name, field_obj in fields.items():
             observed_field_name = self._observed_name(field_obj, field_name)
             property = self.field2property(field_obj)
             jsonschema["properties"][observed_field_name] = property
