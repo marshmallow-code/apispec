@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Contains main apispec classes: `APISpec` and `BasePlugin`"""
 
 from .core import APISpec

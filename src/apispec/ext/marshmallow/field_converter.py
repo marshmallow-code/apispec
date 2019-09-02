@@ -81,7 +81,7 @@ _VALID_PROPERTIES = {
 _VALID_PREFIX = "x-"
 
 
-class FieldConverterMixin(object):
+class FieldConverterMixin:
     """Mixin class to convert fields to an OpenAPI property"""
 
     field_mapping = DEFAULT_FIELD_MAPPING

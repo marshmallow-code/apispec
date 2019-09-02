@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Core apispec classes and functions."""
 from collections import OrderedDict
 from copy import deepcopy
@@ -21,7 +20,7 @@ VALID_METHODS_OPENAPI_V3 = VALID_METHODS_OPENAPI_V2 + ["trace"]
 VALID_METHODS = {2: VALID_METHODS_OPENAPI_V2, 3: VALID_METHODS_OPENAPI_V3}
 
 
-class Components(object):
+class Components:
     """Stores OpenAPI components
 
     Components are top-level fields in OAS v2.
@@ -157,7 +156,7 @@ class Components(object):
         return self
 
 
-class APISpec(object):
+class APISpec:
     """Stores metadata that describes a RESTful API using the OpenAPI specification.
 
     :param str title: API title

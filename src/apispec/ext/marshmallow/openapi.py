@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Utilities for generating OpenAPI Specification (fka Swagger) entities from
 marshmallow :class:`Schemas <marshmallow.Schema>` and :class:`Fields <marshmallow.fields.Field>`.
 

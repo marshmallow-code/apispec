@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """YAML utilities"""
 
 from collections import OrderedDict
@@ -17,7 +16,7 @@ class YAMLDumper(yaml.Dumper):
 
         @staticmethod
         def _represent_unicode(_, uni):
-            return yaml.ScalarNode(tag=u"tag:yaml.org,2002:str", value=uni)
+            return yaml.ScalarNode(tag="tag:yaml.org,2002:str", value=uni)
 
 
 if PY2:

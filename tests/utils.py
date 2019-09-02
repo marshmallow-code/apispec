@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Utilities to get elements of generated spec"""
 
 from apispec.utils import build_reference
