@@ -15,6 +15,7 @@ Features:
 
 Other changes:
 
+- Drop support for Python 2 (:issue:`491`). Thanks :user:`hugovk` for the PR.
 - Drop support for marshmallow pre-releases. Only stable 2.x and 3.x versions
   are supported (:issue:`485`).
 

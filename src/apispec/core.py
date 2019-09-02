@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
 """Core apispec classes and functions."""
 from collections import OrderedDict
 from copy import deepcopy
 import warnings
 
-from apispec.compat import iterkeys, iteritems
 from .exceptions import (
     APISpecError,
     PluginMethodNotImplementedError,
@@ -21,7 +19,7 @@ VALID_METHODS_OPENAPI_V3 = VALID_METHODS_OPENAPI_V2 + ["trace"]
 VALID_METHODS = {2: VALID_METHODS_OPENAPI_V2, 3: VALID_METHODS_OPENAPI_V3}
 
 
-class Components(object):
+class Components:
     """Stores OpenAPI components
 
     Components are top-level fields in OAS v2.
@@ -45,7 +43,7 @@ class Components(object):
         }
         return {
             COMPONENT_SUBSECTIONS[self.openapi_version.major][k]: v
-            for k, v in iteritems(subsections)
+            for k, v in subsections.items()
             if v != {}
         }
 
@@ -157,7 +155,7 @@ class Components(object):
         return self
 
 
-class APISpec(object):
+class APISpec:
     """Stores metadata that describes a RESTful API using the OpenAPI specification.
 
     :param str title: API title
@@ -336,11 +334,10 @@ class APISpec(object):
 
         :param dict operations: Dict mapping status codes to operations
         """
+        operation_names = set(operations)
+        valid_methods = set(VALID_METHODS[self.openapi_version.major])
         invalid = {
-            key
-            for key in set(iterkeys(operations))
-            - set(VALID_METHODS[self.openapi_version.major])
-            if not key.startswith("x-")
+            key for key in operation_names - valid_methods if not key.startswith("x-")
         }
         if invalid:
             raise APISpecError(
@@ -352,7 +349,7 @@ class APISpec(object):
                 operation["parameters"] = self.clean_parameters(operation["parameters"])
             if "responses" in operation:
                 responses = OrderedDict()
-                for code, response in iteritems(operation["responses"]):
+                for code, response in operation["responses"].items():
                     try:
                         code = int(code)  # handles IntEnums like http.HTTPStatus
                     except (TypeError, ValueError):

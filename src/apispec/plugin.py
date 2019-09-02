@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
 """Base class for Plugin classes."""
 
 
 from .exceptions import PluginMethodNotImplementedError
 
 
-class BasePlugin(object):
+class BasePlugin:
     """Base class for APISpec plugin classes."""
 
     def init_spec(self, spec):

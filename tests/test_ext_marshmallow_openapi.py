@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import pytest
 
 from marshmallow import fields, Schema, validate
@@ -249,7 +248,7 @@ class TestMarshmallowSchemaToModelDefinition:
         assert "_id" in props
 
     def test_raises_error_if_no_declared_fields(self, openapi):
-        class NotASchema(object):
+        class NotASchema:
             pass
 
         expected_error = "{!r} doesn't have either `fields` or `_declared_fields`.".format(
@@ -377,7 +376,7 @@ class TestMarshmallowSchemaToParameters:
         assert res[1]["in"] == "query"
 
     def test_raises_error_if_not_a_schema(self, openapi):
-        class NotASchema(object):
+        class NotASchema:
             pass
 
         expected_error = "{!r} doesn't have either `fields` or `_declared_fields`".format(

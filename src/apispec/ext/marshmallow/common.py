@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Utilities to get schema instances/classes"""
 
 import copy

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Marshmallow plugin for apispec. Allows passing a marshmallow
 `Schema` to `spec.components.schema <apispec.core.Components.schema>`,
 `spec.components.parameter <apispec.core.Components.parameter>`,
@@ -47,11 +46,9 @@ Requires marshmallow>=2.15.2.
     #           'type': 'object'}}
 
 """
-from __future__ import absolute_import
 import warnings
 
 from apispec import BasePlugin
-from apispec.compat import itervalues
 from .common import resolve_schema_instance, make_schema_key, resolve_schema_cls
 from .openapi import OpenAPIConverter
 
@@ -84,14 +81,14 @@ class MarshmallowPlugin(BasePlugin):
     """
 
     def __init__(self, schema_name_resolver=None):
-        super(MarshmallowPlugin, self).__init__()
+        super().__init__()
         self.schema_name_resolver = schema_name_resolver or resolver
         self.spec = None
         self.openapi_version = None
         self.openapi = None
 
     def init_spec(self, spec):
-        super(MarshmallowPlugin, self).init_spec(spec)
+        super().init_spec(spec)
         self.spec = spec
         self.openapi_version = spec.openapi_version
         self.openapi = OpenAPIConverter(
@@ -143,7 +140,7 @@ class MarshmallowPlugin(BasePlugin):
         # OAS 3 component except header
         if self.openapi_version.major >= 3:
             if "content" in data:
-                for content in itervalues(data["content"]):
+                for content in data["content"].values():
                     if "schema" in content:
                         content["schema"] = self.openapi.resolve_schema_dict(
                             content["schema"]

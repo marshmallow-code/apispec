@@ -6,6 +6,7 @@
     This module is treated as private API.
     Users should not need to use this module directly.
 """
+import re
 import functools
 import operator
 import warnings
@@ -13,8 +14,8 @@ import warnings
 import marshmallow
 from marshmallow.orderedset import OrderedSet
 
-from apispec.compat import RegexType, iteritems
 
+RegexType = type(re.compile(""))
 
 MARSHMALLOW_VERSION_INFO = tuple(
     [int(part) for part in marshmallow.__version__.split(".") if part.isdigit()]
@@ -81,7 +82,7 @@ _VALID_PROPERTIES = {
 _VALID_PREFIX = "x-"
 
 
-class FieldConverterMixin(object):
+class FieldConverterMixin:
     """Mixin class to convert fields to an OpenAPI property"""
 
     field_mapping = DEFAULT_FIELD_MAPPING
@@ -389,7 +390,7 @@ class FieldConverterMixin(object):
         # Dasherize metadata that starts with x_
         metadata = {
             key.replace("_", "-") if key.startswith("x_") else key: value
-            for key, value in iteritems(field.metadata)
+            for key, value in field.metadata.items()
         }
 
         # Avoid validation error with "Additional properties not allowed"

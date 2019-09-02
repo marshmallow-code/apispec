@@ -26,8 +26,6 @@ jobs:
   parameters:
     toxenvs:
       - lint
-      - py27-marshmallow2
-
       - py35-marshmallow2
       - py35-marshmallow3
 

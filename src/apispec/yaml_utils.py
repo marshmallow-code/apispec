@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
 """YAML utilities"""
 
 from collections import OrderedDict
 import yaml
 
-from apispec.compat import PY2, unicode, iteritems
 from apispec.utils import trim_docstring, dedent
 
 
@@ -13,15 +11,7 @@ class YAMLDumper(yaml.Dumper):
     def _represent_dict(dumper, instance):
         return dumper.represent_mapping("tag:yaml.org,2002:map", instance.items())
 
-    if PY2:
 
-        @staticmethod
-        def _represent_unicode(_, uni):
-            return yaml.ScalarNode(tag=u"tag:yaml.org,2002:str", value=uni)
-
-
-if PY2:
-    yaml.add_representer(unicode, YAMLDumper._represent_unicode, Dumper=YAMLDumper)
 yaml.add_representer(OrderedDict, YAMLDumper._represent_dict, Dumper=YAMLDumper)
 
 
@@ -57,6 +47,6 @@ def load_operations_from_docstring(docstring):
     doc_data = load_yaml_from_docstring(docstring)
     return {
         key: val
-        for key, val in iteritems(doc_data)
+        for key, val in doc_data.items()
         if key in PATH_KEYS or key.startswith("x-")
     }

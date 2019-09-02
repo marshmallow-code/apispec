@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Various utilities for parsing OpenAPI operations from docstrings and validating against
 the OpenAPI spec.
 """
@@ -73,7 +72,7 @@ def validate_spec(spec):
         return True
 
 
-class OpenAPIVersion(version.LooseVersion, object):
+class OpenAPIVersion(version.LooseVersion):
     """OpenAPI version
 
     :param str|OpenAPIVersion openapi_version: OpenAPI version
@@ -105,7 +104,7 @@ class OpenAPIVersion(version.LooseVersion, object):
             raise exceptions.APISpecError(
                 "Not a valid OpenAPI version number: {}".format(openapi_version)
             )
-        super(OpenAPIVersion, self).__init__(openapi_version)
+        super().__init__(openapi_version)
 
     @property
     def major(self):
