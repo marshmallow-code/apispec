@@ -5,11 +5,7 @@ from setuptools import setup, find_packages
 EXTRAS_REQUIRE = {
     "yaml": ["PyYAML>=3.10"],
     "validation": ["prance[osv]>=0.11"],
-    "lint": [
-        "flake8==3.7.8",
-        'flake8-bugbear==19.8.0; python_version >= "3.5"',
-        "pre-commit~=1.18",
-    ],
+    "lint": ["flake8==3.7.8", "flake8-bugbear==19.8.0", "pre-commit~=1.18"],
     "docs": [
         "marshmallow>=2.19.2",
         "pyyaml==5.1.2",
@@ -65,14 +61,14 @@ setup(
     license="MIT",
     zip_safe=False,
     keywords="apispec swagger openapi specification oas documentation spec rest api",
+    python_requires=">=3.5",
     classifiers=[
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3 :: Only",
     ],
     test_suite="tests",
     project_urls={

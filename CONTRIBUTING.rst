@@ -11,9 +11,9 @@ Tidelift will coordinate the fix and disclosure.
 Questions, Feature Requests, Bug Reports, and Feedback. . .
 -----------------------------------------------------------
 
-. . .should all be reported on the `Github Issue Tracker`_ .
+. . .should all be reported on the `GitHub Issue Tracker`_ .
 
-.. _`Github Issue Tracker`: https://github.com/marshmallow-code/apispec/issues?state=open
+.. _`GitHub Issue Tracker`: https://github.com/marshmallow-code/apispec/issues?state=open
 
 Contributing Code
 -----------------
@@ -33,7 +33,7 @@ In Particular
 Setting Up for Local Development
 ********************************
 
-1. Fork apispec_ on Github.
+1. Fork apispec_ on GitHub.
 
 ::
 
@@ -111,7 +111,7 @@ To run syntax checks: ::
 
     $ tox -e lint
 
-(Optional) To run tests Python 2.7, 3.5, 3.6, and 3.7 virtual environments (must have each interpreter installed): ::
+(Optional) To run tests Python 3.5, 3.6, and 3.7 virtual environments (must have each interpreter installed): ::
 
     $ tox
 
