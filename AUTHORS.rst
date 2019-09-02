@@ -58,3 +58,4 @@ Contributors (chronological)
 - Andrew Johnson `@andrjohn <https://github.com/andrjohn>`_
 - Dave `@zedrdave <https://github.com/zedrdave>`_
 - Emmanuel Valette `@karec <https://github.com/karec/>`_
+- Hugo van Kemenade `@hugovk <https://github.com/hugovk>`_
