@@ -7,6 +7,30 @@
 
 Requires marshmallow>=2.15.2.
 
+``MarshmallowPlugin`` maps marshmallow ``Field`` classes with OpenAPI types and
+formats.
+
+It inspects field attributes to create corresponding OpenAPI documentation,
+allowing to automatically document properties such as read/write-only, range or
+length constraints, etc.
+
+OpenAPI properties can also be passed as metadata in the ``Field`` instance
+if they can't be inferred from the field attributes (`description`,...), or to
+override automatic documentation (`readOnly`,...). A metadata attribute is used
+in the documentation either if it is a valid OpenAPI property, or if it starts
+with `"x-"` (vendor extension).
+
+.. warning::
+
+    ``MarshmallowPlugin`` infers the `default` property from the ``missing``
+    attribute of the ``Field``. This only applies if ``missing`` is not a
+    callable. Besides, when using marshmallow 3, default values are entered in
+    deserialized form, so the value must be serialized first using the
+    ``Field`` instance. This may lead to inaccurate documentation in very
+    specific cases. The default value to display in the documentation can be
+    specified explicitly by passing ``doc_default`` as metadata (``default`` is
+    a valid OpenAPI property, but it is a reserved marshmallow attribute).
+
 ::
 
     from pprint import pprint
