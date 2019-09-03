@@ -13,6 +13,12 @@ Features:
   ``Schema`` class. This allows a custom resolver to generate different names
   depending on schema modifiers used in a ``Schema`` instance. (:pr:`476`)
 
+Bug fixes:
+
+- MarshmallowPlugin: With marshmallow 3, the default value of a field in the
+  documentation is the dump of the ``missing`` attribute, not ``missing``
+  itself (:pr:`490`).
+
 Other changes:
 
 - Drop support for Python 2 (:issue:`491`). Thanks :user:`hugovk` for the PR.
