@@ -39,7 +39,7 @@ __location_map__ = {
 
 
 class OpenAPIConverter(FieldConverterMixin):
-    """Converter generating OpenAPI specification from Marshmallow schemas and fields
+    """Adds methods for generating OpenAPI specification from marshmallow schemas and fields.
 
     :param str|OpenAPIVersion openapi_version: The OpenAPI version to use.
         Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
@@ -75,7 +75,7 @@ class OpenAPIConverter(FieldConverterMixin):
         return field.data_key or name
 
     def resolve_nested_schema(self, schema):
-        """Return the Open API representation of a marshmallow Schema.
+        """Return the OpenAPI representation of a marshmallow Schema.
 
         Adds the schema to the spec if it isn't already present.
 
@@ -256,28 +256,6 @@ class OpenAPIConverter(FieldConverterMixin):
         provide the ``title`` and ``description`` class Meta options.
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schemaObject
-
-        Example: ::
-
-            class UserSchema(Schema):
-                _id = fields.Int()
-                email = fields.Email(description='email address of the user')
-                name = fields.Str()
-
-                class Meta:
-                    title = 'User'
-                    description = 'A registered user'
-
-            oaic = OpenAPIConverter(openapi_version='3.0.2', schema_name_resolver=resolver, spec=spec)
-            pprint(oaic.schema2jsonschema(UserSchema))
-            # {'description': 'A registered user',
-            #  'properties': {'_id': {'format': 'int32', 'type': 'integer'},
-            #                 'email': {'description': 'email address of the user',
-            #                           'format': 'email',
-            #                           'type': 'string'},
-            #                 'name': {'type': 'string'}},
-            #  'title': 'User',
-            #  'type': 'object'}
 
         :param Schema schema: A marshmallow Schema instance
         :rtype: dict, a JSON Schema Object

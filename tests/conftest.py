@@ -15,7 +15,7 @@ def make_spec(openapi_version):
         plugins=(ma_plugin,),
     )
     return namedtuple("Spec", ("spec", "marshmallow_plugin", "openapi"))(
-        spec, ma_plugin, ma_plugin.openapi
+        spec, ma_plugin, ma_plugin.converter
     )
 
 

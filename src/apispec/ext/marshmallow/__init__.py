@@ -54,8 +54,7 @@ from .openapi import OpenAPIConverter
 
 
 def resolver(schema):
-    """Default implementation of a schema name resolver function
-    """
+    """Default schema name resolver function that strips 'Schema' from the end of the class name."""
     schema_cls = resolve_schema_cls(schema)
     name = schema_cls.__name__
     if name.endswith("Schema"):
@@ -64,7 +63,7 @@ def resolver(schema):
 
 
 class MarshmallowPlugin(BasePlugin):
-    """APISpec plugin handling marshmallow schemas
+    """APISpec plugin for translating marshmallow schemas to OpenAPI/JSONSchema format.
 
     :param callable schema_name_resolver: Callable to generate the schema definition name.
         Receives the `Schema` class and returns the name to be used in refs within
@@ -80,18 +79,20 @@ class MarshmallowPlugin(BasePlugin):
                 return schema_cls.__name__
     """
 
+    Converter = OpenAPIConverter
+
     def __init__(self, schema_name_resolver=None):
         super().__init__()
         self.schema_name_resolver = schema_name_resolver or resolver
         self.spec = None
         self.openapi_version = None
-        self.openapi = None
+        self.converter = None
 
     def init_spec(self, spec):
         super().init_spec(spec)
         self.spec = spec
         self.openapi_version = spec.openapi_version
-        self.openapi = OpenAPIConverter(
+        self.converter = self.Converter(
             openapi_version=spec.openapi_version,
             schema_name_resolver=self.schema_name_resolver,
             spec=spec,
@@ -106,7 +107,7 @@ class MarshmallowPlugin(BasePlugin):
                 and "in" in parameter
             ):
                 schema_instance = resolve_schema_instance(parameter.pop("schema"))
-                resolved += self.openapi.schema2parameters(
+                resolved += self.converter.schema2parameters(
                     schema_instance, default_in=parameter.pop("in"), **parameter
                 )
             else:
@@ -121,7 +122,7 @@ class MarshmallowPlugin(BasePlugin):
         content = request_body["content"]
         for content_type in content:
             schema = content[content_type]["schema"]
-            content[content_type]["schema"] = self.openapi.resolve_schema_dict(schema)
+            content[content_type]["schema"] = self.converter.resolve_schema_dict(schema)
 
     def resolve_schema(self, data):
         """Function to resolve a schema in a parameter or response - modifies the
@@ -136,13 +137,13 @@ class MarshmallowPlugin(BasePlugin):
 
         # OAS 2 component or OAS 3 header
         if "schema" in data:
-            data["schema"] = self.openapi.resolve_schema_dict(data["schema"])
+            data["schema"] = self.converter.resolve_schema_dict(data["schema"])
         # OAS 3 component except header
         if self.openapi_version.major >= 3:
             if "content" in data:
                 for content in data["content"].values():
                     if "schema" in content:
-                        content["schema"] = self.openapi.resolve_schema_dict(
+                        content["schema"] = self.converter.resolve_schema_dict(
                             content["schema"]
                         )
 
@@ -164,7 +165,7 @@ class MarshmallowPlugin(BasePlugin):
             class MyCustomFieldThatsKindaLikeAnInteger(Integer):
                 # ...
         """
-        return self.openapi.map_to_openapi_type(*args)
+        return self.converter.map_to_openapi_type(*args)
 
     def schema_helper(self, name, _, schema=None, **kwargs):
         """Definition helper that allows using a marshmallow
@@ -180,9 +181,9 @@ class MarshmallowPlugin(BasePlugin):
 
         schema_key = make_schema_key(schema_instance)
         self.warn_if_schema_already_in_spec(schema_key)
-        self.openapi.refs[schema_key] = name
+        self.converter.refs[schema_key] = name
 
-        json_schema = self.openapi.schema2jsonschema(schema_instance)
+        json_schema = self.converter.schema2jsonschema(schema_instance)
 
         return json_schema
 
@@ -231,7 +232,7 @@ class MarshmallowPlugin(BasePlugin):
         """Method to warn the user if the schema has already been added to the
         spec.
         """
-        if schema_key in self.openapi.refs:
+        if schema_key in self.converter.refs:
             warnings.warn(
                 "{} has already been added to the spec. Adding it twice may "
                 "cause references to not resolve properly.".format(schema_key[0]),

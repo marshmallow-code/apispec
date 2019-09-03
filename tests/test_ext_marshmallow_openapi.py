@@ -467,7 +467,7 @@ def test_openapi_tools_validate_v2():
     spec = APISpec(
         title="Pets", version="0.1", plugins=(ma_plugin,), openapi_version="2.0"
     )
-    openapi = ma_plugin.openapi
+    openapi = ma_plugin.converter
 
     spec.components.schema("Category", schema=CategorySchema)
     spec.components.schema("Pet", {"discriminator": "name"}, schema=PetSchema)
@@ -524,7 +524,7 @@ def test_openapi_tools_validate_v3():
     spec = APISpec(
         title="Pets", version="0.1", plugins=(ma_plugin,), openapi_version="3.0.0"
     )
-    openapi = ma_plugin.openapi
+    openapi = ma_plugin.converter
 
     spec.components.schema("Category", schema=CategorySchema)
     spec.components.schema("Pet", schema=PetSchema)

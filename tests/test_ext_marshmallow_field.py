@@ -284,6 +284,6 @@ def test_custom_properties_for_custom_fields():
     APISpec(
         title="Validation", version="0.1", openapi_version="3.0.0", plugins=(ma_plugin,)
     )
-    ma_plugin.openapi.add_attribute_function(custom_string2properties)
-    properties = ma_plugin.openapi.field2property(CustomStringField())
+    ma_plugin.converter.add_attribute_function(custom_string2properties)
+    properties = ma_plugin.converter.field2property(CustomStringField())
     assert properties["x-customString"]
