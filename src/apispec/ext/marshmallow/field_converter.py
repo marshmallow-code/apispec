@@ -37,9 +37,8 @@ DEFAULT_FIELD_MAPPING = {
     marshmallow.fields.Email: ("string", "email"),
     marshmallow.fields.URL: ("string", "url"),
     marshmallow.fields.Dict: ("object", None),
-    # Assume base Field and Raw are strings
-    marshmallow.fields.Field: ("string", None),
-    marshmallow.fields.Raw: ("string", None),
+    marshmallow.fields.Field: (None, None),
+    marshmallow.fields.Raw: (None, None),
     marshmallow.fields.List: ("array", None),
 }
 
@@ -183,8 +182,9 @@ class FieldConverterMixin:
             )
             type_, fmt = "string", None
 
-        ret = {"type": type_}
-
+        ret = {}
+        if type_:
+            ret["type"] = type_
         if fmt:
             ret["format"] = fmt
 
@@ -413,7 +413,6 @@ class FieldConverterMixin:
         :rtype: dict
         """
         if isinstance(field, marshmallow.fields.Nested):
-            del ret["type"]
             schema_dict = self.resolve_nested_schema(field.schema)
             if ret and "$ref" in schema_dict:
                 ret.update({"allOf": [schema_dict]})

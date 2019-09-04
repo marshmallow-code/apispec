@@ -34,9 +34,6 @@ def test_field2choices_preserving_order(openapi):
         (fields.Time, "string"),
         (fields.Email, "string"),
         (fields.URL, "string"),
-        # Assume base Field and Raw are strings
-        (fields.Field, "string"),
-        (fields.Raw, "string"),
         # Custom fields inherit types from their parents
         (CustomStringField, "string"),
         (CustomIntegerField, "integer"),
@@ -46,6 +43,13 @@ def test_field2property_type(FieldClass, jsontype, spec_fixture):
     field = FieldClass()
     res = spec_fixture.openapi.field2property(field)
     assert res["type"] == jsontype
+
+
+@pytest.mark.parametrize("FieldClass", [fields.Field, fields.Raw])
+def test_field2property_no_type_(FieldClass, spec_fixture):
+    field = FieldClass()
+    res = spec_fixture.openapi.field2property(field)
+    assert "type" not in res
 
 
 @pytest.mark.parametrize("ListClass", [fields.List, CustomList])
