@@ -6,6 +6,9 @@ Changelog
 
 Features:
 
+- *Backwards-incompatible* Marshmallow ``fields.Raw`` and ``fields.Field`` are
+  now represented by OpenAPI `Any Type <https://swagger.io/docs/specification/data-models/data-types/#any>`_.
+  (:pr:`495`)
 - Add support for generating user defined OpenAPI properties for custom field
   classes via an ``add_attribute_function`` method. (:pr:`478`)
 - *Backwards-incompatible*: The ``schema_name_resolver`` function now receives
