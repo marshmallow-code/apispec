@@ -73,6 +73,7 @@ import warnings
 from apispec import BasePlugin
 from .common import resolve_schema_instance, make_schema_key, resolve_schema_cls
 from .openapi import OpenAPIConverter
+from .schema_resolver import SchemaResolver
 
 
 def resolver(schema):
@@ -102,6 +103,7 @@ class MarshmallowPlugin(BasePlugin):
     """
 
     Converter = OpenAPIConverter
+    Resolver = SchemaResolver
 
     def __init__(self, schema_name_resolver=None):
         super().__init__()
@@ -109,6 +111,7 @@ class MarshmallowPlugin(BasePlugin):
         self.spec = None
         self.openapi_version = None
         self.converter = None
+        self.resolver = None
 
     def init_spec(self, spec):
         super().init_spec(spec)
@@ -119,55 +122,9 @@ class MarshmallowPlugin(BasePlugin):
             schema_name_resolver=self.schema_name_resolver,
             spec=spec,
         )
-
-    def resolve_parameters(self, parameters):
-        resolved = []
-        for parameter in parameters:
-            if (
-                isinstance(parameter, dict)
-                and not isinstance(parameter.get("schema", {}), dict)
-                and "in" in parameter
-            ):
-                schema_instance = resolve_schema_instance(parameter.pop("schema"))
-                resolved += self.converter.schema2parameters(
-                    schema_instance, default_in=parameter.pop("in"), **parameter
-                )
-            else:
-                self.resolve_schema(parameter)
-                resolved.append(parameter)
-        return resolved
-
-    def resolve_schema_in_request_body(self, request_body):
-        """Function to resolve a schema in a requestBody object - modifies then
-        response dict to convert Marshmallow Schema object or class into dict
-        """
-        content = request_body["content"]
-        for content_type in content:
-            schema = content[content_type]["schema"]
-            content[content_type]["schema"] = self.converter.resolve_schema_dict(schema)
-
-    def resolve_schema(self, data):
-        """Function to resolve a schema in a parameter or response - modifies the
-        corresponding dict to convert Marshmallow Schema object or class into dict
-
-        :param APISpec spec: `APISpec` containing refs.
-        :param dict|str data: either a parameter or response dictionary that may
-            contain a schema, or a reference provided as string
-        """
-        if not isinstance(data, dict):
-            return
-
-        # OAS 2 component or OAS 3 header
-        if "schema" in data:
-            data["schema"] = self.converter.resolve_schema_dict(data["schema"])
-        # OAS 3 component except header
-        if self.openapi_version.major >= 3:
-            if "content" in data:
-                for content in data["content"].values():
-                    if "schema" in content:
-                        content["schema"] = self.converter.resolve_schema_dict(
-                            content["schema"]
-                        )
+        self.resolver = self.Resolver(
+            openapi_version=spec.openapi_version, converter=self.converter
+        )
 
     def map_to_openapi_type(self, *args):
         """Decorator to set mapping for custom fields.
@@ -217,7 +174,7 @@ class MarshmallowPlugin(BasePlugin):
             Schema class or instance.
         """
         # In OpenAPIv3, this only works when using the complex form using "content"
-        self.resolve_schema(parameter)
+        self.resolver.resolve_schema(parameter)
         return parameter
 
     def response_helper(self, response, **kwargs):
@@ -227,10 +184,7 @@ class MarshmallowPlugin(BasePlugin):
         :param dict parameter: response fields. May contain a marshmallow
             Schema class or instance.
         """
-        self.resolve_schema(response)
-        if "headers" in response:
-            for header in response["headers"].values():
-                self.resolve_schema(header)
+        self.resolver.resolve_response(response)
         return response
 
     def operation_helper(self, operations, **kwargs):
@@ -238,17 +192,14 @@ class MarshmallowPlugin(BasePlugin):
             if not isinstance(operation, dict):
                 continue
             if "parameters" in operation:
-                operation["parameters"] = self.resolve_parameters(
+                operation["parameters"] = self.resolver.resolve_parameters(
                     operation["parameters"]
                 )
             if self.openapi_version.major >= 3:
                 if "requestBody" in operation:
-                    self.resolve_schema_in_request_body(operation["requestBody"])
+                    self.resolver.resolve_schema(operation["requestBody"])
             for response in operation.get("responses", {}).values():
-                self.resolve_schema(response)
-                if "headers" in response:
-                    for header in response["headers"].values():
-                        self.resolve_schema(header)
+                self.resolver.resolve_response(response)
 
     def warn_if_schema_already_in_spec(self, schema_key):
         """Method to warn the user if the schema has already been added to the

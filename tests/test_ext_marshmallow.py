@@ -477,7 +477,9 @@ class TestOperationHelper:
             name = parameter["name"]
             assert description == PetSchema.description[name]
         post = p["post"]
-        post_schema = spec_fixture.openapi.resolve_schema_dict(PetSchema)
+        post_schema = spec_fixture.marshmallow_plugin.resolver.resolve_schema_dict(
+            PetSchema
+        )
         assert (
             post["requestBody"]["content"]["application/json"]["schema"] == post_schema
         )
