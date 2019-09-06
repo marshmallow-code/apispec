@@ -6,21 +6,20 @@ Changelog
 
 Features:
 
-- *Backwards-incompatible* Marshmallow ``fields.Raw`` and ``fields.Field`` are
-  now represented by OpenAPI `Any Type <https://swagger.io/docs/specification/data-models/data-types/#any>`_.
-  (:pr:`495`)
-- Add support for generating user defined OpenAPI properties for custom field
-  classes via an ``add_attribute_function`` method. (:pr:`478`)
-- *Backwards-incompatible*: The ``schema_name_resolver`` function now receives
+- Add support for generating user-defined OpenAPI properties for custom field
+  classes via an ``add_attribute_function`` method (:pr:`478`).
+- [apispec.ext.marshmallow]: *Backwards-incompatible* ``fields.Raw`` and ``fields.Field`` are
+  now represented by OpenAPI `Any Type <https://swagger.io/docs/specification/data-models/data-types/#any>`_
+  (:pr:`495`).
+- [apispec.ext.marshmallow]: *Backwards-incompatible*: The ``schema_name_resolver`` function now receives
   a ``Schema`` class, a ``Schema`` instance or a string that resolves to a
   ``Schema`` class. This allows a custom resolver to generate different names
-  depending on schema modifiers used in a ``Schema`` instance. (:pr:`476`)
+  depending on schema modifiers used in a ``Schema`` instance (:pr:`476`).
 
 Bug fixes:
 
-- MarshmallowPlugin: With marshmallow 3, the default value of a field in the
-  documentation is the dump of the ``missing`` attribute, not ``missing``
-  itself (:pr:`490`).
+- [apispec.ext.marshmallow]: With marshmallow 3, the default value of a field in the
+  documentation is the serialized value of the ``missing`` attribute, not ``missing`` itself (:pr:`490`).
 
 Other changes:
 
