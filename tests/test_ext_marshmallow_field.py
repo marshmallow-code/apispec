@@ -276,17 +276,24 @@ def test_nested_field_with_property(spec_fixture):
     }
 
 
-def test_custom_properties_for_custom_fields():
-    def custom_string2properties(field, **kwargs):
+@pytest.mark.parametrize("openapi_version", ("2.0", "3.0.0"))
+def test_custom_properties_for_custom_fields(openapi_version):
+    def custom_string2properties(self, field, **kwargs):
         ret = {}
         if isinstance(field, CustomStringField):
-            ret["x-customString"] = True
+            if self.openapi_version.major == 2:
+                ret["x-customString"] = True
+            else:
+                ret["x-customString"] = False
         return ret
 
     ma_plugin = MarshmallowPlugin()
     APISpec(
-        title="Validation", version="0.1", openapi_version="3.0.0", plugins=(ma_plugin,)
+        title="Validation",
+        version="0.1",
+        openapi_version=openapi_version,
+        plugins=(ma_plugin,),
     )
     ma_plugin.converter.add_attribute_function(custom_string2properties)
     properties = ma_plugin.converter.field2property(CustomStringField())
-    assert properties["x-customString"]
+    assert properties["x-customString"] == (openapi_version == "2.0")

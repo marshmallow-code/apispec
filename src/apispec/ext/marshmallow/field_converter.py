@@ -129,10 +129,14 @@ class FieldConverterMixin:
         that will be called on a field to convert it from a field to an OpenAPI
         property.
 
-        :param func func: the attribute function to add - will be called for each
-            field in a schema with a `field <marshmallow.fields.Field>` instance
-            positional argument and `self <apispec.ext.marshmallow.openapi.OpenAPIConverter>`
-            and `ret <dict>` keyword arguments.
+        :param func func: the attribute function to add
+            The attribute function will be bound to the
+            `OpenAPIConverter <apispec.ext.marshmallow.openapi.OpenAPIConverter>`
+            instance.
+            It will be called for each field in a schema with
+            `self <apispec.ext.marshmallow.openapi.OpenAPIConverter>` and a
+            `field <marshmallow.fields.Field>` instance
+            positional arguments and `ret <dict>` keyword argument.
             Must return a dictionary of OpenAPI properties that will be shallow
             merged with the return values of all other attribute functions called on the field.
             User added attribute functions will be called after all built-in attribute
@@ -140,7 +144,9 @@ class FieldConverterMixin:
             previously called attribute functions are accessable via the `ret`
             argument.
         """
-        self.attribute_functions.append(functools.partial(func, self=self))
+        bound_func = func.__get__(self)
+        setattr(self, func.__name__, bound_func)
+        self.attribute_functions.append(bound_func)
 
     def field2property(self, field):
         """Return the JSON Schema property definition given a marshmallow
