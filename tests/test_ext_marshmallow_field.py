@@ -4,8 +4,6 @@ import re
 import pytest
 from marshmallow import fields, validate
 
-from apispec import APISpec
-from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec.ext.marshmallow.openapi import MARSHMALLOW_VERSION_INFO
 
 from .schemas import CategorySchema, CustomList, CustomStringField, CustomIntegerField
@@ -276,8 +274,7 @@ def test_nested_field_with_property(spec_fixture):
     }
 
 
-@pytest.mark.parametrize("openapi_version", ("2.0", "3.0.0"))
-def test_custom_properties_for_custom_fields(openapi_version):
+def test_custom_properties_for_custom_fields(spec_fixture):
     def custom_string2properties(self, field, **kwargs):
         ret = {}
         if isinstance(field, CustomStringField):
@@ -287,13 +284,12 @@ def test_custom_properties_for_custom_fields(openapi_version):
                 ret["x-customString"] = False
         return ret
 
-    ma_plugin = MarshmallowPlugin()
-    APISpec(
-        title="Validation",
-        version="0.1",
-        openapi_version=openapi_version,
-        plugins=(ma_plugin,),
+    spec_fixture.marshmallow_plugin.converter.add_attribute_function(
+        custom_string2properties
     )
-    ma_plugin.converter.add_attribute_function(custom_string2properties)
-    properties = ma_plugin.converter.field2property(CustomStringField())
-    assert properties["x-customString"] == (openapi_version == "2.0")
+    properties = spec_fixture.marshmallow_plugin.converter.field2property(
+        CustomStringField()
+    )
+    assert properties["x-customString"] == (
+        spec_fixture.openapi.openapi_version == "2.0"
+    )
