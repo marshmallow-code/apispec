@@ -157,7 +157,7 @@ class FieldConverterMixin:
         ret = {}
 
         for attr_func in self.attribute_functions:
-            ret.update(attr_func(field, ret=ret))
+            ret.update(attr_func(field=field, ret=ret))
 
         return ret
 
