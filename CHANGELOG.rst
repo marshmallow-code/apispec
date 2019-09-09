@@ -7,7 +7,7 @@ Changelog
 Features:
 
 - Add support for generating user-defined OpenAPI properties for custom field
-  classes via an ``add_attribute_function`` method (:pr:`478`).
+  classes via an ``add_attribute_function`` method (:pr:`478` and :pr:`498`).
 - [apispec.ext.marshmallow]: *Backwards-incompatible* ``fields.Raw`` and ``fields.Field`` are
   now represented by OpenAPI `Any Type <https://swagger.io/docs/specification/data-models/data-types/#any>`_
   (:pr:`495`).
