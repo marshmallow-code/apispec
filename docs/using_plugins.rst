@@ -279,16 +279,20 @@ method. Continuing from the example above:
 
 .. code-block:: python
 
-    def my_custom_field2properties(field, **kwargs):
+    def my_custom_field2properties(self, field, **kwargs):
         """Add an OpenAPI extension flag to MyCustomField instances
         """
         ret = {}
         if isinstance(field, MyCustomField):
-            ret["x-customField"] = True
+            if self.openapi_version.major > 2:
+                ret["x-customString"] = True
         return ret
 
 
     ma_plugin.converter.add_attribute_function(my_custom_field2properties)
+
+The function passed to `add_attribute_function` will be bound to the converter.
+It must accept the converter instance as first positional argument.
 
 Next Steps
 ----------
