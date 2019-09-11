@@ -262,7 +262,7 @@ class TestMarshmallowSchemaToParameters:
     @pytest.mark.parametrize("ListClass", [fields.List, CustomList])
     def test_field_multiple(self, ListClass, openapi):
         field = ListClass(fields.Str, location="querystring")
-        res = openapi.field2parameter(field, name="field")
+        res = openapi.field2parameter(field, name="field", default_in=None)
         assert res["in"] == "query"
         if openapi.openapi_version.major < 3:
             assert res["type"] == "array"
@@ -276,7 +276,7 @@ class TestMarshmallowSchemaToParameters:
 
     def test_field_required(self, openapi):
         field = fields.Str(required=True, location="query")
-        res = openapi.field2parameter(field, name="field")
+        res = openapi.field2parameter(field, name="field", default_in=None)
         assert res["required"] is True
 
     def test_invalid_schema(self, openapi):
@@ -356,14 +356,6 @@ class TestMarshmallowSchemaToParameters:
 
         with pytest.raises(AssertionError):
             openapi.schema2parameters(UserSchema(many=True), default_in="query")
-
-    # json/body is invalid for OpenAPI 3
-    @pytest.mark.parametrize("openapi", ("2.0",), indirect=True)
-    def test_fields_default_in_body(self, openapi):
-        field_dict = {"name": fields.Str(), "email": fields.Email()}
-        res = openapi.fields2parameters(field_dict)
-        assert len(res) == 1
-        assert set(res[0]["schema"]["properties"].keys()) == {"name", "email"}
 
     def test_fields_query(self, openapi):
         field_dict = {"name": fields.Str(), "email": fields.Email()}
@@ -491,6 +483,7 @@ def test_openapi_tools_validate_v2():
                             validate=validate.OneOf(["freddie", "roger"]),
                             location="querystring",
                         ),
+                        default_in=None,
                         name="body",
                     ),
                 ]
@@ -548,6 +541,7 @@ def test_openapi_tools_validate_v3():
                             validate=validate.OneOf(["freddie", "roger"]),
                             location="querystring",
                         ),
+                        default_in=None,
                         name="body",
                     ),
                 ]
