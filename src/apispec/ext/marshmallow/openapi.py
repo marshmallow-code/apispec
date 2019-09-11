@@ -142,7 +142,7 @@ class OpenAPIConverter(FieldConverterMixin):
 
         return self.fields2parameters(fields, default_in=default_in)
 
-    def fields2parameters(self, fields, default_in):
+    def fields2parameters(self, fields, *, default_in):
         """Return an array of OpenAPI parameters given a mapping between field names and
         :class:`Field <marshmallow.Field>` objects. If `default_in` is "body", then return an array
         of a single parameter; else return an array of a parameter for each included field in
@@ -183,7 +183,7 @@ class OpenAPIConverter(FieldConverterMixin):
                 parameters.append(param)
         return parameters
 
-    def field2parameter(self, field, name, default_in):
+    def field2parameter(self, field, *, name, default_in):
         """Return an OpenAPI parameter as a `dict`, given a marshmallow
         :class:`Field <marshmallow.Field>`.
 
@@ -200,7 +200,9 @@ class OpenAPIConverter(FieldConverterMixin):
             default_in=default_in,
         )
 
-    def property2parameter(self, prop, name, required, multiple, location, default_in):
+    def property2parameter(
+        self, prop, *, name, required, multiple, location, default_in
+    ):
         """Return the Parameter Object definition for a JSON Schema property.
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
