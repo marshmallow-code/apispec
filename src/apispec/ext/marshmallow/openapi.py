@@ -183,7 +183,7 @@ class OpenAPIConverter(FieldConverterMixin):
                 parameters.append(param)
         return parameters
 
-    def field2parameter(self, field, name="body", default_in="body"):
+    def field2parameter(self, field, name, default_in="body"):
         """Return an OpenAPI parameter as a `dict`, given a marshmallow
         :class:`Field <marshmallow.Field>`.
 
@@ -203,7 +203,7 @@ class OpenAPIConverter(FieldConverterMixin):
     def property2parameter(
         self,
         prop,
-        name="body",
+        name,
         required=False,
         multiple=False,
         location=None,
@@ -229,11 +229,8 @@ class OpenAPIConverter(FieldConverterMixin):
         if openapi_location == "body":
             ret["required"] = False
             ret["name"] = "body"
-            ret["schema"] = {
-                "type": "object",
-                "properties": {name: prop} if name else {},
-            }
-            if name and required:
+            ret["schema"] = {"type": "object", "properties": {name: prop}}
+            if required:
                 ret["schema"]["required"] = [name]
         else:
             ret["required"] = required
