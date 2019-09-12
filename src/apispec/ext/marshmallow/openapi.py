@@ -265,7 +265,7 @@ class OpenAPIConverter(FieldConverterMixin):
 
         return jsonschema
 
-    def fields2jsonschema(self, fields, ordered=False, partial=None):
+    def fields2jsonschema(self, fields, *, ordered=False, partial=None):
         """Return the JSON Schema Object given a mapping between field names and
         :class:`Field <marshmallow.Field>` objects.
 
