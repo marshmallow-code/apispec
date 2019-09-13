@@ -7,6 +7,12 @@ apispec.ext.marshmallow
 .. automodule:: apispec.ext.marshmallow
     :members:
 
+apispec.ext.marshmallow.schema_resolver
++++++++++++++++++++++++++++++++++++++++
+
+.. automodule:: apispec.ext.marshmallow.schema_resolver
+    :members:
+
 apispec.ext.marshmallow.openapi
 +++++++++++++++++++++++++++++++
 

@@ -126,7 +126,7 @@ class OpenAPIConverter(FieldConverterMixin):
         """
         openapi_default_in = __location_map__.get(default_in, default_in)
         if self.openapi_version.major < 3 and openapi_default_in == "body":
-            prop = self.resolve_schema_dict(schema)
+            prop = self.resolve_nested_schema(schema)
 
             param = {
                 "in": openapi_default_in,
@@ -311,16 +311,3 @@ class OpenAPIConverter(FieldConverterMixin):
         if getattr(schema, "many", False):
             return {"type": "array", "items": ref_schema}
         return ref_schema
-
-    def resolve_schema_dict(self, schema):
-        if isinstance(schema, dict):
-            if schema.get("type") == "array" and "items" in schema:
-                schema["items"] = self.resolve_schema_dict(schema["items"])
-            if schema.get("type") == "object" and "properties" in schema:
-                schema["properties"] = {
-                    k: self.resolve_schema_dict(v)
-                    for k, v in schema["properties"].items()
-                }
-            return schema
-
-        return self.resolve_nested_schema(schema)
