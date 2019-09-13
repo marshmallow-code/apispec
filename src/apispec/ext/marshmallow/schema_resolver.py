@@ -2,13 +2,13 @@ from .common import resolve_schema_instance
 
 
 class SchemaResolver:
-    """Resolve Marshmallow Schemas in OpenAPI components and translate to OpenAPI
+    """Resolve marshmallow Schemas in OpenAPI components and translate to OpenAPI
     `schema objects
-    <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#schema-object>`_,
+    <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schema-object>`_,
     `parameter objects
-    <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#parameter-object>`_
+    <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameter-object>`_
     or `reference objects
-    <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#reference-object>`_.
+    <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#reference-object>`_.
     """
 
     def __init__(self, openapi_version, converter):
@@ -16,14 +16,14 @@ class SchemaResolver:
         self.converter = converter
 
     def resolve_parameters(self, parameters):
-        """Resolve Marshmallow Schemas in a list of OpenAPI `Parameter Objects
-        <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#parameter-object>`_.
+        """Resolve marshmallow Schemas in a list of OpenAPI `Parameter Objects
+        <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameter-object>`_.
         Each parameter object that contains a Schema will be translated into
         one or more Parameter Objects.
 
-        If the value of a `schema` key is Marshmallow Schema class, instance or
+        If the value of a `schema` key is marshmallow Schema class, instance or
         a string that resolves to a Schema Class each field in the Schema will
-        be expanded as a seperate Parameter Object.
+        be expanded as a separate Parameter Object.
 
         Example: ::
 
@@ -84,8 +84,8 @@ class SchemaResolver:
         return resolved
 
     def resolve_response(self, response):
-        """Resolve Marshmallow Schemas in OpenAPI `Response Objects
-        <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#responseObject>`_.
+        """Resolve marshmallow Schemas in OpenAPI `Response Objects
+        <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#responseObject>`_.
         Schemas may appear in either a Media Type Object or a Header Object.
 
         Example: ::
@@ -116,8 +116,8 @@ class SchemaResolver:
                 self.resolve_schema(header)
 
     def resolve_schema(self, data):
-        """Resolve Marshmallow Schemas in an OpenAPI component or header -
-        modifies the input dictionary to translate Marshmallow Schemas to OpenAPI
+        """Resolve marshmallow Schemas in an OpenAPI component or header -
+        modifies the input dictionary to translate marshmallow Schemas to OpenAPI
         Schema Objects or Reference Objects.
 
         OpenAPIv3 Components: ::
@@ -161,11 +161,11 @@ class SchemaResolver:
                         content["schema"] = self.resolve_schema_dict(content["schema"])
 
     def resolve_schema_dict(self, schema):
-        """Resolve a Marshmallow Schema class, object, or a string that resolves
+        """Resolve a marshmallow Schema class, object, or a string that resolves
         to a Schema class or an OpenAPI Schema Object containing one of the above
         to an OpenAPI Schema Object or Reference Object.
 
-        If the input is a Marshmallow Schema class, object or a string that resolves
+        If the input is a marshmallow Schema class, object or a string that resolves
         to a Schema class the Schema will be translated to an OpenAPI Schema Object
         or Reference Object.
 
@@ -178,8 +178,8 @@ class SchemaResolver:
             {"$ref": "#/components/schemas/Pet"}
 
         If the input is a dictionary representation of an OpenAPI Schema Object
-        recursively search for a Marshmallow Schemas to resolve. For `"type": "array"`,
-        Marshmallow Schemas may appear as the value of the `items` key. For
+        recursively search for a marshmallow Schemas to resolve. For `"type": "array"`,
+        marshmallow Schemas may appear as the value of the `items` key. For
         `"type": "object"` Marshmalow Schemas may appear as values in the `properties`
         dictionary.
 
