@@ -109,7 +109,13 @@ class OpenAPIConverter(FieldConverterMixin):
         return self.get_ref_dict(schema_instance)
 
     def schema2parameters(
-        self, schema, default_in="body", name="body", required=False, description=None
+        self,
+        schema,
+        *,
+        default_in="body",
+        name="body",
+        required=False,
+        description=None
     ):
         """Return an array of OpenAPI parameters given a given marshmallow
         :class:`Schema <marshmallow.Schema>`. If `default_in` is "body", then return an array
@@ -265,7 +271,7 @@ class OpenAPIConverter(FieldConverterMixin):
 
         return jsonschema
 
-    def fields2jsonschema(self, fields, ordered=False, partial=None):
+    def fields2jsonschema(self, fields, *, ordered=False, partial=None):
         """Return the JSON Schema Object given a mapping between field names and
         :class:`Field <marshmallow.Field>` objects.
 

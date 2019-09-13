@@ -48,7 +48,7 @@ def resolve_schema_cls(schema):
         )
 
 
-def get_fields(schema, exclude_dump_only=False):
+def get_fields(schema, *, exclude_dump_only=False):
     """Return fields from schema.
 
     :param Schema schema: A marshmallow Schema instance or a class object
@@ -65,7 +65,7 @@ def get_fields(schema, exclude_dump_only=False):
         )
     Meta = getattr(schema, "Meta", None)
     warn_if_fields_defined_in_meta(fields, Meta)
-    return filter_excluded_fields(fields, Meta, exclude_dump_only)
+    return filter_excluded_fields(fields, Meta, exclude_dump_only=exclude_dump_only)
 
 
 def warn_if_fields_defined_in_meta(fields, Meta):
@@ -86,7 +86,7 @@ def warn_if_fields_defined_in_meta(fields, Meta):
             )
 
 
-def filter_excluded_fields(fields, Meta, exclude_dump_only):
+def filter_excluded_fields(fields, Meta, *, exclude_dump_only):
     """Filter fields that should be ignored in the OpenAPI spec.
 
     :param dict fields: A dictionary of fields name field object pairs

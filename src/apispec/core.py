@@ -221,6 +221,7 @@ class APISpec:
     def path(
         self,
         path=None,
+        *,
         operations=None,
         summary=None,
         description=None,
