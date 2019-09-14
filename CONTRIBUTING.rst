@@ -18,20 +18,8 @@ Questions, Feature Requests, Bug Reports, and Feedback. . .
 Contributing Code
 -----------------
 
-In General
-++++++++++
-
-- `PEP 8`_, when sensible.
-- Test ruthlessly. Write docs for new features.
-- Even more important than Test-Driven Development--*Human-Driven Development*.
-
-.. _`PEP 8`: http://www.python.org/dev/peps/pep-0008/
-
-In Particular
-+++++++++++++
-
 Setting Up for Local Development
-********************************
+++++++++++++++++++++++++++++++++
 
 1. Fork apispec_ on GitHub.
 
@@ -58,7 +46,7 @@ Setting Up for Local Development
 
 
 Git Branch Structure
-********************
+++++++++++++++++++++
 
 apispec abides by the following branching model:
 
@@ -72,7 +60,7 @@ apispec abides by the following branching model:
 **Always make a new branch for your work**, no matter how small. Also, **do not put unrelated changes in the same branch or pull request**. This makes it more difficult to merge your changes.
 
 Pull Requests
-**************
+++++++++++++++
 
 1. Create a new local branch.
 
@@ -101,7 +89,7 @@ Pull Requests
     build must be passing before your pull request is merged.
 
 Running Tests
-*************
++++++++++++++
 
 To run all tests: ::
 
@@ -116,7 +104,7 @@ To run syntax checks: ::
     $ tox
 
 Documentation
-*************
++++++++++++++
 
 Contributions to the documentation are welcome. Documentation is written in `reStructured Text`_ (rST). A quick rST reference can be found `here <http://docutils.sourceforge.net/docs/user/rst/quickref.html>`_. Builds are powered by Sphinx_.
 
@@ -128,5 +116,4 @@ Changes in the `docs/` directory will automatically trigger a rebuild.
 
 .. _Sphinx: http://sphinx.pocoo.org/
 .. _`reStructured Text`: http://docutils.sourceforge.net/rst.html
-
 .. _`apispec`: https://github.com/marshmallow-code/apispec

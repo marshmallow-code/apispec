@@ -244,6 +244,16 @@ To report a security vulnerability, please use the
 `Tidelift security contact <https://tidelift.com/security>`_.
 Tidelift will coordinate the fix and disclosure.
 
+Project Links
+=============
+
+- Docs: https://apispec.readthedocs.io/
+- Changelog: https://apispec.readthedocs.io/en/latest/changelog.html
+- Contributing Guidelines: https://apispec.readthedocs.io/en/latest/contributing.html
+- PyPI: https://pypi.python.org/pypi/apispec
+- Issues: https://github.com/marshmallow-code/apispec/issues
+
+
 License
 =======
 
