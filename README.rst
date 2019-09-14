@@ -44,7 +44,7 @@ Example Application
     from apispec import APISpec
     from apispec.ext.marshmallow import MarshmallowPlugin
     from apispec_webframeworks.flask import FlaskPlugin
-    from flask import Flask, jsonify
+    from flask import Flask
     from marshmallow import Schema, fields
 
 
@@ -63,7 +63,7 @@ Example Application
 
 
     class PetSchema(Schema):
-        category = fields.Nested(CategorySchema, many=True)
+        category = fields.List(fields.Nested(CategorySchema))
         name = fields.Str()
 
 
@@ -84,7 +84,7 @@ Example Application
                   schema: PetSchema
         """
         pet = get_random_pet()
-        return jsonify(PetSchema().dump(pet).data)
+        return PetSchema().dump(pet)
 
 
     # Register entities and paths
