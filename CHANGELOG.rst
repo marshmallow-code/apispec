@@ -8,18 +8,32 @@ Features:
 
 - Add support for generating user-defined OpenAPI properties for custom field
   classes via an ``add_attribute_function`` method (:pr:`478` and :pr:`498`).
-- [apispec.ext.marshmallow]: *Backwards-incompatible* ``fields.Raw`` and ``fields.Field`` are
-  now represented by OpenAPI `Any Type <https://swagger.io/docs/specification/data-models/data-types/#any>`_
+- [apispec.ext.marshmallow]: *Backwards-incompatible* ``fields.Raw`` and
+  ``fields.Field`` are now represented by OpenAPI
+  `Any Type <https://swagger.io/docs/specification/data-models/data-types/#any>`_
   (:pr:`495`).
-- [apispec.ext.marshmallow]: *Backwards-incompatible*: The ``schema_name_resolver`` function now receives
-  a ``Schema`` class, a ``Schema`` instance or a string that resolves to a
-  ``Schema`` class. This allows a custom resolver to generate different names
-  depending on schema modifiers used in a ``Schema`` instance (:pr:`476`).
+- [apispec.ext.marshmallow]: *Backwards-incompatible*: The
+  ``schema_name_resolver`` function now receives a ``Schema`` class, a
+  ``Schema`` instance or a string that resolves to a ``Schema`` class. This
+  allows a custom resolver to generate different names depending on schema
+  modifiers used in a ``Schema`` instance (:pr:`476`).
 
 Bug fixes:
 
-- [apispec.ext.marshmallow]: With marshmallow 3, the default value of a field in the
-  documentation is the serialized value of the ``missing`` attribute, not ``missing`` itself (:pr:`490`).
+- [apispec.ext.marshmallow]: With marshmallow 3, the default value of a field
+  in the documentation is the serialized value of the ``missing`` attribute,
+  not ``missing`` itself (:pr:`490`).
+
+Refactoring:
+
+- ``clean_parameters`` and ``clean_operations`` are now ``APISpec`` methods
+  (:pr:`489`).
+- [apispec.ext.marshmallow]: ``Schema`` resolver methods are extracted from
+  ``MarshmallowPlugin`` into a ``SchemaResolver`` class member (:pr:`496`).
+- [apispec.ext.marshmallow]: ``OpenAPIConverter`` is now a class member of
+  ``MarshmallowPlugin`` (:pr:`493`).
+- [apispec.ext.marshmallow]: ``Field`` to properties conversion logic is
+  extracted from ``OpenAPIConverter`` into ``FieldConverterMixin`` (:pr:`478`).
 
 Other changes:
 
