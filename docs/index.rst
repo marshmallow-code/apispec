@@ -65,9 +65,7 @@ Example Application
         return PetSchema().dump(pet)
 
 
-    # Register entities and paths
-    spec.components.schema("Category", schema=CategorySchema)
-    spec.components.schema("Pet", schema=PetSchema)
+    # Register the path and the entities within it
     with app.test_request_context():
         spec.path(view=random_pet)
 
