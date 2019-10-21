@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+3.1.0 (unreleased)
+******************
+
+Support:
+
+- Test against Python 3.8 (pr:`150`).
+
 3.0.0 (2019-09-17)
 ++++++++++++++++++
 
