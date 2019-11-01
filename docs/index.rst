@@ -70,6 +70,7 @@ Example Application
           description: Get a random pet
           responses:
             200:
+              description: Return a pet
               content:
                 application/json:
                   schema: PetSchema
