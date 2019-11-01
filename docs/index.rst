@@ -50,8 +50,12 @@ Example Application
 
     def get_random_pet():
         def _random_str():
-            return ''.join(random.choices(string.ascii_uppercase, k=10))
-        return {"name": _random_str(), "category": [{"id": random.randint(1, 10000), "name": _random_str()}]}
+            return "".join(random.choices(string.ascii_uppercase, k=10))
+
+        return {
+            "name": _random_str(),
+            "category": [{"id": random.randint(1, 10000), "name": _random_str()}],
+        }
 
 
     # Optional Flask support
