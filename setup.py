@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 EXTRAS_REQUIRE = {
     "yaml": ["PyYAML>=3.10"],
     "validation": ["prance[osv]>=0.11"],
-    "lint": ["flake8==3.7.9", "flake8-bugbear==19.8.0", "pre-commit~=1.18"],
+    "lint": ["flake8==3.7.9", "flake8-bugbear==19.8.0", "pre-commit~=1.20"],
     "docs": [
         "marshmallow>=2.19.2",
         "pyyaml==5.1.2",
