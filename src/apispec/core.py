@@ -30,12 +30,14 @@ class Components:
         self._plugins = plugins
         self.openapi_version = openapi_version
         self._schemas = {}
+        self._examples = {}
         self._parameters = {}
         self._responses = {}
         self._security_schemes = {}
 
     def to_dict(self):
         subsections = {
+            "example": self._examples,
             "schema": self._schemas,
             "parameter": self._parameters,
             "response": self._responses,
@@ -46,6 +48,21 @@ class Components:
             for k, v in subsections.items()
             if v != {}
         }
+
+    def example(self, name, component, **kwargs):
+        """Add an example which can be referenced
+
+        :param str name: identifier by which example may be referenced.
+        :param dict component: example fields.
+
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#exampleObject
+        """
+        if name in self._examples:
+            raise DuplicateComponentNameError(
+                'Another example with name "{}" is already registered.'.format(name)
+            )
+        self._examples[name] = component
+        return self
 
     def schema(self, name, component=None, **kwargs):
         """Add a new schema to the spec.

@@ -17,6 +17,7 @@ COMPONENT_SUBSECTIONS = {
         "security_scheme": "securityDefinitions",
     },
     3: {
+        "example": "examples",
         "schema": "schemas",
         "parameter": "parameters",
         "response": "responses",
