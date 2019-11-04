@@ -22,19 +22,19 @@ class BasePlugin:
         """
         raise PluginMethodNotImplementedError
 
-    def parameter_helper(self, parameter, **kwargs):
-        """May return parameter component description as a dict.
-
-        :param dict parameter: Parameter fields
-        :param dict kwargs: All additional keywords arguments sent to `APISpec.parameter()`
-        """
-        raise PluginMethodNotImplementedError
-
     def response_helper(self, response, **kwargs):
         """May return response component description as a dict.
 
         :param dict response: Response fields
         :param dict kwargs: All additional keywords arguments sent to `APISpec.response()`
+        """
+        raise PluginMethodNotImplementedError
+
+    def parameter_helper(self, parameter, **kwargs):
+        """May return parameter component description as a dict.
+
+        :param dict parameter: Parameter fields
+        :param dict kwargs: All additional keywords arguments sent to `APISpec.parameter()`
         """
         raise PluginMethodNotImplementedError
 

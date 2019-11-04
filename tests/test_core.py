@@ -138,13 +138,6 @@ class TestComponents:
         "name": {"type": "string", "example": "doggie"},
     }
 
-    # Referenced examples are only supported in OAS 3.x
-    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
-    def test_example(self, spec):
-        spec.components.example("PetExample", {"value": {"a": "b"}})
-        defs = get_examples(spec)
-        assert defs["PetExample"]["value"] == {"a": "b"}
-
     def test_schema(self, spec):
         spec.components.schema("Pet", {"properties": self.properties})
         defs = get_schemas(spec)
@@ -188,6 +181,26 @@ class TestComponents:
         ):
             spec.components.schema("Pet", properties=self.properties)
 
+    def test_response(self, spec):
+        response = {"description": "Pet not found"}
+        spec.components.response("NotFound", response)
+        responses = get_responses(spec)
+        assert responses["NotFound"] == response
+
+    def test_response_is_chainable(self, spec):
+        spec.components.response("resp1").response("resp2")
+        responses = get_responses(spec)
+        assert "resp1" in responses
+        assert "resp2" in responses
+
+    def test_response_duplicate_name(self, spec):
+        spec.components.response("test_response")
+        with pytest.raises(
+            DuplicateComponentNameError,
+            match='Another response with name "test_response" is already registered.',
+        ):
+            spec.components.response("test_response")
+
     def test_parameter(self, spec):
         parameter = {"format": "int64", "type": "integer"}
         spec.components.parameter("PetId", "path", parameter)
@@ -214,25 +227,12 @@ class TestComponents:
         ):
             spec.components.parameter("test_parameter", "path")
 
-    def test_response(self, spec):
-        response = {"description": "Pet not found"}
-        spec.components.response("NotFound", response)
-        responses = get_responses(spec)
-        assert responses["NotFound"] == response
-
-    def test_response_is_chainable(self, spec):
-        spec.components.response("resp1").response("resp2")
-        responses = get_responses(spec)
-        assert "resp1" in responses
-        assert "resp2" in responses
-
-    def test_response_duplicate_name(self, spec):
-        spec.components.response("test_response")
-        with pytest.raises(
-            DuplicateComponentNameError,
-            match='Another response with name "test_response" is already registered.',
-        ):
-            spec.components.response("test_response")
+    # Referenced examples are only supported in OAS 3.x
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_example(self, spec):
+        spec.components.example("PetExample", {"value": {"a": "b"}})
+        defs = get_examples(spec)
+        assert defs["PetExample"]["value"] == {"a": "b"}
 
     def test_security_scheme(self, spec):
         sec_scheme = {"type": "apiKey", "in": "header", "name": "X-API-Key"}
