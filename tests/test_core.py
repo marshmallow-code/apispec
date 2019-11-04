@@ -138,47 +138,40 @@ class TestComponents:
         "name": {"type": "string", "example": "doggie"},
     }
 
-    # Referenced examples are only supported in OAS 3.x
-    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
-    def test_example(self, spec):
-        spec.components.example("PetExample", {"value": {"a": "b"}})
-        defs = get_examples(spec)
-        assert defs["PetExample"]["value"] == {"a": "b"}
-
     def test_schema(self, spec):
         spec.components.schema("Pet", {"properties": self.properties})
-        defs = get_schemas(spec)
-        assert "Pet" in defs
-        assert defs["Pet"]["properties"] == self.properties
+        schemas = get_schemas(spec)
+        assert "Pet" in schemas
+        assert schemas["Pet"]["properties"] == self.properties
 
     def test_schema_is_chainable(self, spec):
         spec.components.schema("Pet", {"properties": {}}).schema(
             "Plant", {"properties": {}}
         )
-        defs = get_schemas(spec)
-        assert "Pet" in defs
-        assert "Plant" in defs
+        schemas = get_schemas(spec)
+        assert "Pet" in schemas
+        assert "Plant" in schemas
 
     def test_schema_description(self, spec):
         model_description = "An animal which lives with humans."
         spec.components.schema(
             "Pet", {"properties": self.properties, "description": model_description}
         )
-        defs = get_schemas(spec)
-        assert defs["Pet"]["description"] == model_description
+        schemas = get_schemas(spec)
+        assert schemas["Pet"]["description"] == model_description
 
     def test_schema_stores_enum(self, spec):
         enum = ["name", "photoUrls"]
         spec.components.schema("Pet", {"properties": self.properties, "enum": enum})
-        defs = get_schemas(spec)
-        assert defs["Pet"]["enum"] == enum
+        schemas = get_schemas(spec)
+        assert schemas["Pet"]["enum"] == enum
 
     def test_schema_discriminator(self, spec):
         spec.components.schema(
             "Pet", {"properties": self.properties, "discriminator": "name"}
         )
-        defs = get_schemas(spec)
-        assert defs["Pet"]["discriminator"] == "name"
+        schemas = get_schemas(spec)
+        assert schemas["Pet"]["discriminator"] == "name"
 
     def test_schema_duplicate_name(self, spec):
         spec.components.schema("Pet", {"properties": self.properties})
@@ -187,6 +180,26 @@ class TestComponents:
             match='Another schema with name "Pet" is already registered.',
         ):
             spec.components.schema("Pet", properties=self.properties)
+
+    def test_response(self, spec):
+        response = {"description": "Pet not found"}
+        spec.components.response("NotFound", response)
+        responses = get_responses(spec)
+        assert responses["NotFound"] == response
+
+    def test_response_is_chainable(self, spec):
+        spec.components.response("resp1").response("resp2")
+        responses = get_responses(spec)
+        assert "resp1" in responses
+        assert "resp2" in responses
+
+    def test_response_duplicate_name(self, spec):
+        spec.components.response("test_response")
+        with pytest.raises(
+            DuplicateComponentNameError,
+            match='Another response with name "test_response" is already registered.',
+        ):
+            spec.components.response("test_response")
 
     def test_parameter(self, spec):
         parameter = {"format": "int64", "type": "integer"}
@@ -214,25 +227,28 @@ class TestComponents:
         ):
             spec.components.parameter("test_parameter", "path")
 
-    def test_response(self, spec):
-        response = {"description": "Pet not found"}
-        spec.components.response("NotFound", response)
-        responses = get_responses(spec)
-        assert responses["NotFound"] == response
+    # Referenced examples are only supported in OAS 3.x
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_example(self, spec):
+        spec.components.example("test_example", {"value": {"a": "b"}})
+        examples = get_examples(spec)
+        assert examples["test_example"]["value"] == {"a": "b"}
 
-    def test_response_is_chainable(self, spec):
-        spec.components.response("resp1").response("resp2")
-        responses = get_responses(spec)
-        assert "resp1" in responses
-        assert "resp2" in responses
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_example_is_chainable(self, spec):
+        spec.components.example("test_example_1", {}).example("test_example_2", {})
+        examples = get_examples(spec)
+        assert "test_example_1" in examples
+        assert "test_example_2" in examples
 
-    def test_response_duplicate_name(self, spec):
-        spec.components.response("test_response")
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_example_duplicate_name(self, spec):
+        spec.components.example("test_example", {})
         with pytest.raises(
             DuplicateComponentNameError,
-            match='Another response with name "test_response" is already registered.',
+            match='Another example with name "test_example" is already registered.',
         ):
-            spec.components.response("test_response")
+            spec.components.example("test_example", {})
 
     def test_security_scheme(self, spec):
         sec_scheme = {"type": "apiKey", "in": "header", "name": "X-API-Key"}

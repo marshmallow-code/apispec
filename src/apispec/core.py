@@ -30,17 +30,17 @@ class Components:
         self._plugins = plugins
         self.openapi_version = openapi_version
         self._schemas = {}
-        self._examples = {}
-        self._parameters = {}
         self._responses = {}
+        self._parameters = {}
+        self._examples = {}
         self._security_schemes = {}
 
     def to_dict(self):
         subsections = {
-            "example": self._examples,
             "schema": self._schemas,
-            "parameter": self._parameters,
             "response": self._responses,
+            "parameter": self._parameters,
+            "example": self._examples,
             "security_scheme": self._security_schemes,
         }
         return {
@@ -48,21 +48,6 @@ class Components:
             for k, v in subsections.items()
             if v != {}
         }
-
-    def example(self, name, component, **kwargs):
-        """Add an example which can be referenced
-
-        :param str name: identifier by which example may be referenced.
-        :param dict component: example fields.
-
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#exampleObject
-        """
-        if name in self._examples:
-            raise DuplicateComponentNameError(
-                'Another example with name "{}" is already registered.'.format(name)
-            )
-        self._examples[name] = component
-        return self
 
     def schema(self, name, component=None, **kwargs):
         """Add a new schema to the spec.
@@ -100,6 +85,30 @@ class Components:
         self._schemas[name] = ret
         return self
 
+    def response(self, component_id, component=None, **kwargs):
+        """Add a response which can be referenced.
+
+        :param str component_id: ref_id to use as reference
+        :param dict component: response fields
+        :param dict kwargs: plugin-specific arguments
+        """
+        if component_id in self._responses:
+            raise DuplicateComponentNameError(
+                'Another response with name "{}" is already registered.'.format(
+                    component_id
+                )
+            )
+        component = component or {}
+        ret = component.copy()
+        # Execute all helpers from plugins
+        for plugin in self._plugins:
+            try:
+                ret.update(plugin.response_helper(component, **kwargs) or {})
+            except PluginMethodNotImplementedError:
+                continue
+        self._responses[component_id] = ret
+        return self
+
     def parameter(self, component_id, location, component=None, **kwargs):
         """ Add a parameter which can be referenced.
 
@@ -132,28 +141,19 @@ class Components:
         self._parameters[component_id] = ret
         return self
 
-    def response(self, component_id, component=None, **kwargs):
-        """Add a response which can be referenced.
+    def example(self, name, component, **kwargs):
+        """Add an example which can be referenced
 
-        :param str component_id: ref_id to use as reference
-        :param dict component: response fields
-        :param dict kwargs: plugin-specific arguments
+        :param str name: identifier by which example may be referenced.
+        :param dict component: example fields.
+
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#exampleObject
         """
-        if component_id in self._responses:
+        if name in self._examples:
             raise DuplicateComponentNameError(
-                'Another response with name "{}" is already registered.'.format(
-                    component_id
-                )
+                'Another example with name "{}" is already registered.'.format(name)
             )
-        component = component or {}
-        ret = component.copy()
-        # Execute all helpers from plugins
-        for plugin in self._plugins:
-            try:
-                ret.update(plugin.response_helper(component, **kwargs) or {})
-            except PluginMethodNotImplementedError:
-                continue
-        self._responses[component_id] = ret
+        self._examples[name] = component
         return self
 
     def security_scheme(self, component_id, component):

@@ -3,14 +3,16 @@
 from apispec.utils import build_reference
 
 
-def get_examples(spec):
-    return spec.to_dict()["components"]["examples"]
-
-
 def get_schemas(spec):
     if spec.openapi_version.major < 3:
         return spec.to_dict()["definitions"]
     return spec.to_dict()["components"]["schemas"]
+
+
+def get_responses(spec):
+    if spec.openapi_version.major < 3:
+        return spec.to_dict()["responses"]
+    return spec.to_dict()["components"]["responses"]
 
 
 def get_parameters(spec):
@@ -19,10 +21,8 @@ def get_parameters(spec):
     return spec.to_dict()["components"]["parameters"]
 
 
-def get_responses(spec):
-    if spec.openapi_version.major < 3:
-        return spec.to_dict()["responses"]
-    return spec.to_dict()["components"]["responses"]
+def get_examples(spec):
+    return spec.to_dict()["components"]["examples"]
 
 
 def get_security_schemes(spec):
