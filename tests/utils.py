@@ -3,6 +3,10 @@
 from apispec.utils import build_reference
 
 
+def get_examples(spec):
+    return spec.to_dict()["components"]["examples"]
+
+
 def get_schemas(spec):
     if spec.openapi_version.major < 3:
         return spec.to_dict()["definitions"]

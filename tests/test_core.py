@@ -14,6 +14,7 @@ from apispec.exceptions import (
 
 from .utils import (
     get_schemas,
+    get_examples,
     get_paths,
     get_parameters,
     get_responses,
@@ -136,6 +137,13 @@ class TestComponents:
         "id": {"type": "integer", "format": "int64"},
         "name": {"type": "string", "example": "doggie"},
     }
+
+    # Referenced examples are only supported in OAS 3.x
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_example(self, spec):
+        spec.components.example("PetExample", {"value": {"a": "b"}})
+        defs = get_examples(spec)
+        assert defs["PetExample"]["value"] == {"a": "b"}
 
     def test_schema(self, spec):
         spec.components.schema("Pet", {"properties": self.properties})
