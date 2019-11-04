@@ -6,6 +6,8 @@ Changelog
 
 Support:
 
+- Add `apispec.core.Components.example` for adding Example Objects
+  (:pr:`515`). Thanks :user:`codeasashu` for the PR.
 - Test against Python 3.8 (pr:`150`).
 
 3.0.0 (2019-09-17)
