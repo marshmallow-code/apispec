@@ -64,11 +64,12 @@ Example Application
                 application/json:
                   schema: PetSchema
         """
+        # Hardcoded example data
         pet_data = {
             "name": "sample_pet_" + str(uuid.uuid1()),
             "categories": [{"id": 1, "name": "sample_category"}],
         }
-        return PetSchema().dump(hardcoded_pet)
+        return PetSchema().dump(pet_data)
 
 
     # Register the path and the entities within it
@@ -90,25 +91,6 @@ Generated OpenAPI Spec
     #     "version": "1.0.0"
     #   },
     #   "openapi": "3.0.2",
-    #   "paths": {
-    #     "/random": {
-    #       "get": {
-    #         "description": "Get a random pet",
-    #         "responses": {
-    #           "200": {
-    #             "description": "Return a pet",
-    #             "content": {
-    #               "application/json": {
-    #                 "schema": {
-    #                   "$ref": "#/components/schemas/Pet"
-    #                 }
-    #               }
-    #             }
-    #           }
-    #         }
-    #       }
-    #     }
-    #   },
     #   "components": {
     #     "schemas": {
     #       "Category": {
@@ -141,7 +123,26 @@ Generated OpenAPI Spec
     #         }
     #       }
     #     }
-    #   }
+    #   },
+    #   "paths": {
+    #     "/random": {
+    #       "get": {
+    #         "description": "Get a random pet",
+    #         "responses": {
+    #           "200": {
+    #             "description": "Return a pet",
+    #             "content": {
+    #               "application/json": {
+    #                 "schema": {
+    #                   "$ref": "#/components/schemas/Pet"
+    #                 }
+    #               }
+    #             }
+    #           }
+    #         }
+    #       }
+    #     }
+    #   },
     # }
 
     print(spec.to_yaml())
