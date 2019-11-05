@@ -19,8 +19,7 @@ Example Application
 
 .. code-block:: python
 
-    import random
-    import string
+    import uuid
 
     from apispec import APISpec
     from apispec.ext.marshmallow import MarshmallowPlugin
@@ -44,18 +43,8 @@ Example Application
 
 
     class PetSchema(Schema):
-        category = fields.List(fields.Nested(CategorySchema))
+        categories = fields.List(fields.Nested(CategorySchema))
         name = fields.Str()
-
-
-    def get_random_pet():
-        def _random_str():
-            return "".join(random.choices(string.ascii_uppercase, k=10))
-
-        return {
-            "name": _random_str(),
-            "category": [{"id": random.randint(1, 10000), "name": _random_str()}],
-        }
 
 
     # Optional Flask support
@@ -75,8 +64,11 @@ Example Application
                 application/json:
                   schema: PetSchema
         """
-        pet = get_random_pet()
-        return PetSchema().dump(pet)
+        pet_data = {
+            "name": "sample_pet_" + str(uuid.uuid1()),
+            "categories": [{"id": 1, "name": "sample_category"}],
+        }
+        return PetSchema().dump(hardcoded_pet)
 
 
     # Register the path and the entities within it
@@ -137,7 +129,7 @@ Generated OpenAPI Spec
     #       "Pet": {
     #         "type": "object",
     #         "properties": {
-    #           "category": {
+    #           "categories": {
     #             "type": "array",
     #             "items": {
     #               "$ref": "#/components/schemas/Category"
@@ -171,7 +163,7 @@ Generated OpenAPI Spec
     #       type: object
     #     Pet:
     #       properties:
-    #         category:
+    #         categories:
     #           items:
     #             $ref: '#/components/schemas/Category'
     #           type: array
