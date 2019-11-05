@@ -12,14 +12,15 @@ from apispec import exceptions
 COMPONENT_SUBSECTIONS = {
     2: {
         "schema": "definitions",
-        "parameter": "parameters",
         "response": "responses",
+        "parameter": "parameters",
         "security_scheme": "securityDefinitions",
     },
     3: {
         "schema": "schemas",
-        "parameter": "parameters",
         "response": "responses",
+        "parameter": "parameters",
+        "example": "examples",
         "security_scheme": "securitySchemes",
     },
 }
