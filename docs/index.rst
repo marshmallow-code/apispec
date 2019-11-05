@@ -19,6 +19,8 @@ Example Application
 
 .. code-block:: python
 
+    import uuid
+
     from apispec import APISpec
     from apispec.ext.marshmallow import MarshmallowPlugin
     from apispec_webframeworks.flask import FlaskPlugin
@@ -41,7 +43,7 @@ Example Application
 
 
     class PetSchema(Schema):
-        category = fields.List(fields.Nested(CategorySchema))
+        categories = fields.List(fields.Nested(CategorySchema))
         name = fields.Str()
 
 
@@ -57,12 +59,17 @@ Example Application
           description: Get a random pet
           responses:
             200:
+              description: Return a pet
               content:
                 application/json:
                   schema: PetSchema
         """
-        pet = get_random_pet()
-        return PetSchema().dump(pet)
+        # Hardcoded example data
+        pet_data = {
+            "name": "sample_pet_" + str(uuid.uuid1()),
+            "categories": [{"id": 1, "name": "sample_category"}],
+        }
+        return PetSchema().dump(pet_data)
 
 
     # Register the path and the entities within it
@@ -79,12 +86,51 @@ Generated OpenAPI Spec
 
     print(json.dumps(spec.to_dict(), indent=2))
     # {
+    #   "info": {
+    #     "title": "Swagger Petstore",
+    #     "version": "1.0.0"
+    #   },
+    #   "openapi": "3.0.2",
+    #   "components": {
+    #     "schemas": {
+    #       "Category": {
+    #         "type": "object",
+    #         "properties": {
+    #           "id": {
+    #             "type": "integer",
+    #             "format": "int32"
+    #           },
+    #           "name": {
+    #             "type": "string"
+    #           }
+    #         },
+    #         "required": [
+    #           "name"
+    #         ]
+    #       },
+    #       "Pet": {
+    #         "type": "object",
+    #         "properties": {
+    #           "categories": {
+    #             "type": "array",
+    #             "items": {
+    #               "$ref": "#/components/schemas/Category"
+    #             }
+    #           },
+    #           "name": {
+    #             "type": "string"
+    #           }
+    #         }
+    #       }
+    #     }
+    #   },
     #   "paths": {
     #     "/random": {
     #       "get": {
     #         "description": "Get a random pet",
     #         "responses": {
     #           "200": {
+    #             "description": "Return a pet",
     #             "content": {
     #               "application/json": {
     #                 "schema": {
@@ -97,79 +143,45 @@ Generated OpenAPI Spec
     #       }
     #     }
     #   },
-    #   "tags": [],
-    #   "info": {
-    #     "title": "Swagger Petstore",
-    #     "version": "1.0.0"
-    #   },
-    #   "openapi": "3.0.2",
-    #   "components": {
-    #     "parameters": {},
-    #     "responses": {},
-    #     "schemas": {
-    #       "Category": {
-    #         "type": "object",
-    #         "properties": {
-    #           "name": {
-    #             "type": "string"
-    #           },
-    #           "id": {
-    #             "type": "integer",
-    #             "format": "int32"
-    #           }
-    #         },
-    #         "required": [
-    #           "name"
-    #         ]
-    #       },
-    #       "Pet": {
-    #         "type": "object",
-    #         "properties": {
-    #           "name": {
-    #             "type": "string"
-    #           },
-    #           "category": {
-    #             "type": "array",
-    #             "items": {
-    #               "$ref": "#/components/schemas/Category"
-    #             }
-    #           }
-    #         }
-    #       }
-    #     }
-    #   }
     # }
 
     print(spec.to_yaml())
+    # info:
+    #   title: Swagger Petstore
+    #   version: 1.0.0
+    # openapi: 3.0.2
     # components:
-    #   parameters: {}
-    #   responses: {}
     #   schemas:
     #     Category:
     #       properties:
-    #         id: {format: int32, type: integer}
-    #         name: {type: string}
-    #       required: [name]
+    #         id:
+    #           format: int32
+    #           type: integer
+    #         name:
+    #           type: string
+    #       required:
+    #       - name
     #       type: object
     #     Pet:
     #       properties:
-    #         category:
-    #           items: {$ref: '#/components/schemas/Category'}
+    #         categories:
+    #           items:
+    #             $ref: '#/components/schemas/Category'
     #           type: array
-    #         name: {type: string}
+    #         name:
+    #           type: string
     #       type: object
-    # info: {title: Swagger Petstore, version: 1.0.0}
-    # openapi: 3.0.2
     # paths:
     #   /random:
     #     get:
     #       description: Get a random pet
     #       responses:
-    #         200:
+    #         '200':
     #           content:
     #             application/json:
-    #               schema: {$ref: '#/components/schemas/Pet'}
-    # tags: []
+    #               schema:
+    #                 $ref: '#/components/schemas/Pet'
+    #           description: Return a pet
 
 User Guide
 ==========

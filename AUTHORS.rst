@@ -59,4 +59,5 @@ Contributors (chronological)
 - Dave `@zedrdave <https://github.com/zedrdave>`_
 - Emmanuel Valette `@karec <https://github.com/karec/>`_
 - Hugo van Kemenade `@hugovk <https://github.com/hugovk>`_
+- Bastien Gerard `@bagerard <https://github.com/bagerard>`_
 - Ashutosh Chaudhary `@codeasashu <https://github.com/codeasashu>`_
