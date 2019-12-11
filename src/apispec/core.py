@@ -371,7 +371,7 @@ class APISpec:
                     try:
                         code = int(code)  # handles IntEnums like http.HTTPStatus
                     except (TypeError, ValueError):
-                        if self.openapi_version.major < 3:
+                        if self.openapi_version.major < 3 and code != "default":
                             warnings.warn("Non-integer code not allowed in OpenAPI < 3")
 
                     responses[str(code)] = self.get_ref("response", response)
