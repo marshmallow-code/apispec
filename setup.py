@@ -8,7 +8,7 @@ EXTRAS_REQUIRE = {
     "docs": [
         "marshmallow>=2.19.2",
         "pyyaml==5.2",
-        "sphinx==2.2.2",
+        "sphinx==2.3.0",
         "sphinx-issues==1.2.0",
         "sphinx-rtd-theme==0.4.3",
     ],
