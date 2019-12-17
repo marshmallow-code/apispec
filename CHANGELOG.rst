@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+3.1.1 (unreleased)
+******************
+
+Bug fixes:
+
+- Don't emit a warning when passing "default" as response status code in OASv2
+  (:pr:`521`).
+
 3.1.0 (2019-11-04)
 ******************
 
@@ -8,7 +16,7 @@ Support:
 
 - Add `apispec.core.Components.example` for adding Example Objects
   (:pr:`515`). Thanks :user:`codeasashu` for the PR.
-- Test against Python 3.8 (pr:`150`).
+- Test against Python 3.8 (:pr:`510`).
 
 3.0.0 (2019-09-17)
 ++++++++++++++++++
