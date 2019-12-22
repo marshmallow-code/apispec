@@ -61,3 +61,4 @@ Contributors (chronological)
 - Hugo van Kemenade `@hugovk <https://github.com/hugovk>`_
 - Bastien Gerard `@bagerard <https://github.com/bagerard>`_
 - Ashutosh Chaudhary `@codeasashu <https://github.com/codeasashu>`_
+- Fedor Fominykh `@fedorfo <https://github.com/fedorfo>`_
