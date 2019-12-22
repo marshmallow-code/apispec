@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+3.2.0 (2019-12-22)
+******************
+
+Features:
+
+- Add ``match_info`` to ``__location_map__`` (:pr:`517`).
+  Thanks :user:`fedorfo` for the PR.
+
 3.1.1 (2019-12-17)
 ******************
 
@@ -12,10 +20,13 @@ Bug fixes:
 3.1.0 (2019-11-04)
 ******************
 
-Support:
+Features:
 
 - Add `apispec.core.Components.example` for adding Example Objects
   (:pr:`515`). Thanks :user:`codeasashu` for the PR.
+
+Support:
+
 - Test against Python 3.8 (:pr:`510`).
 
 3.0.0 (2019-09-17)
