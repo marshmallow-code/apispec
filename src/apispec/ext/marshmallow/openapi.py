@@ -28,6 +28,7 @@ MARSHMALLOW_VERSION_INFO = tuple(
 
 
 __location_map__ = {
+    "match_info": "path",
     "query": "query",
     "querystring": "query",
     "json": "body",
