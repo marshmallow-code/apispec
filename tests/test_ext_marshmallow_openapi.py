@@ -19,20 +19,15 @@ class TestMarshmallowFieldToOpenAPI:
         else:
             assert res[0]["schema"]["default"] == "bar"
 
-    def test_fields_with_location(self, openapi):
-        field_dict = {"field": fields.Str(location="querystring")}
-        res = openapi.fields2parameters(field_dict, default_in="headers")
-        assert res[0]["in"] == "query"
-
     # json/body is invalid for OpenAPI 3
     @pytest.mark.parametrize("openapi", ("2.0",), indirect=True)
     def test_fields_with_multiple_json_locations(self, openapi):
         field_dict = {
-            "field1": fields.Str(location="json", required=True),
-            "field2": fields.Str(location="json", required=True),
-            "field3": fields.Str(location="json"),
+            "field1": fields.Str(required=True),
+            "field2": fields.Str(required=True),
+            "field3": fields.Str(),
         }
-        res = openapi.fields2parameters(field_dict, default_in=None)
+        res = openapi.fields2parameters(field_dict, default_in="json")
         assert len(res) == 1
         assert res[0]["in"] == "body"
         assert res[0]["required"] is False
@@ -44,17 +39,9 @@ class TestMarshmallowFieldToOpenAPI:
         assert "field1" in res[0]["schema"]["required"]
         assert "field2" in res[0]["schema"]["required"]
 
-    def test_fields2parameters_does_not_modify_metadata(self, openapi):
-        field_dict = {"field": fields.Str(location="querystring")}
-        res = openapi.fields2parameters(field_dict, default_in="headers")
-        assert res[0]["in"] == "query"
-
-        res = openapi.fields2parameters(field_dict, default_in="headers")
-        assert res[0]["in"] == "query"
-
     def test_fields_location_mapping(self, openapi):
-        field_dict = {"field": fields.Str(location="cookies")}
-        res = openapi.fields2parameters(field_dict, default_in="headers")
+        field_dict = {"field": fields.Str()}
+        res = openapi.fields2parameters(field_dict, default_in="cookies")
         assert res[0]["in"] == "cookie"
 
     def test_fields_default_location_mapping(self, openapi):
@@ -261,8 +248,8 @@ class TestMarshmallowSchemaToModelDefinition:
 class TestMarshmallowSchemaToParameters:
     @pytest.mark.parametrize("ListClass", [fields.List, CustomList])
     def test_field_multiple(self, ListClass, openapi):
-        field = ListClass(fields.Str, location="querystring")
-        res = openapi.field2parameter(field, name="field", default_in=None)
+        field = ListClass(fields.Str)
+        res = openapi.field2parameter(field, name="field", default_in="querystring")
         assert res["in"] == "query"
         if openapi.openapi_version.major < 3:
             assert res["type"] == "array"
@@ -275,8 +262,8 @@ class TestMarshmallowSchemaToParameters:
             assert res["explode"] is True
 
     def test_field_required(self, openapi):
-        field = fields.Str(required=True, location="query")
-        res = openapi.field2parameter(field, name="field", default_in=None)
+        field = fields.Str(required=True)
+        res = openapi.field2parameter(field, name="field", default_in="query")
         assert res["required"] is True
 
     def test_invalid_schema(self, openapi):
@@ -479,11 +466,9 @@ def test_openapi_tools_validate_v2():
                     },
                     openapi.field2parameter(
                         field=fields.List(
-                            fields.Str(),
-                            validate=validate.OneOf(["freddie", "roger"]),
-                            location="querystring",
+                            fields.Str(), validate=validate.OneOf(["freddie", "roger"]),
                         ),
-                        default_in=None,
+                        default_in="querystring",
                         name="body",
                     ),
                 ]
@@ -537,11 +522,9 @@ def test_openapi_tools_validate_v3():
                     },
                     openapi.field2parameter(
                         field=fields.List(
-                            fields.Str(),
-                            validate=validate.OneOf(["freddie", "roger"]),
-                            location="querystring",
+                            fields.Str(), validate=validate.OneOf(["freddie", "roger"]),
                         ),
-                        default_in=None,
+                        default_in="querystring",
                         name="body",
                     ),
                 ]

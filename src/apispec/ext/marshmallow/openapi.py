@@ -196,20 +196,16 @@ class OpenAPIConverter(FieldConverterMixin):
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
         """
-        location = field.metadata.get("location", None)
         prop = self.field2property(field)
         return self.property2parameter(
             prop,
             name=name,
             required=field.required,
             multiple=isinstance(field, marshmallow.fields.List),
-            location=location,
             default_in=default_in,
         )
 
-    def property2parameter(
-        self, prop, *, name, required, multiple, location, default_in
-    ):
+    def property2parameter(self, prop, *, name, required, multiple, default_in):
         """Return the Parameter Object definition for a JSON Schema property.
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
@@ -218,13 +214,11 @@ class OpenAPIConverter(FieldConverterMixin):
         :param str name: Field name
         :param bool required: Parameter is required
         :param bool multiple: Parameter is repeated
-        :param str location: Location to look for ``name``
-        :param str default_in: Default location to look for ``name``
+        :param str default_in: Location to look for ``name``
         :raise: TranslationError if arg object cannot be translated to a Parameter Object schema.
         :rtype: dict, a Parameter Object
         """
-        openapi_default_in = __location_map__.get(default_in, default_in)
-        openapi_location = __location_map__.get(location, openapi_default_in)
+        openapi_location = __location_map__.get(default_in, default_in)
         ret = {"in": openapi_location, "name": name}
 
         if openapi_location == "body":
