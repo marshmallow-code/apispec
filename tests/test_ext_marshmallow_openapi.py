@@ -13,7 +13,7 @@ from .utils import get_schemas, build_ref
 class TestMarshmallowFieldToOpenAPI:
     def test_fields_with_missing_load(self, openapi):
         field_dict = {"field": fields.Str(default="foo", missing="bar")}
-        res = openapi.fields2parameters(field_dict, default_in="query")
+        res = openapi.fields2parameters(field_dict, location="query")
         if openapi.openapi_version.major < 3:
             assert res[0]["default"] == "bar"
         else:
@@ -27,7 +27,7 @@ class TestMarshmallowFieldToOpenAPI:
             "field2": fields.Str(required=True),
             "field3": fields.Str(),
         }
-        res = openapi.fields2parameters(field_dict, default_in="json")
+        res = openapi.fields2parameters(field_dict, location="json")
         assert len(res) == 1
         assert res[0]["in"] == "body"
         assert res[0]["required"] is False
@@ -41,12 +41,12 @@ class TestMarshmallowFieldToOpenAPI:
 
     def test_fields_location_mapping(self, openapi):
         field_dict = {"field": fields.Str()}
-        res = openapi.fields2parameters(field_dict, default_in="cookies")
+        res = openapi.fields2parameters(field_dict, location="cookies")
         assert res[0]["in"] == "cookie"
 
     def test_fields_default_location_mapping(self, openapi):
         field_dict = {"field": fields.Str()}
-        res = openapi.fields2parameters(field_dict, default_in="headers")
+        res = openapi.fields2parameters(field_dict, location="headers")
         assert res[0]["in"] == "header"
 
     # json/body is invalid for OpenAPI 3
@@ -56,16 +56,16 @@ class TestMarshmallowFieldToOpenAPI:
             id = fields.Int()
 
         schema = ExampleSchema(many=True)
-        res = openapi.schema2parameters(schema=schema, default_in="json")
+        res = openapi.schema2parameters(schema=schema, location="json")
         assert res[0]["in"] == "body"
 
     def test_fields_with_dump_only(self, openapi):
         class UserSchema(Schema):
             name = fields.Str(dump_only=True)
 
-        res = openapi.fields2parameters(UserSchema._declared_fields, default_in="query")
+        res = openapi.fields2parameters(UserSchema._declared_fields, location="query")
         assert len(res) == 0
-        res = openapi.fields2parameters(UserSchema().fields, default_in="query")
+        res = openapi.fields2parameters(UserSchema().fields, location="query")
         assert len(res) == 0
 
         class UserSchema(Schema):
@@ -74,7 +74,7 @@ class TestMarshmallowFieldToOpenAPI:
             class Meta:
                 dump_only = ("name",)
 
-        res = openapi.schema2parameters(schema=UserSchema, default_in="query")
+        res = openapi.schema2parameters(schema=UserSchema, location="query")
         assert len(res) == 0
 
 
@@ -249,7 +249,7 @@ class TestMarshmallowSchemaToParameters:
     @pytest.mark.parametrize("ListClass", [fields.List, CustomList])
     def test_field_multiple(self, ListClass, openapi):
         field = ListClass(fields.Str)
-        res = openapi.field2parameter(field, name="field", default_in="querystring")
+        res = openapi.field2parameter(field, name="field", location="querystring")
         assert res["in"] == "query"
         if openapi.openapi_version.major < 3:
             assert res["type"] == "array"
@@ -263,7 +263,7 @@ class TestMarshmallowSchemaToParameters:
 
     def test_field_required(self, openapi):
         field = fields.Str(required=True)
-        res = openapi.field2parameter(field, name="field", default_in="query")
+        res = openapi.field2parameter(field, name="field", location="query")
         assert res["required"] is True
 
     def test_invalid_schema(self, openapi):
@@ -277,7 +277,7 @@ class TestMarshmallowSchemaToParameters:
             name = fields.Str()
             email = fields.Email()
 
-        res = openapi.schema2parameters(UserSchema, default_in="body")
+        res = openapi.schema2parameters(UserSchema, location="body")
         assert len(res) == 1
         param = res[0]
         assert param["in"] == "body"
@@ -290,7 +290,7 @@ class TestMarshmallowSchemaToParameters:
             name = fields.Str()
             email = fields.Email(dump_only=True)
 
-        res_nodump = openapi.schema2parameters(UserSchema, default_in="body")
+        res_nodump = openapi.schema2parameters(UserSchema, location="body")
         assert len(res_nodump) == 1
         param = res_nodump[0]
         assert param["in"] == "body"
@@ -303,7 +303,7 @@ class TestMarshmallowSchemaToParameters:
             name = fields.Str()
             email = fields.Email()
 
-        res = openapi.schema2parameters(UserSchema(many=True), default_in="body")
+        res = openapi.schema2parameters(UserSchema(many=True), location="body")
         assert len(res) == 1
         param = res[0]
         assert param["in"] == "body"
@@ -315,7 +315,7 @@ class TestMarshmallowSchemaToParameters:
             name = fields.Str()
             email = fields.Email()
 
-        res = openapi.schema2parameters(UserSchema, default_in="query")
+        res = openapi.schema2parameters(UserSchema, location="query")
         assert len(res) == 2
         res.sort(key=lambda param: param["name"])
         assert res[0]["name"] == "email"
@@ -328,7 +328,7 @@ class TestMarshmallowSchemaToParameters:
             name = fields.Str()
             email = fields.Email()
 
-        res = openapi.schema2parameters(UserSchema(), default_in="query")
+        res = openapi.schema2parameters(UserSchema(), location="query")
         assert len(res) == 2
         res.sort(key=lambda param: param["name"])
         assert res[0]["name"] == "email"
@@ -342,11 +342,11 @@ class TestMarshmallowSchemaToParameters:
             email = fields.Email()
 
         with pytest.raises(AssertionError):
-            openapi.schema2parameters(UserSchema(many=True), default_in="query")
+            openapi.schema2parameters(UserSchema(many=True), location="query")
 
     def test_fields_query(self, openapi):
         field_dict = {"name": fields.Str(), "email": fields.Email()}
-        res = openapi.fields2parameters(field_dict, default_in="query")
+        res = openapi.fields2parameters(field_dict, location="query")
         assert len(res) == 2
         res.sort(key=lambda param: param["name"])
         assert res[0]["name"] == "email"
@@ -468,11 +468,11 @@ def test_openapi_tools_validate_v2():
                         field=fields.List(
                             fields.Str(), validate=validate.OneOf(["freddie", "roger"]),
                         ),
-                        default_in="querystring",
+                        location="querystring",
                         name="body",
                     ),
                 ]
-                + openapi.schema2parameters(PageSchema, default_in="query"),
+                + openapi.schema2parameters(PageSchema, location="query"),
                 "responses": {200: {"schema": PetSchema, "description": "A pet"}},
             },
             "post": {
@@ -485,7 +485,7 @@ def test_openapi_tools_validate_v2():
                             "type": "string",
                         }
                     ]
-                    + openapi.schema2parameters(CategorySchema, default_in="body")
+                    + openapi.schema2parameters(CategorySchema, location="body")
                 ),
                 "responses": {201: {"schema": PetSchema, "description": "A pet"}},
             },
@@ -524,11 +524,11 @@ def test_openapi_tools_validate_v3():
                         field=fields.List(
                             fields.Str(), validate=validate.OneOf(["freddie", "roger"]),
                         ),
-                        default_in="querystring",
+                        location="querystring",
                         name="body",
                     ),
                 ]
-                + openapi.schema2parameters(PageSchema, default_in="query"),
+                + openapi.schema2parameters(PageSchema, location="query"),
                 "responses": {
                     200: {
                         "description": "success",

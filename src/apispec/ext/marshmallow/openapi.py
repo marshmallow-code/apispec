@@ -110,27 +110,21 @@ class OpenAPIConverter(FieldConverterMixin):
         return self.get_ref_dict(schema_instance)
 
     def schema2parameters(
-        self,
-        schema,
-        *,
-        default_in="body",
-        name="body",
-        required=False,
-        description=None
+        self, schema, *, location="body", name="body", required=False, description=None
     ):
         """Return an array of OpenAPI parameters given a given marshmallow
-        :class:`Schema <marshmallow.Schema>`. If `default_in` is "body", then return an array
+        :class:`Schema <marshmallow.Schema>`. If `location` is "body", then return an array
         of a single parameter; else return an array of a parameter for each included field in
         the :class:`Schema <marshmallow.Schema>`.
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
         """
-        openapi_default_in = __location_map__.get(default_in, default_in)
-        if self.openapi_version.major < 3 and openapi_default_in == "body":
+        openapi_location = __location_map__.get(location, location)
+        if self.openapi_version.major < 3 and openapi_location == "body":
             prop = self.resolve_nested_schema(schema)
 
             param = {
-                "in": openapi_default_in,
+                "in": openapi_location,
                 "required": required,
                 "name": name,
                 "schema": prop,
@@ -147,11 +141,11 @@ class OpenAPIConverter(FieldConverterMixin):
 
         fields = get_fields(schema, exclude_dump_only=True)
 
-        return self.fields2parameters(fields, default_in=default_in)
+        return self.fields2parameters(fields, location=location)
 
-    def fields2parameters(self, fields, *, default_in):
+    def fields2parameters(self, fields, *, location):
         """Return an array of OpenAPI parameters given a mapping between field names and
-        :class:`Field <marshmallow.Field>` objects. If `default_in` is "body", then return an array
+        :class:`Field <marshmallow.Field>` objects. If `location` is "body", then return an array
         of a single parameter; else return an array of a parameter for each included field in
         the :class:`Schema <marshmallow.Schema>`.
 
@@ -171,7 +165,7 @@ class OpenAPIConverter(FieldConverterMixin):
             param = self.field2parameter(
                 field_obj,
                 name=self._observed_name(field_obj, field_name),
-                default_in=default_in,
+                location=location,
             )
             if (
                 self.openapi_version.major < 3
@@ -190,7 +184,7 @@ class OpenAPIConverter(FieldConverterMixin):
                 parameters.append(param)
         return parameters
 
-    def field2parameter(self, field, *, name, default_in):
+    def field2parameter(self, field, *, name, location):
         """Return an OpenAPI parameter as a `dict`, given a marshmallow
         :class:`Field <marshmallow.Field>`.
 
@@ -202,10 +196,10 @@ class OpenAPIConverter(FieldConverterMixin):
             name=name,
             required=field.required,
             multiple=isinstance(field, marshmallow.fields.List),
-            default_in=default_in,
+            location=location,
         )
 
-    def property2parameter(self, prop, *, name, required, multiple, default_in):
+    def property2parameter(self, prop, *, name, required, multiple, location):
         """Return the Parameter Object definition for a JSON Schema property.
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
@@ -214,11 +208,11 @@ class OpenAPIConverter(FieldConverterMixin):
         :param str name: Field name
         :param bool required: Parameter is required
         :param bool multiple: Parameter is repeated
-        :param str default_in: Location to look for ``name``
+        :param str location: Location to look for ``name``
         :raise: TranslationError if arg object cannot be translated to a Parameter Object schema.
         :rtype: dict, a Parameter Object
         """
-        openapi_location = __location_map__.get(default_in, default_in)
+        openapi_location = __location_map__.get(location, location)
         ret = {"in": openapi_location, "name": name}
 
         if openapi_location == "body":
