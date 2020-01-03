@@ -110,7 +110,7 @@ class OpenAPIConverter(FieldConverterMixin):
         return self.get_ref_dict(schema_instance)
 
     def schema2parameters(
-        self, schema, *, location="body", name="body", required=False, description=None
+        self, schema, *, location, name="body", required=False, description=None
     ):
         """Return an array of OpenAPI parameters given a given marshmallow
         :class:`Schema <marshmallow.Schema>`. If `location` is "body", then return an array

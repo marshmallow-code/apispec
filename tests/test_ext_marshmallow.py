@@ -819,7 +819,7 @@ class TestOperationHelper:
 
     def test_schema_global_state_untouched_2parameters(self, spec_fixture):
         assert get_nested_schema(RunSchema, "sample") is None
-        data = spec_fixture.openapi.schema2parameters(RunSchema)
+        data = spec_fixture.openapi.schema2parameters(RunSchema, location="json")
         json.dumps(data)
         assert get_nested_schema(RunSchema, "sample") is None
 

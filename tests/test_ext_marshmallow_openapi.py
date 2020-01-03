@@ -268,7 +268,7 @@ class TestMarshmallowSchemaToParameters:
 
     def test_invalid_schema(self, openapi):
         with pytest.raises(ValueError):
-            openapi.schema2parameters(None)
+            openapi.schema2parameters(None, location="json")
 
     # json/body is invalid for OpenAPI 3
     @pytest.mark.parametrize("openapi", ("2.0",), indirect=True)
