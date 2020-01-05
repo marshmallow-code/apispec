@@ -1,5 +1,7 @@
 from marshmallow import Schema, fields
 
+from apispec.ext.marshmallow.openapi import MARSHMALLOW_VERSION_INFO
+
 
 class PetSchema(Schema):
     description = dict(id="Pet id", name="Pet name", password="Password")
@@ -38,8 +40,12 @@ class PatternedObjectSchema(Schema):
 
 class SelfReferencingSchema(Schema):
     id = fields.Int()
-    single = fields.Nested("self")
-    many = fields.Nested("self", many=True)
+    if MARSHMALLOW_VERSION_INFO[0] < 3:
+        single = fields.Nested("self")
+        many = fields.Nested("self", many=True)
+    else:
+        single = fields.Nested(lambda: SelfReferencingSchema())
+        many = fields.Nested(lambda: SelfReferencingSchema(many=True))
 
 
 class OrderedSchema(Schema):
