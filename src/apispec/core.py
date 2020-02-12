@@ -190,18 +190,18 @@ class APISpec:
         self.version = version
         self.openapi_version = OpenAPIVersion(openapi_version)
         self.options = options
+        self.plugins = plugins
 
         # Metadata
         self._tags = []
         self._paths = OrderedDict()
 
-        # Plugins
-        self.plugins = plugins
-        for plugin in self.plugins:
-            plugin.init_spec(self)
-
         # Components
         self.components = Components(self.plugins, self.openapi_version)
+
+        # Plugins
+        for plugin in self.plugins:
+            plugin.init_spec(self)
 
     def to_dict(self):
         ret = {

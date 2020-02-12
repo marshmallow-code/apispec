@@ -276,6 +276,19 @@ class TestComponents:
         spec.components.schema("Pet", properties=self.properties, enum=enum)
         assert spec.to_dict() == yaml.safe_load(spec.to_yaml())
 
+    def test_components_can_be_accessed_by_plugin_in_init_spec(self):
+        class TestPlugin(BasePlugin):
+            def init_spec(self, spec):
+                spec.components.schema(
+                    "TestSchema", {"properties": {"key": {"type": "string"}}, "type": "object"}
+                )
+
+        spec = APISpec("Test API", version="0.0.1", openapi_version="2.0", plugins=[TestPlugin()])
+        metadata = spec.to_dict()
+        assert metadata["definitions"] == {
+            'TestSchema': {'properties': {'key': {'type': 'string'}}, 'type': 'object'}
+        }
+
 
 class TestPath:
     paths = {
