@@ -280,13 +280,15 @@ class TestComponents:
         class TestPlugin(BasePlugin):
             def init_spec(self, spec):
                 spec.components.schema(
-                    "TestSchema", {"properties": {"key": {"type": "string"}}, "type": "object"}
+                    "TestSchema",
+                    {"properties": {"key": {"type": "string"}}, "type": "object"},
                 )
 
-        spec = APISpec("Test API", version="0.0.1", openapi_version="2.0", plugins=[TestPlugin()])
-        metadata = spec.to_dict()
-        assert metadata["definitions"] == {
-            'TestSchema': {'properties': {'key': {'type': 'string'}}, 'type': 'object'}
+        spec = APISpec(
+            "Test API", version="0.0.1", openapi_version="2.0", plugins=[TestPlugin()]
+        )
+        assert get_schemas(spec) == {
+            "TestSchema": {"properties": {"key": {"type": "string"}}, "type": "object"}
         }
 
 
