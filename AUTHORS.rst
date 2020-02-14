@@ -62,4 +62,4 @@ Contributors (chronological)
 - Bastien Gerard `@bagerard <https://github.com/bagerard>`_
 - Ashutosh Chaudhary `@codeasashu <https://github.com/codeasashu>`_
 - Fedor Fominykh `@fedorfo <https://github.com/fedorfo>`_
-- Colin Bounouar `@Colin-b <https://github.com/colin-b>`_
+- Colin Bounouar `@Colin-b <https://github.com/Colin-b>`_

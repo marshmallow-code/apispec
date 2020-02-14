@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+3.3.0 (2020-02-14)
+******************
+
+Features:
+
+- Instantiate ``Components`` before calling plugins' ``init_spec`` (:pr:`539`).
+  Thanks :user:`Colin-b` for the PR.
+
 3.2.0 (2019-12-22)
 ******************
 
