@@ -196,6 +196,9 @@ class MarshmallowPlugin(BasePlugin):
                     operation["parameters"]
                 )
             if self.openapi_version.major >= 3:
+                for callback in operation.get("callbacks", {}).values():
+                    for event in callback.values():
+                        self.operation_helper(event)
                 if "requestBody" in operation:
                     self.resolver.resolve_schema(operation["requestBody"])
             for response in operation.get("responses", {}).values():
