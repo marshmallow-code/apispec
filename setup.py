@@ -7,7 +7,7 @@ EXTRAS_REQUIRE = {
     "lint": ["flake8==3.7.9", "flake8-bugbear==20.1.4", "pre-commit>=1.20,<3.0"],
     "docs": [
         "marshmallow>=2.19.2",
-        "pyyaml==5.3",
+        "pyyaml==5.3.1",
         "sphinx==2.4.4",
         "sphinx-issues==1.2.0",
         "sphinx-rtd-theme==0.4.3",
