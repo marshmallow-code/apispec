@@ -307,7 +307,7 @@ class TestPath:
                     }
                 ],
                 "responses": {
-                    "200": {"schema": "Pet", "description": "successful operation"},
+                    "200": {"description": "successful operation"},
                     "400": {"description": "Invalid ID supplied"},
                     "404": {"description": "Pet not found"},
                 },
@@ -617,6 +617,18 @@ class TestPath:
         message = "One or more HTTP methods are invalid"
         with pytest.raises(APISpecError, match=message):
             spec.path("/pet/{petId}", operations={"dummy": {}})
+
+    def test_path_resolve_response_schema(self, spec):
+        schema = {"schema": "PetSchema"}
+        if spec.openapi_version.major >= 3:
+            schema = {"content": {"application/json": schema}}
+        spec.path("/pet/{petId}", operations={"get": {"responses": {"200": schema}}})
+        resp = get_paths(spec)["/pet/{petId}"]["get"]["responses"]["200"]
+        if spec.openapi_version.major < 3:
+            schema = resp["schema"]
+        else:
+            schema = resp["content"]["application/json"]["schema"]
+        assert schema == build_ref(spec, "schema", "PetSchema")
 
 
 class TestPlugins:

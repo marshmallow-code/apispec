@@ -300,8 +300,8 @@ class APISpec:
         Otherwise, it is assumed to be a reference name as string and the corresponding $ref
         string is returned.
 
-        :param str obj_type: "parameter" or "response"
-        :param dict|str obj: parameter or response in dict form or as ref_id string
+        :param str obj_type: "schema", "parameter", "response" or "security_scheme"
+        :param dict|str obj: object in dict form or as ref_id string
         """
         if isinstance(obj, dict):
             return obj
@@ -373,6 +373,19 @@ class APISpec:
                     except (TypeError, ValueError):
                         if self.openapi_version.major < 3 and code != "default":
                             warnings.warn("Non-integer code not allowed in OpenAPI < 3")
-
+                    # Replace schemas with references
+                    if isinstance(response, dict):
+                        if self.openapi_version.major < 3:
+                            if "schema" in response:
+                                response["schema"] = self.get_ref(
+                                    "schema", response["schema"]
+                                )
+                        else:
+                            if "content" in response:
+                                for content in response["content"].values():
+                                    if "schema" in content:
+                                        content["schema"] = self.get_ref(
+                                            "schema", content["schema"]
+                                        )
                     responses[str(code)] = self.get_ref("response", response)
                 operation["responses"] = responses
