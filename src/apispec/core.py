@@ -307,6 +307,19 @@ class APISpec:
             return obj
         return build_reference(obj_type, self.openapi_version.major, obj)
 
+    def _resolve_schema(self, obj):
+        """Replace schema reference as string with a $ref if needed."""
+        if not isinstance(obj, dict):
+            return
+        if self.openapi_version.major < 3:
+            if "schema" in obj:
+                obj["schema"] = self.get_ref("schema", obj["schema"])
+        else:
+            if "content" in obj:
+                for content in obj["content"].values():
+                    if "schema" in content:
+                        content["schema"] = self.get_ref("schema", content["schema"])
+
     def clean_parameters(self, parameters):
         """Ensure that all parameters with "in" equal to "path" are also required
         as required by the OpenAPI specification, as well as normalizing any
@@ -373,19 +386,6 @@ class APISpec:
                     except (TypeError, ValueError):
                         if self.openapi_version.major < 3 and code != "default":
                             warnings.warn("Non-integer code not allowed in OpenAPI < 3")
-                    # Replace schemas with references
-                    if isinstance(response, dict):
-                        if self.openapi_version.major < 3:
-                            if "schema" in response:
-                                response["schema"] = self.get_ref(
-                                    "schema", response["schema"]
-                                )
-                        else:
-                            if "content" in response:
-                                for content in response["content"].values():
-                                    if "schema" in content:
-                                        content["schema"] = self.get_ref(
-                                            "schema", content["schema"]
-                                        )
+                    self._resolve_schema(response)
                     responses[str(code)] = self.get_ref("response", response)
                 operation["responses"] = responses
