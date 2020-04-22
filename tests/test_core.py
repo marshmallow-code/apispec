@@ -1,7 +1,7 @@
 from collections import OrderedDict
+from http import HTTPStatus
 
 import pytest
-import sys
 import yaml
 
 from apispec import APISpec, BasePlugin
@@ -588,12 +588,7 @@ class TestPath:
                 == metadata["components"]["responses"]["test_response"]
             )
 
-    @pytest.mark.skipif(
-        int(sys.version[0]) == 2, reason="HTTPStatus only available in Python3"
-    )
     def test_response_with_HTTPStatus_code(self, spec):
-        from http import HTTPStatus
-
         code = HTTPStatus(200)
         spec.path(
             path="/pet/{petId}",
