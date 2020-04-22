@@ -630,6 +630,23 @@ class TestPath:
             schema = resp["content"]["application/json"]["schema"]
         assert schema == build_ref(spec, "schema", "PetSchema")
 
+    # requestBody only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_path_resolve_request_body(self, spec):
+        spec.path(
+            "/pet/{petId}",
+            operations={
+                "get": {
+                    "requestBody": {
+                        "content": {"application/json": {"schema": "PetSchema"}}
+                    }
+                }
+            },
+        )
+        assert get_paths(spec)["/pet/{petId}"]["get"]["requestBody"]["content"][
+            "application/json"
+        ]["schema"] == build_ref(spec, "schema", "PetSchema")
+
 
 class TestPlugins:
     @staticmethod

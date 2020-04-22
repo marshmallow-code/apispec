@@ -378,6 +378,9 @@ class APISpec:
         for operation in (operations or {}).values():
             if "parameters" in operation:
                 operation["parameters"] = self.clean_parameters(operation["parameters"])
+            # OAS 3
+            if "requestBody" in operation:
+                self._resolve_schema(operation["requestBody"])
             if "responses" in operation:
                 responses = OrderedDict()
                 for code, response in operation["responses"].items():
