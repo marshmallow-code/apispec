@@ -52,13 +52,14 @@ class OpenAPIConverter(FieldConverterMixin):
         spec
     """
 
-    def __init__(self, openapi_version, schema_name_resolver, spec):
+    def __init__(self, openapi_version, schema_name_resolver, spec, allow_null):
         self.openapi_version = OpenAPIVersion(openapi_version)
         self.schema_name_resolver = schema_name_resolver
         self.spec = spec
         self.init_attribute_functions()
         # Schema references
         self.refs = {}
+        self.allow_null = allow_null
 
     @staticmethod
     def _observed_name(field, name):

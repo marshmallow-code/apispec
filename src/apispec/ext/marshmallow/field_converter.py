@@ -211,7 +211,9 @@ class FieldConverterMixin:
             ret["default"] = field.metadata["doc_default"]
         else:
             default = field.missing
-            if default is not marshmallow.missing and not callable(default):
+            if not self.allow_null and default is None:
+                return {}
+            elif default is not marshmallow.missing and not callable(default):
                 if MARSHMALLOW_VERSION_INFO[0] >= 3:
                     default = field._serialize(default, None, None)
                 ret["default"] = default
@@ -271,6 +273,9 @@ class FieldConverterMixin:
         :param Field field: A marshmallow field.
         :rtype: dict
         """
+        if not self.allow_null:
+            return {}
+
         attributes = {}
         if field.allow_none:
             attributes[

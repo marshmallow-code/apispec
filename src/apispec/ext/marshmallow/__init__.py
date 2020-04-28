@@ -105,13 +105,22 @@ class MarshmallowPlugin(BasePlugin):
     Converter = OpenAPIConverter
     Resolver = SchemaResolver
 
-    def __init__(self, schema_name_resolver=None):
+    def __init__(self, schema_name_resolver=None, allow_null=True):
+        """
+        When `allow_null` is True, then None values can be represented either
+        with a `null` value, or by leaving the value empty.
+
+        When `allow_null` is False, then None values must be represented by
+        leaving the value empty (null is disallowed), which is the convention
+        followed by Typescript.
+        """
         super().__init__()
         self.schema_name_resolver = schema_name_resolver or resolver
         self.spec = None
         self.openapi_version = None
         self.converter = None
         self.resolver = None
+        self.allow_null = allow_null
 
     def init_spec(self, spec):
         super().init_spec(spec)
@@ -121,6 +130,7 @@ class MarshmallowPlugin(BasePlugin):
             openapi_version=spec.openapi_version,
             schema_name_resolver=self.schema_name_resolver,
             spec=spec,
+            allow_null=self.allow_null,
         )
         self.resolver = self.Resolver(
             openapi_version=spec.openapi_version, converter=self.converter
