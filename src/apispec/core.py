@@ -18,6 +18,15 @@ VALID_METHODS_OPENAPI_V3 = VALID_METHODS_OPENAPI_V2 + ["trace"]
 
 VALID_METHODS = {2: VALID_METHODS_OPENAPI_V2, 3: VALID_METHODS_OPENAPI_V3}
 
+COMPOSITION_PROPERTIES_OPENAPI_V2 = ("allOf",)
+
+COMPOSITION_PROPERTIES_OPENAPI_V3 = ("allOf", "anyOf", "oneOf", "not")
+
+COMPOSITION_PROPERTIES = {
+    2: COMPOSITION_PROPERTIES_OPENAPI_V2,
+    3: COMPOSITION_PROPERTIES_OPENAPI_V3,
+}
+
 
 class Components:
     """Stores OpenAPI components
@@ -300,12 +309,66 @@ class APISpec:
         Otherwise, it is assumed to be a reference name as string and the corresponding $ref
         string is returned.
 
-        :param str obj_type: "parameter" or "response"
-        :param dict|str obj: parameter or response in dict form or as ref_id string
+        :param str obj_type: "schema", "parameter", "response" or "security_scheme"
+        :param dict|str obj: object in dict form or as ref_id string
         """
         if isinstance(obj, dict):
             return obj
         return build_reference(obj_type, self.openapi_version.major, obj)
+
+    def _resolve_schema(self, obj):
+        """Replace schema reference as string with a $ref if needed."""
+        if not isinstance(obj, dict):
+            return obj
+        if self.openapi_version.major < 3:
+            if "schema" in obj:
+                obj["schema"] = self._resolve_schema_composition(obj["schema"])
+        else:
+            if "content" in obj:
+                for content in obj["content"].values():
+                    if "schema" in content:
+                        content["schema"] = self._resolve_schema_composition(
+                            content["schema"]
+                        )
+
+        return obj
+
+    def _resolve_schema_composition(self, obj):
+        """Replace schema references in compositions by $ref if necessary
+
+        For allowed keywords, see:
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.3.md#schemaObject
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
+
+        In case of anyOf, allOf, and oneOf, the possible schemas must be listed in an array.
+        """
+        if not isinstance(obj, (dict, str)):
+            return obj
+        if isinstance(obj, str):
+            return self.get_ref("schema", obj)
+
+        new_obj = OrderedDict()
+        composition_properties = COMPOSITION_PROPERTIES[self.openapi_version.major]
+
+        # treat compositions
+        for keyword in set(composition_properties) & obj.keys():
+            values = deepcopy(obj[keyword])
+            # openapi 3 allows "not" keyword which requires schema or reference
+            if keyword == "not":
+                new_obj["not"] = self.get_ref("schema", values)
+                continue
+            # everything else needs arrays
+            if not isinstance(values, list):
+                raise APISpecError("Property {} must take an array.".format(keyword))
+            new_obj[keyword] = [
+                self.get_ref("schema", definition) for definition in values
+            ]
+
+        # add remaining entries
+        for keyword in obj.keys() - set(composition_properties):
+            new_obj[keyword] = deepcopy(obj[keyword])
+
+        return new_obj
 
     def clean_parameters(self, parameters):
         """Ensure that all parameters with "in" equal to "path" are also required
@@ -365,6 +428,11 @@ class APISpec:
         for operation in (operations or {}).values():
             if "parameters" in operation:
                 operation["parameters"] = self.clean_parameters(operation["parameters"])
+            # OAS 3
+            if "requestBody" in operation:
+                operation["requestBody"] = self._resolve_schema(
+                    operation["requestBody"]
+                )
             if "responses" in operation:
                 responses = OrderedDict()
                 for code, response in operation["responses"].items():
@@ -374,5 +442,7 @@ class APISpec:
                         if self.openapi_version.major < 3 and code != "default":
                             warnings.warn("Non-integer code not allowed in OpenAPI < 3")
 
-                    responses[str(code)] = self.get_ref("response", response)
+                    responses[str(code)] = self.get_ref(
+                        "response", self._resolve_schema(response)
+                    )
                 operation["responses"] = responses

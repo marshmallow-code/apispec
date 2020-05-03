@@ -1,10 +1,15 @@
 from collections import OrderedDict
 from http import HTTPStatus
+from itertools import product
 
 import pytest
 import yaml
 
 from apispec import APISpec, BasePlugin
+from apispec.core import (
+    COMPOSITION_PROPERTIES_OPENAPI_V3,
+    COMPOSITION_PROPERTIES_OPENAPI_V2,
+)
 from apispec.exceptions import (
     APISpecError,
     DuplicateComponentNameError,
@@ -307,7 +312,7 @@ class TestPath:
                     }
                 ],
                 "responses": {
-                    "200": {"schema": "Pet", "description": "successful operation"},
+                    "200": {"description": "successful operation"},
                     "400": {"description": "Invalid ID supplied"},
                     "404": {"description": "Pet not found"},
                 },
@@ -617,6 +622,129 @@ class TestPath:
         message = "One or more HTTP methods are invalid"
         with pytest.raises(APISpecError, match=message):
             spec.path("/pet/{petId}", operations={"dummy": {}})
+
+    def test_path_resolve_response_schema(self, spec):
+        schema = {"schema": "PetSchema"}
+        if spec.openapi_version.major >= 3:
+            schema = {"content": {"application/json": schema}}
+        spec.path("/pet/{petId}", operations={"get": {"responses": {"200": schema}}})
+        resp = get_paths(spec)["/pet/{petId}"]["get"]["responses"]["200"]
+        if spec.openapi_version.major < 3:
+            schema = resp["schema"]
+        else:
+            schema = resp["content"]["application/json"]["schema"]
+        assert schema == build_ref(spec, "schema", "PetSchema")
+
+    @pytest.mark.parametrize(
+        "spec,composition_method",
+        product(["3.0.0"], COMPOSITION_PROPERTIES_OPENAPI_V3),
+        indirect=["spec"],
+    )
+    def test_path_resolve_response_schema_composition_v3(
+        self, spec, composition_method
+    ):
+        if composition_method == "not":
+            content = {
+                "content": {"application/json": {"schema": {"not": "DogSchema"}}}
+            }
+            expected_output = {"not": build_ref(spec, "schema", "DogSchema")}
+        else:
+            pet_schemas = ["CatSchema", "DogSchema"]
+            content = {
+                "content": {
+                    "application/json": {"schema": {composition_method: pet_schemas}}
+                }
+            }
+            expected_output = {
+                composition_method: [
+                    build_ref(spec, "schema", sch) for sch in pet_schemas
+                ]
+            }
+        spec.path("/pet/{petId}", operations={"get": {"responses": {"200": content}}})
+        resp = get_paths(spec)["/pet/{petId}"]["get"]["responses"]["200"]
+        output_schema = resp["content"]["application/json"]["schema"]
+        assert output_schema == expected_output
+
+    @pytest.mark.parametrize(
+        "spec,composition_method",
+        product(["2.0"], COMPOSITION_PROPERTIES_OPENAPI_V2),
+        indirect=["spec"],
+    )
+    def test_path_resolve_response_schema_composition_v2(
+        self, spec, composition_method
+    ):
+        pet_schemas = ["CatSchema", "DogSchema"]
+        content = {"schema": {composition_method: pet_schemas}}
+        expected_output = {
+            composition_method: [build_ref(spec, "schema", sch) for sch in pet_schemas]
+        }
+        spec.path("/pet/{petId}", operations={"get": {"responses": {"200": content}}})
+        resp = get_paths(spec)["/pet/{petId}"]["get"]["responses"]["200"]
+        output_schema = resp["schema"]
+        assert output_schema == expected_output
+
+    # requestBody only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_path_resolve_request_body(self, spec):
+        spec.path(
+            "/pet/{petId}",
+            operations={
+                "get": {
+                    "requestBody": {
+                        "content": {"application/json": {"schema": "PetSchema"}}
+                    }
+                }
+            },
+        )
+        assert get_paths(spec)["/pet/{petId}"]["get"]["requestBody"]["content"][
+            "application/json"
+        ]["schema"] == build_ref(spec, "schema", "PetSchema")
+
+    @pytest.mark.parametrize(
+        "spec,composition_method",
+        product(["3.0.0"], COMPOSITION_PROPERTIES_OPENAPI_V3),
+        indirect=["spec"],
+    )
+    def test_path_resolve_request_body_composition(self, spec, composition_method):
+        if composition_method == "not":
+            content = {
+                "content": {"application/json": {"schema": {"not": "PetSchema"}}}
+            }
+            expected_output = {"not": build_ref(spec, "schema", "PetSchema")}
+        else:
+            pet_schemas = ["CatSchema", "DogSchema"]
+            content = {
+                "content": {
+                    "application/json": {"schema": {composition_method: pet_schemas}}
+                }
+            }
+            expected_output = {
+                composition_method: [
+                    build_ref(spec, "schema", sch) for sch in pet_schemas
+                ]
+            }
+        spec.path(
+            "/pet/{petId}", operations={"get": {"requestBody": content}},
+        )
+        assert (
+            get_paths(spec)["/pet/{petId}"]["get"]["requestBody"]["content"][
+                "application/json"
+            ]["schema"]
+            == expected_output
+        )
+
+    def test_path_resolve_response_composition_fail(self, spec):
+        if spec.openapi_version.major >= 3:
+            content = {
+                "content": {"application/json": {"schema": {"allOf": "PetSchema"}}}
+            }
+        else:
+            content = {"schema": {"allOf": "PetSchema"}}
+
+        with pytest.raises(APISpecError):
+            spec.path(
+                "/pet/{petId}", operations={"get": {"responses": {"200": content}}}
+            )
 
 
 class TestPlugins:
