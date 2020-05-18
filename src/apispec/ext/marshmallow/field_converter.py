@@ -13,7 +13,7 @@ import warnings
 
 import marshmallow
 from marshmallow.orderedset import OrderedSet
-
+import marshmallow_enum
 
 RegexType = type(re.compile(""))
 
@@ -101,6 +101,7 @@ class FieldConverterMixin:
             self.nested2properties,
             self.list2properties,
             self.dict2properties,
+            self.enum2properties,
         ]
 
     def map_to_openapi_type(self, *args):
@@ -458,3 +459,13 @@ class FieldConverterMixin:
                 if value_field:
                     ret["additionalProperties"] = self.field2property(value_field)
         return ret
+
+    def enum2properties(self, field, **kwargs):
+        """Return a dictionary of properties from :class:`Enum <marshmallow_enum.EnumField>` fields.
+
+        :param Field field: A marshmallow field.
+        :rtype: dict
+        """
+        if isinstance(field, marshmallow_enum.EnumField):
+            return {"type": "string", "enum": [m.value for m in field.enum]}
+        return {}

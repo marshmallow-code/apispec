@@ -3,7 +3,9 @@ import json
 import pytest
 
 from marshmallow.fields import Field, DateTime, Dict, String, Nested, List
+from marshmallow_enum import EnumField
 from marshmallow import Schema
+from enum import Enum
 
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
@@ -880,3 +882,33 @@ class TestList:
 
         result = get_schemas(spec)["SchemaWithList"]["properties"]["list_field"]
         assert result == {"items": build_ref(spec, "schema", "Pet"), "type": "array"}
+
+
+class TestEnum:
+    def test_numeric_enum(self, spec):
+        class StopLight(Enum):
+            green = 1
+            yellow = 2
+            red = 3
+
+        class SchemaWithEnum(Schema):
+            enum_field = EnumField(StopLight)
+
+        spec.components.schema("SchemaWithEnum", schema=SchemaWithEnum)
+
+        result = get_schemas(spec)["SchemaWithEnum"]["properties"]["enum_field"]
+        assert result == {"type": "string", "enum": [1, 2, 3]}
+
+    def test_string_enum(self, spec):
+        class StopLight(Enum):
+            GREEN = "green"
+            YELLOW = "yellow"
+            RED = "red"
+
+        class SchemaWithEnum(Schema):
+            enum_field = EnumField(StopLight)
+
+        spec.components.schema("SchemaWithEnum", schema=SchemaWithEnum)
+
+        result = get_schemas(spec)["SchemaWithEnum"]["properties"]["enum_field"]
+        assert result == {"type": "string", "enum": ["green", "yellow", "red"]}
