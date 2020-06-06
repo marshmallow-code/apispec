@@ -93,7 +93,7 @@ class OpenAPIConverter(FieldConverterMixin):
             name = self.schema_name_resolver(schema)
             if not name:
                 try:
-                    json_schema = self.schema2jsonschema(schema)
+                    json_schema = self.schema2jsonschema(schema_instance)
                 except RuntimeError:
                     raise APISpecError(
                         "Name resolver returned None for schema {schema} which is "

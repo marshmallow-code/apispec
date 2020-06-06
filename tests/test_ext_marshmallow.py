@@ -558,6 +558,55 @@ class TestOperationHelper:
             "schema"
         ] == build_ref(spec, "schema", "Pet")
 
+    @pytest.mark.parametrize(
+        "pet_schema", (PetSchema, PetSchema(), "tests.schemas.PetSchema"),
+    )
+    def test_schema_name_resolver_returns_none_v2(self, pet_schema):
+        def resolver(schema):
+            return None
+
+        spec = APISpec(
+            title="Test resolver returns None",
+            version="0.1",
+            openapi_version="2.0",
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
+        )
+        spec.path(
+            path="/pet",
+            operations={"get": {"responses": {200: {"schema": pet_schema}}}},
+        )
+        get = get_paths(spec)["/pet"]["get"]
+        assert "properties" in get["responses"]["200"]["schema"]
+
+    @pytest.mark.parametrize(
+        "pet_schema", (PetSchema, PetSchema(), "tests.schemas.PetSchema"),
+    )
+    def test_schema_name_resolver_returns_none_v3(self, pet_schema):
+        def resolver(schema):
+            return None
+
+        spec = APISpec(
+            title="Test resolver returns None",
+            version="0.1",
+            openapi_version="3.0.0",
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
+        )
+        spec.path(
+            path="/pet",
+            operations={
+                "get": {
+                    "responses": {
+                        200: {"content": {"application/json": {"schema": pet_schema}}}
+                    }
+                }
+            },
+        )
+        get = get_paths(spec)["/pet"]["get"]
+        assert (
+            "properties"
+            in get["responses"]["200"]["content"]["application/json"]["schema"]
+        )
+
     @pytest.mark.parametrize("spec_fixture", ("2.0",), indirect=True)
     def test_schema_uses_ref_in_parameters_and_request_body_if_available_v2(
         self, spec_fixture
