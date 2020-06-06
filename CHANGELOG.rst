@@ -1,6 +1,16 @@
 Changelog
 ---------
 
+3.3.1 (unreleased)
+******************
+
+Bug fixes:
+
+- Fix ``MarshmallowPlugin`` crash when ``resolve_schema_dict`` is passed a
+  schema as string and ``schema_name_resolver`` returns ``None``
+  (:issue:`566`). Thanks :user:`black3r` for reporting and thanks
+  :user:`Bangterm` for the PR.
+
 3.3.0 (2020-02-14)
 ******************
 
