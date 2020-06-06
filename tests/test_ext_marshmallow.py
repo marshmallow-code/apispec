@@ -515,6 +515,49 @@ class TestOperationHelper:
             "schema"
         ] == build_ref(spec_fixture.spec, "schema", "Pet")
 
+    def test_schema_uses_ref_if_available_name_resolver_returns_none_v2(self):
+        def resolver(schema):
+            return None
+
+        spec = APISpec(
+            title="Test auto-reference",
+            version="0.1",
+            openapi_version="2.0",
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
+        )
+        spec.components.schema("Pet", schema=PetSchema)
+        spec.path(
+            path="/pet", operations={"get": {"responses": {200: {"schema": PetSchema}}}}
+        )
+        get = get_paths(spec)["/pet"]["get"]
+        assert get["responses"]["200"]["schema"] == build_ref(spec, "schema", "Pet")
+
+    def test_schema_uses_ref_if_available_name_resolver_returns_none_v3(self):
+        def resolver(schema):
+            return None
+
+        spec = APISpec(
+            title="Test auto-reference",
+            version="0.1",
+            openapi_version="3.0.0",
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
+        )
+        spec.components.schema("Pet", schema=PetSchema)
+        spec.path(
+            path="/pet",
+            operations={
+                "get": {
+                    "responses": {
+                        200: {"content": {"application/json": {"schema": PetSchema}}}
+                    }
+                }
+            },
+        )
+        get = get_paths(spec)["/pet"]["get"]
+        assert get["responses"]["200"]["content"]["application/json"][
+            "schema"
+        ] == build_ref(spec, "schema", "Pet")
+
     @pytest.mark.parametrize(
         "pet_schema", (PetSchema, PetSchema(), "tests.schemas.PetSchema"),
     )
