@@ -19,16 +19,6 @@ class TestMarshmallowFieldToOpenAPI:
         else:
             assert res[0]["schema"]["default"] == "bar"
 
-    def test_fields_location_mapping(self, openapi):
-        field_dict = {"field": fields.Str()}
-        res = openapi._fields2parameters(field_dict, location="cookies")
-        assert res[0]["in"] == "cookie"
-
-    def test_fields_default_location_mapping(self, openapi):
-        field_dict = {"field": fields.Str()}
-        res = openapi._fields2parameters(field_dict, location="headers")
-        assert res[0]["in"] == "header"
-
     # json/body is invalid for OpenAPI 3
     @pytest.mark.parametrize("openapi", ("2.0",), indirect=True)
     def test_fields_default_location_mapping_if_schema_many(self, openapi):
