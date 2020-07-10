@@ -91,14 +91,16 @@ def filter_excluded_fields(fields, Meta, *, exclude_dump_only):
 
     :param dict fields: A dictionary of fields name field object pairs
     :param Meta: the schema's Meta class
-    :param bool exclude_dump_only: whether to filter fields in Meta.dump_only
+    :param bool exclude_dump_only: whether to filter dump_only fields
     """
     exclude = list(getattr(Meta, "exclude", []))
     if exclude_dump_only:
         exclude.extend(getattr(Meta, "dump_only", []))
 
     filtered_fields = OrderedDict(
-        (key, value) for key, value in fields.items() if key not in exclude
+        (key, value)
+        for key, value in fields.items()
+        if key not in exclude and not (exclude_dump_only and value.dump_only)
     )
 
     return filtered_fields
