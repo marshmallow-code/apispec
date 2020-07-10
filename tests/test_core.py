@@ -60,7 +60,7 @@ def spec(request):
         version="1.0.0",
         openapi_version=openapi_version,
         info={"description": description},
-        **security_kwargs
+        **security_kwargs,
     )
 
 
@@ -742,10 +742,10 @@ class TestPluginsOrder:
             self.output = output
 
         def path_helper(self, path, operations, **kwargs):
-            self.output.append("plugin_{}_path".format(self.index))
+            self.output.append(f"plugin_{self.index}_path")
 
         def operation_helper(self, path, operations, **kwargs):
-            self.output.append("plugin_{}_operations".format(self.index))
+            self.output.append(f"plugin_{self.index}_operations")
 
     def test_plugins_order(self):
         """Test plugins execution order in APISpec.path

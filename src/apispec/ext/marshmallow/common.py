@@ -61,7 +61,7 @@ def get_fields(schema, *, exclude_dump_only=False):
         fields = copy.deepcopy(schema._declared_fields)
     else:
         raise ValueError(
-            "{!r} doesn't have either `fields` or `_declared_fields`.".format(schema)
+            f"{schema!r} doesn't have either `fields` or `_declared_fields`."
         )
     Meta = getattr(schema, "Meta", None)
     warn_if_fields_defined_in_meta(fields, Meta)

@@ -103,7 +103,7 @@ class OpenAPIVersion(version.LooseVersion):
             < self.MAX_EXCLUSIVE_VERSION
         ):
             raise exceptions.APISpecError(
-                "Not a valid OpenAPI version number: {}".format(openapi_version)
+                f"Not a valid OpenAPI version number: {openapi_version}"
             )
         super().__init__(openapi_version)
 
