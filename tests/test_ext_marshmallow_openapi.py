@@ -43,9 +43,7 @@ class TestMarshmallowFieldToOpenAPI:
         class UserSchema(Schema):
             name = fields.Str(dump_only=True)
 
-        res = openapi._fields2parameters(UserSchema._declared_fields, location="query")
-        assert len(res) == 0
-        res = openapi._fields2parameters(UserSchema().fields, location="query")
+        res = openapi.schema2parameters(schema=UserSchema(), location="query")
         assert len(res) == 0
 
         class UserSchema(Schema):
@@ -54,7 +52,7 @@ class TestMarshmallowFieldToOpenAPI:
             class Meta:
                 dump_only = ("name",)
 
-        res = openapi.schema2parameters(schema=UserSchema, location="query")
+        res = openapi.schema2parameters(schema=UserSchema(), location="query")
         assert len(res) == 0
 
 
