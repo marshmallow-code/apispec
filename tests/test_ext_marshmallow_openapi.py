@@ -12,8 +12,10 @@ from .utils import get_schemas, build_ref
 
 class TestMarshmallowFieldToOpenAPI:
     def test_fields_with_missing_load(self, openapi):
-        field_dict = {"field": fields.Str(default="foo", missing="bar")}
-        res = openapi._fields2parameters(field_dict, location="query")
+        class MySchema(Schema):
+            field = fields.Str(default="foo", missing="bar")
+
+        res = openapi.schema2parameters(MySchema, location="query")
         if openapi.openapi_version.major < 3:
             assert res[0]["default"] == "bar"
         else:
@@ -313,8 +315,11 @@ class TestMarshmallowSchemaToParameters:
             openapi.schema2parameters(UserSchema(many=True), location="query")
 
     def test_fields_query(self, openapi):
-        field_dict = {"name": fields.Str(), "email": fields.Email()}
-        res = openapi._fields2parameters(field_dict, location="query")
+        class MySchema(Schema):
+            name = fields.Str()
+            email = fields.Email()
+
+        res = openapi.schema2parameters(MySchema, location="query")
         assert len(res) == 2
         res.sort(key=lambda param: param["name"])
         assert res[0]["name"] == "email"

@@ -117,6 +117,9 @@ class OpenAPIConverter(FieldConverterMixin):
         of a single parameter; else return an array of a parameter for each included field in
         the :class:`Schema <marshmallow.Schema>`.
 
+        In OpenAPI 3, only "query", "header", "path" or "cookie" are allowed for the location
+        of parameters. "requestBody" is used when fields are in the body.
+
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
         """
         openapi_location = __location_map__.get(location, location)
@@ -138,22 +141,6 @@ class OpenAPIConverter(FieldConverterMixin):
 
         fields = get_fields(schema, exclude_dump_only=True)
 
-        return self._fields2parameters(fields, location=location)
-
-    def _fields2parameters(self, fields, *, location):
-        """Return an array of OpenAPI parameters given a mapping between field names and
-        :class:`Field <marshmallow.Field>` objects. If `location` is "body", then return an array
-        of a single parameter; else return an array of a parameter for each included field in
-        the :class:`Schema <marshmallow.Schema>`.
-
-        In OpenAPI 3, only "query", "header", "path" or "cookie" are allowed for the location
-        of parameters. In OpenAPI 3, "requestBody" is used when fields are in the body.
-
-        This function always returns a list, with a parameter
-        for each included field in the :class:`Schema <marshmallow.Schema>`.
-
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
-        """
         return [
             self._field2parameter(
                 field_obj,
