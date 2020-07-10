@@ -22,11 +22,6 @@ from .common import (
 )
 
 
-MARSHMALLOW_VERSION_INFO = tuple(
-    [int(part) for part in marshmallow.__version__.split(".") if part.isdigit()]
-)
-
-
 __location_map__ = {
     "match_info": "path",
     "query": "query",
@@ -59,21 +54,6 @@ class OpenAPIConverter(FieldConverterMixin):
         self.init_attribute_functions()
         # Schema references
         self.refs = {}
-
-    @staticmethod
-    def _observed_name(field, name):
-        """Adjust field name to reflect `dump_to` and `load_from` attributes.
-
-        :param Field field: A marshmallow field.
-        :param str name: Field name
-        :rtype: str
-        """
-        if MARSHMALLOW_VERSION_INFO[0] < 3:
-            # use getattr in case we're running against older versions of marshmallow.
-            dump_to = getattr(field, "dump_to", None)
-            load_from = getattr(field, "load_from", None)
-            return dump_to or load_from or name
-        return field.data_key or name
 
     def resolve_nested_schema(self, schema):
         """Return the OpenAPI representation of a marshmallow Schema.
@@ -143,9 +123,7 @@ class OpenAPIConverter(FieldConverterMixin):
 
         return [
             self._field2parameter(
-                field_obj,
-                name=self._observed_name(field_obj, field_name),
-                location=location,
+                field_obj, name=field_obj.data_key or field_name, location=location,
             )
             for field_name, field_obj in fields.items()
         ]
@@ -212,7 +190,7 @@ class OpenAPIConverter(FieldConverterMixin):
         jsonschema = {"type": "object", "properties": OrderedDict() if ordered else {}}
 
         for field_name, field_obj in fields.items():
-            observed_field_name = self._observed_name(field_obj, field_name)
+            observed_field_name = field_obj.data_key or field_name
             property = self.field2property(field_obj)
             jsonschema["properties"][observed_field_name] = property
 

@@ -7,7 +7,6 @@ from marshmallow import Schema
 
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
-from apispec.ext.marshmallow.openapi import MARSHMALLOW_VERSION_INFO
 from apispec.ext.marshmallow import common
 from apispec.exceptions import APISpecError
 from .schemas import (
@@ -883,9 +882,6 @@ class TestSchemaWithDefaultValues:
         assert "default" not in props["numbers"]
 
 
-@pytest.mark.skipif(
-    MARSHMALLOW_VERSION_INFO[0] < 3, reason="Values ignored in marshmallow 2"
-)
 class TestDictValues:
     def test_dict_values_resolve_to_additional_properties(self, spec):
         class SchemaWithDict(Schema):
