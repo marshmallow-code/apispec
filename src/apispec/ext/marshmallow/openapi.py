@@ -161,7 +161,6 @@ class OpenAPIConverter(FieldConverterMixin):
                 location=location,
             )
             for field_name, field_obj in fields.items()
-            if not field_obj.dump_only
         ]
 
     def _field2parameter(self, field, *, name, location):
