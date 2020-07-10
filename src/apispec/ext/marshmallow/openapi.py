@@ -170,29 +170,11 @@ class OpenAPIConverter(FieldConverterMixin):
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
         """
-        return self._property2parameter(
-            self.field2property(field),
-            name=name,
-            required=field.required,
-            multiple=isinstance(field, marshmallow.fields.List),
-            location=location,
-        )
-
-    def _property2parameter(self, prop, *, name, required, multiple, location):
-        """Return the Parameter Object definition for a JSON Schema property.
-
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
-
-        :param dict prop: JSON Schema property
-        :param str name: Field name
-        :param bool required: Parameter is required
-        :param bool multiple: Parameter is repeated
-        :param str location: Location to look for ``name``
-        :raise: TranslationError if arg object cannot be translated to a Parameter Object schema.
-        :rtype: dict, a Parameter Object
-        """
         openapi_location = __location_map__.get(location, location)
-        ret = {"in": openapi_location, "name": name, "required": required}
+        ret = {"in": openapi_location, "name": name, "required": field.required}
+
+        prop = self.field2property(field)
+        multiple = isinstance(field, marshmallow.fields.List)
 
         if self.openapi_version.major < 3:
             if multiple:
