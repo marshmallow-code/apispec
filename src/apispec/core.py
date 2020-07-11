@@ -221,11 +221,14 @@ class APISpec:
         ret = deepupdate(ret, self.options)
         return ret
 
-    def to_yaml(self):
-        """Render the spec to YAML. Requires PyYAML to be installed."""
-        from .yaml_utils import dict_to_yaml
+    def to_yaml(self, **kwargs):
+        """Render the spec to YAML. Requires PyYAML to be installed.
 
-        return dict_to_yaml(self.to_dict())
+        :param dict kwargs: parameters used by :meth:`yaml.dump`
+        """
+        from .yaml_utils import yaml, YAMLDumper
+
+        return yaml.dump(self.to_dict(), Dumper=YAMLDumper, **kwargs)
 
     def tag(self, tag):
         """ Store information about a tag.

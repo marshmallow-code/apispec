@@ -15,10 +15,6 @@ class YAMLDumper(yaml.Dumper):
 yaml.add_representer(OrderedDict, YAMLDumper._represent_dict, Dumper=YAMLDumper)
 
 
-def dict_to_yaml(dic):
-    return yaml.dump(dic, Dumper=YAMLDumper)
-
-
 def load_yaml_from_docstring(docstring):
     """Loads YAML from docstring."""
     split_lines = trim_docstring(docstring).split("\n")
