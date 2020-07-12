@@ -20,6 +20,7 @@ from .schemas import (
     PatternedObjectSchema,
     DefaultValuesSchema,
     AnalysisWithListSchema,
+    SampleSchema,
 )
 
 from .utils import get_schemas, get_parameters, get_responses, get_paths, ref_path
@@ -769,3 +770,43 @@ class TestList:
 
         result = get_schemas(spec)["SchemaWithList"]["properties"]["list_field"]
         assert result == {"items": {"$ref": ref_path(spec) + "Pet"}, "type": "array"}
+
+
+class TestSchemaCombinators:
+    def get_spec(self):
+        def resolver(schema):
+            return None
+
+        return APISpec(
+            title="Test combinators",
+            version="0.1",
+            openapi_version="3.0.0",
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
+        )
+
+    @pytest.mark.parametrize("combinator", ["oneOf", "anyOf", "allOf"])
+    def test_all_combinators_output_a_list(self, combinator):
+        spec = self.get_spec()
+        spec.components.schema("Pet", schema=PetSchema)
+        spec.components.schema("Sample", schema=SampleSchema)
+        spec.path(
+            path="/pet_or_sample",
+            operations={
+                "get": {
+                    "responses": {
+                        200: {
+                            "content": {
+                                "application/json": {
+                                    "schema": {combinator: [PetSchema, SampleSchema]}
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+        )
+        get = get_paths(spec)["/pet_or_sample"]["get"]
+
+        assert get["responses"][200]["content"]["application/json"]["schema"][
+            combinator
+        ] == [{"$ref": ref_path(spec) + "Pet"}, {"$ref": ref_path(spec) + "Sample"}]
