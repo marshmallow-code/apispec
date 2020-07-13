@@ -395,7 +395,7 @@ class FieldConverterMixin:
         """
         # Dasherize metadata that starts with x_
         metadata = {
-            key.replace("_", "-") if key.startswith("x_") else key: value
+            key.replace("_", "-") if str(key).startswith("x_") else key: value
             for key, value in field.metadata.items()
         }
 
@@ -403,7 +403,7 @@ class FieldConverterMixin:
         ret = {
             key: value
             for key, value in metadata.items()
-            if key in _VALID_PROPERTIES or key.startswith(_VALID_PREFIX)
+            if key in _VALID_PROPERTIES or str(key).startswith(_VALID_PREFIX)
         }
         return ret
 
