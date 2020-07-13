@@ -296,7 +296,6 @@ def test_custom_properties_for_custom_fields(spec_fixture):
 
 
 def test_field2property_with_non_string_metadata_keys(spec_fixture):
-
     class _DesertSentinel:
         pass
 
