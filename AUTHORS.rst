@@ -64,3 +64,4 @@ Contributors (chronological)
 - Fedor Fominykh `@fedorfo <https://github.com/fedorfo>`_
 - Colin Bounouar `@Colin-b <https://github.com/Colin-b>`_
 - David Bishop `@teancom <https://github.com/teancom>`_
+- Andrea Ghensi `@sanzoghenzo <https://github.com/sanzoghenzo>`_

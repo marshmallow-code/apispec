@@ -293,3 +293,13 @@ def test_custom_properties_for_custom_fields(spec_fixture):
     assert properties["x-customString"] == (
         spec_fixture.openapi.openapi_version == "2.0"
     )
+
+
+def test_field2property_with_non_string_metadata_keys(spec_fixture):
+    class _DesertSentinel:
+        pass
+
+    field = fields.Boolean(description="A description")
+    field.metadata[_DesertSentinel()] = "to be ignored"
+    result = spec_fixture.openapi.field2property(field)
+    assert result == {"description": "A description", "type": "boolean"}
