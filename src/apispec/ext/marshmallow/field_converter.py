@@ -395,18 +395,16 @@ class FieldConverterMixin:
         """
         # Dasherize metadata that starts with x_
         metadata = {
-            key.replace("_", "-")
-            if isinstance(key, str) and key.startswith("x_")
-            else key: value
+            key.replace("_", "-") if key.startswith("x_") else key: value
             for key, value in field.metadata.items()
+            if isinstance(key, str)
         }
 
         # Avoid validation error with "Additional properties not allowed"
         ret = {
             key: value
             for key, value in metadata.items()
-            if key in _VALID_PROPERTIES
-            or (isinstance(key, str) and key.startswith(_VALID_PREFIX))
+            if key in _VALID_PROPERTIES or key.startswith(_VALID_PREFIX)
         }
         return ret
 
