@@ -219,7 +219,7 @@ class TestMarshmallowSchemaToParameters:
     @pytest.mark.parametrize("ListClass", [fields.List, CustomList])
     def test_field_multiple(self, ListClass, openapi):
         field = ListClass(fields.Str)
-        res = openapi._field2parameter(field, name="field", location="querystring")
+        res = openapi._field2parameter(field, name="field", location="query")
         assert res["in"] == "query"
         if openapi.openapi_version.major < 3:
             assert res["type"] == "array"
@@ -441,7 +441,7 @@ def test_openapi_tools_validate_v2():
                         field=fields.List(
                             fields.Str(), validate=validate.OneOf(["freddie", "roger"]),
                         ),
-                        location="querystring",
+                        location="query",
                         name="body",
                     ),
                 ]
@@ -497,7 +497,7 @@ def test_openapi_tools_validate_v3():
                         field=fields.List(
                             fields.Str(), validate=validate.OneOf(["freddie", "roger"]),
                         ),
-                        location="querystring",
+                        location="query",
                         name="body",
                     ),
                 ]

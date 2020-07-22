@@ -122,11 +122,11 @@ class OpenAPIConverter(FieldConverterMixin):
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
         """
-        openapi_location = __location_map__.get(location, location)
+        location = __location_map__.get(location, location)
         # OAS 2 body parameter
-        if openapi_location == "body":
+        if location == "body":
             param = {
-                "in": openapi_location,
+                "in": location,
                 "required": required,
                 "name": name,
                 "schema": self.resolve_nested_schema(schema),
@@ -156,8 +156,7 @@ class OpenAPIConverter(FieldConverterMixin):
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
         """
-        openapi_location = __location_map__.get(location, location)
-        ret = {"in": openapi_location, "name": name, "required": field.required}
+        ret = {"in": location, "name": name, "required": field.required}
 
         prop = self.field2property(field)
         multiple = isinstance(field, marshmallow.fields.List)
