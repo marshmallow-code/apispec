@@ -82,6 +82,8 @@ Example Application
         ---
         get:
           description: Get a random pet
+          security:
+            - ApiKeyAuth: []
           responses:
             200:
               content:
@@ -110,6 +112,11 @@ Generated OpenAPI Spec
     #     "/random": {
     #       "get": {
     #         "description": "Get a random pet",
+    #         "security": [
+    #           {
+    #             "ApiKeyAuth": []
+    #           }
+    #         ],
     #         "responses": {
     #           "200": {
     #             "content": {
