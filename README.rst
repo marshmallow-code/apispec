@@ -67,6 +67,11 @@ Example Application
         name = fields.Str()
 
 
+    # Optional security scheme support
+    api_key_scheme = {"type": "apiKey", "in": "header", "name": "X-API-Key"}
+    spec.components.security_scheme("ApiKeyAuth", api_key_scheme)
+
+
     # Optional Flask support
     app = Flask(__name__)
 
@@ -77,6 +82,8 @@ Example Application
         ---
         get:
           description: Get a random pet
+          security:
+            - ApiKeyAuth: []
           responses:
             200:
               content:
@@ -105,6 +112,11 @@ Generated OpenAPI Spec
     #     "/random": {
     #       "get": {
     #         "description": "Get a random pet",
+    #         "security": [
+    #           {
+    #             "ApiKeyAuth": []
+    #           }
+    #         ],
     #         "responses": {
     #           "200": {
     #             "content": {
@@ -158,6 +170,13 @@ Generated OpenAPI Spec
     #           }
     #         }
     #       }
+    #       "securitySchemes": {
+    #          "ApiKeyAuth": {
+    #            "type": "apiKey",
+    #            "in": "header",
+    #            "name": "X-API-Key"
+    #         }
+    #       }
     #     }
     #   }
     # }
@@ -180,6 +199,11 @@ Generated OpenAPI Spec
     #           type: array
     #         name: {type: string}
     #       type: object
+    #   securitySchemes:
+    #     ApiKeyAuth:
+    #       in: header
+    #       name: X-API-KEY
+    #       type: apiKey
     # info: {title: Swagger Petstore, version: 1.0.0}
     # openapi: 3.0.2
     # paths:
@@ -191,6 +215,8 @@ Generated OpenAPI Spec
     #           content:
     #             application/json:
     #               schema: {$ref: '#/components/schemas/Pet'}
+    #       security:
+    #       - ApiKeyAuth: []
     # tags: []
 
 

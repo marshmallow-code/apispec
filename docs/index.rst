@@ -47,6 +47,11 @@ Example Application
         name = fields.Str()
 
 
+    # Optional security scheme support
+    api_key_scheme = {"type": "apiKey", "in": "header", "name": "X-API-Key"}
+    spec.components.security_scheme("ApiKeyAuth", api_key_scheme)
+
+
     # Optional Flask support
     app = Flask(__name__)
 
@@ -57,6 +62,8 @@ Example Application
         ---
         get:
           description: Get a random pet
+          security:
+            - ApiKeyAuth: []
           responses:
             200:
               description: Return a pet
@@ -121,13 +128,25 @@ Generated OpenAPI Spec
     #             "type": "string"
     #           }
     #         }
-    #       }
+    #       },
+    #     }
+    #   },
+    #   "securitySchemes": {
+    #      "ApiKeyAuth": {
+    #        "type": "apiKey",
+    #        "in": "header",
+    #        "name": "X-API-Key"
     #     }
     #   },
     #   "paths": {
     #     "/random": {
     #       "get": {
     #         "description": "Get a random pet",
+    #         "security": [
+    #           {
+    #             "ApiKeyAuth": []
+    #           }
+    #         ],
     #         "responses": {
     #           "200": {
     #             "description": "Return a pet",
@@ -171,6 +190,11 @@ Generated OpenAPI Spec
     #         name:
     #           type: string
     #       type: object
+    #   securitySchemes:
+    #     ApiKeyAuth:
+    #       in: header
+    #       name: X-API-KEY
+    #       type: apiKey
     # paths:
     #   /random:
     #     get:
@@ -182,6 +206,8 @@ Generated OpenAPI Spec
     #               schema:
     #                 $ref: '#/components/schemas/Pet'
     #           description: Return a pet
+    #       security:
+    #       - ApiKeyAuth: []
 
 User Guide
 ==========
