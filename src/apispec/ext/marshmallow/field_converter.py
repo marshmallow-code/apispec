@@ -397,6 +397,7 @@ class FieldConverterMixin:
         metadata = {
             key.replace("_", "-") if key.startswith("x_") else key: value
             for key, value in field.metadata.items()
+            if isinstance(key, str)
         }
 
         # Avoid validation error with "Additional properties not allowed"
