@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+3.3.2 (2020-08-29)
+******************
+
+Bug fixes:
+
+- Fix crash when field metadata contains non-string keys (:pr:`596`).
+  Thanks :user:`sanzoghenzo` for the fix.
+
 3.3.1 (2020-06-06)
 ******************
 
