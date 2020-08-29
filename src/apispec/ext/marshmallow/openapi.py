@@ -67,7 +67,12 @@ class OpenAPIConverter(FieldConverterMixin):
 
         :param schema: schema to add to the spec
         """
-        schema_instance = resolve_schema_instance(schema)
+        try:
+            schema_instance = resolve_schema_instance(schema)
+        # If schema is a string and is not found in registry,
+        # assume it is a schema reference
+        except marshmallow.exceptions.RegistryError:
+            return build_reference("schema", self.openapi_version.major, schema)
         schema_key = make_schema_key(schema_instance)
         if schema_key not in self.refs:
             name = self.schema_name_resolver(schema)

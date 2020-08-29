@@ -162,8 +162,8 @@ class SchemaResolver:
 
     def resolve_schema_dict(self, schema):
         """Resolve a marshmallow Schema class, object, or a string that resolves
-        to a Schema class or an OpenAPI Schema Object containing one of the above
-        to an OpenAPI Schema Object or Reference Object.
+        to a Schema class or a schema reference or an OpenAPI Schema Object
+        containing one of the above to an OpenAPI Schema Object or Reference Object.
 
         If the input is a marshmallow Schema class, object or a string that resolves
         to a Schema class the Schema will be translated to an OpenAPI Schema Object
