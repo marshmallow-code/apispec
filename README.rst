@@ -14,9 +14,9 @@ apispec
    :target: https://apispec.readthedocs.io/
    :alt: Documentation
 
-.. image:: https://badgen.net/badge/marshmallow/2,3?list=1
+.. image:: https://badgen.net/badge/marshmallow/3?list=1
     :target: https://marshmallow.readthedocs.io/en/latest/upgrading.html
-    :alt: marshmallow 2/3 compatible
+    :alt: marshmallow 3 only
 
 .. image:: https://badgen.net/badge/OAS/2,3?list=1&color=cyan
     :target: https://github.com/OAI/OpenAPI-Specification

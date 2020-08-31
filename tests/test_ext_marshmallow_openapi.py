@@ -3,7 +3,6 @@ import pytest
 from marshmallow import fields, Schema, validate
 
 from apispec.ext.marshmallow import MarshmallowPlugin
-from apispec.ext.marshmallow.openapi import MARSHMALLOW_VERSION_INFO
 from apispec import exceptions, utils, APISpec
 
 from .schemas import CustomList, CustomStringField
@@ -71,36 +70,7 @@ class TestMarshmallowSchemaToModelDefinition:
         assert props["email"]["format"] == "email"
         assert props["email"]["description"] == "email address of the user"
 
-    @pytest.mark.skipif(
-        MARSHMALLOW_VERSION_INFO[0] >= 3, reason="Behaviour changed in marshmallow 3"
-    )
-    def test_schema2jsonschema_override_name_ma2(self, openapi):
-        class ExampleSchema(Schema):
-            _id = fields.Int(load_from="id", dump_to="id")
-            _dt = fields.Int(load_from="lf_no_match", dump_to="dt")
-            _lf = fields.Int(load_from="lf")
-            _global = fields.Int(load_from="global", dump_to="global")
-
-            class Meta:
-                exclude = ("_global",)
-
-        res = openapi.schema2jsonschema(ExampleSchema)
-        assert res["type"] == "object"
-        props = res["properties"]
-        # `_id` renamed to `id`
-        assert "_id" not in props and props["id"]["type"] == "integer"
-        # `load_from` and `dump_to` do not match, `dump_to` is used
-        assert "lf_no_match" not in props
-        assert props["dt"]["type"] == "integer"
-        # `load_from` and no `dump_to`, `load_from` is used
-        assert props["lf"]["type"] == "integer"
-        # `_global` excluded correctly
-        assert "_global" not in props and "global" not in props
-
-    @pytest.mark.skipif(
-        MARSHMALLOW_VERSION_INFO[0] < 3, reason="Behaviour changed in marshmallow 3"
-    )
-    def test_schema2jsonschema_override_name_ma3(self, openapi):
+    def test_schema2jsonschema_override_name(self, openapi):
         class ExampleSchema(Schema):
             _id = fields.Int(data_key="id")
             _global = fields.Int(data_key="global")
@@ -184,13 +154,7 @@ class TestMarshmallowSchemaToModelDefinition:
             assert "email" not in props
 
     def test_observed_field_name_for_required_field(self, openapi):
-        if MARSHMALLOW_VERSION_INFO[0] < 3:
-            fields_dict = {
-                "user_id": fields.Int(load_from="id", dump_to="id", required=True)
-            }
-        else:
-            fields_dict = {"user_id": fields.Int(data_key="id", required=True)}
-
+        fields_dict = {"user_id": fields.Int(data_key="id", required=True)}
         res = openapi.fields2jsonschema(fields_dict)
         assert res["required"] == ["id"]
 
