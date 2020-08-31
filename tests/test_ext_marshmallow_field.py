@@ -59,8 +59,6 @@ def test_formatted_field_translates_to_array(ListClass, spec_fixture):
 @pytest.mark.parametrize(
     ("FieldClass", "expected_format"),
     [
-        (fields.Integer, "int32"),
-        (fields.Float, "float"),
         (fields.UUID, "uuid"),
         (fields.DateTime, "date-time"),
         (fields.Date, "date"),

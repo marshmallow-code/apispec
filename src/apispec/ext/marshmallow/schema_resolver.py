@@ -38,7 +38,7 @@ class SchemaResolver:
 
             #Output
             [
-                {"in": "query", "name": "id", "required": False, "schema": {"type": "integer", "format": "int32"}},
+                {"in": "query", "name": "id", "required": False, "schema": {"type": "integer"}},
                 {"in": "query", "name": "name", "required": False, "schema": {"type": "string"}}
             ]
 

@@ -60,8 +60,7 @@ with `"x-"` (vendor extension).
     #                                      'format': 'date-time',
     #                                      'readOnly': True,
     #                                      'type': 'string'},
-    #                          'id': {'format': 'int32',
-    #                                 'readOnly': True,
+    #                          'id': {'readOnly': True,
     #                                 'type': 'integer'},
     #                          'name': {'description': "The user's name",
     #                                   'type': 'string'}},
@@ -140,7 +139,7 @@ class MarshmallowPlugin(BasePlugin):
             class MyCustomField(Integer):
                 # ...
 
-            @ma_plugin.map_to_openapi_type(Integer)  # will map to ('integer', 'int32')
+            @ma_plugin.map_to_openapi_type(Integer)  # will map to ('integer', None)
             class MyCustomFieldThatsKindaLikeAnInteger(Integer):
                 # ...
         """
