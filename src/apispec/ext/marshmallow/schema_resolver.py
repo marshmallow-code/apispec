@@ -76,7 +76,7 @@ class SchemaResolver:
             ):
                 schema_instance = resolve_schema_instance(parameter.pop("schema"))
                 resolved += self.converter.schema2parameters(
-                    schema_instance, default_in=parameter.pop("in"), **parameter
+                    schema_instance, location=parameter.pop("in"), **parameter
                 )
             else:
                 self.resolve_schema(parameter)

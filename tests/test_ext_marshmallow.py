@@ -440,12 +440,12 @@ class TestOperationHelper:
         p = get_paths(spec_fixture.spec)["/pet"]
         get = p["get"]
         assert get["parameters"] == spec_fixture.openapi.schema2parameters(
-            PetSchema(), default_in="query"
+            PetSchema(), location="query"
         )
         post = p["post"]
         assert post["parameters"] == spec_fixture.openapi.schema2parameters(
             PetSchema,
-            default_in="body",
+            location="body",
             required=True,
             name="pet",
             description="a pet schema",
@@ -469,7 +469,7 @@ class TestOperationHelper:
         p = get_paths(spec_fixture.spec)["/pet"]
         get = p["get"]
         assert get["parameters"] == spec_fixture.openapi.schema2parameters(
-            PetSchema(), default_in="query"
+            PetSchema(), location="query"
         )
         for parameter in get["parameters"]:
             description = parameter.get("description", False)
@@ -819,7 +819,7 @@ class TestOperationHelper:
 
     def test_schema_global_state_untouched_2parameters(self, spec_fixture):
         assert get_nested_schema(RunSchema, "sample") is None
-        data = spec_fixture.openapi.schema2parameters(RunSchema)
+        data = spec_fixture.openapi.schema2parameters(RunSchema, location="json")
         json.dumps(data)
         assert get_nested_schema(RunSchema, "sample") is None
 
