@@ -1,6 +1,30 @@
 Changelog
 ---------
 
+4.0.0 (unreleased)
+******************
+
+Features:
+
+- *Backwards-incompatible*: Ignore ``location`` field metadata. This attribute
+  was used in webargs but it has now been dropped. A ``Schema`` can now only
+  have a single location. This simplifies the logic in ``OpenAPIConverter``
+  methods, where ``default_in`` argument now becomes ``location``. (:pr:`526`)
+- *Backwards-incompatible*: Don't document ``int`` format as ``"int32"`` and
+  ``float`` format as ``"float"``, as those are platform-dependent (:pr:`595`).
+
+Refactoring:
+
+- ``OpenAPIConverter.field2parameters`` and
+  ``OpenAPIConverter.property2parameter`` are removed.
+  ``OpenAPIConverter.field2parameter`` becomes private. (:pr:`581`)
+
+Other changes:
+
+- Drop support for marshmallow 2. Marshmallow 3.x is required. (:pr:`583`)
+- Drop support for Python 3.5. Python 3.6+ is required. (:pr:`582`)
+
+
 3.3.2 (2020-08-29)
 ******************
 
