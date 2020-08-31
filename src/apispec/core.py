@@ -72,7 +72,7 @@ class Components:
         """
         if name in self._schemas:
             raise DuplicateComponentNameError(
-                'Another schema with name "{}" is already registered.'.format(name)
+                f'Another schema with name "{name}" is already registered.'
             )
         component = component or {}
         ret = component.copy()
@@ -151,7 +151,7 @@ class Components:
         """
         if name in self._examples:
             raise DuplicateComponentNameError(
-                'Another example with name "{}" is already registered.'.format(name)
+                f'Another example with name "{name}" is already registered.'
             )
         self._examples[name] = component
         return self
@@ -243,7 +243,7 @@ class APISpec:
         summary=None,
         description=None,
         parameters=None,
-        **kwargs
+        **kwargs,
     ):
         """Add a new path object to the spec.
 
@@ -323,7 +323,7 @@ class APISpec:
             missing_attrs = [attr for attr in ("name", "in") if attr not in parameter]
             if missing_attrs:
                 raise InvalidParameterError(
-                    "Missing keys {} for parameter".format(missing_attrs)
+                    f"Missing keys {missing_attrs} for parameter"
                 )
 
             # OpenAPI Spec 3 and 2 don't allow for duplicated parameters

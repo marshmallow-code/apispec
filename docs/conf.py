@@ -26,7 +26,7 @@ issues_github_path = "marshmallow-code/apispec"
 source_suffix = ".rst"
 master_doc = "index"
 project = "apispec"
-copyright = "Steven Loria {:%Y}".format(dt.datetime.utcnow())
+copyright = f"Steven Loria {dt.datetime.utcnow():%Y}"
 
 version = release = apispec.__version__
 
