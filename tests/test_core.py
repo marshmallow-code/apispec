@@ -349,10 +349,10 @@ class TestPath:
         assert p["tags"] == route_spec["tags"]
 
     def test_paths_maintain_order(self, spec):
-        spec.path(path="/path1")
-        spec.path(path="/path2")
-        spec.path(path="/path3")
-        spec.path(path="/path4")
+        spec.path(path="/path1", operations=OrderedDict({"get": {}}))
+        spec.path(path="/path2", operations=OrderedDict({"get": {}}))
+        spec.path(path="/path3", operations=OrderedDict({"get": {}}))
+        spec.path(path="/path4", operations=OrderedDict({"get": {}}))
         assert list(spec.to_dict()["paths"].keys()) == [
             "/path1",
             "/path2",
@@ -361,7 +361,9 @@ class TestPath:
         ]
 
     def test_paths_is_chainable(self, spec):
-        spec.path(path="/path1").path("/path2")
+        spec.path(path="/path1", operations=OrderedDict({"get": {}})).path(
+            "/path2", operations=OrderedDict({"get": {}})
+        )
         assert list(spec.to_dict()["paths"].keys()) == ["/path1", "/path2"]
 
     def test_methods_maintain_order(self, spec):
@@ -456,7 +458,12 @@ class TestPath:
     def test_path_summary_description(self, spec):
         summary = "Operations on a Pet"
         description = "Operations on a Pet identified by its ID"
-        spec.path(path="/pet/{petId}", summary=summary, description=description)
+        spec.path(
+            path="/pet/{petId}",
+            operations=OrderedDict({"get": {}}),
+            summary=summary,
+            description=description,
+        )
 
         p = get_paths(spec)["/pet/{petId}"]
         assert p["summary"] == summary
@@ -618,6 +625,10 @@ class TestPath:
         with pytest.raises(APISpecError, match=message):
             spec.path("/pet/{petId}", operations={"dummy": {}})
 
+    def test_empty_path(self, spec):
+        spec.path(path="/path1")
+        assert len(spec.to_dict()["paths"]) == 0
+
 
 class TestPlugins:
     @staticmethod
@@ -709,11 +720,11 @@ class TestPlugins:
             openapi_version=openapi_version,
             plugins=(self.test_plugin_factory(return_none),),
         )
-        spec.path("/path_1")
+        spec.path("/path_1", operations=OrderedDict({"get": {}}))
         paths = get_paths(spec)
         assert len(paths) == 1
         if return_none:
-            assert paths["/path_1"] == {}
+            assert paths["/path_1"] == OrderedDict({"get": {}})
         else:
             assert paths["/path_1_modified"] == {
                 "get": {"responses": {"200": {}}},

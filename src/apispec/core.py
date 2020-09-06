@@ -283,6 +283,9 @@ class APISpec:
 
         self.clean_operations(operations)
 
+        if not operations:
+            return self
+
         self._paths.setdefault(path, operations).update(operations)
         if summary is not None:
             self._paths[path]["summary"] = summary
