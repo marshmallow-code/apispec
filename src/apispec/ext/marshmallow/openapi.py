@@ -196,8 +196,8 @@ class OpenAPIConverter(FieldConverterMixin):
 
         for field_name, field_obj in fields.items():
             observed_field_name = field_obj.data_key or field_name
-            property = self.field2property(field_obj)
-            jsonschema["properties"][observed_field_name] = property
+            prop = self.field2property(field_obj)
+            jsonschema["properties"][observed_field_name] = prop
 
             if field_obj.required:
                 if not partial or (
