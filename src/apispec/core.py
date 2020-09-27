@@ -300,12 +300,25 @@ class APISpec:
         Otherwise, it is assumed to be a reference name as string and the corresponding $ref
         string is returned.
 
-        :param str obj_type: "parameter" or "response"
-        :param dict|str obj: parameter or response in dict form or as ref_id string
+        :param str obj_type: "schema", "parameter", "response" or "security_scheme"
+        :param dict|str obj: object in dict form or as ref_id string
         """
         if isinstance(obj, dict):
             return obj
         return build_reference(obj_type, self.openapi_version.major, obj)
+
+    def _resolve_schema(self, obj):
+        """Replace schema reference as string with a $ref if needed."""
+        if not isinstance(obj, dict):
+            return
+        if self.openapi_version.major < 3:
+            if "schema" in obj:
+                obj["schema"] = self.get_ref("schema", obj["schema"])
+        else:
+            if "content" in obj:
+                for content in obj["content"].values():
+                    if "schema" in content:
+                        content["schema"] = self.get_ref("schema", content["schema"])
 
     def clean_parameters(self, parameters):
         """Ensure that all parameters with "in" equal to "path" are also required
@@ -365,6 +378,9 @@ class APISpec:
         for operation in (operations or {}).values():
             if "parameters" in operation:
                 operation["parameters"] = self.clean_parameters(operation["parameters"])
+            # OAS 3
+            if "requestBody" in operation:
+                self._resolve_schema(operation["requestBody"])
             if "responses" in operation:
                 responses = OrderedDict()
                 for code, response in operation["responses"].items():
@@ -373,6 +389,6 @@ class APISpec:
                     except (TypeError, ValueError):
                         if self.openapi_version.major < 3 and code != "default":
                             warnings.warn("Non-integer code not allowed in OpenAPI < 3")
-
+                    self._resolve_schema(response)
                     responses[str(code)] = self.get_ref("response", response)
                 operation["responses"] = responses

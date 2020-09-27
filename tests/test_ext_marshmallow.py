@@ -822,6 +822,18 @@ class TestOperationHelper:
         json.dumps(data)
         assert get_nested_schema(RunSchema, "sample") is None
 
+    def test_resolve_schema_dict_ref_as_string(self, spec):
+        schema = {"schema": "PetSchema"}
+        if spec.openapi_version.major >= 3:
+            schema = {"content": {"application/json": schema}}
+        spec.path("/pet/{petId}", operations={"get": {"responses": {"200": schema}}})
+        resp = get_paths(spec)["/pet/{petId}"]["get"]["responses"]["200"]
+        if spec.openapi_version.major < 3:
+            schema = resp["schema"]
+        else:
+            schema = resp["content"]["application/json"]["schema"]
+        assert schema == build_ref(spec, "schema", "PetSchema")
+
 
 class TestCircularReference:
     def test_circular_referencing_schemas(self, spec):

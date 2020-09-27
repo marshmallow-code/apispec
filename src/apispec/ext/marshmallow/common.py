@@ -20,13 +20,7 @@ def resolve_schema_instance(schema):
         return schema()
     if isinstance(schema, marshmallow.Schema):
         return schema
-    try:
-        return marshmallow.class_registry.get_class(schema)()
-    except marshmallow.exceptions.RegistryError:
-        raise ValueError(
-            "{!r} is not a marshmallow.Schema subclass or instance and has not"
-            " been registered in the marshmallow class registry.".format(schema)
-        )
+    return marshmallow.class_registry.get_class(schema)()
 
 
 def resolve_schema_cls(schema):
@@ -39,13 +33,7 @@ def resolve_schema_cls(schema):
         return schema
     if isinstance(schema, marshmallow.Schema):
         return type(schema)
-    try:
-        return marshmallow.class_registry.get_class(schema)
-    except marshmallow.exceptions.RegistryError:
-        raise ValueError(
-            "{!r} is not a marshmallow.Schema subclass or instance and has not"
-            " been registered in the marshmallow class registry.".format(schema)
-        )
+    return marshmallow.class_registry.get_class(schema)
 
 
 def get_fields(schema, *, exclude_dump_only=False):
