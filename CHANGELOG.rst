@@ -1,6 +1,19 @@
 Changelog
 ---------
 
+4.0.0b2 (unreleased)
+********************
+
+Features:
+
+- *Backwards-incompatible*: Automatically generate references for schemas
+  passed as strings in responses and request bodies. When using
+  ``MarshmallowPlugin``, if a schema is passed as string, the marshmallow
+  registry is looked up for this schema name and if none is found, the name is
+  assumed to be a reference to a manually created schema and a reference is
+  generated. No exception is raised anymore if the schema name can't be found
+  in the registry. (:pr:554)
+
 4.0.0b1 (2020-09-06)
 ********************
 
