@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+4.1.0 (unreleased)
+******************
+
+Other changes:
+
+- Test against Python 3.9.
+
 4.0.0 (2020-09-30)
 ******************
 
