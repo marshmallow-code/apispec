@@ -722,6 +722,48 @@ class TestOperationHelper:
             in get["responses"]["200"]["content"]["application/json"]["schema"]
         )
 
+    def test_callback_schema_uses_ref_if_available_name_resolver_returns_none_v3(self):
+        def resolver(schema):
+            return None
+
+        spec = APISpec(
+            title="Test auto-reference",
+            version="0.1",
+            openapi_version="3.0.0",
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
+        )
+        spec.components.schema("Pet", schema=PetSchema)
+        spec.path(
+            path="/pet",
+            operations={
+                "post": {
+                    "callbacks": {
+                        "petEvent": {
+                            "petCallbackUrl": {
+                                "get": {
+                                    "responses": {
+                                        "200": {
+                                            "content": {
+                                                "application/json": {
+                                                    "schema": PetSchema
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+        )
+        p = get_paths(spec)["/pet"]
+        c = p["post"]["callbacks"]["petEvent"]["petCallbackUrl"]
+        get = c["get"]
+        assert get["responses"]["200"]["content"]["application/json"][
+            "schema"
+        ] == build_ref(spec, "schema", "Pet")
+
     @pytest.mark.parametrize("spec_fixture", ("2.0",), indirect=True)
     def test_schema_uses_ref_in_parameters_and_request_body_if_available_v2(
         self, spec_fixture
