@@ -7,7 +7,6 @@ from marshmallow import Schema
 
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
-from apispec.ext.marshmallow.openapi import MARSHMALLOW_VERSION_INFO
 from apispec.ext.marshmallow import common
 from apispec.exceptions import APISpecError
 from .schemas import (
@@ -503,12 +502,12 @@ class TestOperationHelper:
         p = get_paths(spec_fixture.spec)["/pet"]
         get = p["get"]
         assert get["parameters"] == spec_fixture.openapi.schema2parameters(
-            PetSchema(), default_in="query"
+            PetSchema(), location="query"
         )
         post = p["post"]
         assert post["parameters"] == spec_fixture.openapi.schema2parameters(
             PetSchema,
-            default_in="body",
+            location="body",
             required=True,
             name="pet",
             description="a pet schema",
@@ -532,7 +531,7 @@ class TestOperationHelper:
         p = get_paths(spec_fixture.spec)["/pet"]
         get = p["get"]
         assert get["parameters"] == spec_fixture.openapi.schema2parameters(
-            PetSchema(), default_in="query"
+            PetSchema(), location="query"
         )
         for parameter in get["parameters"]:
             description = parameter.get("description", False)
@@ -567,7 +566,7 @@ class TestOperationHelper:
         c = p["post"]["callbacks"]["petEvent"]["petCallbackUrl"]
         get = c["get"]
         assert get["parameters"] == spec_fixture.openapi.schema2parameters(
-            PetSchema(), default_in="query"
+            PetSchema(), location="query"
         )
         for parameter in get["parameters"]:
             description = parameter.get("description", False)
@@ -674,47 +673,54 @@ class TestOperationHelper:
             "schema"
         ] == build_ref(spec, "schema", "Pet")
 
-    def test_callback_schema_uses_ref_if_available_name_resolver_returns_none_v3(self):
+    @pytest.mark.parametrize(
+        "pet_schema", (PetSchema, PetSchema(), "tests.schemas.PetSchema"),
+    )
+    def test_schema_name_resolver_returns_none_v2(self, pet_schema):
         def resolver(schema):
             return None
 
         spec = APISpec(
-            title="Test auto-reference",
+            title="Test resolver returns None",
+            version="0.1",
+            openapi_version="2.0",
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
+        )
+        spec.path(
+            path="/pet",
+            operations={"get": {"responses": {200: {"schema": pet_schema}}}},
+        )
+        get = get_paths(spec)["/pet"]["get"]
+        assert "properties" in get["responses"]["200"]["schema"]
+
+    @pytest.mark.parametrize(
+        "pet_schema", (PetSchema, PetSchema(), "tests.schemas.PetSchema"),
+    )
+    def test_schema_name_resolver_returns_none_v3(self, pet_schema):
+        def resolver(schema):
+            return None
+
+        spec = APISpec(
+            title="Test resolver returns None",
             version="0.1",
             openapi_version="3.0.0",
             plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
         )
-        spec.components.schema("Pet", schema=PetSchema)
         spec.path(
             path="/pet",
             operations={
-                "post": {
-                    "callbacks": {
-                        "petEvent": {
-                            "petCallbackUrl": {
-                                "get": {
-                                    "responses": {
-                                        "200": {
-                                            "content": {
-                                                "application/json": {
-                                                    "schema": PetSchema
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                "get": {
+                    "responses": {
+                        200: {"content": {"application/json": {"schema": pet_schema}}}
                     }
                 }
             },
         )
-        p = get_paths(spec)["/pet"]
-        c = p["post"]["callbacks"]["petEvent"]["petCallbackUrl"]
-        get = c["get"]
-        assert get["responses"]["200"]["content"]["application/json"][
-            "schema"
-        ] == build_ref(spec, "schema", "Pet")
+        get = get_paths(spec)["/pet"]["get"]
+        assert (
+            "properties"
+            in get["responses"]["200"]["content"]["application/json"]["schema"]
+        )
 
     @pytest.mark.parametrize("spec_fixture", ("2.0",), indirect=True)
     def test_schema_uses_ref_in_parameters_and_request_body_if_available_v2(
@@ -1028,9 +1034,21 @@ class TestOperationHelper:
 
     def test_schema_global_state_untouched_2parameters(self, spec_fixture):
         assert get_nested_schema(RunSchema, "sample") is None
-        data = spec_fixture.openapi.schema2parameters(RunSchema)
+        data = spec_fixture.openapi.schema2parameters(RunSchema, location="json")
         json.dumps(data)
         assert get_nested_schema(RunSchema, "sample") is None
+
+    def test_resolve_schema_dict_ref_as_string(self, spec):
+        schema = {"schema": "PetSchema"}
+        if spec.openapi_version.major >= 3:
+            schema = {"content": {"application/json": schema}}
+        spec.path("/pet/{petId}", operations={"get": {"responses": {"200": schema}}})
+        resp = get_paths(spec)["/pet/{petId}"]["get"]["responses"]["200"]
+        if spec.openapi_version.major < 3:
+            schema = resp["schema"]
+        else:
+            schema = resp["content"]["application/json"]["schema"]
+        assert schema == build_ref(spec, "schema", "PetSchema")
 
 
 class TestCircularReference:
@@ -1092,9 +1110,6 @@ class TestSchemaWithDefaultValues:
         assert "default" not in props["numbers"]
 
 
-@pytest.mark.skipif(
-    MARSHMALLOW_VERSION_INFO[0] < 3, reason="Values ignored in marshmallow 2"
-)
 class TestDictValues:
     def test_dict_values_resolve_to_additional_properties(self, spec):
         class SchemaWithDict(Schema):

@@ -1,7 +1,7 @@
 from collections import OrderedDict
+from http import HTTPStatus
 
 import pytest
-import sys
 import yaml
 
 from apispec import APISpec, BasePlugin
@@ -60,7 +60,7 @@ def spec(request):
         version="1.0.0",
         openapi_version=openapi_version,
         info={"description": description},
-        **security_kwargs
+        **security_kwargs,
     )
 
 
@@ -307,7 +307,7 @@ class TestPath:
                     }
                 ],
                 "responses": {
-                    "200": {"schema": "Pet", "description": "successful operation"},
+                    "200": {"description": "successful operation"},
                     "400": {"description": "Invalid ID supplied"},
                     "404": {"description": "Pet not found"},
                 },
@@ -588,12 +588,7 @@ class TestPath:
                 == metadata["components"]["responses"]["test_response"]
             )
 
-    @pytest.mark.skipif(
-        int(sys.version[0]) == 2, reason="HTTPStatus only available in Python3"
-    )
     def test_response_with_HTTPStatus_code(self, spec):
-        from http import HTTPStatus
-
         code = HTTPStatus(200)
         spec.path(
             path="/pet/{petId}",
@@ -622,6 +617,35 @@ class TestPath:
         message = "One or more HTTP methods are invalid"
         with pytest.raises(APISpecError, match=message):
             spec.path("/pet/{petId}", operations={"dummy": {}})
+
+    def test_path_resolve_response_schema(self, spec):
+        schema = {"schema": "PetSchema"}
+        if spec.openapi_version.major >= 3:
+            schema = {"content": {"application/json": schema}}
+        spec.path("/pet/{petId}", operations={"get": {"responses": {"200": schema}}})
+        resp = get_paths(spec)["/pet/{petId}"]["get"]["responses"]["200"]
+        if spec.openapi_version.major < 3:
+            schema = resp["schema"]
+        else:
+            schema = resp["content"]["application/json"]["schema"]
+        assert schema == build_ref(spec, "schema", "PetSchema")
+
+    # requestBody only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_path_resolve_request_body(self, spec):
+        spec.path(
+            "/pet/{petId}",
+            operations={
+                "get": {
+                    "requestBody": {
+                        "content": {"application/json": {"schema": "PetSchema"}}
+                    }
+                }
+            },
+        )
+        assert get_paths(spec)["/pet/{petId}"]["get"]["requestBody"]["content"][
+            "application/json"
+        ]["schema"] == build_ref(spec, "schema", "PetSchema")
 
 
 class TestPlugins:
@@ -747,10 +771,10 @@ class TestPluginsOrder:
             self.output = output
 
         def path_helper(self, path, operations, **kwargs):
-            self.output.append("plugin_{}_path".format(self.index))
+            self.output.append(f"plugin_{self.index}_path")
 
         def operation_helper(self, path, operations, **kwargs):
-            self.output.append("plugin_{}_operations".format(self.index))
+            self.output.append(f"plugin_{self.index}_operations")
 
     def test_plugins_order(self):
         """Test plugins execution order in APISpec.path

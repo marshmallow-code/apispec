@@ -22,11 +22,6 @@ from .common import (
 )
 
 
-MARSHMALLOW_VERSION_INFO = tuple(
-    [int(part) for part in marshmallow.__version__.split(".") if part.isdigit()]
-)
-
-
 __location_map__ = {
     "match_info": "path",
     "query": "query",
@@ -60,21 +55,6 @@ class OpenAPIConverter(FieldConverterMixin):
         # Schema references
         self.refs = {}
 
-    @staticmethod
-    def _observed_name(field, name):
-        """Adjust field name to reflect `dump_to` and `load_from` attributes.
-
-        :param Field field: A marshmallow field.
-        :param str name: Field name
-        :rtype: str
-        """
-        if MARSHMALLOW_VERSION_INFO[0] < 3:
-            # use getattr in case we're running against older versions of marshmallow.
-            dump_to = getattr(field, "dump_to", None)
-            load_from = getattr(field, "load_from", None)
-            return dump_to or load_from or name
-        return field.data_key or name
-
     def resolve_nested_schema(self, schema):
         """Return the OpenAPI representation of a marshmallow Schema.
 
@@ -87,13 +67,18 @@ class OpenAPIConverter(FieldConverterMixin):
 
         :param schema: schema to add to the spec
         """
-        schema_instance = resolve_schema_instance(schema)
+        try:
+            schema_instance = resolve_schema_instance(schema)
+        # If schema is a string and is not found in registry,
+        # assume it is a schema reference
+        except marshmallow.exceptions.RegistryError:
+            return build_reference("schema", self.openapi_version.major, schema)
         schema_key = make_schema_key(schema_instance)
         if schema_key not in self.refs:
             name = self.schema_name_resolver(schema)
             if not name:
                 try:
-                    json_schema = self.schema2jsonschema(schema)
+                    json_schema = self.schema2jsonschema(schema_instance)
                 except RuntimeError:
                     raise APISpecError(
                         "Name resolver returned None for schema {schema} which is "
@@ -110,35 +95,29 @@ class OpenAPIConverter(FieldConverterMixin):
         return self.get_ref_dict(schema_instance)
 
     def schema2parameters(
-        self,
-        schema,
-        *,
-        default_in="body",
-        name="body",
-        required=False,
-        description=None
+        self, schema, *, location, name="body", required=False, description=None
     ):
         """Return an array of OpenAPI parameters given a given marshmallow
-        :class:`Schema <marshmallow.Schema>`. If `default_in` is "body", then return an array
+        :class:`Schema <marshmallow.Schema>`. If `location` is "body", then return an array
         of a single parameter; else return an array of a parameter for each included field in
         the :class:`Schema <marshmallow.Schema>`.
 
+        In OpenAPI 3, only "query", "header", "path" or "cookie" are allowed for the location
+        of parameters. "requestBody" is used when fields are in the body.
+
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
         """
-        openapi_default_in = __location_map__.get(default_in, default_in)
-        if self.openapi_version.major < 3 and openapi_default_in == "body":
-            prop = self.resolve_nested_schema(schema)
-
+        location = __location_map__.get(location, location)
+        # OAS 2 body parameter
+        if location == "body":
             param = {
-                "in": openapi_default_in,
+                "in": location,
                 "required": required,
                 "name": name,
-                "schema": prop,
+                "schema": self.resolve_nested_schema(schema),
             }
-
             if description:
                 param["description"] = description
-
             return [param]
 
         assert not getattr(
@@ -147,105 +126,35 @@ class OpenAPIConverter(FieldConverterMixin):
 
         fields = get_fields(schema, exclude_dump_only=True)
 
-        return self.fields2parameters(fields, default_in=default_in)
-
-    def fields2parameters(self, fields, *, default_in):
-        """Return an array of OpenAPI parameters given a mapping between field names and
-        :class:`Field <marshmallow.Field>` objects. If `default_in` is "body", then return an array
-        of a single parameter; else return an array of a parameter for each included field in
-        the :class:`Schema <marshmallow.Schema>`.
-
-        In OpenAPI3, only "query", "header", "path" or "cookie" are allowed for the location
-        of parameters. In OpenAPI 3, "requestBody" is used when fields are in the body.
-
-        This function always returns a list, with a parameter
-        for each included field in the :class:`Schema <marshmallow.Schema>`.
-
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
-        """
-        parameters = []
-        body_param = None
-        for field_name, field_obj in fields.items():
-            if field_obj.dump_only:
-                continue
-            param = self.field2parameter(
-                field_obj,
-                name=self._observed_name(field_obj, field_name),
-                default_in=default_in,
+        return [
+            self._field2parameter(
+                field_obj, name=field_obj.data_key or field_name, location=location,
             )
-            if (
-                self.openapi_version.major < 3
-                and param["in"] == "body"
-                and body_param is not None
-            ):
-                body_param["schema"]["properties"].update(param["schema"]["properties"])
-                required_fields = param["schema"].get("required", [])
-                if required_fields:
-                    body_param["schema"].setdefault("required", []).extend(
-                        required_fields
-                    )
-            else:
-                if self.openapi_version.major < 3 and param["in"] == "body":
-                    body_param = param
-                parameters.append(param)
-        return parameters
+            for field_name, field_obj in fields.items()
+        ]
 
-    def field2parameter(self, field, *, name, default_in):
+    def _field2parameter(self, field, *, name, location):
         """Return an OpenAPI parameter as a `dict`, given a marshmallow
         :class:`Field <marshmallow.Field>`.
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
         """
-        location = field.metadata.get("location", None)
+        ret = {"in": location, "name": name, "required": field.required}
+
         prop = self.field2property(field)
-        return self.property2parameter(
-            prop,
-            name=name,
-            required=field.required,
-            multiple=isinstance(field, marshmallow.fields.List),
-            location=location,
-            default_in=default_in,
-        )
+        multiple = isinstance(field, marshmallow.fields.List)
 
-    def property2parameter(
-        self, prop, *, name, required, multiple, location, default_in
-    ):
-        """Return the Parameter Object definition for a JSON Schema property.
-
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
-
-        :param dict prop: JSON Schema property
-        :param str name: Field name
-        :param bool required: Parameter is required
-        :param bool multiple: Parameter is repeated
-        :param str location: Location to look for ``name``
-        :param str default_in: Default location to look for ``name``
-        :raise: TranslationError if arg object cannot be translated to a Parameter Object schema.
-        :rtype: dict, a Parameter Object
-        """
-        openapi_default_in = __location_map__.get(default_in, default_in)
-        openapi_location = __location_map__.get(location, openapi_default_in)
-        ret = {"in": openapi_location, "name": name}
-
-        if openapi_location == "body":
-            ret["required"] = False
-            ret["name"] = "body"
-            ret["schema"] = {"type": "object", "properties": {name: prop}}
-            if required:
-                ret["schema"]["required"] = [name]
+        if self.openapi_version.major < 3:
+            if multiple:
+                ret["collectionFormat"] = "multi"
+            ret.update(prop)
         else:
-            ret["required"] = required
-            if self.openapi_version.major < 3:
-                if multiple:
-                    ret["collectionFormat"] = "multi"
-                ret.update(prop)
-            else:
-                if multiple:
-                    ret["explode"] = True
-                    ret["style"] = "form"
-                if prop.get("description", None):
-                    ret["description"] = prop.pop("description")
-                ret["schema"] = prop
+            if multiple:
+                ret["explode"] = True
+                ret["style"] = "form"
+            if prop.get("description", None):
+                ret["description"] = prop.pop("description")
+            ret["schema"] = prop
         return ret
 
     def schema2jsonschema(self, schema):
@@ -286,9 +195,9 @@ class OpenAPIConverter(FieldConverterMixin):
         jsonschema = {"type": "object", "properties": OrderedDict() if ordered else {}}
 
         for field_name, field_obj in fields.items():
-            observed_field_name = self._observed_name(field_obj, field_name)
-            property = self.field2property(field_obj)
-            jsonschema["properties"][observed_field_name] = property
+            observed_field_name = field_obj.data_key or field_name
+            prop = self.field2property(field_obj)
+            jsonschema["properties"][observed_field_name] = prop
 
             if field_obj.required:
                 if not partial or (

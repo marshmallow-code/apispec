@@ -1,6 +1,68 @@
 Changelog
 ---------
 
+4.1.0 (unreleased)
+******************
+
+Other changes:
+
+- Test against Python 3.9.
+
+4.0.0 (2020-09-30)
+******************
+
+Features:
+
+- *Backwards-incompatible*: Automatically generate references for schemas
+  passed as strings in responses and request bodies. When using
+  ``MarshmallowPlugin``, if a schema is passed as string, the marshmallow
+  registry is looked up for this schema name and if none is found, the name is
+  assumed to be a reference to a manually created schema and a reference is
+  generated. No exception is raised anymore if the schema name can't be found
+  in the registry. (:pr:554)
+
+4.0.0b1 (2020-09-06)
+********************
+
+Features:
+
+- *Backwards-incompatible*: Ignore ``location`` field metadata. This attribute
+  was used in webargs but it has now been dropped. A ``Schema`` can now only
+  have a single location. This simplifies the logic in ``OpenAPIConverter``
+  methods, where ``default_in`` argument now becomes ``location``. (:pr:`526`)
+- *Backwards-incompatible*: Don't document ``int`` format as ``"int32"`` and
+  ``float`` format as ``"float"``, as those are platform-dependent (:pr:`595`).
+
+Refactoring:
+
+- ``OpenAPIConverter.field2parameters`` and
+  ``OpenAPIConverter.property2parameter`` are removed.
+  ``OpenAPIConverter.field2parameter`` becomes private. (:pr:`581`)
+
+Other changes:
+
+- Drop support for marshmallow 2. Marshmallow 3.x is required. (:pr:`583`)
+- Drop support for Python 3.5. Python 3.6+ is required. (:pr:`582`)
+
+
+3.3.2 (2020-08-29)
+******************
+
+Bug fixes:
+
+- Fix crash when field metadata contains non-string keys (:pr:`596`).
+  Thanks :user:`sanzoghenzo` for the fix.
+
+3.3.1 (2020-06-06)
+******************
+
+Bug fixes:
+
+- Fix ``MarshmallowPlugin`` crash when ``resolve_schema_dict`` is passed a
+  schema as string and ``schema_name_resolver`` returns ``None``
+  (:issue:`566`). Thanks :user:`black3r` for reporting and thanks
+  :user:`Bangertm` for the PR.
+
 3.3.0 (2020-02-14)
 ******************
 

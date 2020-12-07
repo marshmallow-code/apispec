@@ -38,7 +38,7 @@ class SchemaResolver:
 
             #Output
             [
-                {"in": "query", "name": "id", "required": False, "schema": {"type": "integer", "format": "int32"}},
+                {"in": "query", "name": "id", "required": False, "schema": {"type": "integer"}},
                 {"in": "query", "name": "name", "required": False, "schema": {"type": "string"}}
             ]
 
@@ -76,7 +76,7 @@ class SchemaResolver:
             ):
                 schema_instance = resolve_schema_instance(parameter.pop("schema"))
                 resolved += self.converter.schema2parameters(
-                    schema_instance, default_in=parameter.pop("in"), **parameter
+                    schema_instance, location=parameter.pop("in"), **parameter
                 )
             else:
                 self.resolve_schema(parameter)
@@ -162,8 +162,8 @@ class SchemaResolver:
 
     def resolve_schema_dict(self, schema):
         """Resolve a marshmallow Schema class, object, or a string that resolves
-        to a Schema class or an OpenAPI Schema Object containing one of the above
-        to an OpenAPI Schema Object or Reference Object.
+        to a Schema class or a schema reference or an OpenAPI Schema Object
+        containing one of the above to an OpenAPI Schema Object or Reference Object.
 
         If the input is a marshmallow Schema class, object or a string that resolves
         to a Schema class the Schema will be translated to an OpenAPI Schema Object

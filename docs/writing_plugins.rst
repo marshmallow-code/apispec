@@ -25,16 +25,15 @@ A plugin with a path helper function may look something like this:
 .. code-block:: python
 
     from apispec import Path, BasePlugin
-    from apispec.utils import load_operations_from_docstring
+    from apispec.yaml_utils import load_operations_from_docstring
 
 
     class MyPlugin(BasePlugin):
-        def path_helper(self, path, func, **kwargs):
+        def path_helper(self, path, operations, func, **kwargs):
             """Path helper that parses docstrings for operations. Adds a
             ``func`` parameter to `apispec.APISpec.path`.
             """
-            operations = load_operations_from_docstring(func.__doc__)
-            return Path(path=path, operations=operations)
+            operations.update(load_operations_from_docstring(func.__doc__))
 
 
 All plugin helpers must accept extra `**kwargs`, allowing custom plugins to define new arguments if required.

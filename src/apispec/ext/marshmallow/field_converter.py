@@ -17,16 +17,11 @@ from marshmallow.orderedset import OrderedSet
 
 RegexType = type(re.compile(""))
 
-MARSHMALLOW_VERSION_INFO = tuple(
-    [int(part) for part in marshmallow.__version__.split(".") if part.isdigit()]
-)
-
-
 # marshmallow field => (JSON Schema type, format)
 DEFAULT_FIELD_MAPPING = {
-    marshmallow.fields.Integer: ("integer", "int32"),
+    marshmallow.fields.Integer: ("integer", None),
     marshmallow.fields.Number: ("number", None),
-    marshmallow.fields.Float: ("number", "float"),
+    marshmallow.fields.Float: ("number", None),
     marshmallow.fields.Decimal: ("number", None),
     marshmallow.fields.String: ("string", None),
     marshmallow.fields.Boolean: ("boolean", None),
@@ -212,8 +207,7 @@ class FieldConverterMixin:
         else:
             default = field.missing
             if default is not marshmallow.missing and not callable(default):
-                if MARSHMALLOW_VERSION_INFO[0] >= 3:
-                    default = field._serialize(default, None, None)
+                default = field._serialize(default, None, None)
                 ret["default"] = default
         return ret
 
@@ -397,6 +391,7 @@ class FieldConverterMixin:
         metadata = {
             key.replace("_", "-") if key.startswith("x_") else key: value
             for key, value in field.metadata.items()
+            if isinstance(key, str)
         }
 
         # Avoid validation error with "Additional properties not allowed"
@@ -436,10 +431,7 @@ class FieldConverterMixin:
         """
         ret = {}
         if isinstance(field, marshmallow.fields.List):
-            inner_field = (
-                field.inner if MARSHMALLOW_VERSION_INFO[0] >= 3 else field.container
-            )
-            ret["items"] = self.field2property(inner_field)
+            ret["items"] = self.field2property(field.inner)
         return ret
 
     def dict2properties(self, field, **kwargs):
@@ -453,8 +445,7 @@ class FieldConverterMixin:
         """
         ret = {}
         if isinstance(field, marshmallow.fields.Dict):
-            if MARSHMALLOW_VERSION_INFO[0] >= 3:
-                value_field = field.value_field
-                if value_field:
-                    ret["additionalProperties"] = self.field2property(value_field)
+            value_field = field.value_field
+            if value_field:
+                ret["additionalProperties"] = self.field2property(value_field)
         return ret

@@ -20,13 +20,7 @@ def resolve_schema_instance(schema):
         return schema()
     if isinstance(schema, marshmallow.Schema):
         return schema
-    try:
-        return marshmallow.class_registry.get_class(schema)()
-    except marshmallow.exceptions.RegistryError:
-        raise ValueError(
-            "{!r} is not a marshmallow.Schema subclass or instance and has not"
-            " been registered in the marshmallow class registry.".format(schema)
-        )
+    return marshmallow.class_registry.get_class(schema)()
 
 
 def resolve_schema_cls(schema):
@@ -39,13 +33,7 @@ def resolve_schema_cls(schema):
         return schema
     if isinstance(schema, marshmallow.Schema):
         return type(schema)
-    try:
-        return marshmallow.class_registry.get_class(schema)
-    except marshmallow.exceptions.RegistryError:
-        raise ValueError(
-            "{!r} is not a marshmallow.Schema subclass or instance and has not"
-            " been registered in the marshmallow class registry.".format(schema)
-        )
+    return marshmallow.class_registry.get_class(schema)
 
 
 def get_fields(schema, *, exclude_dump_only=False):
@@ -61,7 +49,7 @@ def get_fields(schema, *, exclude_dump_only=False):
         fields = copy.deepcopy(schema._declared_fields)
     else:
         raise ValueError(
-            "{!r} doesn't have either `fields` or `_declared_fields`.".format(schema)
+            f"{schema!r} doesn't have either `fields` or `_declared_fields`."
         )
     Meta = getattr(schema, "Meta", None)
     warn_if_fields_defined_in_meta(fields, Meta)
@@ -91,14 +79,16 @@ def filter_excluded_fields(fields, Meta, *, exclude_dump_only):
 
     :param dict fields: A dictionary of fields name field object pairs
     :param Meta: the schema's Meta class
-    :param bool exclude_dump_only: whether to filter fields in Meta.dump_only
+    :param bool exclude_dump_only: whether to filter dump_only fields
     """
     exclude = list(getattr(Meta, "exclude", []))
     if exclude_dump_only:
         exclude.extend(getattr(Meta, "dump_only", []))
 
     filtered_fields = OrderedDict(
-        (key, value) for key, value in fields.items() if key not in exclude
+        (key, value)
+        for key, value in fields.items()
+        if key not in exclude and not (exclude_dump_only and value.dump_only)
     )
 
     return filtered_fields
