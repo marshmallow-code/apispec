@@ -187,6 +187,57 @@ class MarshmallowPlugin(BasePlugin):
         self.resolver.resolve_response(response)
         return response
 
+    def resolve_callback(self, callbacks):
+        """Resolve marshmallow Schemas in a dict mapping callback name to OpenApi `Callback Object
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#callbackObject`_.
+
+        This is done recursively, so it it is possible to define callbacks in your callbacks.
+
+        Example: ::
+
+            #Input
+            {
+                "userEvent": {
+                    "https://my.example/user-callback": {
+                        "post": {
+                            "requestBody": {
+                                "content": {
+                                    "application/json": {
+                                        "schema": UserSchema
+                                    }
+                                }
+                            }
+                        },
+                    }
+                }
+            }
+
+            #Output
+            {
+                "userEvent": {
+                    "https://my.example/user-callback": {
+                        "post": {
+                            "requestBody": {
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                    }
+                }
+            }
+
+
+        """
+        for callback in callbacks.values():
+            if isinstance(callback, dict):
+                for path in callback.values():
+                    self.operation_helper(path)
+
     def operation_helper(self, operations, **kwargs):
         for operation in operations.values():
             if not isinstance(operation, dict):
@@ -196,9 +247,7 @@ class MarshmallowPlugin(BasePlugin):
                     operation["parameters"]
                 )
             if self.openapi_version.major >= 3:
-                for callback in operation.get("callbacks", {}).values():
-                    for event in callback.values():
-                        self.operation_helper(event)
+                self.resolve_callback(operation.get("callbacks", {}))
                 if "requestBody" in operation:
                     self.resolver.resolve_schema(operation["requestBody"])
             for response in operation.get("responses", {}).values():
