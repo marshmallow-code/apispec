@@ -498,6 +498,7 @@ class TestFieldValidation:
     class ValidationSchema(Schema):
         id = fields.Int(dump_only=True)
         range = fields.Int(validate=validate.Range(min=1, max=10))
+        range_no_upper = fields.Int(validate=validate.Range(min=1))
         multiple_ranges = fields.Int(
             validate=[
                 validate.Range(min=1),
@@ -528,6 +529,7 @@ class TestFieldValidation:
         ("field", "properties"),
         [
             ("range", {"minimum": 1, "maximum": 10}),
+            ("range_no_upper", {"minimum": 1}),
             ("multiple_ranges", {"minimum": 3, "maximum": 7}),
             ("list_length", {"minItems": 1, "maxItems": 10}),
             ("custom_list_length", {"minItems": 1, "maxItems": 10}),
