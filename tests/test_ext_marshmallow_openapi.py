@@ -1,4 +1,5 @@
 import pytest
+from datetime import datetime
 
 from marshmallow import fields, Schema, validate
 
@@ -524,6 +525,7 @@ class TestFieldValidation:
         equal_length = fields.Str(
             validate=[validate.Length(equal=5), validate.Length(min=1, max=10)]
         )
+        date_range = fields.DateTime(validate=validate.Range(min=datetime(1900, 1, 1),))
 
     @pytest.mark.parametrize(
         ("field", "properties"),
@@ -537,6 +539,7 @@ class TestFieldValidation:
             ("custom_field_length", {"minLength": 1, "maxLength": 10}),
             ("multiple_lengths", {"minLength": 3, "maxLength": 7}),
             ("equal_length", {"minLength": 5, "maxLength": 5}),
+            ("date_range", {"x-minimum": datetime(1900, 1, 1)}),
         ],
     )
     def test_properties(self, field, properties, spec):
