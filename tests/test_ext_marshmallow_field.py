@@ -4,7 +4,7 @@ import re
 import pytest
 from marshmallow import fields, validate
 
-from .schemas import CategorySchema, CustomList, CustomStringField, CustomIntegerField
+from .schemas import CategorySchema, CustomIntegerField, CustomList, CustomStringField
 from .utils import build_ref
 
 
@@ -73,7 +73,7 @@ def test_field2property_formats(FieldClass, expected_format, spec_fixture):
 
 
 def test_field_with_description(spec_fixture):
-    field = fields.Str(description="a username")
+    field = fields.Str(metadata=dict(description="a username"))
     res = spec_fixture.openapi.field2property(field)
     assert res["description"] == "a username"
 
@@ -103,13 +103,13 @@ def test_field_with_missing_callable(spec_fixture):
 
 
 def test_field_with_doc_default(spec_fixture):
-    field = fields.Str(doc_default="Manual default")
+    field = fields.Str(metadata=dict(doc_default="Manual default"))
     res = spec_fixture.openapi.field2property(field)
     assert res["default"] == "Manual default"
 
 
 def test_field_with_doc_default_and_missing(spec_fixture):
-    field = fields.Int(doc_default=42, missing=12)
+    field = fields.Int(metadata=dict(doc_default=42), missing=12)
     res = spec_fixture.openapi.field2property(field)
     assert res["default"] == 42
 
@@ -129,10 +129,9 @@ def test_field_with_equal(spec_fixture):
 def test_only_allows_valid_properties_in_metadata(spec_fixture):
     field = fields.Str(
         missing="foo",
-        description="foo",
-        enum=["red", "blue"],
-        allOf=["bar"],
-        not_valid="lol",
+        metadata=dict(
+            description="foo", enum=["red", "blue"], allOf=["bar"], not_valid="lol"
+        ),
     )
     res = spec_fixture.openapi.field2property(field)
     assert res["default"] == field.missing
@@ -154,7 +153,7 @@ def test_field_with_choices_multiple(spec_fixture):
 
 
 def test_field_with_additional_metadata(spec_fixture):
-    field = fields.Str(minLength=6, maxLength=100)
+    field = fields.Str(metadata=dict(minLength=6, maxLength=100))
     res = spec_fixture.openapi.field2property(field)
     assert res["maxLength"] == 100
     assert res["minLength"] == 6
@@ -201,9 +200,11 @@ def test_field2property_nested_spec_metadatas(spec_fixture):
     spec_fixture.spec.components.schema("Category", schema=CategorySchema)
     category = fields.Nested(
         CategorySchema,
-        description="A category",
-        invalid_property="not in the result",
-        x_extension="A great extension",
+        metadata=dict(
+            description="A category",
+            invalid_property="not in the result",
+            x_extension="A great extension",
+        ),
     )
     result = spec_fixture.openapi.field2property(category)
     assert result == {
@@ -292,7 +293,7 @@ def test_field2property_with_non_string_metadata_keys(spec_fixture):
     class _DesertSentinel:
         pass
 
-    field = fields.Boolean(description="A description")
+    field = fields.Boolean(metadata=dict(description="A description"))
     field.metadata[_DesertSentinel()] = "to be ignored"
     result = spec_fixture.openapi.field2property(field)
     assert result == {"description": "A description", "type": "boolean"}

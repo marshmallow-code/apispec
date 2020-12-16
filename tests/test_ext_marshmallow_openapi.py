@@ -1,12 +1,10 @@
 import pytest
-
-from marshmallow import fields, Schema, validate
-
+from apispec import APISpec, exceptions, utils
 from apispec.ext.marshmallow import MarshmallowPlugin
-from apispec import exceptions, utils, APISpec
+from marshmallow import Schema, fields, validate
 
 from .schemas import CustomList, CustomStringField
-from .utils import get_schemas, build_ref
+from .utils import build_ref, get_schemas
 
 
 class TestMarshmallowFieldToOpenAPI:
@@ -51,7 +49,7 @@ class TestMarshmallowSchemaToModelDefinition:
     def test_schema2jsonschema_with_explicit_fields(self, openapi):
         class UserSchema(Schema):
             _id = fields.Int()
-            email = fields.Email(description="email address of the user")
+            email = fields.Email(metadata=dict(description="email address of the user"))
             name = fields.Str()
 
             class Meta:
@@ -168,8 +166,10 @@ class TestMarshmallowSchemaToModelDefinition:
         class NotASchema:
             pass
 
-        expected_error = "{!r} doesn't have either `fields` or `_declared_fields`.".format(
-            NotASchema
+        expected_error = (
+            "{!r} doesn't have either `fields` or `_declared_fields`.".format(
+                NotASchema
+            )
         )
         with pytest.raises(ValueError, match=expected_error):
             openapi.schema2jsonschema(NotASchema)
@@ -287,8 +287,8 @@ class TestMarshmallowSchemaToParameters:
         class NotASchema:
             pass
 
-        expected_error = "{!r} doesn't have either `fields` or `_declared_fields`".format(
-            NotASchema
+        expected_error = (
+            "{!r} doesn't have either `fields` or `_declared_fields`".format(NotASchema)
         )
         with pytest.raises(ValueError, match=expected_error):
             openapi.schema2jsonschema(NotASchema)
@@ -395,7 +395,8 @@ def test_openapi_tools_validate_v2():
                     },
                     openapi._field2parameter(
                         field=fields.List(
-                            fields.Str(), validate=validate.OneOf(["freddie", "roger"]),
+                            fields.Str(),
+                            validate=validate.OneOf(["freddie", "roger"]),
                         ),
                         location="query",
                         name="body",
@@ -451,7 +452,8 @@ def test_openapi_tools_validate_v3():
                     },
                     openapi._field2parameter(
                         field=fields.List(
-                            fields.Str(), validate=validate.OneOf(["freddie", "roger"]),
+                            fields.Str(),
+                            validate=validate.OneOf(["freddie", "roger"]),
                         ),
                         location="query",
                         name="body",
