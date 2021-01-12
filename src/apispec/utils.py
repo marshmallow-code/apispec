@@ -158,15 +158,19 @@ def dedent(content):
     return content.strip()
 
 
-# http://stackoverflow.com/a/8310229
+# http://stackoverflow.com/a/8310229 #+ recursion -> loop
 def deepupdate(original, update):
-    """Recursively update a dict.
+    """Iteratively update a dict.
 
     Subdict's won't be overwritten but also updated.
     """
-    for key, value in original.items():
-        if key not in update:
-            update[key] = value
-        elif isinstance(value, dict):
-            deepupdate(value, update[key])
-    return update
+    result = update
+    stack = [(original, update)]
+    while stack:
+        original, update = stack.pop()
+        for key, value in original.items():
+            if key not in update:
+                update[key] = value
+            elif isinstance(value, dict):
+                stack.append((value, update[key]))
+    return result
