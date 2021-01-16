@@ -90,7 +90,7 @@ class Components:
 
         :param str component_id: ref_id to use as reference
         :param dict component: response fields
-        :param dict kwargs: plugin-specific arguments
+        :param kwargs: plugin-specific arguments
         """
         if component_id in self._responses:
             raise DuplicateComponentNameError(
@@ -115,7 +115,7 @@ class Components:
         :param str param_id: identifier by which parameter may be referenced.
         :param str location: location of the parameter.
         :param dict component: parameter fields.
-        :param dict kwargs: plugin-specific arguments
+        :param kwargs: plugin-specific arguments
         """
         if component_id in self._parameters:
             raise DuplicateComponentNameError(
@@ -160,7 +160,7 @@ class Components:
         """Add a security scheme which can be referenced.
 
         :param str component_id: component_id to use as reference
-        :param dict kwargs: security scheme fields
+        :param dict component: security scheme fields
         """
         if component_id in self._security_schemes:
             raise DuplicateComponentNameError(
@@ -181,7 +181,7 @@ class APISpec:
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#infoObject
     :param str|OpenAPIVersion openapi_version: OpenAPI Specification version.
         Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
-    :param dict options: Optional top-level keys
+    :param options: Optional top-level keys
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#openapi-object
     """
 
@@ -254,7 +254,7 @@ class APISpec:
         :param str summary: short summary relevant to all operations in this path
         :param str description: long description relevant to all operations in this path
         :param list|None parameters: list of parameters relevant to all operations in this path
-        :param dict kwargs: parameters used by any path helpers see :meth:`register_path_helper`
+        :param kwargs: parameters used by any path helpers see :meth:`register_path_helper`
         """
         # operations and parameters must be deepcopied because they are mutated
         # in clean_operations and operation helpers and path may be called twice
