@@ -4,6 +4,10 @@ Changelog
 4.1.0 (unreleased)
 ******************
 
+Bug fixes:
+
+- Fix docstrings documenting kwargs type as dict (:issue:`534`).
+
 Other changes:
 
 - Test against Python 3.9.
@@ -19,7 +23,7 @@ Features:
   registry is looked up for this schema name and if none is found, the name is
   assumed to be a reference to a manually created schema and a reference is
   generated. No exception is raised anymore if the schema name can't be found
-  in the registry. (:pr:554)
+  in the registry. (:pr:`554`)
 
 4.0.0b1 (2020-09-06)
 ********************
