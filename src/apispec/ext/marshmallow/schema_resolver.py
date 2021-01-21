@@ -15,6 +15,75 @@ class SchemaResolver:
         self.openapi_version = openapi_version
         self.converter = converter
 
+    def resolve_operations(self, operations, **kwargs):
+        """Resolve marshmallow Schemas in a dict mapping operation to OpenApi `Operation Object
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#operationObject`_"""
+
+        for operation in operations.values():
+            if not isinstance(operation, dict):
+                continue
+            if "parameters" in operation:
+                operation["parameters"] = self.resolve_parameters(
+                    operation["parameters"]
+                )
+            if self.openapi_version.major >= 3:
+                self.resolve_callback(operation.get("callbacks", {}))
+                if "requestBody" in operation:
+                    self.resolve_schema(operation["requestBody"])
+            for response in operation.get("responses", {}).values():
+                self.resolve_response(response)
+
+    def resolve_callback(self, callbacks):
+        """Resolve marshmallow Schemas in a dict mapping callback name to OpenApi `Callback Object
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#callbackObject`_.
+
+        This is done recursively, so it it is possible to define callbacks in your callbacks.
+
+        Example: ::
+
+            #Input
+            {
+                "userEvent": {
+                    "https://my.example/user-callback": {
+                        "post": {
+                            "requestBody": {
+                                "content": {
+                                    "application/json": {
+                                        "schema": UserSchema
+                                    }
+                                }
+                            }
+                        },
+                    }
+                }
+            }
+
+            #Output
+            {
+                "userEvent": {
+                    "https://my.example/user-callback": {
+                        "post": {
+                            "requestBody": {
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                    }
+                }
+            }
+
+
+        """
+        for callback in callbacks.values():
+            if isinstance(callback, dict):
+                for path in callback.values():
+                    self.resolve_operations(path)
+
     def resolve_parameters(self, parameters):
         """Resolve marshmallow Schemas in a list of OpenAPI `Parameter Objects
         <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameter-object>`_.

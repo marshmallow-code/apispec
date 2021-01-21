@@ -187,18 +187,7 @@ class MarshmallowPlugin(BasePlugin):
         return response
 
     def operation_helper(self, operations, **kwargs):
-        for operation in operations.values():
-            if not isinstance(operation, dict):
-                continue
-            if "parameters" in operation:
-                operation["parameters"] = self.resolver.resolve_parameters(
-                    operation["parameters"]
-                )
-            if self.openapi_version.major >= 3:
-                if "requestBody" in operation:
-                    self.resolver.resolve_schema(operation["requestBody"])
-            for response in operation.get("responses", {}).values():
-                self.resolver.resolve_response(response)
+        self.resolver.resolve_operations(operations)
 
     def warn_if_schema_already_in_spec(self, schema_key):
         """Method to warn the user if the schema has already been added to the

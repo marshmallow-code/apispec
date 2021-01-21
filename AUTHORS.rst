@@ -63,5 +63,6 @@ Contributors (chronological)
 - Ashutosh Chaudhary `@codeasashu <https://github.com/codeasashu>`_
 - Fedor Fominykh `@fedorfo <https://github.com/fedorfo>`_
 - Colin Bounouar `@Colin-b <https://github.com/Colin-b>`_
+- Mikko Kortelainen `@kortsi <https://github.com/kortsi>
 - David Bishop `@teancom <https://github.com/teancom>`_
 - Andrea Ghensi `@sanzoghenzo <https://github.com/sanzoghenzo>`_

@@ -327,6 +327,19 @@ def get_nested_schema(schema, field_name):
 
 
 class TestOperationHelper:
+    @pytest.fixture
+    def make_pet_callback_spec(self, spec_fixture):
+        def _make_pet_spec(operations):
+            spec_fixture.spec.path(
+                path="/pet",
+                operations={
+                    "post": {"callbacks": {"petEvent": {"petCallbackUrl": operations}}}
+                },
+            )
+            return spec_fixture
+
+        return _make_pet_spec
+
     @pytest.mark.parametrize(
         "pet_schema",
         (PetSchema, PetSchema(), PetSchema(many=True), "tests.schemas.PetSchema"),
@@ -389,6 +402,56 @@ class TestOperationHelper:
             },
         )
         get = get_paths(spec_fixture.spec)["/pet"]["get"]
+        if isinstance(pet_schema, Schema) and pet_schema.many is True:
+            assert (
+                get["responses"]["200"]["content"]["application/json"]["schema"]["type"]
+                == "array"
+            )
+            schema_reference = get["responses"]["200"]["content"]["application/json"][
+                "schema"
+            ]["items"]
+            assert (
+                get["responses"]["200"]["headers"]["PetHeader"]["schema"]["type"]
+                == "array"
+            )
+            header_reference = get["responses"]["200"]["headers"]["PetHeader"][
+                "schema"
+            ]["items"]
+        else:
+            schema_reference = get["responses"]["200"]["content"]["application/json"][
+                "schema"
+            ]
+            header_reference = get["responses"]["200"]["headers"]["PetHeader"]["schema"]
+
+        assert schema_reference == build_ref(spec_fixture.spec, "schema", "Pet")
+        assert header_reference == build_ref(spec_fixture.spec, "schema", "Pet")
+        assert len(spec_fixture.spec.components._schemas) == 1
+        resolved_schema = spec_fixture.spec.components._schemas["Pet"]
+        assert resolved_schema == spec_fixture.openapi.schema2jsonschema(PetSchema)
+        assert get["responses"]["200"]["description"] == "successful operation"
+
+    @pytest.mark.parametrize(
+        "pet_schema",
+        (PetSchema, PetSchema(), PetSchema(many=True), "tests.schemas.PetSchema"),
+    )
+    @pytest.mark.parametrize("spec_fixture", ("3.0.0",), indirect=True)
+    def test_callback_schema_v3(self, make_pet_callback_spec, pet_schema):
+        spec_fixture = make_pet_callback_spec(
+            {
+                "get": {
+                    "responses": {
+                        "200": {
+                            "content": {"application/json": {"schema": pet_schema}},
+                            "description": "successful operation",
+                            "headers": {"PetHeader": {"schema": pet_schema}},
+                        }
+                    }
+                }
+            }
+        )
+        p = get_paths(spec_fixture.spec)["/pet"]
+        c = p["post"]["callbacks"]["petEvent"]["petCallbackUrl"]
+        get = c["get"]
         if isinstance(pet_schema, Schema) and pet_schema.many is True:
             assert (
                 get["responses"]["200"]["content"]["application/json"]["schema"]["type"]
@@ -485,6 +548,41 @@ class TestOperationHelper:
         assert post["requestBody"]["description"] == "a pet schema"
         assert post["requestBody"]["required"]
 
+    @pytest.mark.parametrize("spec_fixture", ("3.0.0",), indirect=True)
+    def test_callback_schema_expand_parameters_v3(self, make_pet_callback_spec):
+        spec_fixture = make_pet_callback_spec(
+            {
+                "get": {"parameters": [{"in": "query", "schema": PetSchema}]},
+                "post": {
+                    "requestBody": {
+                        "description": "a pet schema",
+                        "required": True,
+                        "content": {"application/json": {"schema": PetSchema}},
+                    }
+                },
+            }
+        )
+        p = get_paths(spec_fixture.spec)["/pet"]
+        c = p["post"]["callbacks"]["petEvent"]["petCallbackUrl"]
+        get = c["get"]
+        assert get["parameters"] == spec_fixture.openapi.schema2parameters(
+            PetSchema(), location="query"
+        )
+        for parameter in get["parameters"]:
+            description = parameter.get("description", False)
+            assert description
+            name = parameter["name"]
+            assert description == PetSchema.description[name]
+        post = c["post"]
+        post_schema = spec_fixture.marshmallow_plugin.resolver.resolve_schema_dict(
+            PetSchema
+        )
+        assert (
+            post["requestBody"]["content"]["application/json"]["schema"] == post_schema
+        )
+        assert post["requestBody"]["description"] == "a pet schema"
+        assert post["requestBody"]["required"]
+
     @pytest.mark.parametrize("spec_fixture", ("2.0",), indirect=True)
     def test_schema_uses_ref_if_available_v2(self, spec_fixture):
         spec_fixture.spec.components.schema("Pet", schema=PetSchema)
@@ -510,6 +608,24 @@ class TestOperationHelper:
             },
         )
         get = get_paths(spec_fixture.spec)["/pet"]["get"]
+        assert get["responses"]["200"]["content"]["application/json"][
+            "schema"
+        ] == build_ref(spec_fixture.spec, "schema", "Pet")
+
+    @pytest.mark.parametrize("spec_fixture", ("3.0.0",), indirect=True)
+    def test_callback_schema_uses_ref_if_available_v3(self, make_pet_callback_spec):
+        spec_fixture = make_pet_callback_spec(
+            {
+                "get": {
+                    "responses": {
+                        "200": {"content": {"application/json": {"schema": PetSchema}}}
+                    }
+                }
+            }
+        )
+        p = get_paths(spec_fixture.spec)["/pet"]
+        c = p["post"]["callbacks"]["petEvent"]["petCallbackUrl"]
+        get = c["get"]
         assert get["responses"]["200"]["content"]["application/json"][
             "schema"
         ] == build_ref(spec_fixture.spec, "schema", "Pet")
@@ -606,6 +722,48 @@ class TestOperationHelper:
             in get["responses"]["200"]["content"]["application/json"]["schema"]
         )
 
+    def test_callback_schema_uses_ref_if_available_name_resolver_returns_none_v3(self):
+        def resolver(schema):
+            return None
+
+        spec = APISpec(
+            title="Test auto-reference",
+            version="0.1",
+            openapi_version="3.0.0",
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
+        )
+        spec.components.schema("Pet", schema=PetSchema)
+        spec.path(
+            path="/pet",
+            operations={
+                "post": {
+                    "callbacks": {
+                        "petEvent": {
+                            "petCallbackUrl": {
+                                "get": {
+                                    "responses": {
+                                        "200": {
+                                            "content": {
+                                                "application/json": {
+                                                    "schema": PetSchema
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+        )
+        p = get_paths(spec)["/pet"]
+        c = p["post"]["callbacks"]["petEvent"]["petCallbackUrl"]
+        get = c["get"]
+        assert get["responses"]["200"]["content"]["application/json"][
+            "schema"
+        ] == build_ref(spec, "schema", "Pet")
+
     @pytest.mark.parametrize("spec_fixture", ("2.0",), indirect=True)
     def test_schema_uses_ref_in_parameters_and_request_body_if_available_v2(
         self, spec_fixture
@@ -645,6 +803,27 @@ class TestOperationHelper:
         p = get_paths(spec_fixture.spec)["/pet"]
         assert "schema" in p["get"]["parameters"][0]
         post = p["post"]
+        schema_ref = post["requestBody"]["content"]["application/json"]["schema"]
+        assert schema_ref == build_ref(spec_fixture.spec, "schema", "Pet")
+
+    @pytest.mark.parametrize("spec_fixture", ("3.0.0",), indirect=True)
+    def test_callback_schema_uses_ref_in_parameters_and_request_body_if_available_v3(
+        self, make_pet_callback_spec
+    ):
+        spec_fixture = make_pet_callback_spec(
+            {
+                "get": {"parameters": [{"in": "query", "schema": PetSchema}]},
+                "post": {
+                    "requestBody": {
+                        "content": {"application/json": {"schema": PetSchema}}
+                    }
+                },
+            }
+        )
+        p = get_paths(spec_fixture.spec)["/pet"]
+        c = p["post"]["callbacks"]["petEvent"]["petCallbackUrl"]
+        assert "schema" in c["get"]["parameters"][0]
+        post = c["post"]
         schema_ref = post["requestBody"]["content"]["application/json"]["schema"]
         assert schema_ref == build_ref(spec_fixture.spec, "schema", "Pet")
 
@@ -720,6 +899,51 @@ class TestOperationHelper:
         ]
         assert response_schema == resolved_schema
 
+    @pytest.mark.parametrize("spec_fixture", ("3.0.0",), indirect=True)
+    def test_callback_schema_array_uses_ref_if_available_v3(
+        self, make_pet_callback_spec
+    ):
+        spec_fixture = make_pet_callback_spec(
+            {
+                "get": {
+                    "parameters": [
+                        {
+                            "name": "Pet",
+                            "in": "query",
+                            "content": {
+                                "application/json": {
+                                    "schema": {"type": "array", "items": PetSchema}
+                                }
+                            },
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "content": {
+                                "application/json": {
+                                    "schema": {"type": "array", "items": PetSchema}
+                                }
+                            }
+                        }
+                    },
+                }
+            }
+        )
+        p = get_paths(spec_fixture.spec)["/pet"]
+        c = p["post"]["callbacks"]["petEvent"]["petCallbackUrl"]
+        get = c["get"]
+        assert len(get["parameters"]) == 1
+        resolved_schema = {
+            "type": "array",
+            "items": build_ref(spec_fixture.spec, "schema", "Pet"),
+        }
+        request_schema = get["parameters"][0]["content"]["application/json"]["schema"]
+        assert request_schema == resolved_schema
+        response_schema = get["responses"]["200"]["content"]["application/json"][
+            "schema"
+        ]
+        assert response_schema == resolved_schema
+
     @pytest.mark.parametrize("spec_fixture", ("2.0",), indirect=True)
     def test_schema_partially_v2(self, spec_fixture):
         spec_fixture.spec.components.schema("Pet", schema=PetSchema)
@@ -776,6 +1000,40 @@ class TestOperationHelper:
             },
         )
         get = get_paths(spec_fixture.spec)["/parents"]["get"]
+        assert get["responses"]["200"]["content"]["application/json"]["schema"] == {
+            "type": "object",
+            "properties": {
+                "mother": build_ref(spec_fixture.spec, "schema", "Pet"),
+                "father": build_ref(spec_fixture.spec, "schema", "Pet"),
+            },
+        }
+
+    @pytest.mark.parametrize("spec_fixture", ("3.0.0",), indirect=True)
+    def test_callback_schema_partially_v3(self, make_pet_callback_spec):
+        spec_fixture = make_pet_callback_spec(
+            {
+                "get": {
+                    "responses": {
+                        "200": {
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "mother": PetSchema,
+                                            "father": PetSchema,
+                                        },
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        )
+        p = get_paths(spec_fixture.spec)["/pet"]
+        c = p["post"]["callbacks"]["petEvent"]["petCallbackUrl"]
+        get = c["get"]
         assert get["responses"]["200"]["content"]["application/json"]["schema"] == {
             "type": "object",
             "properties": {
