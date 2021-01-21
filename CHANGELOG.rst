@@ -4,6 +4,10 @@ Changelog
 4.1.0 (unreleased)
 ******************
 
+Features:
+
+- Resolve schemas in callbacks (:pr:`544`). Thanks :user:`kortsi` for the PR.
+
 Bug fixes:
 
 - Fix docstrings documenting kwargs type as dict (:issue:`534`).
