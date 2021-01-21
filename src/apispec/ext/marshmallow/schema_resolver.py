@@ -37,7 +37,7 @@ class SchemaResolver:
         """Resolve marshmallow Schemas in a dict mapping callback name to OpenApi `Callback Object
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#callbackObject`_.
 
-        This is done recursively, so it it is possible to define callbacks in your callbacks.
+        This is done recursively, so it is possible to define callbacks in your callbacks.
 
         Example: ::
 
