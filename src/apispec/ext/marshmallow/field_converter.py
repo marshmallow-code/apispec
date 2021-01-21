@@ -83,6 +83,8 @@ class FieldConverterMixin:
 
     def init_attribute_functions(self):
         self.attribute_functions = [
+            # self.field2type_and_format should run first
+            # as other functions may rely on its output
             self.field2type_and_format,
             self.field2default,
             self.field2choices,
@@ -272,7 +274,7 @@ class FieldConverterMixin:
             ] = True
         return attributes
 
-    def field2range(self, field, **kwargs):
+    def field2range(self, field, ret):
         """Return the dictionary of OpenAPI field attributes for a set of
         :class:`Range <marshmallow.validators.Range>` validators.
 
@@ -291,7 +293,7 @@ class FieldConverterMixin:
 
         min_attr, max_attr = (
             ("minimum", "maximum")
-            if marshmallow.fields.Number in type(field).mro()
+            if ret.get("type") in {"number", "integer"}
             else ("x-minimum", "x-maximum")
         )
         return make_min_max_attributes(validators, min_attr, max_attr)

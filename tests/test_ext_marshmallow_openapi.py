@@ -499,7 +499,7 @@ class TestFieldValidation:
     class ValidationSchema(Schema):
         id = fields.Int(dump_only=True)
         range = fields.Int(validate=validate.Range(min=1, max=10))
-        range_no_upper = fields.Int(validate=validate.Range(min=1))
+        range_no_upper = fields.Float(validate=validate.Range(min=1))
         multiple_ranges = fields.Int(
             validate=[
                 validate.Range(min=1),
