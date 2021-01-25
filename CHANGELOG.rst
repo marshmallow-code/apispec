@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-4.1.0 (unreleased)
+4.1.0 (2021-01-26)
 ******************
 
 Features:
@@ -11,6 +11,8 @@ Features:
 Bug fixes:
 
 - Fix docstrings documenting kwargs type as dict (:issue:`534`).
+- Use ``x-minimum`` and ``x-maximum`` extensions to document ranges that are
+  not of number type (e.g. datetime) (:issue:`614`).
 
 Other changes:
 
