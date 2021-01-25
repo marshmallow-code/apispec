@@ -83,6 +83,8 @@ class FieldConverterMixin:
 
     def init_attribute_functions(self):
         self.attribute_functions = [
+            # self.field2type_and_format should run first
+            # as other functions may rely on its output
             self.field2type_and_format,
             self.field2default,
             self.field2choices,
@@ -272,7 +274,7 @@ class FieldConverterMixin:
             ] = True
         return attributes
 
-    def field2range(self, field, **kwargs):
+    def field2range(self, field, ret):
         """Return the dictionary of OpenAPI field attributes for a set of
         :class:`Range <marshmallow.validators.Range>` validators.
 
@@ -289,19 +291,12 @@ class FieldConverterMixin:
             )
         ]
 
-        attributes = {}
-        for validator in validators:
-            if validator.min is not None:
-                if hasattr(attributes, "minimum"):
-                    attributes["minimum"] = max(attributes["minimum"], validator.min)
-                else:
-                    attributes["minimum"] = validator.min
-            if validator.max is not None:
-                if hasattr(attributes, "maximum"):
-                    attributes["maximum"] = min(attributes["maximum"], validator.max)
-                else:
-                    attributes["maximum"] = validator.max
-        return attributes
+        min_attr, max_attr = (
+            ("minimum", "maximum")
+            if ret.get("type") in {"number", "integer"}
+            else ("x-minimum", "x-maximum")
+        )
+        return make_min_max_attributes(validators, min_attr, max_attr)
 
     def field2length(self, field, **kwargs):
         """Return the dictionary of OpenAPI field attributes for a set of
@@ -310,8 +305,6 @@ class FieldConverterMixin:
         :param Field field: A marshmallow field.
         :rtype: dict
         """
-        attributes = {}
-
         validators = [
             validator
             for validator in field.validators
@@ -328,23 +321,13 @@ class FieldConverterMixin:
         min_attr = "minItems" if is_array else "minLength"
         max_attr = "maxItems" if is_array else "maxLength"
 
-        for validator in validators:
-            if validator.min is not None:
-                if hasattr(attributes, min_attr):
-                    attributes[min_attr] = max(attributes[min_attr], validator.min)
-                else:
-                    attributes[min_attr] = validator.min
-            if validator.max is not None:
-                if hasattr(attributes, max_attr):
-                    attributes[max_attr] = min(attributes[max_attr], validator.max)
-                else:
-                    attributes[max_attr] = validator.max
+        equal_list = [
+            validator.equal for validator in validators if validator.equal is not None
+        ]
+        if equal_list:
+            return {min_attr: equal_list[0], max_attr: equal_list[0]}
 
-        for validator in validators:
-            if validator.equal is not None:
-                attributes[min_attr] = validator.equal
-                attributes[max_attr] = validator.equal
-        return attributes
+        return make_min_max_attributes(validators, min_attr, max_attr)
 
     def field2pattern(self, field, **kwargs):
         """Return the dictionary of OpenAPI field attributes for a set of
@@ -449,3 +432,23 @@ class FieldConverterMixin:
             if value_field:
                 ret["additionalProperties"] = self.field2property(value_field)
         return ret
+
+
+def make_min_max_attributes(validators, min_attr, max_attr):
+    """Return a dictionary of minimum and maximum attributes based on a list
+    of validators. If either minimum or maximum values are not present in any
+    of the validator objects that attribute will be omitted.
+
+    :param validators list: A list of `Marshmallow` validator objects. Each
+        objct is inspected for a minimum and maximum values
+    :param min_attr string: The OpenAPI attribute for the minimum value
+    :param max_attr string: The OpenAPI attribute for the maximum value
+    """
+    attributes = {}
+    min_list = [validator.min for validator in validators if validator.min is not None]
+    max_list = [validator.max for validator in validators if validator.max is not None]
+    if min_list:
+        attributes[min_attr] = max(min_list)
+    if max_list:
+        attributes[max_attr] = min(max_list)
+    return attributes
