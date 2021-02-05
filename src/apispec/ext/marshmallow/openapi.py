@@ -178,6 +178,8 @@ class OpenAPIConverter(FieldConverterMixin):
             jsonschema["title"] = Meta.title
         if hasattr(Meta, "description"):
             jsonschema["description"] = Meta.description
+        if hasattr(Meta, "unknown"):
+            jsonschema["additionalProperties"] = Meta.unknown == marshmallow.INCLUDE
 
         return jsonschema
 
