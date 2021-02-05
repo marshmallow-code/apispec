@@ -232,7 +232,7 @@ class TestComponentParameterHelper:
             reference = parameter["content"]["application/json"]["schema"]
         assert reference == build_ref(spec, "schema", "Pet")
 
-        resolved_schema = spec.components._schemas["Pet"]
+        resolved_schema = spec.components.schemas["Pet"]
         assert resolved_schema["properties"]["name"]["type"] == "string"
         assert resolved_schema["properties"]["password"]["type"] == "string"
         assert resolved_schema["properties"]["id"]["type"] == "integer"
@@ -253,7 +253,7 @@ class TestComponentResponseHelper:
             reference = response["content"]["application/json"]["schema"]
         assert reference == build_ref(spec, "schema", "Pet")
 
-        resolved_schema = spec.components._schemas["Pet"]
+        resolved_schema = spec.components.schemas["Pet"]
         assert resolved_schema["properties"]["id"]["type"] == "integer"
         assert resolved_schema["properties"]["name"]["type"] == "string"
         assert resolved_schema["properties"]["password"]["type"] == "string"
@@ -266,7 +266,7 @@ class TestComponentResponseHelper:
         reference = response["headers"]["PetHeader"]["schema"]
         assert reference == build_ref(spec, "schema", "Pet")
 
-        resolved_schema = spec.components._schemas["Pet"]
+        resolved_schema = spec.components.schemas["Pet"]
         assert resolved_schema["properties"]["id"]["type"] == "integer"
         assert resolved_schema["properties"]["name"]["type"] == "string"
         assert resolved_schema["properties"]["password"]["type"] == "string"
@@ -376,8 +376,8 @@ class TestOperationHelper:
             header_reference = get["responses"]["200"]["headers"]["PetHeader"]["schema"]
         assert schema_reference == build_ref(spec_fixture.spec, "schema", "Pet")
         assert header_reference == build_ref(spec_fixture.spec, "schema", "Pet")
-        assert len(spec_fixture.spec.components._schemas) == 1
-        resolved_schema = spec_fixture.spec.components._schemas["Pet"]
+        assert len(spec_fixture.spec.components.schemas) == 1
+        resolved_schema = spec_fixture.spec.components.schemas["Pet"]
         assert resolved_schema == spec_fixture.openapi.schema2jsonschema(PetSchema)
         assert get["responses"]["200"]["description"] == "successful operation"
 
@@ -425,8 +425,8 @@ class TestOperationHelper:
 
         assert schema_reference == build_ref(spec_fixture.spec, "schema", "Pet")
         assert header_reference == build_ref(spec_fixture.spec, "schema", "Pet")
-        assert len(spec_fixture.spec.components._schemas) == 1
-        resolved_schema = spec_fixture.spec.components._schemas["Pet"]
+        assert len(spec_fixture.spec.components.schemas) == 1
+        resolved_schema = spec_fixture.spec.components.schemas["Pet"]
         assert resolved_schema == spec_fixture.openapi.schema2jsonschema(PetSchema)
         assert get["responses"]["200"]["description"] == "successful operation"
 
@@ -475,8 +475,8 @@ class TestOperationHelper:
 
         assert schema_reference == build_ref(spec_fixture.spec, "schema", "Pet")
         assert header_reference == build_ref(spec_fixture.spec, "schema", "Pet")
-        assert len(spec_fixture.spec.components._schemas) == 1
-        resolved_schema = spec_fixture.spec.components._schemas["Pet"]
+        assert len(spec_fixture.spec.components.schemas) == 1
+        resolved_schema = spec_fixture.spec.components.schemas["Pet"]
         assert resolved_schema == spec_fixture.openapi.schema2jsonschema(PetSchema)
         assert get["responses"]["200"]["description"] == "successful operation"
 
