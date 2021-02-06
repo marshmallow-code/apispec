@@ -29,19 +29,19 @@ class Components:
     def __init__(self, plugins, openapi_version):
         self._plugins = plugins
         self.openapi_version = openapi_version
-        self._schemas = {}
-        self._responses = {}
-        self._parameters = {}
-        self._examples = {}
-        self._security_schemes = {}
+        self.schemas = {}
+        self.responses = {}
+        self.parameters = {}
+        self.examples = {}
+        self.security_schemes = {}
 
     def to_dict(self):
         subsections = {
-            "schema": self._schemas,
-            "response": self._responses,
-            "parameter": self._parameters,
-            "example": self._examples,
-            "security_scheme": self._security_schemes,
+            "schema": self.schemas,
+            "response": self.responses,
+            "parameter": self.parameters,
+            "example": self.examples,
+            "security_scheme": self.security_schemes,
         }
         return {
             COMPONENT_SUBSECTIONS[self.openapi_version.major][k]: v
@@ -70,7 +70,7 @@ class Components:
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schemaObject
         """
-        if name in self._schemas:
+        if name in self.schemas:
             raise DuplicateComponentNameError(
                 f'Another schema with name "{name}" is already registered.'
             )
@@ -82,7 +82,7 @@ class Components:
                 ret.update(plugin.schema_helper(name, component, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
-        self._schemas[name] = ret
+        self.schemas[name] = ret
         return self
 
     def response(self, component_id, component=None, **kwargs):
@@ -92,7 +92,7 @@ class Components:
         :param dict component: response fields
         :param kwargs: plugin-specific arguments
         """
-        if component_id in self._responses:
+        if component_id in self.responses:
             raise DuplicateComponentNameError(
                 'Another response with name "{}" is already registered.'.format(
                     component_id
@@ -106,7 +106,7 @@ class Components:
                 ret.update(plugin.response_helper(component, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
-        self._responses[component_id] = ret
+        self.responses[component_id] = ret
         return self
 
     def parameter(self, component_id, location, component=None, **kwargs):
@@ -117,7 +117,7 @@ class Components:
         :param dict component: parameter fields.
         :param kwargs: plugin-specific arguments
         """
-        if component_id in self._parameters:
+        if component_id in self.parameters:
             raise DuplicateComponentNameError(
                 'Another parameter with name "{}" is already registered.'.format(
                     component_id
@@ -138,7 +138,7 @@ class Components:
                 ret.update(plugin.parameter_helper(component, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
-        self._parameters[component_id] = ret
+        self.parameters[component_id] = ret
         return self
 
     def example(self, name, component, **kwargs):
@@ -149,11 +149,11 @@ class Components:
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#exampleObject
         """
-        if name in self._examples:
+        if name in self.examples:
             raise DuplicateComponentNameError(
                 f'Another example with name "{name}" is already registered.'
             )
-        self._examples[name] = component
+        self.examples[name] = component
         return self
 
     def security_scheme(self, component_id, component):
@@ -162,13 +162,13 @@ class Components:
         :param str component_id: component_id to use as reference
         :param dict component: security scheme fields
         """
-        if component_id in self._security_schemes:
+        if component_id in self.security_schemes:
             raise DuplicateComponentNameError(
                 'Another security scheme with name "{}" is already registered.'.format(
                     component_id
                 )
             )
-        self._security_schemes[component_id] = component
+        self.security_schemes[component_id] = component
         return self
 
 

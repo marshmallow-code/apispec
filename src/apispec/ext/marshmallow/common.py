@@ -123,7 +123,7 @@ def get_unique_schema_name(components, name, counter=0):
     :param int counter: the counter of the number of recursions
     :return: the unique name
     """
-    if name not in components._schemas:
+    if name not in components.schemas:
         return name
     if not counter:  # first time through recursion
         warnings.warn(
