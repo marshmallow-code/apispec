@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+4.2.0 (2021-02-06)
+******************
+
+Features:
+
+- Make components public attributes of ``Components`` class (:pr:`634`).
+
 4.1.0 (2021-01-26)
 ******************
 
