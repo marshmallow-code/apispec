@@ -20,6 +20,7 @@ COMPONENT_SUBSECTIONS = {
         "schema": "schemas",
         "response": "responses",
         "parameter": "parameters",
+        "header": "headers",
         "example": "examples",
         "security_scheme": "securitySchemes",
     },

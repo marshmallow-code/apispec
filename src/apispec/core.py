@@ -32,6 +32,7 @@ class Components:
         self.schemas = {}
         self.responses = {}
         self.parameters = {}
+        self.headers = {}
         self.examples = {}
         self.security_schemes = {}
 
@@ -40,6 +41,7 @@ class Components:
             "schema": self.schemas,
             "response": self.responses,
             "parameter": self.parameters,
+            "header": self.headers,
             "example": self.examples,
             "security_scheme": self.security_schemes,
         }
@@ -112,7 +114,7 @@ class Components:
     def parameter(self, component_id, location, component=None, **kwargs):
         """ Add a parameter which can be referenced.
 
-        :param str param_id: identifier by which parameter may be referenced.
+        :param str component_id: identifier by which parameter may be referenced.
         :param str location: location of the parameter.
         :param dict component: parameter fields.
         :param kwargs: plugin-specific arguments
@@ -139,6 +141,21 @@ class Components:
             except PluginMethodNotImplementedError:
                 continue
         self.parameters[component_id] = ret
+        return self
+
+    def header(self, component_id, component):
+        """ Add a header which can be referenced.
+
+        :param str component_id: identifier by which header may be referenced.
+        :param dict component: header fields.
+
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#headerObject
+        """
+        if component_id in self.headers:
+            raise DuplicateComponentNameError(
+                f'Another header with name "{component_id}" is already registered.'
+            )
+        self.headers[component_id] = component
         return self
 
     def example(self, name, component, **kwargs):
