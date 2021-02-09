@@ -54,6 +54,7 @@ class Components:
 
         :param str name: identifier by which schema may be referenced.
         :param dict component: schema definition.
+        :param kwargs: plugin-specific arguments
 
         .. note::
 
@@ -141,7 +142,7 @@ class Components:
         self.parameters[component_id] = ret
         return self
 
-    def example(self, name, component, **kwargs):
+    def example(self, name, component):
         """Add an example which can be referenced
 
         :param str name: identifier by which example may be referenced.
