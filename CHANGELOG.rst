@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+4.3.0 (2021-02-10)
+******************
+
+Features:
+
+- Add `apispec.core.Components.header` to register header components
+  (:pr:`637`).
+
 4.2.0 (2021-02-06)
 ******************
 
