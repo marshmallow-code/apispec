@@ -17,6 +17,7 @@ from .utils import (
     get_examples,
     get_paths,
     get_parameters,
+    get_headers,
     get_responses,
     get_security_schemes,
     build_ref,
@@ -202,6 +203,8 @@ class TestComponents:
             spec.components.response("test_response")
 
     def test_parameter(self, spec):
+        # Note: this is an OpenAPI v2 parameter header
+        # but is does the job for the test even for OpenAPI v3
         parameter = {"format": "int64", "type": "integer"}
         spec.components.parameter("PetId", "path", parameter)
         params = get_parameters(spec)
@@ -226,6 +229,33 @@ class TestComponents:
             match='Another parameter with name "test_parameter" is already registered.',
         ):
             spec.components.parameter("test_parameter", "path")
+
+    # Referenced headers are only supported in OAS 3.x
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_header(self, spec):
+        header = {"schema": {"type": "string"}}
+        spec.components.header("test_header", header.copy())
+        headers = get_headers(spec)
+        assert headers["test_header"] == header
+
+    # Referenced headers are only supported in OAS 3.x
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_header_is_chainable(self, spec):
+        header = {"schema": {"type": "string"}}
+        spec.components.header("header1", header).header("header2", header)
+        headers = get_headers(spec)
+        assert "header1" in headers
+        assert "header2" in headers
+
+    # Referenced headers are only supported in OAS 3.x
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_header_duplicate_name(self, spec):
+        spec.components.header("test_header", {"schema": {"type": "string"}})
+        with pytest.raises(
+            DuplicateComponentNameError,
+            match='Another header with name "test_header" is already registered.',
+        ):
+            spec.components.header("test_header", {"schema": {"type": "integer"}})
 
     # Referenced examples are only supported in OAS 3.x
     @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
