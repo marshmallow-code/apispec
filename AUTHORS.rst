@@ -66,3 +66,4 @@ Contributors (chronological)
 - Mikko Kortelainen `@kortsi <https://github.com/kortsi>
 - David Bishop `@teancom <https://github.com/teancom>`_
 - Andrea Ghensi `@sanzoghenzo <https://github.com/sanzoghenzo>`_
+- `@timsilvers <https://github.com/timsilvers>`_

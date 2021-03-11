@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+4.4.0 (unreleased)
+******************
+
+Features:
+
+- Populate ``additionalProperties`` from ``Meta.unknown`` (:pr:`635`).
+  Thanks :user:`timsilvers` for the PR.
+
 4.3.0 (2021-02-10)
 ******************
 
