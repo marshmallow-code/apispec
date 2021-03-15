@@ -348,7 +348,10 @@ class APISpec:
         """
         seen = set()
         for parameter in [p for p in parameters if isinstance(p, dict)]:
-
+            # if this is a ref to somewhere else, skip check
+            if "$ref" in parameter.keys():
+                continue
+            
             # check missing name / location
             missing_attrs = [attr for attr in ("name", "in") if attr not in parameter]
             if missing_attrs:
