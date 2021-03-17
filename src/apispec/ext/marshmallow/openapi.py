@@ -146,12 +146,21 @@ class OpenAPIConverter(FieldConverterMixin):
 
         if self.openapi_version.major < 3:
             if multiple:
-                ret["collectionFormat"] = "multi"
+                if prop.get("collectionFormat", None):
+                    ret["collectionFormat"] = prop.pop("collectionFormat")
+                else:
+                    ret["collectionFormat"] = "multi"
             ret.update(prop)
         else:
             if multiple:
-                ret["explode"] = True
-                ret["style"] = "form"
+                if prop.get("explode", None):
+                    ret["explode"] = prop.pop("explode")
+                else:
+                    ret["explode"] = True
+                if prop.get("style", None):
+                    ret["style"] = prop.pop("style")
+                else:
+                    ret["style"] = "form"
             if prop.get("description", None):
                 ret["description"] = prop.pop("description")
             ret["schema"] = prop
