@@ -70,6 +70,9 @@ _VALID_PROPERTIES = {
     "xml",
     "externalDocs",
     "example",
+    "collectionFormat",
+    "style",
+    "explode"
 }
 
 

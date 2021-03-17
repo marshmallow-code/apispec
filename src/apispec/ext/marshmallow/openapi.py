@@ -153,7 +153,7 @@ class OpenAPIConverter(FieldConverterMixin):
             ret.update(prop)
         else:
             if multiple:
-                if prop.get("explode", None):
+                if prop.get("explode", None) is not None:
                     ret["explode"] = prop.pop("explode")
                 else:
                     ret["explode"] = True
