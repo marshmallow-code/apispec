@@ -26,3 +26,8 @@ def test_load_yaml_from_docstring_empty_docstring(docstring):
 @pytest.mark.parametrize("docstring", (None, "", "---"))
 def test_load_operations_from_docstring_empty_docstring(docstring):
     assert yaml_utils.load_operations_from_docstring(docstring) == {}
+
+
+def test_dict_to_yaml_unicode():
+    assert yaml_utils.dict_to_yaml({"가": "나"}) == '"\\uAC00": "\\uB098"\n'
+    assert yaml_utils.dict_to_yaml({"가": "나"}, {"allow_unicode": True}) == "가: 나\n"
