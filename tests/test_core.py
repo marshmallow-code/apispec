@@ -677,6 +677,15 @@ class TestPath:
             "application/json"
         ]["schema"] == build_ref(spec, "schema", "PetSchema")
 
+    # "headers" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_path_resolve_response_header(self, spec):
+        response = {"headers": {"header_1": "Header_1"}}
+        spec.path("/pet/{petId}", operations={"get": {"responses": {"200": response}}})
+        resp = get_paths(spec)["/pet/{petId}"]["get"]["responses"]["200"]
+        header_1 = resp["headers"]["header_1"]
+        assert header_1 == build_ref(spec, "header", "Header_1")
+
 
 class TestPlugins:
     @staticmethod
