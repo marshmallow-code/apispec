@@ -686,6 +686,41 @@ class TestPath:
         header_1 = resp["headers"]["header_1"]
         assert header_1 == build_ref(spec, "header", "Header_1")
 
+    # "examples" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_path_resolve_response_examples(self, spec):
+        response = {
+            "content": {"application/json": {"examples": {"example_1": "Example_1"}}}
+        }
+        spec.path("/pet/{petId}", operations={"get": {"responses": {"200": response}}})
+        resp = get_paths(spec)["/pet/{petId}"]["get"]["responses"]["200"]
+        example_1 = resp["content"]["application/json"]["examples"]["example_1"]
+        assert example_1 == build_ref(spec, "example", "Example_1")
+
+    # "examples" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_path_resolve_request_body_examples(self, spec):
+        request_body = {
+            "content": {"application/json": {"examples": {"example_1": "Example_1"}}}
+        }
+        spec.path("/pet/{petId}", operations={"get": {"requestBody": request_body}})
+        reqbdy = get_paths(spec)["/pet/{petId}"]["get"]["requestBody"]
+        example_1 = reqbdy["content"]["application/json"]["examples"]["example_1"]
+        assert example_1 == build_ref(spec, "example", "Example_1")
+
+    # "examples" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_path_resolve_parameter_examples(self, spec):
+        parameter = {
+            "name": "test",
+            "in": "query",
+            "examples": {"example_1": "Example_1"},
+        }
+        spec.path("/pet/{petId}", operations={"get": {"parameters": [parameter]}})
+        param = get_paths(spec)["/pet/{petId}"]["get"]["parameters"][0]
+        example_1 = param["examples"]["example_1"]
+        assert example_1 == build_ref(spec, "example", "Example_1")
+
 
 class TestPlugins:
     @staticmethod
