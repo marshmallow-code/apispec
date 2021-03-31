@@ -15,8 +15,10 @@ class YAMLDumper(yaml.Dumper):
 yaml.add_representer(OrderedDict, YAMLDumper._represent_dict, Dumper=YAMLDumper)
 
 
-def dict_to_yaml(dic):
-    return yaml.dump(dic, Dumper=YAMLDumper)
+def dict_to_yaml(dic, yaml_dump_kwargs=None):
+    if yaml_dump_kwargs is None:
+        yaml_dump_kwargs = {}
+    return yaml.dump(dic, Dumper=YAMLDumper, **yaml_dump_kwargs)
 
 
 def load_yaml_from_docstring(docstring):
