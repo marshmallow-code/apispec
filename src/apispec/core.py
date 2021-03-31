@@ -410,5 +410,8 @@ class APISpec:
                         if self.openapi_version.major < 3 and code != "default":
                             warnings.warn("Non-integer code not allowed in OpenAPI < 3")
                     self._resolve_schema(response)
-                    responses[str(code)] = self.get_ref("response", response)
+                    response = self.get_ref("response", response)
+                    for name, header in response.get("headers", {}).items():
+                        response["headers"][name] = self.get_ref("header", header)
+                    responses[str(code)] = response
                 operation["responses"] = responses
