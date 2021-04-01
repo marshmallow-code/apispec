@@ -11,7 +11,7 @@ from collections import OrderedDict
 import marshmallow
 from marshmallow.utils import is_collection
 
-from apispec.utils import OpenAPIVersion, build_reference
+from apispec.utils import OpenAPIVersion
 from apispec.exceptions import APISpecError
 from .field_converter import FieldConverterMixin
 from .common import (
@@ -72,7 +72,7 @@ class OpenAPIConverter(FieldConverterMixin):
         # If schema is a string and is not found in registry,
         # assume it is a schema reference
         except marshmallow.exceptions.RegistryError:
-            return build_reference("schema", self.openapi_version.major, schema)
+            return self.spec.components.get_ref("schema", schema)
         schema_key = make_schema_key(schema_instance)
         if schema_key not in self.refs:
             name = self.schema_name_resolver(schema)
@@ -224,9 +224,7 @@ class OpenAPIConverter(FieldConverterMixin):
         schema in the spec
         """
         schema_key = make_schema_key(schema)
-        ref_schema = build_reference(
-            "schema", self.openapi_version.major, self.refs[schema_key]
-        )
+        ref_schema = self.spec.components.get_ref("schema", self.refs[schema_key])
         if getattr(schema, "many", False):
             return {"type": "array", "items": ref_schema}
         return ref_schema
