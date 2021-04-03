@@ -280,8 +280,7 @@ method. Continuing from the example above:
 .. code-block:: python
 
     def my_custom_field2properties(self, field, **kwargs):
-        """Add an OpenAPI extension flag to MyCustomField instances
-        """
+        """Add an OpenAPI extension flag to MyCustomField instances"""
         ret = {}
         if isinstance(field, MyCustomField):
             if self.openapi_version.major > 2:

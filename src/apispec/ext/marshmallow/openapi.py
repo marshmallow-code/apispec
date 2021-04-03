@@ -128,7 +128,9 @@ class OpenAPIConverter(FieldConverterMixin):
 
         return [
             self._field2parameter(
-                field_obj, name=field_obj.data_key or field_name, location=location,
+                field_obj,
+                name=field_obj.data_key or field_name,
+                location=location,
             )
             for field_name, field_obj in fields.items()
         ]

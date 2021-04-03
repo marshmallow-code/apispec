@@ -74,6 +74,6 @@ setup(
     project_urls={
         "Funding": "https://opencollective.com/marshmallow",
         "Issues": "https://github.com/marshmallow-code/apispec/issues",
-        "Tidelift": "https://tidelift.com/subscription/pkg/pypi-apispec?utm_source=pypi-apispec&utm_medium=pypi",  # noqa: E501
+        "Tidelift": "https://tidelift.com/subscription/pkg/pypi-apispec?utm_source=pypi-apispec&utm_medium=pypi",  # noqa: B950,E501
     },
 )
