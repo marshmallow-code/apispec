@@ -112,7 +112,7 @@ class Components:
         return self
 
     def parameter(self, component_id, location, component=None, **kwargs):
-        """ Add a parameter which can be referenced.
+        """Add a parameter which can be referenced.
 
         :param str component_id: identifier by which parameter may be referenced.
         :param str location: location of the parameter.
@@ -144,7 +144,7 @@ class Components:
         return self
 
     def header(self, component_id, component):
-        """ Add a header which can be referenced.
+        """Add a header which can be referenced.
 
         :param str component_id: identifier by which header may be referenced.
         :param dict component: header fields.
@@ -248,7 +248,7 @@ class APISpec:
         return dict_to_yaml(self.to_dict(), yaml_dump_kwargs)
 
     def tag(self, tag):
-        """ Store information about a tag.
+        """Store information about a tag.
 
         :param dict tag: the dictionary storing information about the tag.
         """
