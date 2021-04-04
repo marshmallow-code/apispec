@@ -674,7 +674,8 @@ class TestOperationHelper:
         ] == build_ref(spec, "schema", "Pet")
 
     @pytest.mark.parametrize(
-        "pet_schema", (PetSchema, PetSchema(), "tests.schemas.PetSchema"),
+        "pet_schema",
+        (PetSchema, PetSchema(), "tests.schemas.PetSchema"),
     )
     def test_schema_name_resolver_returns_none_v2(self, pet_schema):
         def resolver(schema):
@@ -694,7 +695,8 @@ class TestOperationHelper:
         assert "properties" in get["responses"]["200"]["schema"]
 
     @pytest.mark.parametrize(
-        "pet_schema", (PetSchema, PetSchema(), "tests.schemas.PetSchema"),
+        "pet_schema",
+        (PetSchema, PetSchema(), "tests.schemas.PetSchema"),
     )
     def test_schema_name_resolver_returns_none_v3(self, pet_schema):
         def resolver(schema):

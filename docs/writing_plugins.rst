@@ -50,8 +50,7 @@ A plugin with an operation helper that adds `deprecated` flag may look like this
 
    class DeprecatedPlugin(BasePlugin):
        def operation_helper(self, path, operations, **kwargs):
-           """Operation helper that add `deprecated` flag if in `kwargs`
-           """
+           """Operation helper that add `deprecated` flag if in `kwargs`"""
            if kwargs.pop("deprecated", False) is True:
                for key, value in operations.items():
                    value["deprecated"] = True

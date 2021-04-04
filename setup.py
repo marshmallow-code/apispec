@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 EXTRAS_REQUIRE = {
     "yaml": ["PyYAML>=3.10"],
     "validation": ["prance[osv]>=0.11"],
-    "lint": ["flake8==3.9.0", "flake8-bugbear==21.3.2", "pre-commit~=2.4"],
+    "lint": ["flake8==3.9.0", "flake8-bugbear==21.4.3", "pre-commit~=2.4"],
     "docs": [
         "marshmallow>=3.0.0",
         "pyyaml==5.4.1",
@@ -74,6 +74,6 @@ setup(
     project_urls={
         "Funding": "https://opencollective.com/marshmallow",
         "Issues": "https://github.com/marshmallow-code/apispec/issues",
-        "Tidelift": "https://tidelift.com/subscription/pkg/pypi-apispec?utm_source=pypi-apispec&utm_medium=pypi",  # noqa: E501
+        "Tidelift": "https://tidelift.com/subscription/pkg/pypi-apispec?utm_source=pypi-apispec&utm_medium=pypi",  # noqa: B950,E501
     },
 )

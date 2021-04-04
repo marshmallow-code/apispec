@@ -189,8 +189,10 @@ class TestMarshmallowSchemaToModelDefinition:
         class NotASchema:
             pass
 
-        expected_error = "{!r} doesn't have either `fields` or `_declared_fields`.".format(
-            NotASchema
+        expected_error = (
+            "{!r} doesn't have either `fields` or `_declared_fields`.".format(
+                NotASchema
+            )
         )
         with pytest.raises(ValueError, match=expected_error):
             openapi.schema2jsonschema(NotASchema)
@@ -308,8 +310,8 @@ class TestMarshmallowSchemaToParameters:
         class NotASchema:
             pass
 
-        expected_error = "{!r} doesn't have either `fields` or `_declared_fields`".format(
-            NotASchema
+        expected_error = (
+            f"{NotASchema!r} doesn't have either `fields` or `_declared_fields`"
         )
         with pytest.raises(ValueError, match=expected_error):
             openapi.schema2jsonschema(NotASchema)
@@ -416,7 +418,8 @@ def test_openapi_tools_validate_v2():
                     },
                     openapi._field2parameter(
                         field=fields.List(
-                            fields.Str(), validate=validate.OneOf(["freddie", "roger"]),
+                            fields.Str(),
+                            validate=validate.OneOf(["freddie", "roger"]),
                         ),
                         location="query",
                         name="body",
@@ -472,7 +475,8 @@ def test_openapi_tools_validate_v3():
                     },
                     openapi._field2parameter(
                         field=fields.List(
-                            fields.Str(), validate=validate.OneOf(["freddie", "roger"]),
+                            fields.Str(),
+                            validate=validate.OneOf(["freddie", "roger"]),
                         ),
                         location="query",
                         name="body",
@@ -545,7 +549,11 @@ class TestFieldValidation:
         equal_length = fields.Str(
             validate=[validate.Length(equal=5), validate.Length(min=1, max=10)]
         )
-        date_range = fields.DateTime(validate=validate.Range(min=datetime(1900, 1, 1),))
+        date_range = fields.DateTime(
+            validate=validate.Range(
+                min=datetime(1900, 1, 1),
+            )
+        )
 
     @pytest.mark.parametrize(
         ("field", "properties"),

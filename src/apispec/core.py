@@ -112,7 +112,7 @@ class Components:
         return self
 
     def parameter(self, component_id, location, component=None, **kwargs):
-        """ Add a parameter which can be referenced.
+        """Add a parameter which can be referenced.
 
         :param str component_id: identifier by which parameter may be referenced.
         :param str location: location of the parameter.
@@ -144,7 +144,7 @@ class Components:
         return self
 
     def header(self, component_id, component):
-        """ Add a header which can be referenced.
+        """Add a header which can be referenced.
 
         :param str component_id: identifier by which header may be referenced.
         :param dict component: header fields.
@@ -238,14 +238,17 @@ class APISpec:
         ret = deepupdate(ret, self.options)
         return ret
 
-    def to_yaml(self):
-        """Render the spec to YAML. Requires PyYAML to be installed."""
+    def to_yaml(self, yaml_dump_kwargs=None):
+        """Render the spec to YAML. Requires PyYAML to be installed.
+
+        :param dict yaml_dump_kwargs: Additional keyword arguments to pass to `yaml.dump`
+        """
         from .yaml_utils import dict_to_yaml
 
-        return dict_to_yaml(self.to_dict())
+        return dict_to_yaml(self.to_dict(), yaml_dump_kwargs)
 
     def tag(self, tag):
-        """ Store information about a tag.
+        """Store information about a tag.
 
         :param dict tag: the dictionary storing information about the tag.
         """
@@ -337,6 +340,11 @@ class APISpec:
                     if "schema" in content:
                         content["schema"] = self.get_ref("schema", content["schema"])
 
+    def _resolve_examples(self, obj):
+        """Replace example reference as string with a $ref"""
+        for name, example in obj.get("examples", {}).items():
+            obj["examples"][name] = self.get_ref("example", example)
+
     def clean_parameters(self, parameters):
         """Ensure that all parameters with "in" equal to "path" are also required
         as required by the OpenAPI specification, as well as normalizing any
@@ -371,6 +379,8 @@ class APISpec:
             if parameter["in"] == "path":
                 parameter["required"] = True
 
+            self._resolve_examples(parameter)
+
         return [self.get_ref("parameter", p) for p in parameters]
 
     def clean_operations(self, operations):
@@ -398,6 +408,9 @@ class APISpec:
             # OAS 3
             if "requestBody" in operation:
                 self._resolve_schema(operation["requestBody"])
+                for media_type in operation["requestBody"]["content"].values():
+                    self._resolve_examples(media_type)
+
             if "responses" in operation:
                 responses = OrderedDict()
                 for code, response in operation["responses"].items():
@@ -407,5 +420,10 @@ class APISpec:
                         if self.openapi_version.major < 3 and code != "default":
                             warnings.warn("Non-integer code not allowed in OpenAPI < 3")
                     self._resolve_schema(response)
-                    responses[str(code)] = self.get_ref("response", response)
+                    response = self.get_ref("response", response)
+                    for name, header in response.get("headers", {}).items():
+                        response["headers"][name] = self.get_ref("header", header)
+                    for media_type in response.get("content", {}).values():
+                        self._resolve_examples(media_type)
+                    responses[str(code)] = response
                 operation["responses"] = responses

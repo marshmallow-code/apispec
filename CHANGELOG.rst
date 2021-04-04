@@ -1,13 +1,17 @@
 Changelog
 ---------
 
-4.4.0 (unreleased)
+4.4.0 (2020-03-31)
 ******************
 
 Features:
 
 - Populate ``additionalProperties`` from ``Meta.unknown`` (:pr:`635`).
   Thanks :user:`timsilvers` for the PR.
+- Allow ``to_yaml`` to pass kwargs to ``yaml.dump`` (:pr:`648`).
+- Resolve header references in responses (:pr:`650`).
+- Resolve example references in parameters, request bodies and responses
+  (:pr:`#651`).
 
 4.3.0 (2021-02-10)
 ******************
