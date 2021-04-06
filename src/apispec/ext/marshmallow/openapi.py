@@ -146,7 +146,7 @@ class OpenAPIConverter(FieldConverterMixin):
         partial = getattr(field.parent, "partial", False)
         if partial is True or (is_collection(partial) and field.name in partial):
             ret["required"] = False
-            
+
         prop = self.field2property(field)
         multiple = isinstance(field, marshmallow.fields.List)
 
