@@ -143,7 +143,7 @@ class OpenAPIConverter(FieldConverterMixin):
         """
         ret = {"in": location, "name": name, "required": field.required}
 
-        partial = getattr(field.parent, 'partial', False)
+        partial = getattr(field.parent, "partial", False)
         if partial is True or (is_collection(partial) and field.name in partial):
             ret["required"] = False
             
