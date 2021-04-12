@@ -332,7 +332,7 @@ class FieldConverterMixin:
     def field2pattern(self, field, **kwargs):
         """Return the dictionary of OpenAPI field attributes for a
         :class:`Regexp <marshmallow.validators.Regexp>` validator.
-        
+
         If there is more than one such validator, only the first
         is used in the output spec.
 
