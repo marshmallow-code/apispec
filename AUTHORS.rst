@@ -68,3 +68,4 @@ Contributors (chronological)
 - Andrea Ghensi `@sanzoghenzo <https://github.com/sanzoghenzo>`_
 - `@timsilvers <https://github.com/timsilvers>`_
 - Kangwook Lee `@pbzweihander <https://github.com/pbzweihander>`_
+- Martijn Pieters `@mjpieters <https://github.com/mjpieters>`_
