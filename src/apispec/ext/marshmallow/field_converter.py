@@ -330,8 +330,11 @@ class FieldConverterMixin:
         return make_min_max_attributes(validators, min_attr, max_attr)
 
     def field2pattern(self, field, **kwargs):
-        """Return the dictionary of OpenAPI field attributes for a set of
-        :class:`Range <marshmallow.validators.Regexp>` validators.
+        """Return the dictionary of OpenAPI field attributes for a
+        :class:`Regexp <marshmallow.validators.Regexp>` validator.
+
+        If there is more than one such validator, only the first
+        is used in the output spec.
 
         :param Field field: A marshmallow field.
         :rtype: dict
