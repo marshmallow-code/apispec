@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+4.4.1 (2020-05-07)
+******************
+
+Bug fixes:
+
+- Don't set ``additionalProperties`` if ``Meta.unknown`` is ``EXCLUDE``
+  (:issue:`659`). Thanks :user:`kupuguy` for the PR.
+
 4.4.0 (2020-03-31)
 ******************
 
