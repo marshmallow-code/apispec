@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime
 
-from marshmallow import fields, INCLUDE, RAISE, Schema, validate
+from marshmallow import EXCLUDE, fields, INCLUDE, RAISE, Schema, validate
 
 from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec import exceptions, utils, APISpec
@@ -151,6 +151,16 @@ class TestMarshmallowSchemaToModelDefinition:
 
         res = openapi.schema2jsonschema(UnknownIncludeSchema)
         assert res["additionalProperties"] is True
+
+    def test_unknown_values_ignore(self, openapi):
+        class UnknownExcludeSchema(Schema):
+            class Meta:
+                unknown = EXCLUDE
+
+            first = fields.Str()
+
+        res = openapi.schema2jsonschema(UnknownExcludeSchema)
+        assert "additionalProperties" not in res
 
     def test_only_explicitly_declared_fields_are_translated(self, openapi):
         class UserSchema(Schema):
