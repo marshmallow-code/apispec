@@ -70,3 +70,4 @@ Contributors (chronological)
 - Kangwook Lee `@pbzweihander <https://github.com/pbzweihander>`_
 - Martijn Pieters `@mjpieters <https://github.com/mjpieters>`_
 - Duncan Booth `@kupuguy <https://github.com/kupuguy>`_
+- Luke Whitehorn `<https://github.com/Anti-Distinctlyminty>`_

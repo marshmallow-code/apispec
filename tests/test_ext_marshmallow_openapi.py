@@ -1,3 +1,4 @@
+from _pytest.mark import param
 import pytest
 from datetime import datetime
 
@@ -228,6 +229,19 @@ class TestMarshmallowSchemaToParameters:
         field = fields.Str(required=True)
         res = openapi._field2parameter(field, name="field", location="query")
         assert res["required"] is True
+
+    def test_schema_partial(self, openapi):
+        class UserSchema(Schema):
+            field = fields.Str(required=True)
+            
+        res_nodump = openapi.schema2parameters(
+            UserSchema(partial=True), 
+            location="query"
+            )
+
+        assert len(res_nodump)
+        param = res_nodump[0]
+        assert param["required"] is False
 
     # json/body is invalid for OpenAPI 3
     @pytest.mark.parametrize("openapi", ("2.0",), indirect=True)
