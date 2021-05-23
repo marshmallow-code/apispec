@@ -233,11 +233,10 @@ class TestMarshmallowSchemaToParameters:
     def test_schema_partial(self, openapi):
         class UserSchema(Schema):
             field = fields.Str(required=True)
-            
+
         res_nodump = openapi.schema2parameters(
-            UserSchema(partial=True), 
-            location="query"
-            )
+            UserSchema(partial=True), location="query"
+        )
 
         assert len(res_nodump)
         param = res_nodump[0]
