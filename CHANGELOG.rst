@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+4.4.2 (2020-05-24)
+******************
+
+Bug fixes:
+
+- Respect ``partial`` marshmallow schema parameter: don't document the field as
+  required. (:issue: `627`). Thanks :user:`Anti-Distinctlyminty` for the PR.
+
 4.4.1 (2020-05-07)
 ******************
 
