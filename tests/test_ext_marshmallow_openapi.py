@@ -237,8 +237,21 @@ class TestMarshmallowSchemaToParameters:
             UserSchema(partial=True), location="query"
         )
 
-        assert len(res_nodump)
         param = res_nodump[0]
+        assert param["required"] is False
+
+    def test_schema_partial_list(self, openapi):
+        class UserSchema(Schema):
+            field = fields.Str(required=True)
+            partial_field = fields.Str(required=True)
+
+        res_nodump = openapi.schema2parameters(
+            UserSchema(partial=("partial_field",)), location="query"
+        )
+
+        param = next(p for p in res_nodump if p["name"] == "field")
+        assert param["required"] is True
+        param = next(p for p in res_nodump if p["name"] == "partial_field")
         assert param["required"] is False
 
     # json/body is invalid for OpenAPI 3

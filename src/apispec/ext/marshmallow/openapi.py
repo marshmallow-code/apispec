@@ -141,11 +141,12 @@ class OpenAPIConverter(FieldConverterMixin):
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
         """
-        ret = {"in": location, "name": name, "required": field.required}
+        ret = {"in": location, "name": name}
 
         partial = getattr(field.parent, "partial", False)
-        if partial is True or (is_collection(partial) and field.name in partial):
-            ret["required"] = False
+        ret["required"] = field.required and (
+            not partial or (is_collection(partial) and field.name not in partial)
+        )
 
         prop = self.field2property(field)
         multiple = isinstance(field, marshmallow.fields.List)
