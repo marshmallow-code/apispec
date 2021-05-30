@@ -721,6 +721,12 @@ class TestPath:
         example_1 = param["examples"]["example_1"]
         assert example_1 == build_ref(spec, "example", "Example_1")
 
+    def test_path_resolve_parameter_schemas(self, spec):
+        parameter = {"name": "test", "in": "query", "schema": "PetSchema"}
+        spec.path("/pet/{petId}", operations={"get": {"parameters": [parameter]}})
+        param = get_paths(spec)["/pet/{petId}"]["get"]["parameters"][0]
+        assert param["schema"] == build_ref(spec, "schema", "PetSchema")
+
 
 class TestPlugins:
     @staticmethod

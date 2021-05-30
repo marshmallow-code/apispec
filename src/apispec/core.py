@@ -223,6 +223,8 @@ class Components:
             obj["examples"][name] = self.get_ref("example", example)
 
     def _resolve_refs_in_parameter(self, parameter):
+        if "schema" in parameter:
+            parameter["schema"] = self.get_ref("schema", parameter["schema"])
         self._resolve_examples(parameter)
 
     def _resolve_refs_in_request_body(self, request_body):
