@@ -236,6 +236,7 @@ class Components:
         self._resolve_schema(response)
         for name, header in response.get("headers", {}).items():
             response["headers"][name] = self.get_ref("header", header)
+            self._resolve_refs_in_parameter(response["headers"][name])
         for media_type in response.get("content", {}).values():
             self._resolve_examples(media_type)
         # TODO: Resolve link refs when Components supports links
