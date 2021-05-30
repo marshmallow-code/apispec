@@ -236,6 +236,7 @@ class Components:
             response["headers"][name] = self.get_ref("header", header)
         for media_type in response.get("content", {}).values():
             self._resolve_examples(media_type)
+        # TODO: Resolve link refs when Components supports links
 
     def _resolve_refs_in_operation(self, operation):
         if "parameters" in operation:
