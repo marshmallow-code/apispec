@@ -390,11 +390,11 @@ class TestPath:
             "/path4",
         ]
 
-    def test_paths_is_chainable(self, spec):
+    def test_path_is_chainable(self, spec):
         spec.path(path="/path1").path("/path2")
         assert list(spec.to_dict()["paths"].keys()) == ["/path1", "/path2"]
 
-    def test_methods_maintain_order(self, spec):
+    def test_path_methods_maintain_order(self, spec):
         methods = ["get", "post", "put", "patch", "delete", "head", "options"]
         for method in methods:
             spec.path(path="/path", operations=OrderedDict({method: {}}))
@@ -492,34 +492,20 @@ class TestPath:
         assert p["summary"] == summary
         assert p["description"] == description
 
-    def test_parameter(self, spec):
+    def test_path_resolves_parameter(self, spec):
         route_spec = self.paths["/pet/{petId}"]["get"]
-
         spec.components.parameter("test_parameter", "path", route_spec["parameters"][0])
-
         spec.path(
             path="/pet/{petId}", operations={"get": {"parameters": ["test_parameter"]}}
         )
-
-        metadata = spec.to_dict()
         p = get_paths(spec)["/pet/{petId}"]["get"]
-
         assert p["parameters"][0] == build_ref(spec, "parameter", "test_parameter")
-        if spec.openapi_version.major < 3:
-            assert (
-                route_spec["parameters"][0] == metadata["parameters"]["test_parameter"]
-            )
-        else:
-            assert (
-                route_spec["parameters"][0]
-                == metadata["components"]["parameters"]["test_parameter"]
-            )
 
     @pytest.mark.parametrize(
         "parameters",
         ([{"name": "petId"}], [{"in": "path"}]),  # missing "in"  # missing "name"
     )
-    def test_invalid_parameter(self, spec, parameters):
+    def test_path_invalid_parameter(self, spec, parameters):
         path = "/pet/{petId}"
 
         with pytest.raises(InvalidParameterError):
@@ -594,31 +580,17 @@ class TestPath:
                 ],
             )
 
-    def test_response(self, spec):
+    def test_path_resolves_response(self, spec):
         route_spec = self.paths["/pet/{petId}"]["get"]
-
         spec.components.response("test_response", route_spec["responses"]["200"])
-
         spec.path(
             path="/pet/{petId}",
             operations={"get": {"responses": {"200": "test_response"}}},
         )
-
-        metadata = spec.to_dict()
         p = get_paths(spec)["/pet/{petId}"]["get"]
-
         assert p["responses"]["200"] == build_ref(spec, "response", "test_response")
-        if spec.openapi_version.major < 3:
-            assert (
-                route_spec["responses"]["200"] == metadata["responses"]["test_response"]
-            )
-        else:
-            assert (
-                route_spec["responses"]["200"]
-                == metadata["components"]["responses"]["test_response"]
-            )
 
-    def test_response_with_HTTPStatus_code(self, spec):
+    def test_path_response_with_HTTPStatus_code(self, spec):
         code = HTTPStatus(200)
         spec.path(
             path="/pet/{petId}",
@@ -627,7 +599,7 @@ class TestPath:
 
         assert "200" in get_paths(spec)["/pet/{petId}"]["get"]["responses"]
 
-    def test_response_with_status_code_range(self, spec, recwarn):
+    def test_path_response_with_status_code_range(self, spec, recwarn):
         status_code = "2XX"
 
         spec.path(
