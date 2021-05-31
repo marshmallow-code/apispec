@@ -261,7 +261,7 @@ class FieldConverterMixin:
             attributes["writeOnly"] = True
         return attributes
 
-    def field2nullable(self, field, **kwargs):
+    def field2nullable(self, field, ret):
         """Return the dictionary of OpenAPI field attributes for a nullable field.
 
         :param Field field: A marshmallow field.
@@ -269,9 +269,12 @@ class FieldConverterMixin:
         """
         attributes = {}
         if field.allow_none:
-            attributes[
-                "x-nullable" if self.openapi_version.major < 3 else "nullable"
-            ] = True
+            if self.openapi_version.major < 3:
+                attributes["x-nullable"] = True
+            elif self.openapi_version.minor < 1:
+                attributes["nullable"] = True
+            else:
+                attributes["type"] = make_type_list(ret.get("type")) + ["'null'"]
         return attributes
 
     def field2range(self, field, ret):
@@ -293,7 +296,7 @@ class FieldConverterMixin:
 
         min_attr, max_attr = (
             ("minimum", "maximum")
-            if ret.get("type") in {"number", "integer"}
+            if set(make_type_list(ret.get("type"))) & {"number", "integer"}
             else ("x-minimum", "x-maximum")
         )
         return make_min_max_attributes(validators, min_attr, max_attr)
@@ -435,6 +438,21 @@ class FieldConverterMixin:
             if value_field:
                 ret["additionalProperties"] = self.field2property(value_field)
         return ret
+
+
+def make_type_list(types):
+    """Return a list of types from a type attribute
+
+    Since OpenAPI 3.1.0, "type" can be a single type as string or a list of
+    types, including 'null'. This function takes a "type" attribute as input
+    and returns it as a list, be it an empty or single-element list.
+    This is useful to factorize type-conditional code or code adding a type.
+    """
+    if types is None:
+        return []
+    if isinstance(types, str):
+        return [types]
+    return types
 
 
 def make_min_max_attributes(validators, min_attr, max_attr):
