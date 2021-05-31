@@ -206,16 +206,8 @@ class Components:
 
     def _resolve_schema(self, obj):
         """Replace schema reference as string with a $ref if needed."""
-        if not isinstance(obj, dict):
-            return
-        if self.openapi_version.major < 3:
-            if "schema" in obj:
-                obj["schema"] = self.get_ref("schema", obj["schema"])
-        else:
-            if "content" in obj:
-                for content in obj["content"].values():
-                    if "schema" in content:
-                        content["schema"] = self.get_ref("schema", content["schema"])
+        if "schema" in obj:
+            obj["schema"] = self.get_ref("schema", obj["schema"])
 
     def _resolve_examples(self, obj):
         """Replace example reference as string with a $ref"""
@@ -223,23 +215,26 @@ class Components:
             obj["examples"][name] = self.get_ref("example", example)
 
     def _resolve_refs_in_parameter(self, parameter):
-        if "schema" in parameter:
-            parameter["schema"] = self.get_ref("schema", parameter["schema"])
+        self._resolve_schema(parameter)
         self._resolve_examples(parameter)
 
     def _resolve_refs_in_request_body(self, request_body):
-        self._resolve_schema(request_body)
+        # requestBody is OpenAPI v3+
         for media_type in request_body["content"].values():
+            self._resolve_schema(media_type)
             self._resolve_examples(media_type)
 
     def _resolve_refs_in_response(self, response):
-        self._resolve_schema(response)
-        for name, header in response.get("headers", {}).items():
-            response["headers"][name] = self.get_ref("header", header)
-            self._resolve_refs_in_parameter(response["headers"][name])
-        for media_type in response.get("content", {}).values():
-            self._resolve_examples(media_type)
-        # TODO: Resolve link refs when Components supports links
+        if self.openapi_version.major < 3:
+            self._resolve_schema(response)
+        else:
+            for media_type in response.get("content", {}).values():
+                self._resolve_schema(media_type)
+                self._resolve_examples(media_type)
+            for name, header in response.get("headers", {}).items():
+                response["headers"][name] = self.get_ref("header", header)
+                self._resolve_refs_in_parameter(response["headers"][name])
+            # TODO: Resolve link refs when Components supports links
 
     def _resolve_refs_in_operation(self, operation):
         if "parameters" in operation:
