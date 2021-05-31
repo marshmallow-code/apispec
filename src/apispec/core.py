@@ -205,14 +205,37 @@ class Components:
         return build_reference(obj_type, self.openapi_version.major, obj)
 
     def _resolve_schema(self, obj):
-        """Replace schema reference as string with a $ref if needed."""
+        """Replace schema reference as string with a $ref if needed
+
+        Also resolve references in the schema
+        """
         if "schema" in obj:
             obj["schema"] = self.get_ref("schema", obj["schema"])
+            self._resolve_refs_in_schema(obj["schema"])
 
     def _resolve_examples(self, obj):
         """Replace example reference as string with a $ref"""
         for name, example in obj.get("examples", {}).items():
             obj["examples"][name] = self.get_ref("example", example)
+
+    def _resolve_refs_in_schema(self, schema):
+        if "properties" in schema:
+            for key in schema["properties"]:
+                schema["properties"][key] = self.get_ref(
+                    "schema", schema["properties"][key]
+                )
+                self._resolve_refs_in_schema(schema["properties"][key])
+        if "items" in schema:
+            schema["items"] = self.get_ref("schema", schema["items"])
+            self._resolve_refs_in_schema(schema["items"])
+        for key in ("allOf", "oneOf", "anyOf"):
+            if key in schema:
+                schema[key] = [self.get_ref("schema", s) for s in schema[key]]
+                for sch in schema[key]:
+                    self._resolve_refs_in_schema(sch)
+        if "not" in schema:
+            schema["not"] = self.get_ref("schema", schema["not"])
+            self._resolve_refs_in_schema(schema["not"])
 
     def _resolve_refs_in_parameter(self, parameter):
         self._resolve_schema(parameter)

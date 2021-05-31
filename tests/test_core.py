@@ -1,3 +1,4 @@
+import copy
 from collections import OrderedDict
 from http import HTTPStatus
 
@@ -350,6 +351,36 @@ class TestPath:
                 ),
                 "tags": ["pet"],
             }
+        }
+    }
+    refs_schema = {
+        "properties": {
+            "nested": "NestedSchema",
+            "deep_nested": {"properties": {"nested": "NestedSchema"}},
+            "nested_list": {"items": "DeepNestedSchema"},
+            "deep_nested_list": {
+                "items": {"properties": {"nested": "DeepNestedSchema"}}
+            },
+            "allof": {
+                "allOf": [
+                    "AllOfSchema",
+                    {"properties": {"nested": "AllOfSchema"}},
+                ]
+            },
+            "oneof": {
+                "oneOf": [
+                    "OneOfSchema",
+                    {"properties": {"nested": "OneOfSchema"}},
+                ]
+            },
+            "anyof": {
+                "anyOf": [
+                    "AnyOfSchema",
+                    {"properties": {"nested": "AnyOfSchema"}},
+                ]
+            },
+            "not": "NotSchema",
+            "deep_not": {"properties": {"nested": "DeepNotSchema"}},
         }
     }
 
@@ -722,6 +753,115 @@ class TestPath:
         spec.path("/pet/{petId}", operations={"get": {"parameters": [parameter]}})
         param = get_paths(spec)["/pet/{petId}"]["get"]["parameters"][0]
         assert param["schema"] == build_ref(spec, "schema", "PetSchema")
+
+    def test_path_resolve_refs_in_response_schema(self, spec):
+        if spec.openapi_version.major >= 3:
+            schema = {"content": {"application/json": {"schema": self.refs_schema}}}
+        else:
+            schema = {"schema": self.refs_schema}
+        spec.path("/pet/{petId}", operations={"get": {"responses": {"200": schema}}})
+        resp = get_paths(spec)["/pet/{petId}"]["get"]["responses"]["200"]
+        if spec.openapi_version.major < 3:
+            schema = resp["schema"]
+        else:
+            schema = resp["content"]["application/json"]["schema"]
+        props = schema["properties"]
+        assert props["nested"] == build_ref(spec, "schema", "NestedSchema")
+        assert props["deep_nested"]["properties"]["nested"] == build_ref(
+            spec, "schema", "NestedSchema"
+        )
+        assert props["nested_list"]["items"] == build_ref(
+            spec, "schema", "DeepNestedSchema"
+        )
+        assert props["deep_nested_list"]["items"]["properties"]["nested"] == build_ref(
+            spec, "schema", "DeepNestedSchema"
+        )
+        assert props["allof"]["allOf"][0] == build_ref(spec, "schema", "AllOfSchema")
+        assert props["allof"]["allOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "AllOfSchema"
+        )
+        assert props["oneof"]["oneOf"][0] == build_ref(spec, "schema", "OneOfSchema")
+        assert props["oneof"]["oneOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "OneOfSchema"
+        )
+        assert props["anyof"]["anyOf"][0] == build_ref(spec, "schema", "AnyOfSchema")
+        assert props["anyof"]["anyOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "AnyOfSchema"
+        )
+        assert props["not"] == build_ref(spec, "schema", "NotSchema")
+        assert props["deep_not"]["properties"]["nested"] == build_ref(
+            spec, "schema", "DeepNotSchema"
+        )
+
+    def test_path_resolve_refs_in_parameter_schema(self, spec):
+        schema = copy.copy({"schema": self.refs_schema})
+        schema["in"] = "query"
+        schema["name"] = "test"
+        spec.path("/pet/{petId}", operations={"get": {"parameters": [schema]}})
+        param = get_paths(spec)["/pet/{petId}"]["get"]["parameters"][0]
+        schema = param["schema"]
+        props = schema["properties"]
+        assert props["nested"] == build_ref(spec, "schema", "NestedSchema")
+        assert props["deep_nested"]["properties"]["nested"] == build_ref(
+            spec, "schema", "NestedSchema"
+        )
+        assert props["nested_list"]["items"] == build_ref(
+            spec, "schema", "DeepNestedSchema"
+        )
+        assert props["deep_nested_list"]["items"]["properties"]["nested"] == build_ref(
+            spec, "schema", "DeepNestedSchema"
+        )
+        assert props["allof"]["allOf"][0] == build_ref(spec, "schema", "AllOfSchema")
+        assert props["allof"]["allOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "AllOfSchema"
+        )
+        assert props["oneof"]["oneOf"][0] == build_ref(spec, "schema", "OneOfSchema")
+        assert props["oneof"]["oneOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "OneOfSchema"
+        )
+        assert props["anyof"]["anyOf"][0] == build_ref(spec, "schema", "AnyOfSchema")
+        assert props["anyof"]["anyOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "AnyOfSchema"
+        )
+        assert props["not"] == build_ref(spec, "schema", "NotSchema")
+        assert props["deep_not"]["properties"]["nested"] == build_ref(
+            spec, "schema", "DeepNotSchema"
+        )
+
+    # requestBody only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_path_resolve_refs_in_request_body_schema(self, spec):
+        schema = {"content": {"application/json": {"schema": self.refs_schema}}}
+        spec.path("/pet/{petId}", operations={"get": {"responses": {"200": schema}}})
+        resp = get_paths(spec)["/pet/{petId}"]["get"]["responses"]["200"]
+        schema = resp["content"]["application/json"]["schema"]
+        props = schema["properties"]
+        assert props["nested"] == build_ref(spec, "schema", "NestedSchema")
+        assert props["deep_nested"]["properties"]["nested"] == build_ref(
+            spec, "schema", "NestedSchema"
+        )
+        assert props["nested_list"]["items"] == build_ref(
+            spec, "schema", "DeepNestedSchema"
+        )
+        assert props["deep_nested_list"]["items"]["properties"]["nested"] == build_ref(
+            spec, "schema", "DeepNestedSchema"
+        )
+        assert props["allof"]["allOf"][0] == build_ref(spec, "schema", "AllOfSchema")
+        assert props["allof"]["allOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "AllOfSchema"
+        )
+        assert props["oneof"]["oneOf"][0] == build_ref(spec, "schema", "OneOfSchema")
+        assert props["oneof"]["oneOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "OneOfSchema"
+        )
+        assert props["anyof"]["anyOf"][0] == build_ref(spec, "schema", "AnyOfSchema")
+        assert props["anyof"]["anyOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "AnyOfSchema"
+        )
+        assert props["not"] == build_ref(spec, "schema", "NotSchema")
+        assert props["deep_not"]["properties"]["nested"] == build_ref(
+            spec, "schema", "DeepNotSchema"
+        )
 
 
 class TestPlugins:
