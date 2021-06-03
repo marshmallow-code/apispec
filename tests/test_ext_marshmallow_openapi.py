@@ -200,9 +200,7 @@ class TestMarshmallowSchemaToModelDefinition:
             pass
 
         expected_error = (
-            "{!r} doesn't have either `fields` or `_declared_fields`.".format(
-                NotASchema
-            )
+            f"{NotASchema!r} is neither a Schema class nor a Schema instance."
         )
         with pytest.raises(ValueError, match=expected_error):
             openapi.schema2jsonschema(NotASchema)
@@ -346,7 +344,7 @@ class TestMarshmallowSchemaToParameters:
             pass
 
         expected_error = (
-            f"{NotASchema!r} doesn't have either `fields` or `_declared_fields`"
+            f"{NotASchema!r} is neither a Schema class nor a Schema instance."
         )
         with pytest.raises(ValueError, match=expected_error):
             openapi.schema2jsonschema(NotASchema)
