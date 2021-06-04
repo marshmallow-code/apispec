@@ -1,6 +1,24 @@
 Changelog
 ---------
 
+4.5.0 (2020-06-04)
+******************
+
+Features:
+
+- Support OpenAPI 3.1.0 (:issue:`579`).
+
+Bug fixes:
+
+- Fix `get_fields` to avoid crashing when a field is named `fields`
+  (:issue:`673`). Thanks :user:`Reskov` for reporting.
+
+Other changes:
+
+- Don't pass field metadata as keyword arguments in the tests. This is
+  deprecated since marshmallow 3.10. apispec is still compatible with
+  marshmallow >=3,<3.10 but tests now require marshmallow >=3.10. (:pr:`675`)
+
 4.4.2 (2020-05-24)
 ******************
 
