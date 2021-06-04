@@ -43,14 +43,12 @@ def get_fields(schema, *, exclude_dump_only=False):
     :param bool exclude_dump_only: whether to filter fields in Meta.dump_only
     :rtype: dict, of field name field object pairs
     """
-    if hasattr(schema, "fields"):
+    if isinstance(schema, marshmallow.Schema):
         fields = schema.fields
-    elif hasattr(schema, "_declared_fields"):
+    elif isinstance(schema, type) and issubclass(schema, marshmallow.Schema):
         fields = copy.deepcopy(schema._declared_fields)
     else:
-        raise ValueError(
-            f"{schema!r} doesn't have either `fields` or `_declared_fields`."
-        )
+        raise ValueError(f"{schema!r} is neither a Schema class nor a Schema instance.")
     Meta = getattr(schema, "Meta", None)
     warn_if_fields_defined_in_meta(fields, Meta)
     return filter_excluded_fields(fields, Meta, exclude_dump_only=exclude_dump_only)
