@@ -48,9 +48,11 @@ with `"x-"` (vendor extension).
 
     class UserSchema(Schema):
         id = fields.Int(dump_only=True)
-        name = fields.Str(description="The user's name")
+        name = fields.Str(metadata={"description": "The user's name"})
         created = fields.DateTime(
-            dump_only=True, default=dt.datetime.utcnow, doc_default="The current datetime"
+            dump_only=True,
+            default=dt.datetime.utcnow,
+            metadata={"doc_default": "The current datetime"}
         )
 
 

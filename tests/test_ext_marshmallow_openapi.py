@@ -52,7 +52,7 @@ class TestMarshmallowSchemaToModelDefinition:
     def test_schema2jsonschema_with_explicit_fields(self, openapi):
         class UserSchema(Schema):
             _id = fields.Int()
-            email = fields.Email(description="email address of the user")
+            email = fields.Email(metadata={"description": "email address of the user"})
             name = fields.Str()
 
             class Meta:

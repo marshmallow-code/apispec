@@ -66,8 +66,10 @@ class Components:
 
                 status = fields.String(
                     required=True,
-                    enum=['open', 'closed'],
-                    description='Status (open or closed)',
+                    metadata={
+                        "description": "Status (open or closed)",
+                        "enum": ["open", "closed"],
+                    },
                 )
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schemaObject

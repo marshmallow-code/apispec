@@ -3,14 +3,18 @@ from marshmallow import Schema, fields
 
 class PetSchema(Schema):
     description = dict(id="Pet id", name="Pet name", password="Password")
-    id = fields.Int(dump_only=True, description=description["id"])
+    id = fields.Int(dump_only=True, metadata={"description": description["id"]})
     name = fields.Str(
         required=True,
-        deprecated=False,
-        allowEmptyValue=False,
-        description=description["name"],
+        metadata={
+            "description": description["name"],
+            "deprecated": False,
+            "allowEmptyValue": False,
+        },
     )
-    password = fields.Str(load_only=True, description=description["password"])
+    password = fields.Str(
+        load_only=True, metadata={"description": description["password"]}
+    )
 
 
 class SampleSchema(Schema):
@@ -32,8 +36,8 @@ class AnalysisWithListSchema(Schema):
 
 
 class PatternedObjectSchema(Schema):
-    count = fields.Int(dump_only=True, **{"x-count": 1})
-    count2 = fields.Int(dump_only=True, x_count2=2)
+    count = fields.Int(dump_only=True, metadata={"x-count": 1})
+    count2 = fields.Int(dump_only=True, metadata={"x_count2": 2})
 
 
 class SelfReferencingSchema(Schema):
@@ -55,9 +59,11 @@ class OrderedSchema(Schema):
 
 class DefaultValuesSchema(Schema):
     number_auto_default = fields.Int(missing=12)
-    number_manual_default = fields.Int(missing=12, doc_default=42)
+    number_manual_default = fields.Int(missing=12, metadata={"doc_default": 42})
     string_callable_default = fields.Str(missing=lambda: "Callable")
-    string_manual_default = fields.Str(missing=lambda: "Callable", doc_default="Manual")
+    string_manual_default = fields.Str(
+        missing=lambda: "Callable", metadata={"doc_default": "Manual"}
+    )
     numbers = fields.List(fields.Int, missing=list)
 
 
