@@ -162,13 +162,60 @@ def test_field_with_additional_metadata(spec_fixture):
     assert res["minLength"] == 6
 
 
+@pytest.mark.parametrize("spec_fixture", ("2.0", "3.0.0", "3.1.0"), indirect=True)
 def test_field_with_allow_none(spec_fixture):
     field = fields.Str(allow_none=True)
     res = spec_fixture.openapi.field2property(field)
     if spec_fixture.openapi.openapi_version.major < 3:
         assert res["x-nullable"] is True
-    else:
+    elif spec_fixture.openapi.openapi_version.minor < 1:
         assert res["nullable"] is True
+    else:
+        assert "nullable" not in res
+        assert res["type"] == ["string", "'null'"]
+
+
+def test_field_with_range_no_type(spec_fixture):
+    field = fields.Field(validate=validate.Range(min=1, max=10))
+    res = spec_fixture.openapi.field2property(field)
+    assert res["x-minimum"] == 1
+    assert res["x-maximum"] == 10
+    assert "type" not in res
+
+
+@pytest.mark.parametrize("field", (fields.Number, fields.Integer))
+def test_field_with_range_string_type(spec_fixture, field):
+    field = field(validate=validate.Range(min=1, max=10))
+    res = spec_fixture.openapi.field2property(field)
+    assert res["minimum"] == 1
+    assert res["maximum"] == 10
+    assert isinstance(res["type"], str)
+
+
+@pytest.mark.parametrize("spec_fixture", ("3.1.0",), indirect=True)
+def test_field_with_range_type_list_with_number(spec_fixture):
+    @spec_fixture.openapi.map_to_openapi_type(["integer", "'null'"], None)
+    class NullableInteger(fields.Field):
+        """Nullable integer"""
+
+    field = NullableInteger(validate=validate.Range(min=1, max=10))
+    res = spec_fixture.openapi.field2property(field)
+    assert res["minimum"] == 1
+    assert res["maximum"] == 10
+    assert res["type"] == ["integer", "'null'"]
+
+
+@pytest.mark.parametrize("spec_fixture", ("3.1.0",), indirect=True)
+def test_field_with_range_type_list_without_number(spec_fixture):
+    @spec_fixture.openapi.map_to_openapi_type(["string", "'null'"], None)
+    class NullableInteger(fields.Field):
+        """Nullable integer"""
+
+    field = NullableInteger(validate=validate.Range(min=1, max=10))
+    res = spec_fixture.openapi.field2property(field)
+    assert res["x-minimum"] == 1
+    assert res["x-maximum"] == 10
+    assert res["type"] == ["string", "'null'"]
 
 
 def test_field_with_str_regex(spec_fixture):
