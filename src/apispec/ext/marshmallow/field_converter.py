@@ -96,6 +96,7 @@ class FieldConverterMixin:
             self.field2pattern,
             self.metadata2properties,
             self.nested2properties,
+            self.pluck2properties,
             self.list2properties,
             self.dict2properties,
         ]
@@ -402,13 +403,32 @@ class FieldConverterMixin:
         :param Field field: A marshmallow field.
         :rtype: dict
         """
-        if isinstance(field, marshmallow.fields.Nested):
+        # Pluck is a subclass of Nested but is in essence a single field; it
+        # is treated separately by pluck2properties.
+        if isinstance(field, marshmallow.fields.Nested) and not isinstance(
+            field, marshmallow.fields.Pluck
+        ):
             schema_dict = self.resolve_nested_schema(field.schema)
             if ret and "$ref" in schema_dict:
                 ret.update({"allOf": [schema_dict]})
             else:
                 ret.update(schema_dict)
         return ret
+
+    def pluck2properties(self, field, **kwargs):
+        """Return a dictionary of properties from :class:`Pluck <marshmallow.fields.Pluck` fields.
+
+        Pluck effectively trans-includes a field from another schema into this,
+        possibly wrapped in an array (`many=True`).
+
+        :param Field field: A marshmallow field.
+        :rtype: dict
+        """
+        if isinstance(field, marshmallow.fields.Pluck):
+            plucked_field = field.schema.fields[field.field_name]
+            ret = self.field2property(plucked_field)
+            return {"type": "array", "items": ret} if field.many else ret
+        return {}
 
     def list2properties(self, field, **kwargs):
         """Return a dictionary of properties from :class:`List <marshmallow.fields.List>` fields.
