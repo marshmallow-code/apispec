@@ -5,7 +5,7 @@ import pytest
 from marshmallow import fields, validate
 
 from .schemas import CategorySchema, CustomList, CustomStringField, CustomIntegerField
-from .utils import build_ref
+from .utils import build_ref, get_schemas
 
 
 def test_field2choices_preserving_order(openapi):
@@ -316,6 +316,52 @@ def test_nested_field_with_property(spec_fixture):
         "readOnly": True,
         "type": "array",
     }
+
+
+class TestField2PropertyPluck:
+    @pytest.fixture(autouse=True)
+    def _setup(self, spec_fixture):
+        self.field2property = spec_fixture.openapi.field2property
+
+        self.spec = spec_fixture.spec
+        self.spec.components.schema("Category", schema=CategorySchema)
+        self.unplucked = get_schemas(self.spec)["Category"]["properties"]["breed"]
+
+    def test_spec(self, spec_fixture):
+        breed = fields.Pluck(CategorySchema, "breed")
+        assert self.field2property(breed) == self.unplucked
+
+    def test_with_property(self):
+        breed = fields.Pluck(CategorySchema, "breed", dump_only=True)
+        assert self.field2property(breed) == {**self.unplucked, "readOnly": True}
+
+    def test_metadata(self):
+        breed = fields.Pluck(
+            CategorySchema,
+            "breed",
+            metadata={
+                "description": "Category breed",
+                "invalid_property": "not in the result",
+                "x_extension": "A great extension",
+            },
+        )
+        assert self.field2property(breed) == {
+            **self.unplucked,
+            "description": "Category breed",
+            "x-extension": "A great extension",
+        }
+
+    def test_many(self):
+        breed = fields.Pluck(CategorySchema, "breed", many=True)
+        assert self.field2property(breed) == {"type": "array", "items": self.unplucked}
+
+    def test_many_with_property(self):
+        breed = fields.Pluck(CategorySchema, "breed", many=True, dump_only=True)
+        assert self.field2property(breed) == {
+            "items": self.unplucked,
+            "type": "array",
+            "readOnly": True,
+        }
 
 
 def test_custom_properties_for_custom_fields(spec_fixture):

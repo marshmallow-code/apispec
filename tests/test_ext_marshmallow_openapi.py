@@ -391,6 +391,16 @@ class TestNesting:
         assert ("i" in props) == (modifier == "only")
         assert ("j" not in props) == (modifier == "only")
 
+    def test_schema2jsonschema_with_plucked_field(self, spec_fixture):
+        class PetSchema(Schema):
+            breed = fields.Pluck(CategorySchema, "breed")
+
+        category_schema = spec_fixture.openapi.schema2jsonschema(CategorySchema)
+        pet_schema = spec_fixture.openapi.schema2jsonschema(PetSchema)
+        assert (
+            pet_schema["properties"]["breed"] == category_schema["properties"]["breed"]
+        )
+
     def test_schema2jsonschema_with_nested_fields_with_adhoc_changes(
         self, spec_fixture
     ):
@@ -413,6 +423,20 @@ class TestNesting:
         assert props["Category"] == spec_fixture.openapi.schema2jsonschema(
             CategorySchema
         )
+
+    def test_schema2jsonschema_with_plucked_fields_with_adhoc_changes(
+        self, spec_fixture
+    ):
+        category_schema = CategorySchema()
+        category_schema.fields["breed"].dump_only = True
+
+        class PetSchema(Schema):
+            breed = fields.Pluck(category_schema, "breed", many=True)
+
+        spec_fixture.spec.components.schema("Pet", schema=PetSchema)
+        props = get_schemas(spec_fixture.spec)["Pet"]["properties"]
+
+        assert props["breed"]["items"]["readOnly"] is True
 
     def test_schema2jsonschema_with_nested_excluded_fields(self, spec):
         category_schema = CategorySchema(exclude=("breed",))
