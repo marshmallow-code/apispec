@@ -28,6 +28,7 @@ def test_field2choices_preserving_order(openapi):
         (fields.DateTime, "string"),
         (fields.Date, "string"),
         (fields.Time, "string"),
+        (fields.TimeDelta, "integer"),
         (fields.Email, "string"),
         (fields.URL, "string"),
         # Custom fields inherit types from their parents

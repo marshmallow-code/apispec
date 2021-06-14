@@ -29,6 +29,7 @@ DEFAULT_FIELD_MAPPING = {
     marshmallow.fields.DateTime: ("string", "date-time"),
     marshmallow.fields.Date: ("string", "date"),
     marshmallow.fields.Time: ("string", None),
+    marshmallow.fields.TimeDelta: ("integer", None),
     marshmallow.fields.Email: ("string", "email"),
     marshmallow.fields.URL: ("string", "url"),
     marshmallow.fields.Dict: ("object", None),
