@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+4.6.0 (2020-06-14)
+******************
+
+Features:
+
+- Support `Pluck` field (:pr:`677`). Thanks :user:`mjpieters` for the PR.
+- Support `TimeDelta` field (:pr:`678`).
+
 4.5.0 (2020-06-04)
 ******************
 
