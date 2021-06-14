@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from marshmallow.fields import Field, DateTime, Dict, String, Nested, List
+from marshmallow.fields import Field, DateTime, Dict, String, Nested, List, TimeDelta
 from marshmallow import Schema
 
 from apispec import APISpec
@@ -1197,3 +1197,21 @@ class TestList:
 
         result = get_schemas(spec)["SchemaWithList"]["properties"]["list_field"]
         assert result == {"items": build_ref(spec, "schema", "Pet"), "type": "array"}
+
+
+class TestTimeDelta:
+    def test_timedelta_x_unit(self, spec):
+        class SchemaWithTimeDelta(Schema):
+            sec = TimeDelta("seconds")
+            day = TimeDelta("days")
+
+        spec.components.schema("SchemaWithTimeDelta", schema=SchemaWithTimeDelta)
+
+        assert (
+            get_schemas(spec)["SchemaWithTimeDelta"]["properties"]["sec"]["x-unit"]
+            == "seconds"
+        )
+        assert (
+            get_schemas(spec)["SchemaWithTimeDelta"]["properties"]["day"]["x-unit"]
+            == "days"
+        )

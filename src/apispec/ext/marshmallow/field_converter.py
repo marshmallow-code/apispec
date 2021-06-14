@@ -29,6 +29,7 @@ DEFAULT_FIELD_MAPPING = {
     marshmallow.fields.DateTime: ("string", "date-time"),
     marshmallow.fields.Date: ("string", "date"),
     marshmallow.fields.Time: ("string", None),
+    marshmallow.fields.TimeDelta: ("integer", None),
     marshmallow.fields.Email: ("string", "email"),
     marshmallow.fields.URL: ("string", "url"),
     marshmallow.fields.Dict: ("object", None),
@@ -99,6 +100,7 @@ class FieldConverterMixin:
             self.pluck2properties,
             self.list2properties,
             self.dict2properties,
+            self.timedelta2properties,
         ]
 
     def map_to_openapi_type(self, *args):
@@ -457,6 +459,19 @@ class FieldConverterMixin:
             value_field = field.value_field
             if value_field:
                 ret["additionalProperties"] = self.field2property(value_field)
+        return ret
+
+    def timedelta2properties(self, field, **kwargs):
+        """Return a dictionary of properties from :class:`TimeDelta <marshmallow.fields.TimeDelta>` fields.
+
+        Adds a `x-unit` vendor property based on the field's `precision` attribute
+
+        :param Field field: A marshmallow field.
+        :rtype: dict
+        """
+        ret = {}
+        if isinstance(field, marshmallow.fields.TimeDelta):
+            ret["x-unit"] = field.precision
         return ret
 
 
