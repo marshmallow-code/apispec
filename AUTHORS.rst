@@ -71,3 +71,4 @@ Contributors (chronological)
 - Martijn Pieters `@mjpieters <https://github.com/mjpieters>`_
 - Duncan Booth `@kupuguy <https://github.com/kupuguy>`_
 - Luke Whitehorn `<https://github.com/Anti-Distinctlyminty>`_
+- François Magimel `<https://github.com/Linkid>`_

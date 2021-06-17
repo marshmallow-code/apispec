@@ -33,7 +33,7 @@ Other changes:
 Bug fixes:
 
 - Respect ``partial`` marshmallow schema parameter: don't document the field as
-  required. (:issue: `627`). Thanks :user:`Anti-Distinctlyminty` for the PR.
+  required. (:issue:`627`). Thanks :user:`Anti-Distinctlyminty` for the PR.
 
 4.4.1 (2020-05-07)
 ******************
@@ -53,7 +53,7 @@ Features:
 - Allow ``to_yaml`` to pass kwargs to ``yaml.dump`` (:pr:`648`).
 - Resolve header references in responses (:pr:`650`).
 - Resolve example references in parameters, request bodies and responses
-  (:pr:`#651`).
+  (:pr:`651`).
 
 4.3.0 (2021-02-10)
 ******************
