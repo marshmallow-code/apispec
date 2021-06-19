@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-4.6.0 (2020-06-14)
+4.6.0 (2021-06-14)
 ******************
 
 Features:
@@ -9,7 +9,7 @@ Features:
 - Support `Pluck` field (:pr:`677`). Thanks :user:`mjpieters` for the PR.
 - Support `TimeDelta` field (:pr:`678`).
 
-4.5.0 (2020-06-04)
+4.5.0 (2021-06-04)
 ******************
 
 Features:
@@ -27,7 +27,7 @@ Other changes:
   deprecated since marshmallow 3.10. apispec is still compatible with
   marshmallow >=3,<3.10 but tests now require marshmallow >=3.10. (:pr:`675`)
 
-4.4.2 (2020-05-24)
+4.4.2 (2021-05-24)
 ******************
 
 Bug fixes:
@@ -35,7 +35,7 @@ Bug fixes:
 - Respect ``partial`` marshmallow schema parameter: don't document the field as
   required. (:issue:`627`). Thanks :user:`Anti-Distinctlyminty` for the PR.
 
-4.4.1 (2020-05-07)
+4.4.1 (2021-05-07)
 ******************
 
 Bug fixes:
@@ -43,7 +43,7 @@ Bug fixes:
 - Don't set ``additionalProperties`` if ``Meta.unknown`` is ``EXCLUDE``
   (:issue:`659`). Thanks :user:`kupuguy` for the PR.
 
-4.4.0 (2020-03-31)
+4.4.0 (2021-03-31)
 ******************
 
 Features:
