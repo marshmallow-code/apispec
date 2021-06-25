@@ -71,6 +71,7 @@ _VALID_PROPERTIES = {
     "xml",
     "externalDocs",
     "example",
+    "deprecated",
 }
 
 
