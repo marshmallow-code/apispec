@@ -68,9 +68,11 @@ _VALID_PROPERTIES = {
     "properties",
     "additionalProperties",
     "readOnly",
+    "writeOnly",
     "xml",
     "externalDocs",
     "example",
+    "nullable",
     "deprecated",
 }
 
