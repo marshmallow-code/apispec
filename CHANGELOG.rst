@@ -1,6 +1,16 @@
 Changelog
 ---------
 
+4.7.0 (2021-06-28)
+******************
+
+Features:
+
+- Document `deprecated` property from field metadata (:pr:`686`).
+  Thanks :user:`greyli` for the PR.
+- Document `writeOnly` and `nullable` properties from field metadata
+  (:pr:`684`). Thanks :user:`greyli` for the PR.
+
 4.6.0 (2021-06-14)
 ******************
 
