@@ -176,6 +176,22 @@ def test_field_with_allow_none(spec_fixture):
         assert res["type"] == ["string", "'null'"]
 
 
+def test_field_with_dump_only(spec_fixture):
+    field = fields.Str(dump_only=True)
+    res = spec_fixture.openapi.field2property(field)
+    assert res["readOnly"] is True
+
+
+@pytest.mark.parametrize("spec_fixture", ("2.0", "3.0.0", "3.1.0"), indirect=True)
+def test_field_with_load_only(spec_fixture):
+    field = fields.Str(load_only=True)
+    res = spec_fixture.openapi.field2property(field)
+    if spec_fixture.openapi.openapi_version.major < 3:
+        assert "writeOnly" not in res
+    else:
+        assert res["writeOnly"] is True
+
+
 def test_field_with_range_no_type(spec_fixture):
     field = fields.Field(validate=validate.Range(min=1, max=10))
     res = spec_fixture.openapi.field2property(field)
