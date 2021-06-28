@@ -73,6 +73,7 @@ _VALID_PROPERTIES = {
     "externalDocs",
     "example",
     "nullable",
+    "deprecated",
 }
 
 
