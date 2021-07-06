@@ -173,7 +173,7 @@ def test_field_with_allow_none(spec_fixture):
         assert res["nullable"] is True
     else:
         assert "nullable" not in res
-        assert res["type"] == ["string", "'null'"]
+        assert res["type"] == ["string", "null"]
 
 
 def test_field_with_dump_only(spec_fixture):
@@ -211,7 +211,7 @@ def test_field_with_range_string_type(spec_fixture, field):
 
 @pytest.mark.parametrize("spec_fixture", ("3.1.0",), indirect=True)
 def test_field_with_range_type_list_with_number(spec_fixture):
-    @spec_fixture.openapi.map_to_openapi_type(["integer", "'null'"], None)
+    @spec_fixture.openapi.map_to_openapi_type(["integer", "null"], None)
     class NullableInteger(fields.Field):
         """Nullable integer"""
 
@@ -219,12 +219,12 @@ def test_field_with_range_type_list_with_number(spec_fixture):
     res = spec_fixture.openapi.field2property(field)
     assert res["minimum"] == 1
     assert res["maximum"] == 10
-    assert res["type"] == ["integer", "'null'"]
+    assert res["type"] == ["integer", "null"]
 
 
 @pytest.mark.parametrize("spec_fixture", ("3.1.0",), indirect=True)
 def test_field_with_range_type_list_without_number(spec_fixture):
-    @spec_fixture.openapi.map_to_openapi_type(["string", "'null'"], None)
+    @spec_fixture.openapi.map_to_openapi_type(["string", "null"], None)
     class NullableInteger(fields.Field):
         """Nullable integer"""
 
@@ -232,7 +232,7 @@ def test_field_with_range_type_list_without_number(spec_fixture):
     res = spec_fixture.openapi.field2property(field)
     assert res["x-minimum"] == 1
     assert res["x-maximum"] == 10
-    assert res["type"] == ["string", "'null'"]
+    assert res["type"] == ["string", "null"]
 
 
 def test_field_with_str_regex(spec_fixture):

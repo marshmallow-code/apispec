@@ -280,7 +280,7 @@ class FieldConverterMixin:
             elif self.openapi_version.minor < 1:
                 attributes["nullable"] = True
             else:
-                attributes["type"] = make_type_list(ret.get("type")) + ["'null'"]
+                attributes["type"] = [*make_type_list(ret.get("type")), "null"]
         return attributes
 
     def field2range(self, field, ret):
