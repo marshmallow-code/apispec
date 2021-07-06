@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+4.7.1 (2021-07-06)
+******************
+
+Bug fixes:
+
+- Correct spelling of 'null': remove extra quotes (:issue:`689`).
+  Thanks :user:`mjpieters` for the PR.
+
 4.7.0 (2021-06-28)
 ******************
 
