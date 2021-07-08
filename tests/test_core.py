@@ -459,6 +459,15 @@ class TestComponents(RefsSchemaTestMixin):
             schema = resp["content"]["application/json"]["schema"]
         self.assert_schema_refs(spec, schema)
 
+    # "headers" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_refs_in_response_header_schema(self, spec):
+        header = {"schema": copy.deepcopy(self.REFS_SCHEMA)}
+        response = {"headers": {"header": header}}
+        spec.components.response("Response", response)
+        resp = get_responses(spec)["Response"]
+        self.assert_schema_refs(spec, resp["headers"]["header"]["schema"])
+
     # "examples" components section only exists in OAS 3
     @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
     def test_components_resolve_parameter_examples(self, spec):
