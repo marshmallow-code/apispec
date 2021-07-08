@@ -31,6 +31,36 @@ description = "This is a sample Petstore server.  You can find out more "
 'key "special-key" to test the authorization filters'
 
 
+REFS_SCHEMA = {
+    "properties": {
+        "nested": "NestedSchema",
+        "deep_nested": {"properties": {"nested": "NestedSchema"}},
+        "nested_list": {"items": "DeepNestedSchema"},
+        "deep_nested_list": {"items": {"properties": {"nested": "DeepNestedSchema"}}},
+        "allof": {
+            "allOf": [
+                "AllOfSchema",
+                {"properties": {"nested": "AllOfSchema"}},
+            ]
+        },
+        "oneof": {
+            "oneOf": [
+                "OneOfSchema",
+                {"properties": {"nested": "OneOfSchema"}},
+            ]
+        },
+        "anyof": {
+            "anyOf": [
+                "AnyOfSchema",
+                {"properties": {"nested": "AnyOfSchema"}},
+            ]
+        },
+        "not": "NotSchema",
+        "deep_not": {"properties": {"nested": "DeepNotSchema"}},
+    }
+}
+
+
 @pytest.fixture(params=("2.0", "3.0.0"))
 def spec(request):
     openapi_version = request.param
@@ -322,6 +352,237 @@ class TestComponents:
             "TestSchema": {"properties": {"key": {"type": "string"}}, "type": "object"}
         }
 
+    def test_components_resolve_refs_in_schema(self, spec):
+        spec.components.schema("refs_schema", copy.deepcopy(REFS_SCHEMA))
+        schema = get_schemas(spec)["refs_schema"]
+        props = schema["properties"]
+        assert props["nested"] == build_ref(spec, "schema", "NestedSchema")
+        assert props["deep_nested"]["properties"]["nested"] == build_ref(
+            spec, "schema", "NestedSchema"
+        )
+        assert props["nested_list"]["items"] == build_ref(
+            spec, "schema", "DeepNestedSchema"
+        )
+        assert props["deep_nested_list"]["items"]["properties"]["nested"] == build_ref(
+            spec, "schema", "DeepNestedSchema"
+        )
+        assert props["allof"]["allOf"][0] == build_ref(spec, "schema", "AllOfSchema")
+        assert props["allof"]["allOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "AllOfSchema"
+        )
+        assert props["oneof"]["oneOf"][0] == build_ref(spec, "schema", "OneOfSchema")
+        assert props["oneof"]["oneOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "OneOfSchema"
+        )
+        assert props["anyof"]["anyOf"][0] == build_ref(spec, "schema", "AnyOfSchema")
+        assert props["anyof"]["anyOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "AnyOfSchema"
+        )
+        assert props["not"] == build_ref(spec, "schema", "NotSchema")
+        assert props["deep_not"]["properties"]["nested"] == build_ref(
+            spec, "schema", "DeepNotSchema"
+        )
+
+    def test_components_resolve_response_schema(self, spec):
+        schema = {"schema": "PetSchema"}
+        if spec.openapi_version.major >= 3:
+            schema = {"content": {"application/json": schema}}
+        spec.components.response("Response", schema)
+        resp = get_responses(spec)["Response"]
+        if spec.openapi_version.major < 3:
+            schema = resp["schema"]
+        else:
+            schema = resp["content"]["application/json"]["schema"]
+        assert schema == build_ref(spec, "schema", "PetSchema")
+
+    # "headers" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_response_header(self, spec):
+        response = {"headers": {"header_1": "Header_1"}}
+        spec.components.response("Response", response)
+        resp = get_responses(spec)["Response"]
+        header_1 = resp["headers"]["header_1"]
+        assert header_1 == build_ref(spec, "header", "Header_1")
+
+    # "headers" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_response_header_schema(self, spec):
+        response = {"headers": {"header_1": {"name": "Pet", "schema": "PetSchema"}}}
+        spec.components.response("Response", response)
+        resp = get_responses(spec)["Response"]
+        header_1 = resp["headers"]["header_1"]
+        assert header_1["schema"] == build_ref(spec, "schema", "PetSchema")
+
+    # "headers" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_response_header_examples(self, spec):
+        response = {
+            "headers": {
+                "header_1": {"name": "Pet", "examples": {"example_1": "Example_1"}}
+            }
+        }
+        spec.components.response("Response", response)
+        resp = get_responses(spec)["Response"]
+        header_1 = resp["headers"]["header_1"]
+        assert header_1["examples"]["example_1"] == build_ref(
+            spec, "example", "Example_1"
+        )
+
+    # "examples" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_response_examples(self, spec):
+        response = {
+            "content": {"application/json": {"examples": {"example_1": "Example_1"}}}
+        }
+        spec.components.response("Response", response)
+        resp = get_responses(spec)["Response"]
+        example_1 = resp["content"]["application/json"]["examples"]["example_1"]
+        assert example_1 == build_ref(spec, "example", "Example_1")
+
+    def test_components_resolve_refs_in_response_schema(self, spec):
+        schema = copy.deepcopy(REFS_SCHEMA)
+        if spec.openapi_version.major >= 3:
+            response = {"content": {"application/json": {"schema": schema}}}
+        else:
+            response = {"schema": schema}
+        spec.components.response("Response", response)
+        resp = get_responses(spec)["Response"]
+        if spec.openapi_version.major < 3:
+            schema = resp["schema"]
+        else:
+            schema = resp["content"]["application/json"]["schema"]
+
+        props = schema["properties"]
+        assert props["nested"] == build_ref(spec, "schema", "NestedSchema")
+        assert props["deep_nested"]["properties"]["nested"] == build_ref(
+            spec, "schema", "NestedSchema"
+        )
+        assert props["nested_list"]["items"] == build_ref(
+            spec, "schema", "DeepNestedSchema"
+        )
+        assert props["deep_nested_list"]["items"]["properties"]["nested"] == build_ref(
+            spec, "schema", "DeepNestedSchema"
+        )
+        assert props["allof"]["allOf"][0] == build_ref(spec, "schema", "AllOfSchema")
+        assert props["allof"]["allOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "AllOfSchema"
+        )
+        assert props["oneof"]["oneOf"][0] == build_ref(spec, "schema", "OneOfSchema")
+        assert props["oneof"]["oneOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "OneOfSchema"
+        )
+        assert props["anyof"]["anyOf"][0] == build_ref(spec, "schema", "AnyOfSchema")
+        assert props["anyof"]["anyOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "AnyOfSchema"
+        )
+        assert props["not"] == build_ref(spec, "schema", "NotSchema")
+        assert props["deep_not"]["properties"]["nested"] == build_ref(
+            spec, "schema", "DeepNotSchema"
+        )
+
+    # "examples" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_parameter_examples(self, spec):
+        parameter = {
+            "examples": {"example_1": "Example_1"},
+        }
+        spec.components.parameter("param", "path", parameter)
+        param = get_parameters(spec)["param"]
+        example_1 = param["examples"]["example_1"]
+        assert example_1 == build_ref(spec, "example", "Example_1")
+
+    def test_components_resolve_parameter_schemas(self, spec):
+        parameter = {"schema": "PetSchema"}
+        spec.components.parameter("param", "path", parameter)
+        param = get_parameters(spec)["param"]
+        assert param["schema"] == build_ref(spec, "schema", "PetSchema")
+
+    def test_components_resolve_refs_in_parameter_schema(self, spec):
+        parameter = {"schema": copy.deepcopy(REFS_SCHEMA)}
+        spec.components.parameter("param", "path", parameter)
+        param = get_parameters(spec)["param"]
+        schema = param["schema"]
+        props = schema["properties"]
+        assert props["nested"] == build_ref(spec, "schema", "NestedSchema")
+        assert props["deep_nested"]["properties"]["nested"] == build_ref(
+            spec, "schema", "NestedSchema"
+        )
+        assert props["nested_list"]["items"] == build_ref(
+            spec, "schema", "DeepNestedSchema"
+        )
+        assert props["deep_nested_list"]["items"]["properties"]["nested"] == build_ref(
+            spec, "schema", "DeepNestedSchema"
+        )
+        assert props["allof"]["allOf"][0] == build_ref(spec, "schema", "AllOfSchema")
+        assert props["allof"]["allOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "AllOfSchema"
+        )
+        assert props["oneof"]["oneOf"][0] == build_ref(spec, "schema", "OneOfSchema")
+        assert props["oneof"]["oneOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "OneOfSchema"
+        )
+        assert props["anyof"]["anyOf"][0] == build_ref(spec, "schema", "AnyOfSchema")
+        assert props["anyof"]["anyOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "AnyOfSchema"
+        )
+        assert props["not"] == build_ref(spec, "schema", "NotSchema")
+        assert props["deep_not"]["properties"]["nested"] == build_ref(
+            spec, "schema", "DeepNotSchema"
+        )
+
+    # "headers" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_header_schema(self, spec):
+        header = {"name": "Pet", "schema": "PetSchema"}
+        spec.components.header("header", header)
+        header = get_headers(spec)["header"]
+        assert header["schema"] == build_ref(spec, "schema", "PetSchema")
+
+    # "headers" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_header_examples(self, spec):
+        header = {"name": "Pet", "examples": {"example_1": "Example_1"}}
+        spec.components.header("header", header)
+        header = get_headers(spec)["header"]
+        assert header["examples"]["example_1"] == build_ref(
+            spec, "example", "Example_1"
+        )
+
+    # "headers" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_refs_in_header_schema(self, spec):
+        header = {"schema": copy.deepcopy(REFS_SCHEMA)}
+        spec.components.header("header", header)
+        header = get_headers(spec)["header"]
+        schema = header["schema"]
+        props = schema["properties"]
+        assert props["nested"] == build_ref(spec, "schema", "NestedSchema")
+        assert props["deep_nested"]["properties"]["nested"] == build_ref(
+            spec, "schema", "NestedSchema"
+        )
+        assert props["nested_list"]["items"] == build_ref(
+            spec, "schema", "DeepNestedSchema"
+        )
+        assert props["deep_nested_list"]["items"]["properties"]["nested"] == build_ref(
+            spec, "schema", "DeepNestedSchema"
+        )
+        assert props["allof"]["allOf"][0] == build_ref(spec, "schema", "AllOfSchema")
+        assert props["allof"]["allOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "AllOfSchema"
+        )
+        assert props["oneof"]["oneOf"][0] == build_ref(spec, "schema", "OneOfSchema")
+        assert props["oneof"]["oneOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "OneOfSchema"
+        )
+        assert props["anyof"]["anyOf"][0] == build_ref(spec, "schema", "AnyOfSchema")
+        assert props["anyof"]["anyOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "AnyOfSchema"
+        )
+        assert props["not"] == build_ref(spec, "schema", "NotSchema")
+        assert props["deep_not"]["properties"]["nested"] == build_ref(
+            spec, "schema", "DeepNotSchema"
+        )
+
 
 class TestPath:
     paths = {
@@ -351,36 +612,6 @@ class TestPath:
                 ),
                 "tags": ["pet"],
             }
-        }
-    }
-    refs_schema = {
-        "properties": {
-            "nested": "NestedSchema",
-            "deep_nested": {"properties": {"nested": "NestedSchema"}},
-            "nested_list": {"items": "DeepNestedSchema"},
-            "deep_nested_list": {
-                "items": {"properties": {"nested": "DeepNestedSchema"}}
-            },
-            "allof": {
-                "allOf": [
-                    "AllOfSchema",
-                    {"properties": {"nested": "AllOfSchema"}},
-                ]
-            },
-            "oneof": {
-                "oneOf": [
-                    "OneOfSchema",
-                    {"properties": {"nested": "OneOfSchema"}},
-                ]
-            },
-            "anyof": {
-                "anyOf": [
-                    "AnyOfSchema",
-                    {"properties": {"nested": "AnyOfSchema"}},
-                ]
-            },
-            "not": "NotSchema",
-            "deep_not": {"properties": {"nested": "DeepNotSchema"}},
         }
     }
 
@@ -756,9 +987,9 @@ class TestPath:
 
     def test_path_resolve_refs_in_response_schema(self, spec):
         if spec.openapi_version.major >= 3:
-            schema = {"content": {"application/json": {"schema": self.refs_schema}}}
+            schema = {"content": {"application/json": {"schema": REFS_SCHEMA}}}
         else:
-            schema = {"schema": self.refs_schema}
+            schema = {"schema": REFS_SCHEMA}
         spec.path("/pet/{petId}", operations={"get": {"responses": {"200": schema}}})
         resp = get_paths(spec)["/pet/{petId}"]["get"]["responses"]["200"]
         if spec.openapi_version.major < 3:
@@ -794,7 +1025,7 @@ class TestPath:
         )
 
     def test_path_resolve_refs_in_parameter_schema(self, spec):
-        schema = copy.copy({"schema": self.refs_schema})
+        schema = copy.copy({"schema": REFS_SCHEMA})
         schema["in"] = "query"
         schema["name"] = "test"
         spec.path("/pet/{petId}", operations={"get": {"parameters": [schema]}})
@@ -831,7 +1062,7 @@ class TestPath:
     # requestBody only exists in OAS 3
     @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
     def test_path_resolve_refs_in_request_body_schema(self, spec):
-        schema = {"content": {"application/json": {"schema": self.refs_schema}}}
+        schema = {"content": {"application/json": {"schema": REFS_SCHEMA}}}
         spec.path("/pet/{petId}", operations={"get": {"responses": {"200": schema}}})
         resp = get_paths(spec)["/pet/{petId}"]["get"]["responses"]["200"]
         schema = resp["content"]["application/json"]["schema"]

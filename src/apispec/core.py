@@ -86,6 +86,7 @@ class Components:
                 ret.update(plugin.schema_helper(name, component, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
+        self._resolve_refs_in_schema(ret)
         self.schemas[name] = ret
         return self
 
@@ -110,6 +111,7 @@ class Components:
                 ret.update(plugin.response_helper(component, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
+        self._resolve_refs_in_response(ret)
         self.responses[component_id] = ret
         return self
 
@@ -142,6 +144,7 @@ class Components:
                 ret.update(plugin.parameter_helper(component, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
+        self._resolve_refs_in_parameter_or_header(ret)
         self.parameters[component_id] = ret
         return self
 
@@ -157,6 +160,7 @@ class Components:
             raise DuplicateComponentNameError(
                 f'Another header with name "{component_id}" is already registered.'
             )
+        self._resolve_refs_in_parameter_or_header(component)
         self.headers[component_id] = component
         return self
 
