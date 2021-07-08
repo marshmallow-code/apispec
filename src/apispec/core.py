@@ -237,9 +237,9 @@ class Components:
             schema["not"] = self.get_ref("schema", schema["not"])
             self._resolve_refs_in_schema(schema["not"])
 
-    def _resolve_refs_in_parameter(self, parameter):
-        self._resolve_schema(parameter)
-        self._resolve_examples(parameter)
+    def _resolve_refs_in_parameter_or_header(self, parameter_or_header):
+        self._resolve_schema(parameter_or_header)
+        self._resolve_examples(parameter_or_header)
 
     def _resolve_refs_in_request_body(self, request_body):
         # requestBody is OpenAPI v3+
@@ -256,7 +256,7 @@ class Components:
                 self._resolve_examples(media_type)
             for name, header in response.get("headers", {}).items():
                 response["headers"][name] = self.get_ref("header", header)
-                self._resolve_refs_in_parameter(response["headers"][name])
+                self._resolve_refs_in_parameter_or_header(response["headers"][name])
             # TODO: Resolve link refs when Components supports links
 
     def _resolve_refs_in_operation(self, operation):
@@ -264,7 +264,7 @@ class Components:
             parameters = []
             for parameter in operation["parameters"]:
                 parameter = self.get_ref("parameter", parameter)
-                self._resolve_refs_in_parameter(parameter)
+                self._resolve_refs_in_parameter_or_header(parameter)
                 parameters.append(parameter)
             operation["parameters"] = parameters
         if "requestBody" in operation:
@@ -282,7 +282,7 @@ class Components:
             parameters = []
             for parameter in path["parameters"]:
                 parameter = self.get_ref("parameter", parameter)
-                self._resolve_refs_in_parameter(parameter)
+                self._resolve_refs_in_parameter_or_header(parameter)
                 parameters.append(parameter)
             path["parameters"] = parameters
         for method in (
