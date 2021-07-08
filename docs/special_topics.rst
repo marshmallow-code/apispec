@@ -53,14 +53,29 @@ JSON
 Documenting Top-level Components
 --------------------------------
 
-The ``APISpec`` object contains helpers to add top-level components.
+The ``APISpec`` object contains helpers to add top-level components:
 
-To add a schema (f.k.a. "definition" in OAS v2), use
-`spec.components.schema <apispec.core.Components.schema>`.
+.. list-table:: 
+   :header-rows: 1
 
-Likewise, parameters and responses can be added using
-`spec.components.parameter <apispec.core.Components.parameter>` and
-`spec.components.response <apispec.core.Components.response>`.
+   * - Component type
+     - Helper method
+     - OpenAPI version
+   * - Schema (f.k.a. "definition" in OAS v2)
+     - `spec.components.schema <apispec.core.Components.schema>`
+     - 2, 3
+   * - Parameter
+     - `spec.components.parameter <apispec.core.Components.parameter>`
+     - 2, 3
+   * - Reponse
+     - `spec.components.response <apispec.core.Components.response>`
+     - 2, 3
+   * - Header
+     - `spec.components.response <apispec.core.Components.header>`
+     - 3
+   * - Example
+     - `spec.components.response <apispec.core.Components.example>`
+     - 3
 
 To add other top-level objects, pass them to the ``APISpec`` as keyword arguments.
 
@@ -134,3 +149,18 @@ to document `Security Scheme Objects <https://github.com/OAI/OpenAPI-Specificati
     pprint(spec.to_dict()["components"]["securitySchemes"], indent=2)
     # { 'api_key': {'in': 'header', 'name': 'X-API-Key', 'type': 'apiKey'},
     #   'jwt': {'bearerFormat': 'JWT', 'scheme': 'bearer', 'type': 'http'}}
+
+Referencing Top-level Components
+--------------------------------
+
+On OpenAPI, top-level component are meant to be referenced using a ``$ref``,
+as in ``{$ref: '#/components/schemas/Pet'}`` (OpenAPI v3) or
+``{$ref: '#/definitions/Pet'}`` (OpenAPI v2).
+
+APISpec automatically resolves references in paths and in components themselves
+when a string is provided while a dict is expected. Passing a fully-resolved
+reference is not supported. In other words, rather than passing
+``{"schema": {$ref: '#/components/schemas/Pet'}}``, the user must pass
+``{"schema": "Pet"}``. APISpec assumes a schema reference named ``"Pet"`` has
+been defined and builds the reference using the components location
+corresponding to the OpenAPI version.
