@@ -51,7 +51,7 @@ with `"x-"` (vendor extension).
         name = fields.Str(metadata={"description": "The user's name"})
         created = fields.DateTime(
             dump_only=True,
-            default=dt.datetime.utcnow,
+            dump_default=dt.datetime.utcnow,
             metadata={"doc_default": "The current datetime"}
         )
 
