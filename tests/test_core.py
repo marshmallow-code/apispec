@@ -1,3 +1,4 @@
+import copy
 from collections import OrderedDict
 from http import HTTPStatus
 
@@ -28,6 +29,69 @@ description = "This is a sample Petstore server.  You can find out more "
 'about Swagger at <a href="http://swagger.wordnik.com">http://swagger.wordnik.com</a> '
 "or on irc.freenode.net, #swagger.  For this sample, you can use the api "
 'key "special-key" to test the authorization filters'
+
+
+class RefsSchemaTestMixin:
+    REFS_SCHEMA = {
+        "properties": {
+            "nested": "NestedSchema",
+            "deep_nested": {"properties": {"nested": "NestedSchema"}},
+            "nested_list": {"items": "DeepNestedSchema"},
+            "deep_nested_list": {
+                "items": {"properties": {"nested": "DeepNestedSchema"}}
+            },
+            "allof": {
+                "allOf": [
+                    "AllOfSchema",
+                    {"properties": {"nested": "AllOfSchema"}},
+                ]
+            },
+            "oneof": {
+                "oneOf": [
+                    "OneOfSchema",
+                    {"properties": {"nested": "OneOfSchema"}},
+                ]
+            },
+            "anyof": {
+                "anyOf": [
+                    "AnyOfSchema",
+                    {"properties": {"nested": "AnyOfSchema"}},
+                ]
+            },
+            "not": "NotSchema",
+            "deep_not": {"properties": {"nested": "DeepNotSchema"}},
+        }
+    }
+
+    @staticmethod
+    def assert_schema_refs(spec, schema):
+        props = schema["properties"]
+        assert props["nested"] == build_ref(spec, "schema", "NestedSchema")
+        assert props["deep_nested"]["properties"]["nested"] == build_ref(
+            spec, "schema", "NestedSchema"
+        )
+        assert props["nested_list"]["items"] == build_ref(
+            spec, "schema", "DeepNestedSchema"
+        )
+        assert props["deep_nested_list"]["items"]["properties"]["nested"] == build_ref(
+            spec, "schema", "DeepNestedSchema"
+        )
+        assert props["allof"]["allOf"][0] == build_ref(spec, "schema", "AllOfSchema")
+        assert props["allof"]["allOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "AllOfSchema"
+        )
+        assert props["oneof"]["oneOf"][0] == build_ref(spec, "schema", "OneOfSchema")
+        assert props["oneof"]["oneOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "OneOfSchema"
+        )
+        assert props["anyof"]["anyOf"][0] == build_ref(spec, "schema", "AnyOfSchema")
+        assert props["anyof"]["anyOf"][1]["properties"]["nested"] == build_ref(
+            spec, "schema", "AnyOfSchema"
+        )
+        assert props["not"] == build_ref(spec, "schema", "NotSchema")
+        assert props["deep_not"]["properties"]["nested"] == build_ref(
+            spec, "schema", "DeepNotSchema"
+        )
 
 
 @pytest.fixture(params=("2.0", "3.0.0"))
@@ -132,7 +196,7 @@ class TestTags:
         assert spec.to_dict()["tags"] == [{"name": "tag1"}, {"name": "tag2"}]
 
 
-class TestComponents:
+class TestComponents(RefsSchemaTestMixin):
 
     properties = {
         "id": {"type": "integer", "format": "int64"},
@@ -321,8 +385,138 @@ class TestComponents:
             "TestSchema": {"properties": {"key": {"type": "string"}}, "type": "object"}
         }
 
+    def test_components_resolve_refs_in_schema(self, spec):
+        spec.components.schema("refs_schema", copy.deepcopy(self.REFS_SCHEMA))
+        self.assert_schema_refs(spec, get_schemas(spec)["refs_schema"])
 
-class TestPath:
+    def test_components_resolve_response_schema(self, spec):
+        schema = {"schema": "PetSchema"}
+        if spec.openapi_version.major >= 3:
+            schema = {"content": {"application/json": schema}}
+        spec.components.response("Response", schema)
+        resp = get_responses(spec)["Response"]
+        if spec.openapi_version.major < 3:
+            schema = resp["schema"]
+        else:
+            schema = resp["content"]["application/json"]["schema"]
+        assert schema == build_ref(spec, "schema", "PetSchema")
+
+    # "headers" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_response_header(self, spec):
+        response = {"headers": {"header_1": "Header_1"}}
+        spec.components.response("Response", response)
+        resp = get_responses(spec)["Response"]
+        header_1 = resp["headers"]["header_1"]
+        assert header_1 == build_ref(spec, "header", "Header_1")
+
+    # "headers" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_response_header_schema(self, spec):
+        response = {"headers": {"header_1": {"name": "Pet", "schema": "PetSchema"}}}
+        spec.components.response("Response", response)
+        resp = get_responses(spec)["Response"]
+        header_1 = resp["headers"]["header_1"]
+        assert header_1["schema"] == build_ref(spec, "schema", "PetSchema")
+
+    # "headers" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_response_header_examples(self, spec):
+        response = {
+            "headers": {
+                "header_1": {"name": "Pet", "examples": {"example_1": "Example_1"}}
+            }
+        }
+        spec.components.response("Response", response)
+        resp = get_responses(spec)["Response"]
+        header_1 = resp["headers"]["header_1"]
+        assert header_1["examples"]["example_1"] == build_ref(
+            spec, "example", "Example_1"
+        )
+
+    # "examples" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_response_examples(self, spec):
+        response = {
+            "content": {"application/json": {"examples": {"example_1": "Example_1"}}}
+        }
+        spec.components.response("Response", response)
+        resp = get_responses(spec)["Response"]
+        example_1 = resp["content"]["application/json"]["examples"]["example_1"]
+        assert example_1 == build_ref(spec, "example", "Example_1")
+
+    def test_components_resolve_refs_in_response_schema(self, spec):
+        schema = copy.deepcopy(self.REFS_SCHEMA)
+        if spec.openapi_version.major >= 3:
+            response = {"content": {"application/json": {"schema": schema}}}
+        else:
+            response = {"schema": schema}
+        spec.components.response("Response", response)
+        resp = get_responses(spec)["Response"]
+        if spec.openapi_version.major < 3:
+            schema = resp["schema"]
+        else:
+            schema = resp["content"]["application/json"]["schema"]
+        self.assert_schema_refs(spec, schema)
+
+    # "headers" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_refs_in_response_header_schema(self, spec):
+        header = {"schema": copy.deepcopy(self.REFS_SCHEMA)}
+        response = {"headers": {"header": header}}
+        spec.components.response("Response", response)
+        resp = get_responses(spec)["Response"]
+        self.assert_schema_refs(spec, resp["headers"]["header"]["schema"])
+
+    # "examples" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_parameter_examples(self, spec):
+        parameter = {
+            "examples": {"example_1": "Example_1"},
+        }
+        spec.components.parameter("param", "path", parameter)
+        param = get_parameters(spec)["param"]
+        example_1 = param["examples"]["example_1"]
+        assert example_1 == build_ref(spec, "example", "Example_1")
+
+    def test_components_resolve_parameter_schemas(self, spec):
+        parameter = {"schema": "PetSchema"}
+        spec.components.parameter("param", "path", parameter)
+        param = get_parameters(spec)["param"]
+        assert param["schema"] == build_ref(spec, "schema", "PetSchema")
+
+    def test_components_resolve_refs_in_parameter_schema(self, spec):
+        parameter = {"schema": copy.deepcopy(self.REFS_SCHEMA)}
+        spec.components.parameter("param", "path", parameter)
+        self.assert_schema_refs(spec, get_parameters(spec)["param"]["schema"])
+
+    # "headers" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_header_schema(self, spec):
+        header = {"name": "Pet", "schema": "PetSchema"}
+        spec.components.header("header", header)
+        header = get_headers(spec)["header"]
+        assert header["schema"] == build_ref(spec, "schema", "PetSchema")
+
+    # "headers" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_header_examples(self, spec):
+        header = {"name": "Pet", "examples": {"example_1": "Example_1"}}
+        spec.components.header("header", header)
+        header = get_headers(spec)["header"]
+        assert header["examples"]["example_1"] == build_ref(
+            spec, "example", "Example_1"
+        )
+
+    # "headers" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_refs_in_header_schema(self, spec):
+        header = {"schema": copy.deepcopy(self.REFS_SCHEMA)}
+        spec.components.header("header", header)
+        self.assert_schema_refs(spec, get_headers(spec)["header"]["schema"])
+
+
+class TestPath(RefsSchemaTestMixin):
     paths = {
         "/pet/{petId}": {
             "get": {
@@ -390,11 +584,11 @@ class TestPath:
             "/path4",
         ]
 
-    def test_paths_is_chainable(self, spec):
+    def test_path_is_chainable(self, spec):
         spec.path(path="/path1").path("/path2")
         assert list(spec.to_dict()["paths"].keys()) == ["/path1", "/path2"]
 
-    def test_methods_maintain_order(self, spec):
+    def test_path_methods_maintain_order(self, spec):
         methods = ["get", "post", "put", "patch", "delete", "head", "options"]
         for method in methods:
             spec.path(path="/path", operations=OrderedDict({method: {}}))
@@ -492,34 +686,20 @@ class TestPath:
         assert p["summary"] == summary
         assert p["description"] == description
 
-    def test_parameter(self, spec):
+    def test_path_resolves_parameter(self, spec):
         route_spec = self.paths["/pet/{petId}"]["get"]
-
         spec.components.parameter("test_parameter", "path", route_spec["parameters"][0])
-
         spec.path(
             path="/pet/{petId}", operations={"get": {"parameters": ["test_parameter"]}}
         )
-
-        metadata = spec.to_dict()
         p = get_paths(spec)["/pet/{petId}"]["get"]
-
         assert p["parameters"][0] == build_ref(spec, "parameter", "test_parameter")
-        if spec.openapi_version.major < 3:
-            assert (
-                route_spec["parameters"][0] == metadata["parameters"]["test_parameter"]
-            )
-        else:
-            assert (
-                route_spec["parameters"][0]
-                == metadata["components"]["parameters"]["test_parameter"]
-            )
 
     @pytest.mark.parametrize(
         "parameters",
         ([{"name": "petId"}], [{"in": "path"}]),  # missing "in"  # missing "name"
     )
-    def test_invalid_parameter(self, spec, parameters):
+    def test_path_invalid_parameter(self, spec, parameters):
         path = "/pet/{petId}"
 
         with pytest.raises(InvalidParameterError):
@@ -594,31 +774,17 @@ class TestPath:
                 ],
             )
 
-    def test_response(self, spec):
+    def test_path_resolves_response(self, spec):
         route_spec = self.paths["/pet/{petId}"]["get"]
-
         spec.components.response("test_response", route_spec["responses"]["200"])
-
         spec.path(
             path="/pet/{petId}",
             operations={"get": {"responses": {"200": "test_response"}}},
         )
-
-        metadata = spec.to_dict()
         p = get_paths(spec)["/pet/{petId}"]["get"]
-
         assert p["responses"]["200"] == build_ref(spec, "response", "test_response")
-        if spec.openapi_version.major < 3:
-            assert (
-                route_spec["responses"]["200"] == metadata["responses"]["test_response"]
-            )
-        else:
-            assert (
-                route_spec["responses"]["200"]
-                == metadata["components"]["responses"]["test_response"]
-            )
 
-    def test_response_with_HTTPStatus_code(self, spec):
+    def test_path_response_with_HTTPStatus_code(self, spec):
         code = HTTPStatus(200)
         spec.path(
             path="/pet/{petId}",
@@ -627,7 +793,7 @@ class TestPath:
 
         assert "200" in get_paths(spec)["/pet/{petId}"]["get"]["responses"]
 
-    def test_response_with_status_code_range(self, spec, recwarn):
+    def test_path_response_with_status_code_range(self, spec, recwarn):
         status_code = "2XX"
 
         spec.path(
@@ -686,6 +852,30 @@ class TestPath:
         header_1 = resp["headers"]["header_1"]
         assert header_1 == build_ref(spec, "header", "Header_1")
 
+    # "headers" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_path_resolve_response_header_schema(self, spec):
+        response = {"headers": {"header_1": {"name": "Pet", "schema": "PetSchema"}}}
+        spec.path("/pet/{petId}", operations={"get": {"responses": {"200": response}}})
+        resp = get_paths(spec)["/pet/{petId}"]["get"]["responses"]["200"]
+        header_1 = resp["headers"]["header_1"]
+        assert header_1["schema"] == build_ref(spec, "schema", "PetSchema")
+
+    # "headers" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_path_resolve_response_header_examples(self, spec):
+        response = {
+            "headers": {
+                "header_1": {"name": "Pet", "examples": {"example_1": "Example_1"}}
+            }
+        }
+        spec.path("/pet/{petId}", operations={"get": {"responses": {"200": response}}})
+        resp = get_paths(spec)["/pet/{petId}"]["get"]["responses"]["200"]
+        header_1 = resp["headers"]["header_1"]
+        assert header_1["examples"]["example_1"] == build_ref(
+            spec, "example", "Example_1"
+        )
+
     # "examples" components section only exists in OAS 3
     @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
     def test_path_resolve_response_examples(self, spec):
@@ -720,6 +910,42 @@ class TestPath:
         param = get_paths(spec)["/pet/{petId}"]["get"]["parameters"][0]
         example_1 = param["examples"]["example_1"]
         assert example_1 == build_ref(spec, "example", "Example_1")
+
+    def test_path_resolve_parameter_schemas(self, spec):
+        parameter = {"name": "test", "in": "query", "schema": "PetSchema"}
+        spec.path("/pet/{petId}", operations={"get": {"parameters": [parameter]}})
+        param = get_paths(spec)["/pet/{petId}"]["get"]["parameters"][0]
+        assert param["schema"] == build_ref(spec, "schema", "PetSchema")
+
+    def test_path_resolve_refs_in_response_schema(self, spec):
+        if spec.openapi_version.major >= 3:
+            schema = {"content": {"application/json": {"schema": self.REFS_SCHEMA}}}
+        else:
+            schema = {"schema": self.REFS_SCHEMA}
+        spec.path("/pet/{petId}", operations={"get": {"responses": {"200": schema}}})
+        resp = get_paths(spec)["/pet/{petId}"]["get"]["responses"]["200"]
+        if spec.openapi_version.major < 3:
+            schema = resp["schema"]
+        else:
+            schema = resp["content"]["application/json"]["schema"]
+        self.assert_schema_refs(spec, schema)
+
+    def test_path_resolve_refs_in_parameter_schema(self, spec):
+        schema = copy.copy({"schema": self.REFS_SCHEMA})
+        schema["in"] = "query"
+        schema["name"] = "test"
+        spec.path("/pet/{petId}", operations={"get": {"parameters": [schema]}})
+        schema = get_paths(spec)["/pet/{petId}"]["get"]["parameters"][0]["schema"]
+        self.assert_schema_refs(spec, schema)
+
+    # requestBody only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_path_resolve_refs_in_request_body_schema(self, spec):
+        schema = {"content": {"application/json": {"schema": self.REFS_SCHEMA}}}
+        spec.path("/pet/{petId}", operations={"get": {"responses": {"200": schema}}})
+        resp = get_paths(spec)["/pet/{petId}"]["get"]["responses"]["200"]
+        schema = resp["content"]["application/json"]["schema"]
+        self.assert_schema_refs(spec, schema)
 
 
 class TestPlugins:

@@ -86,6 +86,7 @@ class Components:
                 ret.update(plugin.schema_helper(name, component, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
+        self._resolve_refs_in_schema(ret)
         self.schemas[name] = ret
         return self
 
@@ -110,6 +111,7 @@ class Components:
                 ret.update(plugin.response_helper(component, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
+        self._resolve_refs_in_response(ret)
         self.responses[component_id] = ret
         return self
 
@@ -142,6 +144,7 @@ class Components:
                 ret.update(plugin.parameter_helper(component, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
+        self._resolve_refs_in_parameter_or_header(ret)
         self.parameters[component_id] = ret
         return self
 
@@ -157,6 +160,7 @@ class Components:
             raise DuplicateComponentNameError(
                 f'Another header with name "{component_id}" is already registered.'
             )
+        self._resolve_refs_in_parameter_or_header(component)
         self.headers[component_id] = component
         return self
 
@@ -205,44 +209,66 @@ class Components:
         return build_reference(obj_type, self.openapi_version.major, obj)
 
     def _resolve_schema(self, obj):
-        """Replace schema reference as string with a $ref if needed."""
-        if not isinstance(obj, dict):
-            return
-        if self.openapi_version.major < 3:
-            if "schema" in obj:
-                obj["schema"] = self.get_ref("schema", obj["schema"])
-        else:
-            if "content" in obj:
-                for content in obj["content"].values():
-                    if "schema" in content:
-                        content["schema"] = self.get_ref("schema", content["schema"])
+        """Replace schema reference as string with a $ref if needed
+
+        Also resolve references in the schema
+        """
+        if "schema" in obj:
+            obj["schema"] = self.get_ref("schema", obj["schema"])
+            self._resolve_refs_in_schema(obj["schema"])
 
     def _resolve_examples(self, obj):
         """Replace example reference as string with a $ref"""
         for name, example in obj.get("examples", {}).items():
             obj["examples"][name] = self.get_ref("example", example)
 
-    def _resolve_refs_in_parameter(self, parameter):
-        self._resolve_examples(parameter)
+    def _resolve_refs_in_schema(self, schema):
+        if "properties" in schema:
+            for key in schema["properties"]:
+                schema["properties"][key] = self.get_ref(
+                    "schema", schema["properties"][key]
+                )
+                self._resolve_refs_in_schema(schema["properties"][key])
+        if "items" in schema:
+            schema["items"] = self.get_ref("schema", schema["items"])
+            self._resolve_refs_in_schema(schema["items"])
+        for key in ("allOf", "oneOf", "anyOf"):
+            if key in schema:
+                schema[key] = [self.get_ref("schema", s) for s in schema[key]]
+                for sch in schema[key]:
+                    self._resolve_refs_in_schema(sch)
+        if "not" in schema:
+            schema["not"] = self.get_ref("schema", schema["not"])
+            self._resolve_refs_in_schema(schema["not"])
+
+    def _resolve_refs_in_parameter_or_header(self, parameter_or_header):
+        self._resolve_schema(parameter_or_header)
+        self._resolve_examples(parameter_or_header)
 
     def _resolve_refs_in_request_body(self, request_body):
-        self._resolve_schema(request_body)
+        # requestBody is OpenAPI v3+
         for media_type in request_body["content"].values():
+            self._resolve_schema(media_type)
             self._resolve_examples(media_type)
 
     def _resolve_refs_in_response(self, response):
-        self._resolve_schema(response)
-        for name, header in response.get("headers", {}).items():
-            response["headers"][name] = self.get_ref("header", header)
-        for media_type in response.get("content", {}).values():
-            self._resolve_examples(media_type)
+        if self.openapi_version.major < 3:
+            self._resolve_schema(response)
+        else:
+            for media_type in response.get("content", {}).values():
+                self._resolve_schema(media_type)
+                self._resolve_examples(media_type)
+            for name, header in response.get("headers", {}).items():
+                response["headers"][name] = self.get_ref("header", header)
+                self._resolve_refs_in_parameter_or_header(response["headers"][name])
+            # TODO: Resolve link refs when Components supports links
 
     def _resolve_refs_in_operation(self, operation):
         if "parameters" in operation:
             parameters = []
             for parameter in operation["parameters"]:
                 parameter = self.get_ref("parameter", parameter)
-                self._resolve_refs_in_parameter(parameter)
+                self._resolve_refs_in_parameter_or_header(parameter)
                 parameters.append(parameter)
             operation["parameters"] = parameters
         if "requestBody" in operation:
@@ -260,7 +286,7 @@ class Components:
             parameters = []
             for parameter in path["parameters"]:
                 parameter = self.get_ref("parameter", parameter)
-                self._resolve_refs_in_parameter(parameter)
+                self._resolve_refs_in_parameter_or_header(parameter)
                 parameters.append(parameter)
             path["parameters"] = parameters
         for method in (
