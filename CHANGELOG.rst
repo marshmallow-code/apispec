@@ -1,14 +1,21 @@
 Changelog
 ---------
 
-5.0.0 (unreleased)
-******************
+5.0.0b1 (2021-07-22)
+********************
+
+Features:
+
+- Resolve all component references in paths and components. All references must
+  be passed as strings, not as a `{$ref: '...'}}` dict (:pr:`671`).
 
 Other changes:
 
 - Don't use deprecated `missing` marshmallow field attribute but use
   `load_default` instead (:pr:`692`).
-
+- Refactor references resolution. `get_ref` method is moved from `APISpec` to
+  `Components` (:pr:`655`). `APISpec.clean_parameters` and
+  `APISpec.clean_parameters` are now private methods (:pr:`695`).
 - Drop support for marshmallow < 3.13.0 (:pr:`692`).
 
 4.7.1 (2021-07-06)
