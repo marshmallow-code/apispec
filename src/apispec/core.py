@@ -391,7 +391,7 @@ class APISpec:
         :param kwargs: parameters used by any path helpers see :meth:`register_path_helper`
         """
         # operations and parameters must be deepcopied because they are mutated
-        # in clean_operations and operation helpers and path may be called twice
+        # in _clean_operations and operation helpers and path may be called twice
         operations = deepcopy(operations) or OrderedDict()
         parameters = deepcopy(parameters) or []
 
@@ -415,7 +415,7 @@ class APISpec:
             except PluginMethodNotImplementedError:
                 continue
 
-        self.clean_operations(operations)
+        self._clean_operations(operations)
 
         self._paths.setdefault(path, operations).update(operations)
         if summary is not None:
@@ -423,14 +423,14 @@ class APISpec:
         if description is not None:
             self._paths[path]["description"] = description
         if parameters:
-            parameters = self.clean_parameters(parameters)
+            parameters = self._clean_parameters(parameters)
             self._paths[path]["parameters"] = parameters
 
         self.components.resolve_refs_in_path(self._paths[path])
 
         return self
 
-    def clean_parameters(self, parameters):
+    def _clean_parameters(self, parameters):
         """Ensure that all parameters with "in" equal to "path" are also required
         as required by the OpenAPI specification, as well as normalizing any
         references to global parameters and checking for duplicates parameters
@@ -466,7 +466,7 @@ class APISpec:
 
         return parameters
 
-    def clean_operations(self, operations):
+    def _clean_operations(self, operations):
         """Ensure that all parameters with "in" equal to "path" are also required
         as required by the OpenAPI specification, as well as normalizing any
         references to global parameters. Also checks for invalid HTTP methods.
@@ -487,7 +487,9 @@ class APISpec:
 
         for operation in (operations or {}).values():
             if "parameters" in operation:
-                operation["parameters"] = self.clean_parameters(operation["parameters"])
+                operation["parameters"] = self._clean_parameters(
+                    operation["parameters"]
+                )
             if "responses" in operation:
                 responses = OrderedDict()
                 for code, response in operation["responses"].items():
