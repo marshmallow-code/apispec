@@ -5,7 +5,7 @@
 (for response and headers schemas) and
 `spec.path <apispec.APISpec.path>` (for responses and response headers).
 
-Requires marshmallow>=2.15.2.
+Requires marshmallow>=3.13.0.
 
 ``MarshmallowPlugin`` maps marshmallow ``Field`` classes with OpenAPI types and
 formats.
