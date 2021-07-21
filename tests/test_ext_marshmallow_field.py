@@ -79,26 +79,26 @@ def test_field_with_description(spec_fixture):
     assert res["description"] == "a username"
 
 
-def test_field_with_missing(spec_fixture):
-    field = fields.Str(default="foo", missing="bar")
+def test_field_with_load_default(spec_fixture):
+    field = fields.Str(dump_default="foo", load_default="bar")
     res = spec_fixture.openapi.field2property(field)
     assert res["default"] == "bar"
 
 
-def test_boolean_field_with_false_missing(spec_fixture):
-    field = fields.Boolean(default=None, missing=False)
+def test_boolean_field_with_false_load_default(spec_fixture):
+    field = fields.Boolean(dump_default=None, load_default=False)
     res = spec_fixture.openapi.field2property(field)
     assert res["default"] is False
 
 
-def test_datetime_field_with_missing(spec_fixture):
-    field = fields.Date(missing=dt.date(2014, 7, 18))
+def test_datetime_field_with_load_default(spec_fixture):
+    field = fields.Date(load_default=dt.date(2014, 7, 18))
     res = spec_fixture.openapi.field2property(field)
     assert res["default"] == dt.date(2014, 7, 18).isoformat()
 
 
-def test_field_with_missing_callable(spec_fixture):
-    field = fields.Str(missing=lambda: "dummy")
+def test_field_with_load_default_callable(spec_fixture):
+    field = fields.Str(load_default=lambda: "dummy")
     res = spec_fixture.openapi.field2property(field)
     assert "default" not in res
 
@@ -109,8 +109,8 @@ def test_field_with_doc_default(spec_fixture):
     assert res["default"] == "Manual default"
 
 
-def test_field_with_doc_default_and_missing(spec_fixture):
-    field = fields.Int(missing=12, metadata={"doc_default": 42})
+def test_field_with_doc_default_and_load_default(spec_fixture):
+    field = fields.Int(load_default=12, metadata={"doc_default": 42})
     res = spec_fixture.openapi.field2property(field)
     assert res["default"] == 42
 
@@ -129,7 +129,7 @@ def test_field_with_equal(spec_fixture):
 
 def test_only_allows_valid_properties_in_metadata(spec_fixture):
     field = fields.Str(
-        missing="foo",
+        load_default="foo",
         metadata={
             "description": "foo",
             "not_valid": "lol",
@@ -138,7 +138,7 @@ def test_only_allows_valid_properties_in_metadata(spec_fixture):
         },
     )
     res = spec_fixture.openapi.field2property(field)
-    assert res["default"] == field.missing
+    assert res["default"] == field.load_default
     assert "description" in res
     assert "enum" in res
     assert "allOf" in res

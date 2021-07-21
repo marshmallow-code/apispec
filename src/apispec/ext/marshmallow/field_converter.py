@@ -213,7 +213,7 @@ class FieldConverterMixin:
         if "doc_default" in field.metadata:
             ret["default"] = field.metadata["doc_default"]
         else:
-            default = field.missing
+            default = field.load_default
             if default is not marshmallow.missing and not callable(default):
                 default = field._serialize(default, None, None)
                 ret["default"] = default

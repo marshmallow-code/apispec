@@ -11,9 +11,9 @@ from .utils import get_schemas, build_ref
 
 
 class TestMarshmallowFieldToOpenAPI:
-    def test_fields_with_missing_load(self, openapi):
+    def test_fields_with_load_default_load(self, openapi):
         class MySchema(Schema):
-            field = fields.Str(default="foo", missing="bar")
+            field = fields.Str(dump_default="foo", load_default="bar")
 
         res = openapi.schema2parameters(MySchema, location="query")
         if openapi.openapi_version.major < 3:
