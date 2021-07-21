@@ -1,6 +1,16 @@
 Changelog
 ---------
 
+5.0.0 (unreleased)
+******************
+
+Other changes:
+
+- Don't use deprecated `missing` marshmallow field attribute but use
+  `load_default` instead (:pr:`692`).
+
+- Drop support for marshmallow < 3.13.0 (:pr:`692`).
+
 4.7.1 (2021-07-06)
 ******************
 
