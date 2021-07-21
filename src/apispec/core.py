@@ -190,6 +190,92 @@ class Components:
         self.security_schemes[component_id] = component
         return self
 
+    def get_ref(self, obj_type, obj):
+        """Return object or reference
+
+        If obj is a dict, it is assumed to be a complete description and it is returned as is.
+        Otherwise, it is assumed to be a reference name as string and the corresponding $ref
+        string is returned.
+
+        :param str obj_type: "schema", "parameter", "response" or "security_scheme"
+        :param dict|str obj: object in dict form or as ref_id string
+        """
+        if isinstance(obj, dict):
+            return obj
+        return build_reference(obj_type, self.openapi_version.major, obj)
+
+    def _resolve_schema(self, obj):
+        """Replace schema reference as string with a $ref if needed."""
+        if not isinstance(obj, dict):
+            return
+        if self.openapi_version.major < 3:
+            if "schema" in obj:
+                obj["schema"] = self.get_ref("schema", obj["schema"])
+        else:
+            if "content" in obj:
+                for content in obj["content"].values():
+                    if "schema" in content:
+                        content["schema"] = self.get_ref("schema", content["schema"])
+
+    def _resolve_examples(self, obj):
+        """Replace example reference as string with a $ref"""
+        for name, example in obj.get("examples", {}).items():
+            obj["examples"][name] = self.get_ref("example", example)
+
+    def _resolve_refs_in_parameter(self, parameter):
+        self._resolve_examples(parameter)
+
+    def _resolve_refs_in_request_body(self, request_body):
+        self._resolve_schema(request_body)
+        for media_type in request_body["content"].values():
+            self._resolve_examples(media_type)
+
+    def _resolve_refs_in_response(self, response):
+        self._resolve_schema(response)
+        for name, header in response.get("headers", {}).items():
+            response["headers"][name] = self.get_ref("header", header)
+        for media_type in response.get("content", {}).values():
+            self._resolve_examples(media_type)
+
+    def _resolve_refs_in_operation(self, operation):
+        if "parameters" in operation:
+            parameters = []
+            for parameter in operation["parameters"]:
+                parameter = self.get_ref("parameter", parameter)
+                self._resolve_refs_in_parameter(parameter)
+                parameters.append(parameter)
+            operation["parameters"] = parameters
+        if "requestBody" in operation:
+            self._resolve_refs_in_request_body(operation["requestBody"])
+        if "responses" in operation:
+            responses = OrderedDict()
+            for code, response in operation["responses"].items():
+                response = self.get_ref("response", response)
+                self._resolve_refs_in_response(response)
+                responses[code] = response
+            operation["responses"] = responses
+
+    def resolve_refs_in_path(self, path):
+        if "parameters" in path:
+            parameters = []
+            for parameter in path["parameters"]:
+                parameter = self.get_ref("parameter", parameter)
+                self._resolve_refs_in_parameter(parameter)
+                parameters.append(parameter)
+            path["parameters"] = parameters
+        for method in (
+            "get",
+            "put",
+            "post",
+            "delete",
+            "options",
+            "head",
+            "patch",
+            "trace",
+        ):
+            if method in path:
+                self._resolve_refs_in_operation(path[method])
+
 
 class APISpec:
     """Stores metadata that describes a RESTful API using the OpenAPI specification.
@@ -313,39 +399,10 @@ class APISpec:
         if parameters:
             parameters = self.clean_parameters(parameters)
             self._paths[path]["parameters"] = parameters
+
+        self.components.resolve_refs_in_path(self._paths[path])
+
         return self
-
-    def get_ref(self, obj_type, obj):
-        """Return object or reference
-
-        If obj is a dict, it is assumed to be a complete description and it is returned as is.
-        Otherwise, it is assumed to be a reference name as string and the corresponding $ref
-        string is returned.
-
-        :param str obj_type: "schema", "parameter", "response" or "security_scheme"
-        :param dict|str obj: object in dict form or as ref_id string
-        """
-        if isinstance(obj, dict):
-            return obj
-        return build_reference(obj_type, self.openapi_version.major, obj)
-
-    def _resolve_schema(self, obj):
-        """Replace schema reference as string with a $ref if needed."""
-        if not isinstance(obj, dict):
-            return
-        if self.openapi_version.major < 3:
-            if "schema" in obj:
-                obj["schema"] = self.get_ref("schema", obj["schema"])
-        else:
-            if "content" in obj:
-                for content in obj["content"].values():
-                    if "schema" in content:
-                        content["schema"] = self.get_ref("schema", content["schema"])
-
-    def _resolve_examples(self, obj):
-        """Replace example reference as string with a $ref"""
-        for name, example in obj.get("examples", {}).items():
-            obj["examples"][name] = self.get_ref("example", example)
 
     def clean_parameters(self, parameters):
         """Ensure that all parameters with "in" equal to "path" are also required
@@ -381,9 +438,7 @@ class APISpec:
             if parameter["in"] == "path":
                 parameter["required"] = True
 
-            self._resolve_examples(parameter)
-
-        return [self.get_ref("parameter", p) for p in parameters]
+        return parameters
 
     def clean_operations(self, operations):
         """Ensure that all parameters with "in" equal to "path" are also required
@@ -407,12 +462,6 @@ class APISpec:
         for operation in (operations or {}).values():
             if "parameters" in operation:
                 operation["parameters"] = self.clean_parameters(operation["parameters"])
-            # OAS 3
-            if "requestBody" in operation:
-                self._resolve_schema(operation["requestBody"])
-                for media_type in operation["requestBody"]["content"].values():
-                    self._resolve_examples(media_type)
-
             if "responses" in operation:
                 responses = OrderedDict()
                 for code, response in operation["responses"].items():
@@ -421,11 +470,5 @@ class APISpec:
                     except (TypeError, ValueError):
                         if self.openapi_version.major < 3 and code != "default":
                             warnings.warn("Non-integer code not allowed in OpenAPI < 3")
-                    self._resolve_schema(response)
-                    response = self.get_ref("response", response)
-                    for name, header in response.get("headers", {}).items():
-                        response["headers"][name] = self.get_ref("header", header)
-                    for media_type in response.get("content", {}).values():
-                        self._resolve_examples(media_type)
                     responses[str(code)] = response
                 operation["responses"] = responses
