@@ -51,11 +51,12 @@ class Components:
             if v != {}
         }
 
-    def schema(self, name, component=None, **kwargs):
+    def schema(self, component_id, component=None, **kwargs):
         """Add a new schema to the spec.
 
-        :param str name: identifier by which schema may be referenced.
+        :param str component_id: identifier by which schema may be referenced.
         :param dict component: schema definition.
+        :param kwargs: plugin-specific arguments
 
         .. note::
 
@@ -74,20 +75,22 @@ class Components:
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schemaObject
         """
-        if name in self.schemas:
+        if component_id in self.schemas:
             raise DuplicateComponentNameError(
-                f'Another schema with name "{name}" is already registered.'
+                f'Another schema with name "{component_id}" is already registered.'
             )
         component = component or {}
         ret = component.copy()
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
-                ret.update(plugin.schema_helper(name, component, **kwargs) or {})
+                ret.update(
+                    plugin.schema_helper(component_id, component, **kwargs) or {}
+                )
             except PluginMethodNotImplementedError:
                 continue
         self._resolve_refs_in_schema(ret)
-        self.schemas[name] = ret
+        self.schemas[component_id] = ret
         return self
 
     def response(self, component_id, component=None, **kwargs):
@@ -99,9 +102,7 @@ class Components:
         """
         if component_id in self.responses:
             raise DuplicateComponentNameError(
-                'Another response with name "{}" is already registered.'.format(
-                    component_id
-                )
+                f'Another response with name "{component_id}" is already registered.'
             )
         component = component or {}
         ret = component.copy()
@@ -125,9 +126,7 @@ class Components:
         """
         if component_id in self.parameters:
             raise DuplicateComponentNameError(
-                'Another parameter with name "{}" is already registered.'.format(
-                    component_id
-                )
+                f'Another parameter with name "{component_id}" is already registered.'
             )
         component = component or {}
         ret = component.copy()
@@ -164,19 +163,19 @@ class Components:
         self.headers[component_id] = component
         return self
 
-    def example(self, name, component, **kwargs):
+    def example(self, component_id, component):
         """Add an example which can be referenced
 
-        :param str name: identifier by which example may be referenced.
+        :param str component_id: identifier by which example may be referenced.
         :param dict component: example fields.
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#exampleObject
         """
-        if name in self.examples:
+        if component_id in self.examples:
             raise DuplicateComponentNameError(
-                f'Another example with name "{name}" is already registered.'
+                f'Another example with name "{component_id}" is already registered.'
             )
-        self.examples[name] = component
+        self.examples[component_id] = component
         return self
 
     def security_scheme(self, component_id, component):
@@ -187,9 +186,7 @@ class Components:
         """
         if component_id in self.security_schemes:
             raise DuplicateComponentNameError(
-                'Another security scheme with name "{}" is already registered.'.format(
-                    component_id
-                )
+                f'Another security scheme with name "{component_id}" is already registered.'
             )
         self.security_schemes[component_id] = component
         return self
