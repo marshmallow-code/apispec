@@ -21,13 +21,13 @@ with `"x-"` (vendor extension).
 
 .. warning::
 
-    ``MarshmallowPlugin`` infers the ``default`` property from the ``missing``
-    attribute of the ``Field`` (unless ``missing`` is a callable).
-    In marshmallow 3, default values are entered in deserialized form,
-    so the value is serialized by the ``Field`` instance.
+    ``MarshmallowPlugin`` infers the ``default`` property from the
+    ``load_default`` attribute of the ``Field`` (unless ``load_default`` is a
+    callable). Since default values are entered in deserialized form,
+    the value displayed in the doc is serialized by the ``Field`` instance.
     This may lead to inaccurate documentation in very specific cases.
     The default value to display in the documentation can be
-    specified explicitly by passing ``doc_default`` as metadata.
+    specified explicitly by passing ``default`` as field metadata.
 
 ::
 
@@ -52,7 +52,7 @@ with `"x-"` (vendor extension).
         created = fields.DateTime(
             dump_only=True,
             dump_default=dt.datetime.utcnow,
-            metadata={"doc_default": "The current datetime"}
+            metadata={"default": "The current datetime"}
         )
 
 

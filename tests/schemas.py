@@ -59,10 +59,10 @@ class OrderedSchema(Schema):
 
 class DefaultValuesSchema(Schema):
     number_auto_default = fields.Int(load_default=12)
-    number_manual_default = fields.Int(load_default=12, metadata={"doc_default": 42})
+    number_manual_default = fields.Int(load_default=12, metadata={"default": 42})
     string_callable_default = fields.Str(load_default=lambda: "Callable")
     string_manual_default = fields.Str(
-        load_default=lambda: "Callable", metadata={"doc_default": "Manual"}
+        load_default=lambda: "Callable", metadata={"default": "Manual"}
     )
     numbers = fields.List(fields.Int, load_default=list)
 

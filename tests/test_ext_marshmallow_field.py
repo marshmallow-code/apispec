@@ -103,14 +103,14 @@ def test_field_with_load_default_callable(spec_fixture):
     assert "default" not in res
 
 
-def test_field_with_doc_default(spec_fixture):
-    field = fields.Str(metadata={"doc_default": "Manual default"})
+def test_field_with_default(spec_fixture):
+    field = fields.Str(metadata={"default": "Manual default"})
     res = spec_fixture.openapi.field2property(field)
     assert res["default"] == "Manual default"
 
 
-def test_field_with_doc_default_and_load_default(spec_fixture):
-    field = fields.Int(load_default=12, metadata={"doc_default": 42})
+def test_field_with_default_and_load_default(spec_fixture):
+    field = fields.Int(load_default=12, metadata={"default": 42})
     res = spec_fixture.openapi.field2property(field)
     assert res["default"] == 42
 
