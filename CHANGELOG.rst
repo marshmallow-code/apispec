@@ -1,21 +1,35 @@
 Changelog
 ---------
 
+5.0.0 (unreleased)
+******************
+
+Features:
+
+- Rename ``doc_default`` to ``default``. Since schema metadata is namespaced in
+  a single ``metadata`` parameter, there is no name collision with ``default``
+  parameter anymore (:issue:`687`).
+
+Other changes:
+
+- Refactor ``Components`` methods to make them consistent. Use ``component_id``
+  rather than ``name``, remove ``**kwargs`` when unused. (:pr:`696`)
+
 5.0.0b1 (2021-07-22)
 ********************
 
 Features:
 
 - Resolve all component references in paths and components. All references must
-  be passed as strings, not as a `{$ref: '...'}}` dict (:pr:`671`).
+  be passed as strings, not as a ``{$ref: '...'}}`` dict (:pr:`671`).
 
 Other changes:
 
-- Don't use deprecated `missing` marshmallow field attribute but use
-  `load_default` instead (:pr:`692`).
-- Refactor references resolution. `get_ref` method is moved from `APISpec` to
-  `Components` (:pr:`655`). `APISpec.clean_parameters` and
-  `APISpec.clean_parameters` are now private methods (:pr:`695`).
+- Don't use deprecated ``missing`` marshmallow field attribute but use
+  ``load_default`` instead (:pr:`692`).
+- Refactor references resolution. ``get_ref`` method is moved from ``APISpec``
+  to ``Components`` (:pr:`655`). ``APISpec.clean_parameters`` and
+  ``APISpec.clean_parameters`` are now private methods (:pr:`695`).
 - Drop support for marshmallow < 3.13.0 (:pr:`692`).
 
 4.7.1 (2021-07-06)
@@ -23,7 +37,7 @@ Other changes:
 
 Bug fixes:
 
-- Correct spelling of 'null': remove extra quotes (:issue:`689`).
+- Correct spelling of ``'null'``: remove extra quotes (:issue:`689`).
   Thanks :user:`mjpieters` for the PR.
 
 4.7.0 (2021-06-28)
@@ -31,9 +45,9 @@ Bug fixes:
 
 Features:
 
-- Document `deprecated` property from field metadata (:pr:`686`).
+- Document ``deprecated`` property from field metadata (:pr:`686`).
   Thanks :user:`greyli` for the PR.
-- Document `writeOnly` and `nullable` properties from field metadata
+- Document ``writeOnly`` and ``nullable`` properties from field metadata
   (:pr:`684`). Thanks :user:`greyli` for the PR.
 
 4.6.0 (2021-06-14)
@@ -41,8 +55,8 @@ Features:
 
 Features:
 
-- Support `Pluck` field (:pr:`677`). Thanks :user:`mjpieters` for the PR.
-- Support `TimeDelta` field (:pr:`678`).
+- Support ``Pluck`` field (:pr:`677`). Thanks :user:`mjpieters` for the PR.
+- Support ``TimeDelta`` field (:pr:`678`).
 
 4.5.0 (2021-06-04)
 ******************
@@ -53,7 +67,7 @@ Features:
 
 Bug fixes:
 
-- Fix `get_fields` to avoid crashing when a field is named `fields`
+- Fix ``get_fields`` to avoid crashing when a field is named ``fields``
   (:issue:`673`). Thanks :user:`Reskov` for reporting.
 
 Other changes:
@@ -206,8 +220,8 @@ Bug fixes:
 
 Features:
 
-- Add `apispec.core.Components.example` for adding Example Objects
-  (:pr:`515`). Thanks :user:`codeasashu` for the PR.
+- Add `apispec.core.Components.example` for adding Example Objects (:pr:`515`).
+  Thanks :user:`codeasashu` for the PR.
 
 Support:
 
@@ -280,16 +294,16 @@ Features:
 
 - Add support for path level parameters (:issue:`453`).
   Thanks :user:`karec` for the PR.
-- *Backwards-incompatible*: A `apispec.exceptions.DuplicateParameterError` is
+- *Backwards-incompatible*: A ``apispec.exceptions.DuplicateParameterError`` is
   raised when two parameters with same name and location are passed to a path
   or an operation (:pr:`455`).
-- *Backwards-incompatible*: A `apispec.exceptions.InvalidParameterError` is
+- *Backwards-incompatible*: A ``apispec.exceptions.InvalidParameterError`` is
   raised when a parameter is missing required ``name`` and ``in`` attributes
   after helpers have been executed (:pr:`455`).
 
 Other changes:
 
-- *Backwards-incompatible*: All plugin helpers must accept extra `**kwargs`
+- *Backwards-incompatible*: All plugin helpers must accept extra ``**kwargs``
   (:issue:`453`).
 - *Backwards-incompatible*: Components must be referenced by ID, not full path
   (:issue:`463`).
@@ -314,7 +328,7 @@ Bug fixes:
 
 Bug fixes:
 
-- Fix handling of `http.HTTPStatus` objects (:issue:`426`). Thanks
+- Fix handling of ``http.HTTPStatus`` objects (:issue:`426`). Thanks
   :user:`DStape`.
 - [apispec.ext.marshmallow]: Ensure make_schema_key returns a unique key on
   unhashable iterables (:pr:`416`, :pr:`439`). Thanks :user:`zedrdave`.
@@ -390,7 +404,8 @@ Bug fixes:
 
 Other changes:
 
-- *Backwards-incompatible*: Components properties are now passed as dictionaries rather than keyword arguments (:pr:`381`).
+- *Backwards-incompatible*: Components properties are now passed as
+  dictionaries rather than keyword arguments (:pr:`381`).
 
 .. code-block:: python
 
