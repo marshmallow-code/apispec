@@ -202,7 +202,7 @@ class FieldConverterMixin:
     def field2default(self, field, **kwargs):
         """Return the dictionary containing the field's default value.
 
-        Will first look for a `doc_default` key in the field's metadata and then
+        Will first look for a `default` key in the field's metadata and then
         fall back on the field's `missing` parameter. A callable passed to the
         field's missing parameter will be ignored.
 
@@ -210,8 +210,8 @@ class FieldConverterMixin:
         :rtype: dict
         """
         ret = {}
-        if "doc_default" in field.metadata:
-            ret["default"] = field.metadata["doc_default"]
+        if "default" in field.metadata:
+            ret["default"] = field.metadata["default"]
         else:
             default = field.load_default
             if default is not marshmallow.missing and not callable(default):
