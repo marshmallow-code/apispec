@@ -282,6 +282,13 @@ class SchemaResolver:
                     k: self.resolve_schema_dict(v)
                     for k, v in schema["properties"].items()
                 }
+            for keyword in ("oneOf", "anyOf", "allOf"):
+                if keyword in schema:
+                    schema[keyword] = [
+                        self.resolve_schema_dict(s) for s in schema[keyword]
+                    ]
+            if "not" in schema:
+                schema["not"] = self.resolve_schema_dict(schema["not"])
             return schema
 
         return self.converter.resolve_nested_schema(schema)

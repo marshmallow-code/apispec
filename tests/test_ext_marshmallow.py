@@ -11,6 +11,7 @@ from apispec.ext.marshmallow import common
 from apispec.exceptions import APISpecError
 from .schemas import (
     PetSchema,
+    SampleSchema,
     AnalysisSchema,
     RunSchema,
     SelfReferencingSchema,
@@ -672,6 +673,88 @@ class TestOperationHelper:
         assert get["responses"]["200"]["content"]["application/json"][
             "schema"
         ] == build_ref(spec, "schema", "Pet")
+
+    @pytest.mark.parametrize("spec_fixture", ("2.0",), indirect=True)
+    def test_schema_resolver_allof_v2(self, spec_fixture):
+        spec_fixture.spec.components.schema("Pet", schema=PetSchema)
+        spec_fixture.spec.components.schema("Sample", schema=SampleSchema)
+        spec_fixture.spec.path(
+            path="/pet",
+            operations={
+                "get": {
+                    "responses": {200: {"schema": {"allOf": [PetSchema, SampleSchema]}}}
+                }
+            },
+        )
+        get = get_paths(spec_fixture.spec)["/pet"]["get"]
+        assert get["responses"]["200"]["schema"] == {
+            "allOf": [
+                build_ref(spec_fixture.spec, "schema", "Pet"),
+                build_ref(spec_fixture.spec, "schema", "Sample"),
+            ]
+        }
+
+    @pytest.mark.parametrize("spec_fixture", ("3.0.0",), indirect=True)
+    @pytest.mark.parametrize("combinator", ["oneOf", "anyOf", "allOf"])
+    def test_schema_resolver_oneof_anyof_allof_v3(self, spec_fixture, combinator):
+        spec_fixture.spec.components.schema("Pet", schema=PetSchema)
+        spec_fixture.spec.path(
+            path="/pet",
+            operations={
+                "get": {
+                    "responses": {
+                        200: {
+                            "content": {
+                                "application/json": {
+                                    "schema": {combinator: [PetSchema, SampleSchema]}
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+        )
+        get = get_paths(spec_fixture.spec)["/pet"]["get"]
+        assert get["responses"]["200"]["content"]["application/json"]["schema"] == {
+            combinator: [
+                build_ref(spec_fixture.spec, "schema", "Pet"),
+                build_ref(spec_fixture.spec, "schema", "Sample"),
+            ]
+        }
+
+    @pytest.mark.parametrize("spec_fixture", ("2.0",), indirect=True)
+    def test_schema_resolver_not_v2(self, spec_fixture):
+        spec_fixture.spec.components.schema("Pet", schema=PetSchema)
+        spec_fixture.spec.path(
+            path="/pet",
+            operations={"get": {"responses": {200: {"schema": {"not": PetSchema}}}}},
+        )
+        get = get_paths(spec_fixture.spec)["/pet"]["get"]
+        assert get["responses"]["200"]["schema"] == {
+            "not": build_ref(spec_fixture.spec, "schema", "Pet"),
+        }
+
+    @pytest.mark.parametrize("spec_fixture", ("3.0.0",), indirect=True)
+    def test_schema_resolver_not_v3(self, spec_fixture):
+        spec_fixture.spec.components.schema("Pet", schema=PetSchema)
+        spec_fixture.spec.path(
+            path="/pet",
+            operations={
+                "get": {
+                    "responses": {
+                        200: {
+                            "content": {
+                                "application/json": {"schema": {"not": PetSchema}}
+                            }
+                        }
+                    }
+                }
+            },
+        )
+        get = get_paths(spec_fixture.spec)["/pet"]["get"]
+        assert get["responses"]["200"]["content"]["application/json"]["schema"] == {
+            "not": build_ref(spec_fixture.spec, "schema", "Pet"),
+        }
 
     @pytest.mark.parametrize(
         "pet_schema",
