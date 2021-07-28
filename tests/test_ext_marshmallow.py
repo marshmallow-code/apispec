@@ -1083,7 +1083,15 @@ class TestOperationHelper:
         assert get_nested_schema(RunSchema, "sample") is None
 
     def test_resolve_schema_dict_ref_as_string(self, spec):
-        schema = {"schema": "PetSchema"}
+        """Test schema ref passed as string"""
+        # The case tested here is a reference passed as string, not a
+        # marshmallow Schema passed by name as string. We want to ensure the
+        # MarshmallowPlugin does not interfere with the feature interpreting
+        # strings as references. Therefore, we use a specific name to ensure
+        # there is no Schema with that name in the marshmallow registry from
+        # somewhere else in the tests.
+        # e.g. PetSchema is in the registry already so it wouldn't work.
+        schema = {"schema": "SomeSpecificPetSchema"}
         if spec.openapi_version.major >= 3:
             schema = {"content": {"application/json": schema}}
         spec.path("/pet/{petId}", operations={"get": {"responses": {"200": schema}}})
@@ -1092,7 +1100,7 @@ class TestOperationHelper:
             schema = resp["schema"]
         else:
             schema = resp["content"]["application/json"]["schema"]
-        assert schema == build_ref(spec, "schema", "PetSchema")
+        assert schema == build_ref(spec, "schema", "SomeSpecificPetSchema")
 
 
 class TestCircularReference:
