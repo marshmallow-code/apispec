@@ -9,6 +9,11 @@ Features:
 - Rename ``doc_default`` to ``default``. Since schema metadata is namespaced in
   a single ``metadata`` parameter, there is no name collision with ``default``
   parameter anymore (:issue:`687`).
+- Don't build schema component reference in
+  ``OpenAPIConverter.resolve_nested_schema``. This is done later in
+  ``Components`` (:pr:`700`).
+- ``MarshmallowPlugin``: resolve schemas in ``allOf``, ``oneOf``, ``anyOf`` and
+  ``not`` (:pr:`701`).
 
 Other changes:
 
