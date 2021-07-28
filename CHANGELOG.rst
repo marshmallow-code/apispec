@@ -13,7 +13,7 @@ Features:
   ``OpenAPIConverter.resolve_nested_schema``. This is done later in
   ``Components`` (:pr:`700`).
 - ``MarshmallowPlugin``: resolve schemas in ``allOf``, ``oneOf``, ``anyOf`` and
-  ``not`` (:pr:`701`).
+  ``not`` (:pr:`701`). Thanks :user:`stefanv` for the initial work on this.
 
 Other changes:
 

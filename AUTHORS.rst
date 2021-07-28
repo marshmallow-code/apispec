@@ -72,3 +72,4 @@ Contributors (chronological)
 - Duncan Booth `@kupuguy <https://github.com/kupuguy>`_
 - Luke Whitehorn `<https://github.com/Anti-Distinctlyminty>`_
 - François Magimel `<https://github.com/Linkid>`_
+- Stefan van der Walt `<https://github.com/stefanv>`_
