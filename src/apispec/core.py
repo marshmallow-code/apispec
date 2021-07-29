@@ -35,9 +35,13 @@ class Components:
         self.headers = {}
         self.examples = {}
         self.security_schemes = {}
+        self.schemas_lazy = {}
+        self.responses_lazy = {}
+        self.parameters_lazy = {}
+        self.headers_lazy = {}
+        self.examples_lazy = {}
 
-    def to_dict(self):
-        subsections = {
+        self._subsections = {
             "schema": self.schemas,
             "response": self.responses,
             "parameter": self.parameters,
@@ -45,18 +49,60 @@ class Components:
             "example": self.examples,
             "security_scheme": self.security_schemes,
         }
+        self._subsections_lazy = {
+            "schema": self.schemas_lazy,
+            "response": self.responses_lazy,
+            "parameter": self.parameters_lazy,
+            "header": self.headers_lazy,
+            "example": self.examples_lazy,
+        }
+
+    def to_dict(self):
         return {
             COMPONENT_SUBSECTIONS[self.openapi_version.major][k]: v
-            for k, v in subsections.items()
+            for k, v in self._subsections.items()
             if v != {}
         }
 
-    def schema(self, component_id, component=None, **kwargs):
+    def _register_component(self, obj_type, component_id, component, *, lazy=False):
+        subsection = (self._subsections if lazy is False else self._subsections_lazy)[
+            obj_type
+        ]
+        subsection[component_id] = component
+
+    def _do_register_lazy_component(self, obj_type, component_id):
+        component_buffer = self._subsections_lazy[obj_type]
+        # If component was lazy registered, register it for real
+        if component_id in component_buffer:
+            self._subsections[obj_type][component_id] = component_buffer.pop(
+                component_id
+            )
+
+    def get_ref(self, obj_type, obj_or_component_id):
+        """Return object or reference
+
+        If obj is a dict, it is assumed to be a complete description and it is returned as is.
+        Otherwise, it is assumed to be a reference name as string and the corresponding $ref
+        string is returned.
+
+        :param str subsection: "schema", "parameter", "response" or "security_scheme"
+        :param dict|str obj: object in dict form or as ref_id string
+        """
+        if isinstance(obj_or_component_id, dict):
+            return obj_or_component_id
+        # Register the component if it was lazy registered
+        self._do_register_lazy_component(obj_type, obj_or_component_id)
+        return build_reference(
+            obj_type, self.openapi_version.major, obj_or_component_id
+        )
+
+    def schema(self, component_id, component=None, *, lazy=False, **kwargs):
         """Add a new schema to the spec.
 
-        :param str component_id: identifier by which schema may be referenced.
-        :param dict component: schema definition.
+        :param str component_id: identifier by which schema may be referenced
+        :param dict component: schema definition
         :param kwargs: plugin-specific arguments
+        :param bool lazy: register component only when referenced in the spec
 
         .. note::
 
@@ -90,15 +136,16 @@ class Components:
             except PluginMethodNotImplementedError:
                 continue
         self._resolve_refs_in_schema(ret)
-        self.schemas[component_id] = ret
+        self._register_component("schema", component_id, ret, lazy=lazy)
         return self
 
-    def response(self, component_id, component=None, **kwargs):
+    def response(self, component_id, component=None, *, lazy=False, **kwargs):
         """Add a response which can be referenced.
 
         :param str component_id: ref_id to use as reference
         :param dict component: response fields
         :param kwargs: plugin-specific arguments
+        :param bool lazy: register component only when referenced in the spec
         """
         if component_id in self.responses:
             raise DuplicateComponentNameError(
@@ -113,16 +160,19 @@ class Components:
             except PluginMethodNotImplementedError:
                 continue
         self._resolve_refs_in_response(ret)
-        self.responses[component_id] = ret
+        self._register_component("response", component_id, ret, lazy=lazy)
         return self
 
-    def parameter(self, component_id, location, component=None, **kwargs):
+    def parameter(
+        self, component_id, location, component=None, *, lazy=False, **kwargs
+    ):
         """Add a parameter which can be referenced.
 
-        :param str component_id: identifier by which parameter may be referenced.
-        :param str location: location of the parameter.
-        :param dict component: parameter fields.
+        :param str component_id: identifier by which parameter may be referenced
+        :param str location: location of the parameter
+        :param dict component: parameter fields
         :param kwargs: plugin-specific arguments
+        :param bool lazy: register component only when referenced in the spec
         """
         if component_id in self.parameters:
             raise DuplicateComponentNameError(
@@ -144,14 +194,15 @@ class Components:
             except PluginMethodNotImplementedError:
                 continue
         self._resolve_refs_in_parameter_or_header(ret)
-        self.parameters[component_id] = ret
+        self._register_component("parameter", component_id, ret, lazy=lazy)
         return self
 
-    def header(self, component_id, component):
+    def header(self, component_id, component, *, lazy=False):
         """Add a header which can be referenced.
 
-        :param str component_id: identifier by which header may be referenced.
-        :param dict component: header fields.
+        :param str component_id: identifier by which header may be referenced
+        :param dict component: header fields
+        :param bool lazy: register component only when referenced in the spec
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#headerObject
         """
@@ -160,14 +211,15 @@ class Components:
                 f'Another header with name "{component_id}" is already registered.'
             )
         self._resolve_refs_in_parameter_or_header(component)
-        self.headers[component_id] = component
+        self._register_component("header", component_id, component, lazy=lazy)
         return self
 
-    def example(self, component_id, component):
+    def example(self, component_id, component, *, lazy=False):
         """Add an example which can be referenced
 
-        :param str component_id: identifier by which example may be referenced.
-        :param dict component: example fields.
+        :param str component_id: identifier by which example may be referenced
+        :param dict component: example fields
+        :param bool lazy: register component only when referenced in the spec
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#exampleObject
         """
@@ -175,7 +227,7 @@ class Components:
             raise DuplicateComponentNameError(
                 f'Another example with name "{component_id}" is already registered.'
             )
-        self.examples[component_id] = component
+        self._register_component("example", component_id, component, lazy=lazy)
         return self
 
     def security_scheme(self, component_id, component):
@@ -188,22 +240,8 @@ class Components:
             raise DuplicateComponentNameError(
                 f'Another security scheme with name "{component_id}" is already registered.'
             )
-        self.security_schemes[component_id] = component
+        self._register_component("security_scheme", component_id, component)
         return self
-
-    def get_ref(self, obj_type, obj):
-        """Return object or reference
-
-        If obj is a dict, it is assumed to be a complete description and it is returned as is.
-        Otherwise, it is assumed to be a reference name as string and the corresponding $ref
-        string is returned.
-
-        :param str obj_type: "schema", "parameter", "response" or "security_scheme"
-        :param dict|str obj: object in dict form or as ref_id string
-        """
-        if isinstance(obj, dict):
-            return obj
-        return build_reference(obj_type, self.openapi_version.major, obj)
 
     def _resolve_schema(self, obj):
         """Replace schema reference as string with a $ref if needed

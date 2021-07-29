@@ -515,6 +515,82 @@ class TestComponents(RefsSchemaTestMixin):
         spec.components.header("header", header)
         self.assert_schema_refs(spec, get_headers(spec)["header"]["schema"])
 
+    def test_schema_lazy(self, spec):
+        spec.components.schema("Pet_1", {"properties": self.properties}, lazy=False)
+        spec.components.schema("Pet_2", {"properties": self.properties}, lazy=True)
+        schemas = get_schemas(spec)
+        assert "Pet_1" in schemas
+        assert "Pet_2" not in schemas
+        spec.components.schema("PetFriend", {"oneOf": ["Pet_1", "Pet_2"]})
+        schemas = get_schemas(spec)
+        assert "Pet_2" in schemas
+        assert schemas["Pet_2"]["properties"] == self.properties
+
+    def test_response_lazy(self, spec):
+        response_1 = {"description": "Reponse 1"}
+        response_2 = {"description": "Reponse 2"}
+        spec.components.response("Response_1", response_1, lazy=False)
+        spec.components.response("Response_2", response_2, lazy=True)
+        responses = get_responses(spec)
+        assert "Response_1" in responses
+        assert "Response_2" not in responses
+        spec.path("/path", operations={"get": {"responses": {"200": "Response_2"}}})
+        responses = get_responses(spec)
+        assert "Response_2" in responses
+
+    def test_parameter_lazy(self, spec):
+        parameter = {"format": "int64", "type": "integer"}
+        spec.components.parameter("Param_1", "path", parameter, lazy=False)
+        spec.components.parameter("Param_2", "path", parameter, lazy=True)
+        params = get_parameters(spec)
+        assert "Param_1" in params
+        assert "Param_2" not in params
+        spec.path("/path", operations={"get": {"parameters": ["Param_1", "Param_2"]}})
+        assert "Param_2" in params
+
+    # Referenced headers are only supported in OAS 3.x
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_header_lazy(self, spec):
+        header = {"schema": {"type": "string"}}
+        spec.components.header("Header_1", header, lazy=False)
+        spec.components.header("Header_2", header, lazy=True)
+        headers = get_headers(spec)
+        assert "Header_1" in headers
+        assert "Header_2" not in headers
+        spec.path(
+            "/path",
+            operations={
+                "get": {"responses": {"200": {"headers": {"header_2": "Header_2"}}}}
+            },
+        )
+        assert "Header_2" in headers
+
+    # Referenced examples are only supported in OAS 3.x
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_example_lazy(self, spec):
+        spec.components.example("Example_1", {"value": {"a": "b"}}, lazy=False)
+        spec.components.example("Example_2", {"value": {"a": "b"}}, lazy=True)
+        examples = get_examples(spec)
+        assert "Example_1" in examples
+        assert "Example_2" not in examples
+        spec.path(
+            "/path",
+            operations={
+                "get": {
+                    "responses": {
+                        "200": {
+                            "content": {
+                                "application/json": {
+                                    "examples": {"example_2": "Example_2"}
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+        )
+        assert "Example_2" in examples
+
 
 class TestPath(RefsSchemaTestMixin):
     paths = {
