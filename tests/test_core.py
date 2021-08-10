@@ -1028,19 +1028,29 @@ class TestPlugins:
     @staticmethod
     def test_plugin_factory(return_none=False):
         class TestPlugin(BasePlugin):
+            """Test Plugin
+
+            return_none allows to check plugin helpers returning ``None``
+            Inputs are mutated to allow testing only a copy is passed.
+            """
+
             def schema_helper(self, name, definition, **kwargs):
+                definition.pop("dummy", None)
                 if not return_none:
                     return {"properties": {"name": {"type": "string"}}}
 
             def parameter_helper(self, parameter, **kwargs):
+                parameter.pop("dummy", None)
                 if not return_none:
                     return {"description": "some parameter"}
 
             def response_helper(self, response, **kwargs):
+                response.pop("dummy", None)
                 if not return_none:
                     return {"description": "42"}
 
             def header_helper(self, header, **kwargs):
+                header.pop("dummy", None)
                 if not return_none:
                     return {"description": "some header"}
 
@@ -1066,12 +1076,15 @@ class TestPlugins:
             openapi_version=openapi_version,
             plugins=(self.test_plugin_factory(return_none),),
         )
-        spec.components.schema("Pet")
+        schema = {"dummy": "dummy"}
+        spec.components.schema("Pet", schema)
         definitions = get_schemas(spec)
         if return_none:
             assert definitions["Pet"] == {}
         else:
             assert definitions["Pet"] == {"properties": {"name": {"type": "string"}}}
+        # Check original schema is not modified
+        assert schema == {"dummy": "dummy"}
 
     @pytest.mark.parametrize("openapi_version", ("2.0", "3.0.0"))
     @pytest.mark.parametrize("return_none", (True, False))
@@ -1082,7 +1095,8 @@ class TestPlugins:
             openapi_version=openapi_version,
             plugins=(self.test_plugin_factory(return_none),),
         )
-        spec.components.parameter("Pet", "body", {})
+        parameter = {"dummy": "dummy"}
+        spec.components.parameter("Pet", "body", parameter)
         parameters = get_parameters(spec)
         if return_none:
             assert parameters["Pet"] == {"in": "body", "name": "Pet"}
@@ -1092,6 +1106,8 @@ class TestPlugins:
                 "name": "Pet",
                 "description": "some parameter",
             }
+        # Check original parameter is not modified
+        assert parameter == {"dummy": "dummy"}
 
     @pytest.mark.parametrize("openapi_version", ("2.0", "3.0.0"))
     @pytest.mark.parametrize("return_none", (True, False))
@@ -1102,12 +1118,15 @@ class TestPlugins:
             openapi_version=openapi_version,
             plugins=(self.test_plugin_factory(return_none),),
         )
-        spec.components.response("Pet", {})
+        response = {"dummy": "dummy"}
+        spec.components.response("Pet", response)
         responses = get_responses(spec)
         if return_none:
             assert responses["Pet"] == {}
         else:
             assert responses["Pet"] == {"description": "42"}
+        # Check original response is not modified
+        assert response == {"dummy": "dummy"}
 
     @pytest.mark.parametrize("openapi_version", ("3.0.0",))
     @pytest.mark.parametrize("return_none", (True, False))
@@ -1118,7 +1137,8 @@ class TestPlugins:
             openapi_version=openapi_version,
             plugins=(self.test_plugin_factory(return_none),),
         )
-        spec.components.header("Pet", {})
+        header = {"dummy": "dummy"}
+        spec.components.header("Pet", header)
         headers = get_headers(spec)
         if return_none:
             assert headers["Pet"] == {}
@@ -1126,6 +1146,8 @@ class TestPlugins:
             assert headers["Pet"] == {
                 "description": "some header",
             }
+        # Check original header is not modified
+        assert header == {"dummy": "dummy"}
 
     @pytest.mark.parametrize("openapi_version", ("2.0", "3.0.0"))
     @pytest.mark.parametrize("return_none", (True, False))
