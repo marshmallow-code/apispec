@@ -1040,6 +1040,10 @@ class TestPlugins:
                 if not return_none:
                     return {"description": "42"}
 
+            def header_helper(self, header, **kwargs):
+                if not return_none:
+                    return {"description": "some header"}
+
             def path_helper(self, path, operations, parameters, **kwargs):
                 if not return_none:
                     if path == "/path_1":
@@ -1104,6 +1108,24 @@ class TestPlugins:
             assert responses["Pet"] == {}
         else:
             assert responses["Pet"] == {"description": "42"}
+
+    @pytest.mark.parametrize("openapi_version", ("3.0.0",))
+    @pytest.mark.parametrize("return_none", (True, False))
+    def test_plugin_header_helper_is_used(self, openapi_version, return_none):
+        spec = APISpec(
+            title="Swagger Petstore",
+            version="1.0.0",
+            openapi_version=openapi_version,
+            plugins=(self.test_plugin_factory(return_none),),
+        )
+        spec.components.header("Pet", {})
+        headers = get_headers(spec)
+        if return_none:
+            assert headers["Pet"] == {}
+        else:
+            assert headers["Pet"] == {
+                "description": "some header",
+            }
 
     @pytest.mark.parametrize("openapi_version", ("2.0", "3.0.0"))
     @pytest.mark.parametrize("return_none", (True, False))

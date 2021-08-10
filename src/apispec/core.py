@@ -101,8 +101,8 @@ class Components:
 
         :param str component_id: identifier by which schema may be referenced
         :param dict component: schema definition
-        :param kwargs: plugin-specific arguments
         :param bool lazy: register component only when referenced in the spec
+        :param kwargs: plugin-specific arguments
 
         .. note::
 
@@ -144,8 +144,8 @@ class Components:
 
         :param str component_id: ref_id to use as reference
         :param dict component: response fields
-        :param kwargs: plugin-specific arguments
         :param bool lazy: register component only when referenced in the spec
+        :param kwargs: plugin-specific arguments
         """
         if component_id in self.responses:
             raise DuplicateComponentNameError(
@@ -171,8 +171,8 @@ class Components:
         :param str component_id: identifier by which parameter may be referenced
         :param str location: location of the parameter
         :param dict component: parameter fields
-        :param kwargs: plugin-specific arguments
         :param bool lazy: register component only when referenced in the spec
+        :param kwargs: plugin-specific arguments
         """
         if component_id in self.parameters:
             raise DuplicateComponentNameError(
@@ -197,21 +197,30 @@ class Components:
         self._register_component("parameter", component_id, ret, lazy=lazy)
         return self
 
-    def header(self, component_id, component, *, lazy=False):
+    def header(self, component_id, component, *, lazy=False, **kwargs):
         """Add a header which can be referenced.
 
         :param str component_id: identifier by which header may be referenced
         :param dict component: header fields
         :param bool lazy: register component only when referenced in the spec
+        :param kwargs: plugin-specific arguments
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#headerObject
         """
+        component = component or {}
+        ret = component.copy()
         if component_id in self.headers:
             raise DuplicateComponentNameError(
                 f'Another header with name "{component_id}" is already registered.'
             )
-        self._resolve_refs_in_parameter_or_header(component)
-        self._register_component("header", component_id, component, lazy=lazy)
+        # Execute all helpers from plugins
+        for plugin in self._plugins:
+            try:
+                ret.update(plugin.header_helper(component, **kwargs) or {})
+            except PluginMethodNotImplementedError:
+                continue
+        self._resolve_refs_in_parameter_or_header(ret)
+        self._register_component("header", component_id, ret, lazy=lazy)
         return self
 
     def example(self, component_id, component, *, lazy=False):

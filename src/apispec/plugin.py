@@ -38,6 +38,14 @@ class BasePlugin:
         """
         raise PluginMethodNotImplementedError
 
+    def header_helper(self, header, **kwargs):
+        """May return header component description as a dict.
+
+        :param dict header: Header fields
+        :param kwargs: All additional keywords arguments sent to `APISpec.header()`
+        """
+        raise PluginMethodNotImplementedError
+
     def path_helper(self, path=None, operations=None, parameters=None, **kwargs):
         """May return a path as string and mutate operations dict and parameters list.
 
