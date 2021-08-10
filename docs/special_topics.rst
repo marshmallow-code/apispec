@@ -76,6 +76,13 @@ The ``APISpec`` object contains helpers to add top-level components:
    * - Example
      - `spec.components.response <apispec.core.Components.example>`
      - 3
+   * - Security scheme
+     - `spec.components.response <apispec.core.Components.security_scheme>`
+     - 2, 3
+
+Most component registration methods provide a ``lazy`` keyword argument,
+allowing to define a component but only publish it in the generated
+documentation if it is actually referenced.
 
 To add other top-level objects, pass them to the ``APISpec`` as keyword arguments.
 
@@ -121,11 +128,6 @@ Here is an example that includes a `Server Object <https://github.com/OAI/OpenAP
 
     validate_spec(spec)
 
-
-When adding components, the main advantage of using dedicated methods over
-passing them as kwargs is the ability to use plugin helpers. For instance,
-`MarshmallowPlugin <apispec.ext.marshmallow.MarshmallowPlugin>` has helpers to
-resolve schemas in parameters and responses.
 
 Documenting Security Schemes
 ----------------------------
