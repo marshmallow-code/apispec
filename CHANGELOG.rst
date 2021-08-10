@@ -1,6 +1,21 @@
 Changelog
 ---------
 
+5.1.0 (2021-08-10)
+******************
+
+Features:
+
+- Add ``lazy`` option to component registration methods. This allows to add
+  components to the spec only if they are actually referenced. (:pr:`702`)
+- Add ``BasePlugin.header_helper`` and ``MarshmallowPlugin.header_helper``
+  (:pr:`703`).
+
+Bug fixes:
+
+- Ensure plugin helpers get component copies. Avoids issues if a plugin helper
+  mutates its inputs. (:pr:`704`)
+
 5.0.0 (2021-07-29)
 ******************
 
