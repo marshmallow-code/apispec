@@ -125,14 +125,11 @@ class Components:
             raise DuplicateComponentNameError(
                 f'Another schema with name "{component_id}" is already registered.'
             )
-        component = component or {}
-        ret = component.copy()
+        ret = deepcopy(component) or {}
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
-                ret.update(
-                    plugin.schema_helper(component_id, component, **kwargs) or {}
-                )
+                ret.update(plugin.schema_helper(component_id, ret, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
         self._resolve_refs_in_schema(ret)
@@ -151,12 +148,11 @@ class Components:
             raise DuplicateComponentNameError(
                 f'Another response with name "{component_id}" is already registered.'
             )
-        component = component or {}
-        ret = component.copy()
+        ret = deepcopy(component) or {}
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
-                ret.update(plugin.response_helper(component, **kwargs) or {})
+                ret.update(plugin.response_helper(ret, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
         self._resolve_refs_in_response(ret)
@@ -178,8 +174,7 @@ class Components:
             raise DuplicateComponentNameError(
                 f'Another parameter with name "{component_id}" is already registered.'
             )
-        component = component or {}
-        ret = component.copy()
+        ret = deepcopy(component) or {}
         ret.setdefault("name", component_id)
         ret["in"] = location
 
@@ -190,7 +185,7 @@ class Components:
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
-                ret.update(plugin.parameter_helper(component, **kwargs) or {})
+                ret.update(plugin.parameter_helper(ret, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
         self._resolve_refs_in_parameter_or_header(ret)
@@ -207,8 +202,7 @@ class Components:
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#headerObject
         """
-        component = component or {}
-        ret = component.copy()
+        ret = deepcopy(component) or {}
         if component_id in self.headers:
             raise DuplicateComponentNameError(
                 f'Another header with name "{component_id}" is already registered.'
@@ -216,7 +210,7 @@ class Components:
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
-                ret.update(plugin.header_helper(component, **kwargs) or {})
+                ret.update(plugin.header_helper(ret, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
         self._resolve_refs_in_parameter_or_header(ret)
