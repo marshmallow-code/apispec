@@ -187,6 +187,16 @@ class MarshmallowPlugin(BasePlugin):
         self.resolver.resolve_response(response)
         return response
 
+    def header_helper(self, header, **kwargs):
+        """Header component helper that allows using a marshmallow
+        :class:`Schema <marshmallow.Schema>` in header definition.
+
+        :param dict header: header fields. May contain a marshmallow
+            Schema class or instance.
+        """
+        self.resolver.resolve_schema(header)
+        return header
+
     def operation_helper(self, operations, **kwargs):
         self.resolver.resolve_operations(operations)
 

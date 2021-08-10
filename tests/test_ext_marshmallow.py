@@ -21,7 +21,14 @@ from .schemas import (
     AnalysisWithListSchema,
 )
 
-from .utils import get_schemas, get_parameters, get_responses, get_paths, build_ref
+from .utils import (
+    get_schemas,
+    get_parameters,
+    get_responses,
+    get_headers,
+    get_paths,
+    build_ref,
+)
 
 
 class TestDefinitionHelper:
@@ -287,6 +294,22 @@ class TestComponentResponseHelper:
         spec.components.response("GetPetOk", resp)
         response = get_responses(spec)["GetPetOk"]
         assert response == resp
+
+
+class TestComponentHeaderHelper:
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    @pytest.mark.parametrize("schema", [PetSchema, PetSchema()])
+    def test_can_use_schema_in_header(self, spec, schema):
+        param = {"schema": schema}
+        spec.components.header("Pet", param)
+        header = get_headers(spec)["Pet"]
+        reference = header["schema"]
+        assert reference == build_ref(spec, "schema", "Pet")
+
+        resolved_schema = spec.components.schemas["Pet"]
+        assert resolved_schema["properties"]["name"]["type"] == "string"
+        assert resolved_schema["properties"]["password"]["type"] == "string"
+        assert resolved_schema["properties"]["id"]["type"] == "integer"
 
 
 class TestCustomField:
