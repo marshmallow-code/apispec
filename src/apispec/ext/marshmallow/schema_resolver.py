@@ -219,7 +219,7 @@ class SchemaResolver:
         if not isinstance(data, dict):
             return
 
-        # OAS 2 component or OAS 3 header
+        # OAS 2 component or OAS 3 parameter or header
         if "schema" in data:
             data["schema"] = self.resolve_schema_dict(data["schema"])
         # OAS 3 component except header

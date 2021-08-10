@@ -174,7 +174,6 @@ class MarshmallowPlugin(BasePlugin):
         :param dict parameter: parameter fields. May contain a marshmallow
             Schema class or instance.
         """
-        # In OpenAPIv3, this only works when using the complex form using "content"
         self.resolver.resolve_schema(parameter)
         return parameter
 

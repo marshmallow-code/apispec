@@ -220,17 +220,26 @@ class TestDefinitionHelper:
 class TestComponentParameterHelper:
     @pytest.mark.parametrize("schema", [PetSchema, PetSchema()])
     def test_can_use_schema_in_parameter(self, spec, schema):
-        if spec.openapi_version.major < 3:
-            param = {"schema": schema}
-        else:
-            param = {"content": {"application/json": {"schema": schema}}}
+        param = {"schema": schema}
         spec.components.parameter("Pet", "body", param)
         parameter = get_parameters(spec)["Pet"]
         assert parameter["in"] == "body"
-        if spec.openapi_version.major < 3:
-            reference = parameter["schema"]
-        else:
-            reference = parameter["content"]["application/json"]["schema"]
+        reference = parameter["schema"]
+        assert reference == build_ref(spec, "schema", "Pet")
+
+        resolved_schema = spec.components.schemas["Pet"]
+        assert resolved_schema["properties"]["name"]["type"] == "string"
+        assert resolved_schema["properties"]["password"]["type"] == "string"
+        assert resolved_schema["properties"]["id"]["type"] == "integer"
+
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    @pytest.mark.parametrize("schema", [PetSchema, PetSchema()])
+    def test_can_use_schema_in_parameter_with_content(self, spec, schema):
+        param = {"content": {"application/json": {"schema": schema}}}
+        spec.components.parameter("Pet", "body", param)
+        parameter = get_parameters(spec)["Pet"]
+        assert parameter["in"] == "body"
+        reference = parameter["content"]["application/json"]["schema"]
         assert reference == build_ref(spec, "schema", "Pet")
 
         resolved_schema = spec.components.schemas["Pet"]
