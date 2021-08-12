@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+5.1.1 (unreleased)
+******************
+
+* Don't build universal wheels. We don't support Python 2 anymore.
+  (:pr:`705`)
+* Make the build reproducible (:pr:`#669`).
+
 5.1.0 (2021-08-10)
 ******************
 
