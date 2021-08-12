@@ -4,6 +4,8 @@ Changelog
 5.1.1 (unreleased)
 ******************
 
+Other changes:
+
 * Don't build universal wheels. We don't support Python 2 anymore.
   (:pr:`705`)
 * Make the build reproducible (:pr:`#669`).
