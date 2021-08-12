@@ -1,6 +1,7 @@
 import datetime as dt
 import os
 import sys
+import time
 
 sys.path.insert(0, os.path.abspath(os.path.join("..", "src")))
 import apispec  # noqa: E402
@@ -23,10 +24,14 @@ intersphinx_mapping = {
 
 issues_github_path = "marshmallow-code/apispec"
 
+build_date = dt.datetime.utcfromtimestamp(
+    int(os.environ.get('SOURCE_DATE_EPOCH', time.time()))
+)
+
 source_suffix = ".rst"
 master_doc = "index"
 project = "apispec"
-copyright = f"Steven Loria {dt.datetime.utcnow():%Y}"
+copyright = f"Steven Loria {build_date:%Y}"
 
 version = release = apispec.__version__
 
