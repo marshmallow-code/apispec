@@ -24,14 +24,17 @@ intersphinx_mapping = {
 
 issues_github_path = "marshmallow-code/apispec"
 
+
+# Use SOURCE_DATE_EPOCH for reproducible build output
+# https://reproducible-builds.org/docs/source-date-epoch/
 build_date = dt.datetime.utcfromtimestamp(
-    int(os.environ.get('SOURCE_DATE_EPOCH', time.time()))
+    int(os.environ.get("SOURCE_DATE_EPOCH", time.time()))
 )
 
 source_suffix = ".rst"
 master_doc = "index"
 project = "apispec"
-copyright = f"Steven Loria {build_date:%Y}"
+copyright = f"2014-{build_date:%Y}, Steven Loria and contributors"
 
 version = release = apispec.__version__
 
