@@ -11,7 +11,7 @@ from collections import OrderedDict
 import marshmallow
 from marshmallow.utils import is_collection
 
-from apispec.utils import OpenAPIVersion, build_reference
+from apispec.utils import OpenAPIVersion
 from apispec.exceptions import APISpecError
 from .field_converter import FieldConverterMixin
 from .common import (
@@ -72,7 +72,7 @@ class OpenAPIConverter(FieldConverterMixin):
         # If schema is a string and is not found in registry,
         # assume it is a schema reference
         except marshmallow.exceptions.RegistryError:
-            return build_reference("schema", self.openapi_version.major, schema)
+            return schema
         schema_key = make_schema_key(schema_instance)
         if schema_key not in self.refs:
             name = self.schema_name_resolver(schema)
@@ -141,7 +141,12 @@ class OpenAPIConverter(FieldConverterMixin):
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
         """
-        ret = {"in": location, "name": name, "required": field.required}
+        ret = {"in": location, "name": name}
+
+        partial = getattr(field.parent, "partial", False)
+        ret["required"] = field.required and (
+            not partial or (is_collection(partial) and field.name not in partial)
+        )
 
         prop = self.field2property(field)
         multiple = isinstance(field, marshmallow.fields.List)
@@ -180,7 +185,7 @@ class OpenAPIConverter(FieldConverterMixin):
             jsonschema["title"] = Meta.title
         if hasattr(Meta, "description"):
             jsonschema["description"] = Meta.description
-        if hasattr(Meta, "unknown"):
+        if hasattr(Meta, "unknown") and Meta.unknown != marshmallow.EXCLUDE:
             jsonschema["additionalProperties"] = Meta.unknown == marshmallow.INCLUDE
 
         return jsonschema
@@ -219,9 +224,7 @@ class OpenAPIConverter(FieldConverterMixin):
         schema in the spec
         """
         schema_key = make_schema_key(schema)
-        ref_schema = build_reference(
-            "schema", self.openapi_version.major, self.refs[schema_key]
-        )
+        ref_schema = self.spec.components.get_ref("schema", self.refs[schema_key])
         if getattr(schema, "many", False):
             return {"type": "array", "items": ref_schema}
         return ref_schema

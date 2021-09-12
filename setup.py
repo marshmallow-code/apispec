@@ -2,13 +2,14 @@ import re
 from setuptools import setup, find_packages
 
 EXTRAS_REQUIRE = {
+    "marshmallow": ["marshmallow>=3.13.0"],
     "yaml": ["PyYAML>=3.10"],
     "validation": ["prance[osv]>=0.11"],
-    "lint": ["flake8==3.9.1", "flake8-bugbear==21.4.3", "pre-commit~=2.4"],
+    "lint": ["flake8==3.9.2", "flake8-bugbear==21.4.3", "pre-commit~=2.4"],
     "docs": [
-        "marshmallow>=3.0.0",
+        "marshmallow>=3.13.0",
         "pyyaml==5.4.1",
-        "sphinx==3.5.4",
+        "sphinx==4.1.2",
         "sphinx-issues==1.2.0",
         "sphinx-rtd-theme==0.5.2",
     ],
@@ -16,7 +17,7 @@ EXTRAS_REQUIRE = {
 EXTRAS_REQUIRE["tests"] = (
     EXTRAS_REQUIRE["yaml"]
     + EXTRAS_REQUIRE["validation"]
-    + ["marshmallow>=3.0.0", "pytest", "mock"]
+    + ["marshmallow>=3.13.0", "pytest", "mock"]
 )
 EXTRAS_REQUIRE["dev"] = EXTRAS_REQUIRE["tests"] + EXTRAS_REQUIRE["lint"] + ["tox"]
 

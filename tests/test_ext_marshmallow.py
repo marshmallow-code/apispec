@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from marshmallow.fields import Field, DateTime, Dict, String, Nested, List
+from marshmallow.fields import Field, DateTime, Dict, String, Nested, List, TimeDelta
 from marshmallow import Schema
 
 from apispec import APISpec
@@ -11,6 +11,7 @@ from apispec.ext.marshmallow import common
 from apispec.exceptions import APISpecError
 from .schemas import (
     PetSchema,
+    SampleSchema,
     AnalysisSchema,
     RunSchema,
     SelfReferencingSchema,
@@ -20,7 +21,14 @@ from .schemas import (
     AnalysisWithListSchema,
 )
 
-from .utils import get_schemas, get_parameters, get_responses, get_paths, build_ref
+from .utils import (
+    get_schemas,
+    get_parameters,
+    get_responses,
+    get_headers,
+    get_paths,
+    build_ref,
+)
 
 
 class TestDefinitionHelper:
@@ -219,17 +227,26 @@ class TestDefinitionHelper:
 class TestComponentParameterHelper:
     @pytest.mark.parametrize("schema", [PetSchema, PetSchema()])
     def test_can_use_schema_in_parameter(self, spec, schema):
-        if spec.openapi_version.major < 3:
-            param = {"schema": schema}
-        else:
-            param = {"content": {"application/json": {"schema": schema}}}
+        param = {"schema": schema}
         spec.components.parameter("Pet", "body", param)
         parameter = get_parameters(spec)["Pet"]
         assert parameter["in"] == "body"
-        if spec.openapi_version.major < 3:
-            reference = parameter["schema"]
-        else:
-            reference = parameter["content"]["application/json"]["schema"]
+        reference = parameter["schema"]
+        assert reference == build_ref(spec, "schema", "Pet")
+
+        resolved_schema = spec.components.schemas["Pet"]
+        assert resolved_schema["properties"]["name"]["type"] == "string"
+        assert resolved_schema["properties"]["password"]["type"] == "string"
+        assert resolved_schema["properties"]["id"]["type"] == "integer"
+
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    @pytest.mark.parametrize("schema", [PetSchema, PetSchema()])
+    def test_can_use_schema_in_parameter_with_content(self, spec, schema):
+        param = {"content": {"application/json": {"schema": schema}}}
+        spec.components.parameter("Pet", "body", param)
+        parameter = get_parameters(spec)["Pet"]
+        assert parameter["in"] == "body"
+        reference = parameter["content"]["application/json"]["schema"]
         assert reference == build_ref(spec, "schema", "Pet")
 
         resolved_schema = spec.components.schemas["Pet"]
@@ -277,6 +294,22 @@ class TestComponentResponseHelper:
         spec.components.response("GetPetOk", resp)
         response = get_responses(spec)["GetPetOk"]
         assert response == resp
+
+
+class TestComponentHeaderHelper:
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    @pytest.mark.parametrize("schema", [PetSchema, PetSchema()])
+    def test_can_use_schema_in_header(self, spec, schema):
+        param = {"schema": schema}
+        spec.components.header("Pet", param)
+        header = get_headers(spec)["Pet"]
+        reference = header["schema"]
+        assert reference == build_ref(spec, "schema", "Pet")
+
+        resolved_schema = spec.components.schemas["Pet"]
+        assert resolved_schema["properties"]["name"]["type"] == "string"
+        assert resolved_schema["properties"]["password"]["type"] == "string"
+        assert resolved_schema["properties"]["id"]["type"] == "integer"
 
 
 class TestCustomField:
@@ -672,6 +705,88 @@ class TestOperationHelper:
         assert get["responses"]["200"]["content"]["application/json"][
             "schema"
         ] == build_ref(spec, "schema", "Pet")
+
+    @pytest.mark.parametrize("spec_fixture", ("2.0",), indirect=True)
+    def test_schema_resolver_allof_v2(self, spec_fixture):
+        spec_fixture.spec.components.schema("Pet", schema=PetSchema)
+        spec_fixture.spec.components.schema("Sample", schema=SampleSchema)
+        spec_fixture.spec.path(
+            path="/pet",
+            operations={
+                "get": {
+                    "responses": {200: {"schema": {"allOf": [PetSchema, SampleSchema]}}}
+                }
+            },
+        )
+        get = get_paths(spec_fixture.spec)["/pet"]["get"]
+        assert get["responses"]["200"]["schema"] == {
+            "allOf": [
+                build_ref(spec_fixture.spec, "schema", "Pet"),
+                build_ref(spec_fixture.spec, "schema", "Sample"),
+            ]
+        }
+
+    @pytest.mark.parametrize("spec_fixture", ("3.0.0",), indirect=True)
+    @pytest.mark.parametrize("combinator", ["oneOf", "anyOf", "allOf"])
+    def test_schema_resolver_oneof_anyof_allof_v3(self, spec_fixture, combinator):
+        spec_fixture.spec.components.schema("Pet", schema=PetSchema)
+        spec_fixture.spec.path(
+            path="/pet",
+            operations={
+                "get": {
+                    "responses": {
+                        200: {
+                            "content": {
+                                "application/json": {
+                                    "schema": {combinator: [PetSchema, SampleSchema]}
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+        )
+        get = get_paths(spec_fixture.spec)["/pet"]["get"]
+        assert get["responses"]["200"]["content"]["application/json"]["schema"] == {
+            combinator: [
+                build_ref(spec_fixture.spec, "schema", "Pet"),
+                build_ref(spec_fixture.spec, "schema", "Sample"),
+            ]
+        }
+
+    @pytest.mark.parametrize("spec_fixture", ("2.0",), indirect=True)
+    def test_schema_resolver_not_v2(self, spec_fixture):
+        spec_fixture.spec.components.schema("Pet", schema=PetSchema)
+        spec_fixture.spec.path(
+            path="/pet",
+            operations={"get": {"responses": {200: {"schema": {"not": PetSchema}}}}},
+        )
+        get = get_paths(spec_fixture.spec)["/pet"]["get"]
+        assert get["responses"]["200"]["schema"] == {
+            "not": build_ref(spec_fixture.spec, "schema", "Pet"),
+        }
+
+    @pytest.mark.parametrize("spec_fixture", ("3.0.0",), indirect=True)
+    def test_schema_resolver_not_v3(self, spec_fixture):
+        spec_fixture.spec.components.schema("Pet", schema=PetSchema)
+        spec_fixture.spec.path(
+            path="/pet",
+            operations={
+                "get": {
+                    "responses": {
+                        200: {
+                            "content": {
+                                "application/json": {"schema": {"not": PetSchema}}
+                            }
+                        }
+                    }
+                }
+            },
+        )
+        get = get_paths(spec_fixture.spec)["/pet"]["get"]
+        assert get["responses"]["200"]["content"]["application/json"]["schema"] == {
+            "not": build_ref(spec_fixture.spec, "schema", "Pet"),
+        }
 
     @pytest.mark.parametrize(
         "pet_schema",
@@ -1083,7 +1198,15 @@ class TestOperationHelper:
         assert get_nested_schema(RunSchema, "sample") is None
 
     def test_resolve_schema_dict_ref_as_string(self, spec):
-        schema = {"schema": "PetSchema"}
+        """Test schema ref passed as string"""
+        # The case tested here is a reference passed as string, not a
+        # marshmallow Schema passed by name as string. We want to ensure the
+        # MarshmallowPlugin does not interfere with the feature interpreting
+        # strings as references. Therefore, we use a specific name to ensure
+        # there is no Schema with that name in the marshmallow registry from
+        # somewhere else in the tests.
+        # e.g. PetSchema is in the registry already so it wouldn't work.
+        schema = {"schema": "SomeSpecificPetSchema"}
         if spec.openapi_version.major >= 3:
             schema = {"content": {"application/json": schema}}
         spec.path("/pet/{petId}", operations={"get": {"responses": {"200": schema}}})
@@ -1092,7 +1215,7 @@ class TestOperationHelper:
             schema = resp["schema"]
         else:
             schema = resp["content"]["application/json"]["schema"]
-        assert schema == build_ref(spec, "schema", "PetSchema")
+        assert schema == build_ref(spec, "schema", "SomeSpecificPetSchema")
 
 
 class TestCircularReference:
@@ -1197,3 +1320,21 @@ class TestList:
 
         result = get_schemas(spec)["SchemaWithList"]["properties"]["list_field"]
         assert result == {"items": build_ref(spec, "schema", "Pet"), "type": "array"}
+
+
+class TestTimeDelta:
+    def test_timedelta_x_unit(self, spec):
+        class SchemaWithTimeDelta(Schema):
+            sec = TimeDelta("seconds")
+            day = TimeDelta("days")
+
+        spec.components.schema("SchemaWithTimeDelta", schema=SchemaWithTimeDelta)
+
+        assert (
+            get_schemas(spec)["SchemaWithTimeDelta"]["properties"]["sec"]["x-unit"]
+            == "seconds"
+        )
+        assert (
+            get_schemas(spec)["SchemaWithTimeDelta"]["properties"]["day"]["x-unit"]
+            == "days"
+        )

@@ -5,7 +5,7 @@
 (for response and headers schemas) and
 `spec.path <apispec.APISpec.path>` (for responses and response headers).
 
-Requires marshmallow>=2.15.2.
+Requires marshmallow>=3.13.0.
 
 ``MarshmallowPlugin`` maps marshmallow ``Field`` classes with OpenAPI types and
 formats.
@@ -21,13 +21,13 @@ with `"x-"` (vendor extension).
 
 .. warning::
 
-    ``MarshmallowPlugin`` infers the ``default`` property from the ``missing``
-    attribute of the ``Field`` (unless ``missing`` is a callable).
-    In marshmallow 3, default values are entered in deserialized form,
-    so the value is serialized by the ``Field`` instance.
+    ``MarshmallowPlugin`` infers the ``default`` property from the
+    ``load_default`` attribute of the ``Field`` (unless ``load_default`` is a
+    callable). Since default values are entered in deserialized form,
+    the value displayed in the doc is serialized by the ``Field`` instance.
     This may lead to inaccurate documentation in very specific cases.
     The default value to display in the documentation can be
-    specified explicitly by passing ``doc_default`` as metadata.
+    specified explicitly by passing ``default`` as field metadata.
 
 ::
 
@@ -48,9 +48,11 @@ with `"x-"` (vendor extension).
 
     class UserSchema(Schema):
         id = fields.Int(dump_only=True)
-        name = fields.Str(description="The user's name")
+        name = fields.Str(metadata={"description": "The user's name"})
         created = fields.DateTime(
-            dump_only=True, default=dt.datetime.utcnow, doc_default="The current datetime"
+            dump_only=True,
+            dump_default=dt.datetime.utcnow,
+            metadata={"default": "The current datetime"}
         )
 
 
@@ -172,7 +174,6 @@ class MarshmallowPlugin(BasePlugin):
         :param dict parameter: parameter fields. May contain a marshmallow
             Schema class or instance.
         """
-        # In OpenAPIv3, this only works when using the complex form using "content"
         self.resolver.resolve_schema(parameter)
         return parameter
 
@@ -185,6 +186,16 @@ class MarshmallowPlugin(BasePlugin):
         """
         self.resolver.resolve_response(response)
         return response
+
+    def header_helper(self, header, **kwargs):
+        """Header component helper that allows using a marshmallow
+        :class:`Schema <marshmallow.Schema>` in header definition.
+
+        :param dict header: header fields. May contain a marshmallow
+            Schema class or instance.
+        """
+        self.resolver.resolve_schema(header)
+        return header
 
     def operation_helper(self, operations, **kwargs):
         self.resolver.resolve_operations(operations)

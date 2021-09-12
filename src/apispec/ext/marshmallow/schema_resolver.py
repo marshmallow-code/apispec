@@ -219,7 +219,7 @@ class SchemaResolver:
         if not isinstance(data, dict):
             return
 
-        # OAS 2 component or OAS 3 header
+        # OAS 2 component or OAS 3 parameter or header
         if "schema" in data:
             data["schema"] = self.resolve_schema_dict(data["schema"])
         # OAS 3 component except header
@@ -282,6 +282,13 @@ class SchemaResolver:
                     k: self.resolve_schema_dict(v)
                     for k, v in schema["properties"].items()
                 }
+            for keyword in ("oneOf", "anyOf", "allOf"):
+                if keyword in schema:
+                    schema[keyword] = [
+                        self.resolve_schema_dict(s) for s in schema[keyword]
+                    ]
+            if "not" in schema:
+                schema["not"] = self.resolve_schema_dict(schema["not"])
             return schema
 
         return self.converter.resolve_nested_schema(schema)

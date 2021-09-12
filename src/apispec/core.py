@@ -35,9 +35,13 @@ class Components:
         self.headers = {}
         self.examples = {}
         self.security_schemes = {}
+        self.schemas_lazy = {}
+        self.responses_lazy = {}
+        self.parameters_lazy = {}
+        self.headers_lazy = {}
+        self.examples_lazy = {}
 
-    def to_dict(self):
-        subsections = {
+        self._subsections = {
             "schema": self.schemas,
             "response": self.responses,
             "parameter": self.parameters,
@@ -45,17 +49,60 @@ class Components:
             "example": self.examples,
             "security_scheme": self.security_schemes,
         }
+        self._subsections_lazy = {
+            "schema": self.schemas_lazy,
+            "response": self.responses_lazy,
+            "parameter": self.parameters_lazy,
+            "header": self.headers_lazy,
+            "example": self.examples_lazy,
+        }
+
+    def to_dict(self):
         return {
             COMPONENT_SUBSECTIONS[self.openapi_version.major][k]: v
-            for k, v in subsections.items()
+            for k, v in self._subsections.items()
             if v != {}
         }
 
-    def schema(self, name, component=None, **kwargs):
+    def _register_component(self, obj_type, component_id, component, *, lazy=False):
+        subsection = (self._subsections if lazy is False else self._subsections_lazy)[
+            obj_type
+        ]
+        subsection[component_id] = component
+
+    def _do_register_lazy_component(self, obj_type, component_id):
+        component_buffer = self._subsections_lazy[obj_type]
+        # If component was lazy registered, register it for real
+        if component_id in component_buffer:
+            self._subsections[obj_type][component_id] = component_buffer.pop(
+                component_id
+            )
+
+    def get_ref(self, obj_type, obj_or_component_id):
+        """Return object or reference
+
+        If obj is a dict, it is assumed to be a complete description and it is returned as is.
+        Otherwise, it is assumed to be a reference name as string and the corresponding $ref
+        string is returned.
+
+        :param str subsection: "schema", "parameter", "response" or "security_scheme"
+        :param dict|str obj: object in dict form or as ref_id string
+        """
+        if isinstance(obj_or_component_id, dict):
+            return obj_or_component_id
+        # Register the component if it was lazy registered
+        self._do_register_lazy_component(obj_type, obj_or_component_id)
+        return build_reference(
+            obj_type, self.openapi_version.major, obj_or_component_id
+        )
+
+    def schema(self, component_id, component=None, *, lazy=False, **kwargs):
         """Add a new schema to the spec.
 
-        :param str name: identifier by which schema may be referenced.
-        :param dict component: schema definition.
+        :param str component_id: identifier by which schema may be referenced
+        :param dict component: schema definition
+        :param bool lazy: register component only when referenced in the spec
+        :param kwargs: plugin-specific arguments
 
         .. note::
 
@@ -66,67 +113,68 @@ class Components:
 
                 status = fields.String(
                     required=True,
-                    enum=['open', 'closed'],
-                    description='Status (open or closed)',
+                    metadata={
+                        "description": "Status (open or closed)",
+                        "enum": ["open", "closed"],
+                    },
                 )
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schemaObject
         """
-        if name in self.schemas:
+        if component_id in self.schemas:
             raise DuplicateComponentNameError(
-                f'Another schema with name "{name}" is already registered.'
+                f'Another schema with name "{component_id}" is already registered.'
             )
-        component = component or {}
-        ret = component.copy()
+        ret = deepcopy(component) or {}
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
-                ret.update(plugin.schema_helper(name, component, **kwargs) or {})
+                ret.update(plugin.schema_helper(component_id, ret, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
-        self.schemas[name] = ret
+        self._resolve_refs_in_schema(ret)
+        self._register_component("schema", component_id, ret, lazy=lazy)
         return self
 
-    def response(self, component_id, component=None, **kwargs):
+    def response(self, component_id, component=None, *, lazy=False, **kwargs):
         """Add a response which can be referenced.
 
         :param str component_id: ref_id to use as reference
         :param dict component: response fields
+        :param bool lazy: register component only when referenced in the spec
         :param kwargs: plugin-specific arguments
         """
         if component_id in self.responses:
             raise DuplicateComponentNameError(
-                'Another response with name "{}" is already registered.'.format(
-                    component_id
-                )
+                f'Another response with name "{component_id}" is already registered.'
             )
-        component = component or {}
-        ret = component.copy()
+        ret = deepcopy(component) or {}
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
-                ret.update(plugin.response_helper(component, **kwargs) or {})
+                ret.update(plugin.response_helper(ret, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
-        self.responses[component_id] = ret
+        self._resolve_refs_in_response(ret)
+        self._register_component("response", component_id, ret, lazy=lazy)
         return self
 
-    def parameter(self, component_id, location, component=None, **kwargs):
+    def parameter(
+        self, component_id, location, component=None, *, lazy=False, **kwargs
+    ):
         """Add a parameter which can be referenced.
 
-        :param str component_id: identifier by which parameter may be referenced.
-        :param str location: location of the parameter.
-        :param dict component: parameter fields.
+        :param str component_id: identifier by which parameter may be referenced
+        :param str location: location of the parameter
+        :param dict component: parameter fields
+        :param bool lazy: register component only when referenced in the spec
         :param kwargs: plugin-specific arguments
         """
         if component_id in self.parameters:
             raise DuplicateComponentNameError(
-                'Another parameter with name "{}" is already registered.'.format(
-                    component_id
-                )
+                f'Another parameter with name "{component_id}" is already registered.'
             )
-        component = component or {}
-        ret = component.copy()
+        ret = deepcopy(component) or {}
         ret.setdefault("name", component_id)
         ret["in"] = location
 
@@ -137,40 +185,52 @@ class Components:
         # Execute all helpers from plugins
         for plugin in self._plugins:
             try:
-                ret.update(plugin.parameter_helper(component, **kwargs) or {})
+                ret.update(plugin.parameter_helper(ret, **kwargs) or {})
             except PluginMethodNotImplementedError:
                 continue
-        self.parameters[component_id] = ret
+        self._resolve_refs_in_parameter_or_header(ret)
+        self._register_component("parameter", component_id, ret, lazy=lazy)
         return self
 
-    def header(self, component_id, component):
+    def header(self, component_id, component, *, lazy=False, **kwargs):
         """Add a header which can be referenced.
 
-        :param str component_id: identifier by which header may be referenced.
-        :param dict component: header fields.
+        :param str component_id: identifier by which header may be referenced
+        :param dict component: header fields
+        :param bool lazy: register component only when referenced in the spec
+        :param kwargs: plugin-specific arguments
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#headerObject
         """
+        ret = deepcopy(component) or {}
         if component_id in self.headers:
             raise DuplicateComponentNameError(
                 f'Another header with name "{component_id}" is already registered.'
             )
-        self.headers[component_id] = component
+        # Execute all helpers from plugins
+        for plugin in self._plugins:
+            try:
+                ret.update(plugin.header_helper(ret, **kwargs) or {})
+            except PluginMethodNotImplementedError:
+                continue
+        self._resolve_refs_in_parameter_or_header(ret)
+        self._register_component("header", component_id, ret, lazy=lazy)
         return self
 
-    def example(self, name, component, **kwargs):
+    def example(self, component_id, component, *, lazy=False):
         """Add an example which can be referenced
 
-        :param str name: identifier by which example may be referenced.
-        :param dict component: example fields.
+        :param str component_id: identifier by which example may be referenced
+        :param dict component: example fields
+        :param bool lazy: register component only when referenced in the spec
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#exampleObject
         """
-        if name in self.examples:
+        if component_id in self.examples:
             raise DuplicateComponentNameError(
-                f'Another example with name "{name}" is already registered.'
+                f'Another example with name "{component_id}" is already registered.'
             )
-        self.examples[name] = component
+        self._register_component("example", component_id, component, lazy=lazy)
         return self
 
     def security_scheme(self, component_id, component):
@@ -181,12 +241,104 @@ class Components:
         """
         if component_id in self.security_schemes:
             raise DuplicateComponentNameError(
-                'Another security scheme with name "{}" is already registered.'.format(
-                    component_id
-                )
+                f'Another security scheme with name "{component_id}" is already registered.'
             )
-        self.security_schemes[component_id] = component
+        self._register_component("security_scheme", component_id, component)
         return self
+
+    def _resolve_schema(self, obj):
+        """Replace schema reference as string with a $ref if needed
+
+        Also resolve references in the schema
+        """
+        if "schema" in obj:
+            obj["schema"] = self.get_ref("schema", obj["schema"])
+            self._resolve_refs_in_schema(obj["schema"])
+
+    def _resolve_examples(self, obj):
+        """Replace example reference as string with a $ref"""
+        for name, example in obj.get("examples", {}).items():
+            obj["examples"][name] = self.get_ref("example", example)
+
+    def _resolve_refs_in_schema(self, schema):
+        if "properties" in schema:
+            for key in schema["properties"]:
+                schema["properties"][key] = self.get_ref(
+                    "schema", schema["properties"][key]
+                )
+                self._resolve_refs_in_schema(schema["properties"][key])
+        if "items" in schema:
+            schema["items"] = self.get_ref("schema", schema["items"])
+            self._resolve_refs_in_schema(schema["items"])
+        for key in ("allOf", "oneOf", "anyOf"):
+            if key in schema:
+                schema[key] = [self.get_ref("schema", s) for s in schema[key]]
+                for sch in schema[key]:
+                    self._resolve_refs_in_schema(sch)
+        if "not" in schema:
+            schema["not"] = self.get_ref("schema", schema["not"])
+            self._resolve_refs_in_schema(schema["not"])
+
+    def _resolve_refs_in_parameter_or_header(self, parameter_or_header):
+        self._resolve_schema(parameter_or_header)
+        self._resolve_examples(parameter_or_header)
+
+    def _resolve_refs_in_request_body(self, request_body):
+        # requestBody is OpenAPI v3+
+        for media_type in request_body["content"].values():
+            self._resolve_schema(media_type)
+            self._resolve_examples(media_type)
+
+    def _resolve_refs_in_response(self, response):
+        if self.openapi_version.major < 3:
+            self._resolve_schema(response)
+        else:
+            for media_type in response.get("content", {}).values():
+                self._resolve_schema(media_type)
+                self._resolve_examples(media_type)
+            for name, header in response.get("headers", {}).items():
+                response["headers"][name] = self.get_ref("header", header)
+                self._resolve_refs_in_parameter_or_header(response["headers"][name])
+            # TODO: Resolve link refs when Components supports links
+
+    def _resolve_refs_in_operation(self, operation):
+        if "parameters" in operation:
+            parameters = []
+            for parameter in operation["parameters"]:
+                parameter = self.get_ref("parameter", parameter)
+                self._resolve_refs_in_parameter_or_header(parameter)
+                parameters.append(parameter)
+            operation["parameters"] = parameters
+        if "requestBody" in operation:
+            self._resolve_refs_in_request_body(operation["requestBody"])
+        if "responses" in operation:
+            responses = OrderedDict()
+            for code, response in operation["responses"].items():
+                response = self.get_ref("response", response)
+                self._resolve_refs_in_response(response)
+                responses[code] = response
+            operation["responses"] = responses
+
+    def resolve_refs_in_path(self, path):
+        if "parameters" in path:
+            parameters = []
+            for parameter in path["parameters"]:
+                parameter = self.get_ref("parameter", parameter)
+                self._resolve_refs_in_parameter_or_header(parameter)
+                parameters.append(parameter)
+            path["parameters"] = parameters
+        for method in (
+            "get",
+            "put",
+            "post",
+            "delete",
+            "options",
+            "head",
+            "patch",
+            "trace",
+        ):
+            if method in path:
+                self._resolve_refs_in_operation(path[method])
 
 
 class APISpec:
@@ -277,7 +429,7 @@ class APISpec:
         :param kwargs: parameters used by any path helpers see :meth:`register_path_helper`
         """
         # operations and parameters must be deepcopied because they are mutated
-        # in clean_operations and operation helpers and path may be called twice
+        # in _clean_operations and operation helpers and path may be called twice
         operations = deepcopy(operations) or OrderedDict()
         parameters = deepcopy(parameters) or []
 
@@ -301,7 +453,7 @@ class APISpec:
             except PluginMethodNotImplementedError:
                 continue
 
-        self.clean_operations(operations)
+        self._clean_operations(operations)
 
         self._paths.setdefault(path, operations).update(operations)
         if summary is not None:
@@ -309,43 +461,14 @@ class APISpec:
         if description is not None:
             self._paths[path]["description"] = description
         if parameters:
-            parameters = self.clean_parameters(parameters)
+            parameters = self._clean_parameters(parameters)
             self._paths[path]["parameters"] = parameters
+
+        self.components.resolve_refs_in_path(self._paths[path])
+
         return self
 
-    def get_ref(self, obj_type, obj):
-        """Return object or reference
-
-        If obj is a dict, it is assumed to be a complete description and it is returned as is.
-        Otherwise, it is assumed to be a reference name as string and the corresponding $ref
-        string is returned.
-
-        :param str obj_type: "schema", "parameter", "response" or "security_scheme"
-        :param dict|str obj: object in dict form or as ref_id string
-        """
-        if isinstance(obj, dict):
-            return obj
-        return build_reference(obj_type, self.openapi_version.major, obj)
-
-    def _resolve_schema(self, obj):
-        """Replace schema reference as string with a $ref if needed."""
-        if not isinstance(obj, dict):
-            return
-        if self.openapi_version.major < 3:
-            if "schema" in obj:
-                obj["schema"] = self.get_ref("schema", obj["schema"])
-        else:
-            if "content" in obj:
-                for content in obj["content"].values():
-                    if "schema" in content:
-                        content["schema"] = self.get_ref("schema", content["schema"])
-
-    def _resolve_examples(self, obj):
-        """Replace example reference as string with a $ref"""
-        for name, example in obj.get("examples", {}).items():
-            obj["examples"][name] = self.get_ref("example", example)
-
-    def clean_parameters(self, parameters):
+    def _clean_parameters(self, parameters):
         """Ensure that all parameters with "in" equal to "path" are also required
         as required by the OpenAPI specification, as well as normalizing any
         references to global parameters and checking for duplicates parameters
@@ -379,11 +502,9 @@ class APISpec:
             if parameter["in"] == "path":
                 parameter["required"] = True
 
-            self._resolve_examples(parameter)
+        return parameters
 
-        return [self.get_ref("parameter", p) for p in parameters]
-
-    def clean_operations(self, operations):
+    def _clean_operations(self, operations):
         """Ensure that all parameters with "in" equal to "path" are also required
         as required by the OpenAPI specification, as well as normalizing any
         references to global parameters. Also checks for invalid HTTP methods.
@@ -404,13 +525,9 @@ class APISpec:
 
         for operation in (operations or {}).values():
             if "parameters" in operation:
-                operation["parameters"] = self.clean_parameters(operation["parameters"])
-            # OAS 3
-            if "requestBody" in operation:
-                self._resolve_schema(operation["requestBody"])
-                for media_type in operation["requestBody"]["content"].values():
-                    self._resolve_examples(media_type)
-
+                operation["parameters"] = self._clean_parameters(
+                    operation["parameters"]
+                )
             if "responses" in operation:
                 responses = OrderedDict()
                 for code, response in operation["responses"].items():
@@ -419,11 +536,5 @@ class APISpec:
                     except (TypeError, ValueError):
                         if self.openapi_version.major < 3 and code != "default":
                             warnings.warn("Non-integer code not allowed in OpenAPI < 3")
-                    self._resolve_schema(response)
-                    response = self.get_ref("response", response)
-                    for name, header in response.get("headers", {}).items():
-                        response["headers"][name] = self.get_ref("header", header)
-                    for media_type in response.get("content", {}).values():
-                        self._resolve_examples(media_type)
                     responses[str(code)] = response
                 operation["responses"] = responses

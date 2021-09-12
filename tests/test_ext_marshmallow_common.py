@@ -79,3 +79,12 @@ class TestGetFields:
         assert list(get_fields(ExcludeSchema, exclude_dump_only=True).keys()) == [
             "field5"
         ]
+
+    # regression test for https://github.com/marshmallow-code/apispec/issues/673
+    def test_schema_with_field_named_fields(self):
+        class TestSchema(Schema):
+            fields = fields.Int()
+
+        schema_fields = get_fields(TestSchema)
+        assert list(schema_fields.keys()) == ["fields"]
+        assert isinstance(schema_fields["fields"], fields.Int)

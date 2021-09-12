@@ -5,7 +5,7 @@ import pytest
 from marshmallow import fields, validate
 
 from .schemas import CategorySchema, CustomList, CustomStringField, CustomIntegerField
-from .utils import build_ref
+from .utils import build_ref, get_schemas
 
 
 def test_field2choices_preserving_order(openapi):
@@ -28,6 +28,7 @@ def test_field2choices_preserving_order(openapi):
         (fields.DateTime, "string"),
         (fields.Date, "string"),
         (fields.Time, "string"),
+        (fields.TimeDelta, "integer"),
         (fields.Email, "string"),
         (fields.URL, "string"),
         # Custom fields inherit types from their parents
@@ -73,43 +74,43 @@ def test_field2property_formats(FieldClass, expected_format, spec_fixture):
 
 
 def test_field_with_description(spec_fixture):
-    field = fields.Str(description="a username")
+    field = fields.Str(metadata={"description": "a username"})
     res = spec_fixture.openapi.field2property(field)
     assert res["description"] == "a username"
 
 
-def test_field_with_missing(spec_fixture):
-    field = fields.Str(default="foo", missing="bar")
+def test_field_with_load_default(spec_fixture):
+    field = fields.Str(dump_default="foo", load_default="bar")
     res = spec_fixture.openapi.field2property(field)
     assert res["default"] == "bar"
 
 
-def test_boolean_field_with_false_missing(spec_fixture):
-    field = fields.Boolean(default=None, missing=False)
+def test_boolean_field_with_false_load_default(spec_fixture):
+    field = fields.Boolean(dump_default=None, load_default=False)
     res = spec_fixture.openapi.field2property(field)
     assert res["default"] is False
 
 
-def test_datetime_field_with_missing(spec_fixture):
-    field = fields.Date(missing=dt.date(2014, 7, 18))
+def test_datetime_field_with_load_default(spec_fixture):
+    field = fields.Date(load_default=dt.date(2014, 7, 18))
     res = spec_fixture.openapi.field2property(field)
     assert res["default"] == dt.date(2014, 7, 18).isoformat()
 
 
-def test_field_with_missing_callable(spec_fixture):
-    field = fields.Str(missing=lambda: "dummy")
+def test_field_with_load_default_callable(spec_fixture):
+    field = fields.Str(load_default=lambda: "dummy")
     res = spec_fixture.openapi.field2property(field)
     assert "default" not in res
 
 
-def test_field_with_doc_default(spec_fixture):
-    field = fields.Str(doc_default="Manual default")
+def test_field_with_default(spec_fixture):
+    field = fields.Str(metadata={"default": "Manual default"})
     res = spec_fixture.openapi.field2property(field)
     assert res["default"] == "Manual default"
 
 
-def test_field_with_doc_default_and_missing(spec_fixture):
-    field = fields.Int(doc_default=42, missing=12)
+def test_field_with_default_and_load_default(spec_fixture):
+    field = fields.Int(load_default=12, metadata={"default": 42})
     res = spec_fixture.openapi.field2property(field)
     assert res["default"] == 42
 
@@ -128,14 +129,16 @@ def test_field_with_equal(spec_fixture):
 
 def test_only_allows_valid_properties_in_metadata(spec_fixture):
     field = fields.Str(
-        missing="foo",
-        description="foo",
-        enum=["red", "blue"],
-        allOf=["bar"],
-        not_valid="lol",
+        load_default="foo",
+        metadata={
+            "description": "foo",
+            "not_valid": "lol",
+            "allOf": ["bar"],
+            "enum": ["red", "blue"],
+        },
     )
     res = spec_fixture.openapi.field2property(field)
-    assert res["default"] == field.missing
+    assert res["default"] == field.load_default
     assert "description" in res
     assert "enum" in res
     assert "allOf" in res
@@ -154,19 +157,82 @@ def test_field_with_choices_multiple(spec_fixture):
 
 
 def test_field_with_additional_metadata(spec_fixture):
-    field = fields.Str(minLength=6, maxLength=100)
+    field = fields.Str(metadata={"minLength": 6, "maxLength": 100})
     res = spec_fixture.openapi.field2property(field)
     assert res["maxLength"] == 100
     assert res["minLength"] == 6
 
 
+@pytest.mark.parametrize("spec_fixture", ("2.0", "3.0.0", "3.1.0"), indirect=True)
 def test_field_with_allow_none(spec_fixture):
     field = fields.Str(allow_none=True)
     res = spec_fixture.openapi.field2property(field)
     if spec_fixture.openapi.openapi_version.major < 3:
         assert res["x-nullable"] is True
-    else:
+    elif spec_fixture.openapi.openapi_version.minor < 1:
         assert res["nullable"] is True
+    else:
+        assert "nullable" not in res
+        assert res["type"] == ["string", "null"]
+
+
+def test_field_with_dump_only(spec_fixture):
+    field = fields.Str(dump_only=True)
+    res = spec_fixture.openapi.field2property(field)
+    assert res["readOnly"] is True
+
+
+@pytest.mark.parametrize("spec_fixture", ("2.0", "3.0.0", "3.1.0"), indirect=True)
+def test_field_with_load_only(spec_fixture):
+    field = fields.Str(load_only=True)
+    res = spec_fixture.openapi.field2property(field)
+    if spec_fixture.openapi.openapi_version.major < 3:
+        assert "writeOnly" not in res
+    else:
+        assert res["writeOnly"] is True
+
+
+def test_field_with_range_no_type(spec_fixture):
+    field = fields.Field(validate=validate.Range(min=1, max=10))
+    res = spec_fixture.openapi.field2property(field)
+    assert res["x-minimum"] == 1
+    assert res["x-maximum"] == 10
+    assert "type" not in res
+
+
+@pytest.mark.parametrize("field", (fields.Number, fields.Integer))
+def test_field_with_range_string_type(spec_fixture, field):
+    field = field(validate=validate.Range(min=1, max=10))
+    res = spec_fixture.openapi.field2property(field)
+    assert res["minimum"] == 1
+    assert res["maximum"] == 10
+    assert isinstance(res["type"], str)
+
+
+@pytest.mark.parametrize("spec_fixture", ("3.1.0",), indirect=True)
+def test_field_with_range_type_list_with_number(spec_fixture):
+    @spec_fixture.openapi.map_to_openapi_type(["integer", "null"], None)
+    class NullableInteger(fields.Field):
+        """Nullable integer"""
+
+    field = NullableInteger(validate=validate.Range(min=1, max=10))
+    res = spec_fixture.openapi.field2property(field)
+    assert res["minimum"] == 1
+    assert res["maximum"] == 10
+    assert res["type"] == ["integer", "null"]
+
+
+@pytest.mark.parametrize("spec_fixture", ("3.1.0",), indirect=True)
+def test_field_with_range_type_list_without_number(spec_fixture):
+    @spec_fixture.openapi.map_to_openapi_type(["string", "null"], None)
+    class NullableInteger(fields.Field):
+        """Nullable integer"""
+
+    field = NullableInteger(validate=validate.Range(min=1, max=10))
+    res = spec_fixture.openapi.field2property(field)
+    assert res["x-minimum"] == 1
+    assert res["x-maximum"] == 10
+    assert res["type"] == ["string", "null"]
 
 
 def test_field_with_str_regex(spec_fixture):
@@ -201,9 +267,11 @@ def test_field2property_nested_spec_metadatas(spec_fixture):
     spec_fixture.spec.components.schema("Category", schema=CategorySchema)
     category = fields.Nested(
         CategorySchema,
-        description="A category",
-        invalid_property="not in the result",
-        x_extension="A great extension",
+        metadata={
+            "description": "A category",
+            "invalid_property": "not in the result",
+            "x_extension": "A great extension",
+        },
     )
     result = spec_fixture.openapi.field2property(category)
     assert result == {
@@ -267,6 +335,52 @@ def test_nested_field_with_property(spec_fixture):
     }
 
 
+class TestField2PropertyPluck:
+    @pytest.fixture(autouse=True)
+    def _setup(self, spec_fixture):
+        self.field2property = spec_fixture.openapi.field2property
+
+        self.spec = spec_fixture.spec
+        self.spec.components.schema("Category", schema=CategorySchema)
+        self.unplucked = get_schemas(self.spec)["Category"]["properties"]["breed"]
+
+    def test_spec(self, spec_fixture):
+        breed = fields.Pluck(CategorySchema, "breed")
+        assert self.field2property(breed) == self.unplucked
+
+    def test_with_property(self):
+        breed = fields.Pluck(CategorySchema, "breed", dump_only=True)
+        assert self.field2property(breed) == {**self.unplucked, "readOnly": True}
+
+    def test_metadata(self):
+        breed = fields.Pluck(
+            CategorySchema,
+            "breed",
+            metadata={
+                "description": "Category breed",
+                "invalid_property": "not in the result",
+                "x_extension": "A great extension",
+            },
+        )
+        assert self.field2property(breed) == {
+            **self.unplucked,
+            "description": "Category breed",
+            "x-extension": "A great extension",
+        }
+
+    def test_many(self):
+        breed = fields.Pluck(CategorySchema, "breed", many=True)
+        assert self.field2property(breed) == {"type": "array", "items": self.unplucked}
+
+    def test_many_with_property(self):
+        breed = fields.Pluck(CategorySchema, "breed", many=True, dump_only=True)
+        assert self.field2property(breed) == {
+            "items": self.unplucked,
+            "type": "array",
+            "readOnly": True,
+        }
+
+
 def test_custom_properties_for_custom_fields(spec_fixture):
     def custom_string2properties(self, field, **kwargs):
         ret = {}
@@ -292,7 +406,7 @@ def test_field2property_with_non_string_metadata_keys(spec_fixture):
     class _DesertSentinel:
         pass
 
-    field = fields.Boolean(description="A description")
+    field = fields.Boolean(metadata={"description": "A description"})
     field.metadata[_DesertSentinel()] = "to be ignored"
     result = spec_fixture.openapi.field2property(field)
     assert result == {"description": "A description", "type": "boolean"}

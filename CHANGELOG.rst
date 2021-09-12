@@ -1,7 +1,127 @@
 Changelog
 ---------
 
-4.4.0 (2020-03-31)
+5.1.1 (unreleased)
+******************
+
+Other changes:
+
+* Don't build universal wheels. We don't support Python 2 anymore.
+  (:pr:`705`)
+* Make the build reproducible (:pr:`#669`).
+
+5.1.0 (2021-08-10)
+******************
+
+Features:
+
+- Add ``lazy`` option to component registration methods. This allows to add
+  components to the spec only if they are actually referenced. (:pr:`702`)
+- Add ``BasePlugin.header_helper`` and ``MarshmallowPlugin.header_helper``
+  (:pr:`703`).
+
+Bug fixes:
+
+- Ensure plugin helpers get component copies. Avoids issues if a plugin helper
+  mutates its inputs. (:pr:`704`)
+
+5.0.0 (2021-07-29)
+******************
+
+Features:
+
+- Rename ``doc_default`` to ``default``. Since schema metadata is namespaced in
+  a single ``metadata`` parameter, there is no name collision with ``default``
+  parameter anymore (:issue:`687`).
+- Don't build schema component reference in
+  ``OpenAPIConverter.resolve_nested_schema``. This is done later in
+  ``Components`` (:pr:`700`).
+- ``MarshmallowPlugin``: resolve schemas in ``allOf``, ``oneOf``, ``anyOf`` and
+  ``not`` (:pr:`701`). Thanks :user:`stefanv` for the initial work on this.
+
+Other changes:
+
+- Refactor ``Components`` methods to make them consistent. Use ``component_id``
+  rather than ``name``, remove ``**kwargs`` when unused. (:pr:`696`)
+
+5.0.0b1 (2021-07-22)
+********************
+
+Features:
+
+- Resolve all component references in paths and components. All references must
+  be passed as strings, not as a ``{$ref: '...'}}`` dict (:pr:`671`).
+
+Other changes:
+
+- Don't use deprecated ``missing`` marshmallow field attribute but use
+  ``load_default`` instead (:pr:`692`).
+- Refactor references resolution. ``get_ref`` method is moved from ``APISpec``
+  to ``Components`` (:pr:`655`). ``APISpec.clean_parameters`` and
+  ``APISpec.clean_parameters`` are now private methods (:pr:`695`).
+- Drop support for marshmallow < 3.13.0 (:pr:`692`).
+
+4.7.1 (2021-07-06)
+******************
+
+Bug fixes:
+
+- Correct spelling of ``'null'``: remove extra quotes (:issue:`689`).
+  Thanks :user:`mjpieters` for the PR.
+
+4.7.0 (2021-06-28)
+******************
+
+Features:
+
+- Document ``deprecated`` property from field metadata (:pr:`686`).
+  Thanks :user:`greyli` for the PR.
+- Document ``writeOnly`` and ``nullable`` properties from field metadata
+  (:pr:`684`). Thanks :user:`greyli` for the PR.
+
+4.6.0 (2021-06-14)
+******************
+
+Features:
+
+- Support ``Pluck`` field (:pr:`677`). Thanks :user:`mjpieters` for the PR.
+- Support ``TimeDelta`` field (:pr:`678`).
+
+4.5.0 (2021-06-04)
+******************
+
+Features:
+
+- Support OpenAPI 3.1.0 (:issue:`579`).
+
+Bug fixes:
+
+- Fix ``get_fields`` to avoid crashing when a field is named ``fields``
+  (:issue:`673`). Thanks :user:`Reskov` for reporting.
+
+Other changes:
+
+- Don't pass field metadata as keyword arguments in the tests. This is
+  deprecated since marshmallow 3.10. apispec is still compatible with
+  marshmallow >=3,<3.10 but tests now require marshmallow >=3.10. (:pr:`675`)
+
+4.4.2 (2021-05-24)
+******************
+
+Bug fixes:
+
+- Respect ``partial`` marshmallow schema parameter: don't document the field as
+  required. (:issue:`627`). Thanks :user:`Anti-Distinctlyminty` for the PR.
+
+4.4.1 (2021-05-07)
+******************
+
+Bug fixes:
+
+- Don't set ``additionalProperties`` if ``Meta.unknown`` is ``EXCLUDE``
+  (:issue:`659`). Thanks :user:`kupuguy` for the PR.
+
+4.4.0 (2021-03-31)
 ******************
 
 Features:
@@ -11,7 +131,7 @@ Features:
 - Allow ``to_yaml`` to pass kwargs to ``yaml.dump`` (:pr:`648`).
 - Resolve header references in responses (:pr:`650`).
 - Resolve example references in parameters, request bodies and responses
-  (:pr:`#651`).
+  (:pr:`651`).
 
 4.3.0 (2021-02-10)
 ******************
@@ -129,8 +249,8 @@ Bug fixes:
 
 Features:
 
-- Add `apispec.core.Components.example` for adding Example Objects
-  (:pr:`515`). Thanks :user:`codeasashu` for the PR.
+- Add `apispec.core.Components.example` for adding Example Objects (:pr:`515`).
+  Thanks :user:`codeasashu` for the PR.
 
 Support:
 
@@ -203,16 +323,16 @@ Features:
 
 - Add support for path level parameters (:issue:`453`).
   Thanks :user:`karec` for the PR.
-- *Backwards-incompatible*: A `apispec.exceptions.DuplicateParameterError` is
+- *Backwards-incompatible*: A ``apispec.exceptions.DuplicateParameterError`` is
   raised when two parameters with same name and location are passed to a path
   or an operation (:pr:`455`).
-- *Backwards-incompatible*: A `apispec.exceptions.InvalidParameterError` is
+- *Backwards-incompatible*: A ``apispec.exceptions.InvalidParameterError`` is
   raised when a parameter is missing required ``name`` and ``in`` attributes
   after helpers have been executed (:pr:`455`).
 
 Other changes:
 
-- *Backwards-incompatible*: All plugin helpers must accept extra `**kwargs`
+- *Backwards-incompatible*: All plugin helpers must accept extra ``**kwargs``
   (:issue:`453`).
 - *Backwards-incompatible*: Components must be referenced by ID, not full path
   (:issue:`463`).
@@ -237,7 +357,7 @@ Bug fixes:
 
 Bug fixes:
 
-- Fix handling of `http.HTTPStatus` objects (:issue:`426`). Thanks
+- Fix handling of ``http.HTTPStatus`` objects (:issue:`426`). Thanks
   :user:`DStape`.
 - [apispec.ext.marshmallow]: Ensure make_schema_key returns a unique key on
   unhashable iterables (:pr:`416`, :pr:`439`). Thanks :user:`zedrdave`.
@@ -313,7 +433,8 @@ Bug fixes:
 
 Other changes:
 
-- *Backwards-incompatible*: Components properties are now passed as dictionaries rather than keyword arguments (:pr:`381`).
+- *Backwards-incompatible*: Components properties are now passed as
+  dictionaries rather than keyword arguments (:pr:`381`).
 
 .. code-block:: python
 

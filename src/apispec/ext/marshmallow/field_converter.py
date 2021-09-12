@@ -29,6 +29,7 @@ DEFAULT_FIELD_MAPPING = {
     marshmallow.fields.DateTime: ("string", "date-time"),
     marshmallow.fields.Date: ("string", "date"),
     marshmallow.fields.Time: ("string", None),
+    marshmallow.fields.TimeDelta: ("integer", None),
     marshmallow.fields.Email: ("string", "email"),
     marshmallow.fields.URL: ("string", "url"),
     marshmallow.fields.Dict: ("object", None),
@@ -64,12 +65,18 @@ _VALID_PROPERTIES = {
     "type",
     "items",
     "allOf",
+    "oneOf",
+    "anyOf",
+    "not",
     "properties",
     "additionalProperties",
     "readOnly",
+    "writeOnly",
     "xml",
     "externalDocs",
     "example",
+    "nullable",
+    "deprecated",
 }
 
 
@@ -96,8 +103,10 @@ class FieldConverterMixin:
             self.field2pattern,
             self.metadata2properties,
             self.nested2properties,
+            self.pluck2properties,
             self.list2properties,
             self.dict2properties,
+            self.timedelta2properties,
         ]
 
     def map_to_openapi_type(self, *args):
@@ -196,7 +205,7 @@ class FieldConverterMixin:
     def field2default(self, field, **kwargs):
         """Return the dictionary containing the field's default value.
 
-        Will first look for a `doc_default` key in the field's metadata and then
+        Will first look for a `default` key in the field's metadata and then
         fall back on the field's `missing` parameter. A callable passed to the
         field's missing parameter will be ignored.
 
@@ -204,10 +213,10 @@ class FieldConverterMixin:
         :rtype: dict
         """
         ret = {}
-        if "doc_default" in field.metadata:
-            ret["default"] = field.metadata["doc_default"]
+        if "default" in field.metadata:
+            ret["default"] = field.metadata["default"]
         else:
-            default = field.missing
+            default = field.load_default
             if default is not marshmallow.missing and not callable(default):
                 default = field._serialize(default, None, None)
                 ret["default"] = default
@@ -261,7 +270,7 @@ class FieldConverterMixin:
             attributes["writeOnly"] = True
         return attributes
 
-    def field2nullable(self, field, **kwargs):
+    def field2nullable(self, field, ret):
         """Return the dictionary of OpenAPI field attributes for a nullable field.
 
         :param Field field: A marshmallow field.
@@ -269,9 +278,12 @@ class FieldConverterMixin:
         """
         attributes = {}
         if field.allow_none:
-            attributes[
-                "x-nullable" if self.openapi_version.major < 3 else "nullable"
-            ] = True
+            if self.openapi_version.major < 3:
+                attributes["x-nullable"] = True
+            elif self.openapi_version.minor < 1:
+                attributes["nullable"] = True
+            else:
+                attributes["type"] = [*make_type_list(ret.get("type")), "null"]
         return attributes
 
     def field2range(self, field, ret):
@@ -293,7 +305,7 @@ class FieldConverterMixin:
 
         min_attr, max_attr = (
             ("minimum", "maximum")
-            if ret.get("type") in {"number", "integer"}
+            if set(make_type_list(ret.get("type"))) & {"number", "integer"}
             else ("x-minimum", "x-maximum")
         )
         return make_min_max_attributes(validators, min_attr, max_attr)
@@ -399,13 +411,32 @@ class FieldConverterMixin:
         :param Field field: A marshmallow field.
         :rtype: dict
         """
-        if isinstance(field, marshmallow.fields.Nested):
+        # Pluck is a subclass of Nested but is in essence a single field; it
+        # is treated separately by pluck2properties.
+        if isinstance(field, marshmallow.fields.Nested) and not isinstance(
+            field, marshmallow.fields.Pluck
+        ):
             schema_dict = self.resolve_nested_schema(field.schema)
             if ret and "$ref" in schema_dict:
                 ret.update({"allOf": [schema_dict]})
             else:
                 ret.update(schema_dict)
         return ret
+
+    def pluck2properties(self, field, **kwargs):
+        """Return a dictionary of properties from :class:`Pluck <marshmallow.fields.Pluck` fields.
+
+        Pluck effectively trans-includes a field from another schema into this,
+        possibly wrapped in an array (`many=True`).
+
+        :param Field field: A marshmallow field.
+        :rtype: dict
+        """
+        if isinstance(field, marshmallow.fields.Pluck):
+            plucked_field = field.schema.fields[field.field_name]
+            ret = self.field2property(plucked_field)
+            return {"type": "array", "items": ret} if field.many else ret
+        return {}
 
     def list2properties(self, field, **kwargs):
         """Return a dictionary of properties from :class:`List <marshmallow.fields.List>` fields.
@@ -435,6 +466,34 @@ class FieldConverterMixin:
             if value_field:
                 ret["additionalProperties"] = self.field2property(value_field)
         return ret
+
+    def timedelta2properties(self, field, **kwargs):
+        """Return a dictionary of properties from :class:`TimeDelta <marshmallow.fields.TimeDelta>` fields.
+
+        Adds a `x-unit` vendor property based on the field's `precision` attribute
+
+        :param Field field: A marshmallow field.
+        :rtype: dict
+        """
+        ret = {}
+        if isinstance(field, marshmallow.fields.TimeDelta):
+            ret["x-unit"] = field.precision
+        return ret
+
+
+def make_type_list(types):
+    """Return a list of types from a type attribute
+
+    Since OpenAPI 3.1.0, "type" can be a single type as string or a list of
+    types, including 'null'. This function takes a "type" attribute as input
+    and returns it as a list, be it an empty or single-element list.
+    This is useful to factorize type-conditional code or code adding a type.
+    """
+    if types is None:
+        return []
+    if isinstance(types, str):
+        return [types]
+    return types
 
 
 def make_min_max_attributes(validators, min_attr, max_attr):

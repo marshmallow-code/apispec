@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime
 
-from marshmallow import fields, INCLUDE, RAISE, Schema, validate
+from marshmallow import EXCLUDE, fields, INCLUDE, RAISE, Schema, validate
 
 from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec import exceptions, utils, APISpec
@@ -11,9 +11,9 @@ from .utils import get_schemas, build_ref
 
 
 class TestMarshmallowFieldToOpenAPI:
-    def test_fields_with_missing_load(self, openapi):
+    def test_fields_with_load_default_load(self, openapi):
         class MySchema(Schema):
-            field = fields.Str(default="foo", missing="bar")
+            field = fields.Str(dump_default="foo", load_default="bar")
 
         res = openapi.schema2parameters(MySchema, location="query")
         if openapi.openapi_version.major < 3:
@@ -52,7 +52,7 @@ class TestMarshmallowSchemaToModelDefinition:
     def test_schema2jsonschema_with_explicit_fields(self, openapi):
         class UserSchema(Schema):
             _id = fields.Int()
-            email = fields.Email(description="email address of the user")
+            email = fields.Email(metadata={"description": "email address of the user"})
             name = fields.Str()
 
             class Meta:
@@ -152,6 +152,16 @@ class TestMarshmallowSchemaToModelDefinition:
         res = openapi.schema2jsonschema(UnknownIncludeSchema)
         assert res["additionalProperties"] is True
 
+    def test_unknown_values_ignore(self, openapi):
+        class UnknownExcludeSchema(Schema):
+            class Meta:
+                unknown = EXCLUDE
+
+            first = fields.Str()
+
+        res = openapi.schema2jsonschema(UnknownExcludeSchema)
+        assert "additionalProperties" not in res
+
     def test_only_explicitly_declared_fields_are_translated(self, openapi):
         class UserSchema(Schema):
             _id = fields.Int()
@@ -190,9 +200,7 @@ class TestMarshmallowSchemaToModelDefinition:
             pass
 
         expected_error = (
-            "{!r} doesn't have either `fields` or `_declared_fields`.".format(
-                NotASchema
-            )
+            f"{NotASchema!r} is neither a Schema class nor a Schema instance."
         )
         with pytest.raises(ValueError, match=expected_error):
             openapi.schema2jsonschema(NotASchema)
@@ -218,6 +226,31 @@ class TestMarshmallowSchemaToParameters:
         field = fields.Str(required=True)
         res = openapi._field2parameter(field, name="field", location="query")
         assert res["required"] is True
+
+    def test_schema_partial(self, openapi):
+        class UserSchema(Schema):
+            field = fields.Str(required=True)
+
+        res_nodump = openapi.schema2parameters(
+            UserSchema(partial=True), location="query"
+        )
+
+        param = res_nodump[0]
+        assert param["required"] is False
+
+    def test_schema_partial_list(self, openapi):
+        class UserSchema(Schema):
+            field = fields.Str(required=True)
+            partial_field = fields.Str(required=True)
+
+        res_nodump = openapi.schema2parameters(
+            UserSchema(partial=("partial_field",)), location="query"
+        )
+
+        param = next(p for p in res_nodump if p["name"] == "field")
+        assert param["required"] is True
+        param = next(p for p in res_nodump if p["name"] == "partial_field")
+        assert param["required"] is False
 
     # json/body is invalid for OpenAPI 3
     @pytest.mark.parametrize("openapi", ("2.0",), indirect=True)
@@ -311,7 +344,7 @@ class TestMarshmallowSchemaToParameters:
             pass
 
         expected_error = (
-            f"{NotASchema!r} doesn't have either `fields` or `_declared_fields`"
+            f"{NotASchema!r} is neither a Schema class nor a Schema instance."
         )
         with pytest.raises(ValueError, match=expected_error):
             openapi.schema2jsonschema(NotASchema)
@@ -358,6 +391,16 @@ class TestNesting:
         assert ("i" in props) == (modifier == "only")
         assert ("j" not in props) == (modifier == "only")
 
+    def test_schema2jsonschema_with_plucked_field(self, spec_fixture):
+        class PetSchema(Schema):
+            breed = fields.Pluck(CategorySchema, "breed")
+
+        category_schema = spec_fixture.openapi.schema2jsonschema(CategorySchema)
+        pet_schema = spec_fixture.openapi.schema2jsonschema(PetSchema)
+        assert (
+            pet_schema["properties"]["breed"] == category_schema["properties"]["breed"]
+        )
+
     def test_schema2jsonschema_with_nested_fields_with_adhoc_changes(
         self, spec_fixture
     ):
@@ -380,6 +423,20 @@ class TestNesting:
         assert props["Category"] == spec_fixture.openapi.schema2jsonschema(
             CategorySchema
         )
+
+    def test_schema2jsonschema_with_plucked_fields_with_adhoc_changes(
+        self, spec_fixture
+    ):
+        category_schema = CategorySchema()
+        category_schema.fields["breed"].dump_only = True
+
+        class PetSchema(Schema):
+            breed = fields.Pluck(category_schema, "breed", many=True)
+
+        spec_fixture.spec.components.schema("Pet", schema=PetSchema)
+        props = get_schemas(spec_fixture.spec)["Pet"]["properties"]
+
+        assert props["breed"]["items"]["readOnly"] is True
 
     def test_schema2jsonschema_with_nested_excluded_fields(self, spec):
         category_schema = CategorySchema(exclude=("breed",))
