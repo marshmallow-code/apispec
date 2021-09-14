@@ -11,7 +11,7 @@ EXTRAS_REQUIRE = {
         "pyyaml==5.4.1",
         "sphinx==4.2.0",
         "sphinx-issues==1.2.0",
-        "sphinx-rtd-theme==0.5.2",
+        "sphinx-rtd-theme==1.0.0",
     ],
 }
 EXTRAS_REQUIRE["tests"] = (
