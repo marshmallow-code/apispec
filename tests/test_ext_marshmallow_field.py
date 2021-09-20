@@ -72,6 +72,12 @@ def test_field2property_formats(FieldClass, expected_format, spec_fixture):
     res = spec_fixture.openapi.field2property(field)
     assert res["format"] == expected_format
 
+def test_field2property_min_max_date_time(spec_fixture):
+    field = fields.DateTime(min=dt.datetime(2021,5, 1, 1,1,0), max=dt.datetime(2021, 6,1,1,1,0))
+    res = spec_fixture.openapi.field2property(field)
+    assert res["min"] == '2021-05-10 01:01:00'
+    assert res["max"] == '2021-06-10 01:01:00'
+
 
 def test_field_with_description(spec_fixture):
     field = fields.Str(metadata={"description": "a username"})
