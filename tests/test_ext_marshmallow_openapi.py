@@ -1,4 +1,5 @@
 import pytest
+from collections import OrderedDict
 from datetime import datetime
 
 from marshmallow import EXCLUDE, fields, INCLUDE, RAISE, Schema, validate
@@ -101,6 +102,21 @@ class TestMarshmallowSchemaToModelDefinition:
 
         res = openapi.schema2jsonschema(BandSchema(partial=("drummer",)))
         assert res["required"] == ["bassist"]
+
+    @pytest.mark.parametrize("ordered_schema", (True, False))
+    def test_ordered(self, openapi, ordered_schema):
+        class BandSchema(Schema):
+            class Meta:
+                ordered = ordered_schema
+
+            drummer = fields.Str()
+            bassist = fields.Str()
+
+        res = openapi.schema2jsonschema(BandSchema)
+        assert isinstance(res["properties"], OrderedDict) == ordered_schema
+
+        res = openapi.schema2jsonschema(BandSchema())
+        assert isinstance(res["properties"], OrderedDict) == ordered_schema
 
     def test_no_required_fields(self, openapi):
         class BandSchema(Schema):
