@@ -43,6 +43,10 @@ First, ensure that ``apispec-webframeworks`` is installed: ::
 
     $ pip install apispec-webframeworks
 
+Also, ensure that a compatible ``marshmallow`` version is used: ::
+
+    $ pip install -U apispec[marshmallow]
+
 We can now use the marshmallow and Flask plugins.
 
 .. code-block:: python
