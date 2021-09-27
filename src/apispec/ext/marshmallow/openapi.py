@@ -177,7 +177,7 @@ class OpenAPIConverter(FieldConverterMixin):
         fields = get_fields(schema)
         Meta = getattr(schema, "Meta", None)
         partial = getattr(schema, "partial", None)
-        ordered = getattr(schema, "ordered", False)
+        ordered = getattr(Meta, "ordered", False)
 
         jsonschema = self.fields2jsonschema(fields, partial=partial, ordered=ordered)
 
