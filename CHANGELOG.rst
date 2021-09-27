@@ -1,8 +1,12 @@
 Changelog
 ---------
 
-5.1.1 (unreleased)
+5.1.1 (2021-09-27)
 ******************
+
+Bug fixes:
+
+- Fix field ordering in "ordered" schema classes documentation (:issue:`714`).
 
 Other changes:
 
