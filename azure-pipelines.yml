@@ -28,11 +28,7 @@ jobs:
       - lint
 
       - py36-marshmallow3
-      - py37-marshmallow3
-      - py38-marshmallow3
-      - py39-marshmallow3
       - py310-marshmallow3
-
       - py310-marshmallowdev
 
       - docs
