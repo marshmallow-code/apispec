@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+5.1.2 (unreleased)
+******************
+
+Other changes:
+
+- Test against Python 3.10.
+
 5.1.1 (2021-09-27)
 ******************
 
