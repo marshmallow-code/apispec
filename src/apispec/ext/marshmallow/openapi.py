@@ -6,8 +6,6 @@ marshmallow :class:`Schemas <marshmallow.Schema>` and :class:`Fields <marshmallo
     This module is treated as private API.
     Users should not need to use this module directly.
 """
-from collections import OrderedDict
-
 import marshmallow
 from marshmallow.utils import is_collection
 
@@ -177,9 +175,8 @@ class OpenAPIConverter(FieldConverterMixin):
         fields = get_fields(schema)
         Meta = getattr(schema, "Meta", None)
         partial = getattr(schema, "partial", None)
-        ordered = getattr(Meta, "ordered", False)
 
-        jsonschema = self.fields2jsonschema(fields, partial=partial, ordered=ordered)
+        jsonschema = self.fields2jsonschema(fields, partial=partial)
 
         if hasattr(Meta, "title"):
             jsonschema["title"] = Meta.title
@@ -190,18 +187,17 @@ class OpenAPIConverter(FieldConverterMixin):
 
         return jsonschema
 
-    def fields2jsonschema(self, fields, *, ordered=False, partial=None):
+    def fields2jsonschema(self, fields, *, partial=None):
         """Return the JSON Schema Object given a mapping between field names and
         :class:`Field <marshmallow.Field>` objects.
 
         :param dict fields: A dictionary of field name field object pairs
-        :param bool ordered: Whether to preserve the order in which fields were declared
         :param bool|tuple partial: Whether to override a field's required flag.
             If `True` no fields will be set as required. If an iterable fields
             in the iterable will not be marked as required.
         :rtype: dict, a JSON Schema Object
         """
-        jsonschema = {"type": "object", "properties": OrderedDict() if ordered else {}}
+        jsonschema = {"type": "object", "properties": {}}
 
         for field_name, field_obj in fields.items():
             observed_field_name = field_obj.data_key or field_name

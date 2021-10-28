@@ -1,5 +1,4 @@
 """Core apispec classes and functions."""
-from collections import OrderedDict
 from copy import deepcopy
 import warnings
 
@@ -312,7 +311,7 @@ class Components:
         if "requestBody" in operation:
             self._resolve_refs_in_request_body(operation["requestBody"])
         if "responses" in operation:
-            responses = OrderedDict()
+            responses = {}
             for code, response in operation["responses"].items():
                 response = self.get_ref("response", response)
                 self._resolve_refs_in_response(response)
@@ -363,7 +362,7 @@ class APISpec:
 
         # Metadata
         self._tags = []
-        self._paths = OrderedDict()
+        self._paths = {}
 
         # Components
         self.components = Components(self.plugins, self.openapi_version)
@@ -430,7 +429,7 @@ class APISpec:
         """
         # operations and parameters must be deepcopied because they are mutated
         # in _clean_operations and operation helpers and path may be called twice
-        operations = deepcopy(operations) or OrderedDict()
+        operations = deepcopy(operations) or {}
         parameters = deepcopy(parameters) or []
 
         # Execute path helpers
@@ -529,7 +528,7 @@ class APISpec:
                     operation["parameters"]
                 )
             if "responses" in operation:
-                responses = OrderedDict()
+                responses = {}
                 for code, response in operation["responses"].items():
                     try:
                         code = int(code)  # handles IntEnums like http.HTTPStatus

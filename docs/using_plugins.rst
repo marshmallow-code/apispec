@@ -100,7 +100,7 @@ The schema is now added to the spec.
     #           'title': 'Gisty',
     #           'version': '1.0.0'},
     #  'openapi': '3.0.2',
-    #  'paths': OrderedDict(),
+    #  'paths': {},
     #  'tags': []}
 
 Our application will have a Flask route for the gist detail endpoint.
@@ -156,14 +156,12 @@ Our OpenAPI spec now looks like this:
     #           'title': 'Gisty',
     #           'version': '1.0.0'},
     #  'openapi': '3.0.2',
-    #  'paths': OrderedDict([('/gists/{gist_id}',
-    #                         OrderedDict([('get',
-    #                                       {'parameters': [{'in': 'path',
+    #  'paths': {'/gists/{gist_id}': {'get': {'parameters': [{'in': 'path',
     #                                                        'name': 'gist_id',
     #                                                        'required': True,
     #                                                        'schema': {'format': 'int32',
     #                                                                   'type': 'integer'}}],
-    #                                        'responses': {200: {'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Gist'}}}}}})]))]),
+    #                                         'responses': {200: {'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Gist'}}}}}}}},
     #  'tags': []}
 
 If your API uses `method-based dispatching <http://flask.pocoo.org/docs/0.12/views/#method-based-dispatching>`_, the process is similar. Note that the method no longer needs to be included in the docstring.

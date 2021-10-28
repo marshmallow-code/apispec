@@ -147,7 +147,7 @@ To use the plugin:
 
     spec.path(path="/gists/{gist_id}", func=gist_detail)
     print(dict(spec.to_dict()["paths"]))
-    # {'/gists/{gist_id}': OrderedDict([('get', {'responses': {200: {'content': {'application/json': {'schema': '#/definitions/Gist'}}}}})])}
+    # {'/gists/{gist_id}': {'get': {'responses': {200: {'content': {'application/json': {'schema': '#/definitions/Gist'}}}}}}}
 
 
 Next Steps

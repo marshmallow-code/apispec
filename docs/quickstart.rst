@@ -72,8 +72,8 @@ To output your OpenAPI spec, invoke the `to_dict <apispec.APISpec.to_dict>` meth
     #           'title': 'Gisty',
     #           'version': '1.0.0'},
     #  'openapi': '3.0.2',
-    #  'paths': OrderedDict([('/gist/{gist_id}',
-    #                         {'get': {'responses': {'200': {'content': {'application/json': {'schema': {'$ref': '#/definitions/Gist'}}}}}}})]),
+    #  'paths': {'/gist/{gist_id}':
+    #               {'get': {'responses': {'200': {'content': {'application/json': {'schema': {'$ref': '#/definitions/Gist'}}}}}}}},
     #  'tags': []}
 
 Use `to_yaml <apispec.APISpec.to_yaml>` to export your spec to YAML.

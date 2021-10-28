@@ -1,5 +1,4 @@
 import copy
-from collections import OrderedDict
 from http import HTTPStatus
 
 import pytest
@@ -667,7 +666,7 @@ class TestPath(RefsSchemaTestMixin):
     def test_path_methods_maintain_order(self, spec):
         methods = ["get", "post", "put", "patch", "delete", "head", "options"]
         for method in methods:
-            spec.path(path="/path", operations=OrderedDict({method: {}}))
+            spec.path(path="/path", operations={method: {}})
         assert list(spec.to_dict()["paths"]["/path"]) == methods
 
     def test_path_merges_paths(self, spec):

@@ -2,7 +2,6 @@
 
 import copy
 import warnings
-from collections import OrderedDict
 
 import marshmallow
 
@@ -83,11 +82,11 @@ def filter_excluded_fields(fields, Meta, *, exclude_dump_only):
     if exclude_dump_only:
         exclude.extend(getattr(Meta, "dump_only", []))
 
-    filtered_fields = OrderedDict(
-        (key, value)
+    filtered_fields = {
+        key: value
         for key, value in fields.items()
         if key not in exclude and not (exclude_dump_only and value.dump_only)
-    )
+    }
 
     return filtered_fields
 
