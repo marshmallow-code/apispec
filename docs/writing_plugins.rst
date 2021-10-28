@@ -24,7 +24,7 @@ A plugin with a path helper function may look something like this:
 
 .. code-block:: python
 
-    from apispec import Path, BasePlugin
+    from apispec import BasePlugin
     from apispec.yaml_utils import load_operations_from_docstring
 
 

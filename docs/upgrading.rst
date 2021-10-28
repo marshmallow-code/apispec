@@ -3,6 +3,24 @@ Upgrading to Newer Releases
 
 This section documents migration paths to new releases.
 
+Upgrading to 5.0.0
+------------------
+
+Upgrading to 4.0.0
+------------------
+
+location is ignored in field metadata
+*************************************
+
+``location`` parameter is ignored in ``Field`` metadata. A ``Schema`` can only
+have a single location.
+
+A ``Schema`` with fields from different locations must be split into multiple
+``Schema``s.
+
+Upgrading to 3.0.0
+------------------
+
 Upgrading to 2.0.0
 ------------------
 
@@ -24,8 +42,7 @@ The example plugin below defines an additional `func` argument and accepts extra
             """Path helper that parses docstrings for operations. Adds a
             ``func`` parameter to `apispec.APISpec.path`.
             """
-            operations = load_operations_from_docstring(func.__doc__)
-            return Path(path=path, operations=operations)
+            operations.update(load_operations_from_docstring(func.__doc__))
 
 Components must be referenced by ID, not full path
 **************************************************
