@@ -1,4 +1,5 @@
 """Core apispec classes and functions."""
+import typing
 from collections import OrderedDict
 from copy import deepcopy
 import warnings
@@ -26,20 +27,24 @@ class Components:
     They became sub-fields of "components" top-level field in OAS v3.
     """
 
-    def __init__(self, plugins, openapi_version):
+    def __init__(
+        self,
+        plugins: typing.Union[tuple, list],
+        openapi_version: OpenAPIVersion,
+    ) -> None:
         self._plugins = plugins
         self.openapi_version = openapi_version
-        self.schemas = {}
-        self.responses = {}
-        self.parameters = {}
-        self.headers = {}
-        self.examples = {}
-        self.security_schemes = {}
-        self.schemas_lazy = {}
-        self.responses_lazy = {}
-        self.parameters_lazy = {}
-        self.headers_lazy = {}
-        self.examples_lazy = {}
+        self.schemas: typing.Dict[str, dict] = {}
+        self.responses: typing.Dict[str, dict] = {}
+        self.parameters: typing.Dict[str, dict] = {}
+        self.headers: typing.Dict[str, dict] = {}
+        self.examples: typing.Dict[str, dict] = {}
+        self.security_schemes: typing.Dict[str, dict] = {}
+        self.schemas_lazy: typing.Dict[str, dict] = {}
+        self.responses_lazy: typing.Dict[str, dict] = {}
+        self.parameters_lazy: typing.Dict[str, dict] = {}
+        self.headers_lazy: typing.Dict[str, dict] = {}
+        self.examples_lazy: typing.Dict[str, dict] = {}
 
         self._subsections = {
             "schema": self.schemas,
@@ -57,20 +62,31 @@ class Components:
             "example": self.examples_lazy,
         }
 
-    def to_dict(self):
+    def to_dict(self) -> typing.Dict[str, dict]:
         return {
             COMPONENT_SUBSECTIONS[self.openapi_version.major][k]: v
             for k, v in self._subsections.items()
             if v != {}
         }
 
-    def _register_component(self, obj_type, component_id, component, *, lazy=False):
+    def _register_component(
+        self,
+        obj_type: str,
+        component_id: str,
+        component: dict,
+        *,
+        lazy: bool = False,
+    ) -> None:
         subsection = (self._subsections if lazy is False else self._subsections_lazy)[
             obj_type
         ]
         subsection[component_id] = component
 
-    def _do_register_lazy_component(self, obj_type, component_id):
+    def _do_register_lazy_component(
+        self,
+        obj_type: str,
+        component_id: str,
+    ) -> None:
         component_buffer = self._subsections_lazy[obj_type]
         # If component was lazy registered, register it for real
         if component_id in component_buffer:
@@ -78,7 +94,11 @@ class Components:
                 component_id
             )
 
-    def get_ref(self, obj_type, obj_or_component_id):
+    def get_ref(
+        self,
+        obj_type: str,
+        obj_or_component_id: typing.Union[dict, str],
+    ) -> dict:
         """Return object or reference
 
         If obj is a dict, it is assumed to be a complete description and it is returned as is.
@@ -354,7 +374,14 @@ class APISpec:
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#openapi-object
     """
 
-    def __init__(self, title, version, openapi_version, plugins=(), **options):
+    def __init__(
+        self,
+        title: str,
+        version: str,
+        openapi_version: OpenAPIVersion,
+        plugins: typing.Union[tuple, list] = (),
+        **options,
+    ) -> None:
         self.title = title
         self.version = version
         self.openapi_version = OpenAPIVersion(openapi_version)
@@ -362,8 +389,8 @@ class APISpec:
         self.plugins = plugins
 
         # Metadata
-        self._tags = []
-        self._paths = OrderedDict()
+        self._tags: typing.List[dict] = []
+        self._paths: OrderedDict = OrderedDict()
 
         # Components
         self.components = Components(self.plugins, self.openapi_version)
@@ -372,8 +399,8 @@ class APISpec:
         for plugin in self.plugins:
             plugin.init_spec(self)
 
-    def to_dict(self):
-        ret = {
+    def to_dict(self) -> typing.Dict[str, typing.Any]:
+        ret: typing.Dict[str, typing.Any] = {
             "paths": self._paths,
             "info": {"title": self.title, "version": self.version},
         }
@@ -390,7 +417,7 @@ class APISpec:
         ret = deepupdate(ret, self.options)
         return ret
 
-    def to_yaml(self, yaml_dump_kwargs=None):
+    def to_yaml(self, yaml_dump_kwargs=None) -> str:
         """Render the spec to YAML. Requires PyYAML to be installed.
 
         :param dict yaml_dump_kwargs: Additional keyword arguments to pass to `yaml.dump`
@@ -399,7 +426,7 @@ class APISpec:
 
         return dict_to_yaml(self.to_dict(), yaml_dump_kwargs)
 
-    def tag(self, tag):
+    def tag(self, tag: dict) -> "APISpec":
         """Store information about a tag.
 
         :param dict tag: the dictionary storing information about the tag.
@@ -409,14 +436,14 @@ class APISpec:
 
     def path(
         self,
-        path=None,
+        path: dict = None,
         *,
-        operations=None,
-        summary=None,
-        description=None,
-        parameters=None,
+        operations: typing.Dict[str, typing.Any] = None,
+        summary: typing.Optional[str] = None,
+        description: typing.Optional[str] = None,
+        parameters: typing.List[dict] = None,
         **kwargs,
-    ):
+    ) -> "APISpec":
         """Add a new path object to the spec.
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#path-item-object
@@ -468,7 +495,10 @@ class APISpec:
 
         return self
 
-    def _clean_parameters(self, parameters):
+    def _clean_parameters(
+        self,
+        parameters: typing.List[dict],
+    ) -> typing.List[dict]:
         """Ensure that all parameters with "in" equal to "path" are also required
         as required by the OpenAPI specification, as well as normalizing any
         references to global parameters and checking for duplicates parameters
@@ -504,7 +534,10 @@ class APISpec:
 
         return parameters
 
-    def _clean_operations(self, operations):
+    def _clean_operations(
+        self,
+        operations: typing.Dict[str, dict],
+    ) -> None:
         """Ensure that all parameters with "in" equal to "path" are also required
         as required by the OpenAPI specification, as well as normalizing any
         references to global parameters. Also checks for invalid HTTP methods.
