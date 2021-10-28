@@ -2,7 +2,7 @@
 
 import copy
 import warnings
-from collections import namedtuple, OrderedDict
+from collections import OrderedDict
 
 import marshmallow
 
@@ -105,10 +105,7 @@ def make_schema_key(schema):
             # Unhashable iterable (list, set)
             attribute = frozenset(attribute)
         modifiers.append(attribute)
-    return SchemaKey(schema.__class__, *modifiers)
-
-
-SchemaKey = namedtuple("SchemaKey", ["SchemaClass"] + MODIFIERS)
+    return tuple([schema.__class__, *modifiers])
 
 
 def get_unique_schema_name(components, name, counter=0):
