@@ -27,7 +27,7 @@ jobs:
     toxenvs:
       - lint
 
-      - py36-marshmallow3
+      - py37-marshmallow3
       - py310-marshmallow3
       - py310-marshmallowdev
 
