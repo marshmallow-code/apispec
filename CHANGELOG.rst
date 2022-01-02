@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-5.1.2 (unreleased)
+5.2.0 (unreleased)
 ******************
 
 Refactoring:
@@ -10,7 +10,8 @@ Refactoring:
 
 Other changes:
 
-- Test against Python 3.10.
+- Test against Python 3.10 (:pr:`724`).
+- Drop support for Python 3.6 (:pr:`727`).
 
 5.1.1 (2021-09-27)
 ******************
