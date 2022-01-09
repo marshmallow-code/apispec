@@ -45,7 +45,12 @@ def get_fields(schema, *, exclude_dump_only=False):
     if isinstance(schema, marshmallow.Schema):
         fields = schema.fields
     elif isinstance(schema, type) and issubclass(schema, marshmallow.Schema):
-        fields = copy.deepcopy(schema._declared_fields)
+        fields_to_extract = {
+            key: value
+            for key, value in schema._declared_fields.items()
+            if value is not None
+        }
+        fields = copy.deepcopy(fields_to_extract)
     else:
         raise ValueError(f"{schema!r} is neither a Schema class nor a Schema instance.")
     Meta = getattr(schema, "Meta", None)
@@ -54,7 +59,8 @@ def get_fields(schema, *, exclude_dump_only=False):
 
 
 def warn_if_fields_defined_in_meta(fields, Meta):
-    """Warns user that fields defined in Meta.fields or Meta.additional will be ignored.
+    """Warns user that fields defined in Meta.fields or Meta.additional will be ignored except
+    fields generated using SQLAlchemyAutoSchema.
 
     :param dict fields: A dictionary of fields name field object pairs
     :param Meta: the schema's Meta class
