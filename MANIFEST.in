@@ -1,5 +1,6 @@
 include LICENSE
 include *.rst
+include src/apispec/py.typed
 recursive-include tests *
 recursive-include docs *
 recursive-exclude docs *.pyc

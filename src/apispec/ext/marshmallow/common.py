@@ -1,7 +1,11 @@
 """Utilities to get schema instances/classes"""
 
+from __future__ import annotations
+
 import copy
 import warnings
+
+from apispec.core import Components
 
 import marshmallow
 
@@ -9,7 +13,9 @@ import marshmallow
 MODIFIERS = ["only", "exclude", "load_only", "dump_only", "partial"]
 
 
-def resolve_schema_instance(schema):
+def resolve_schema_instance(
+    schema: type[marshmallow.Schema] | marshmallow.Schema | str,
+) -> marshmallow.Schema:
     """Return schema instance for given schema (instance or class).
 
     :param type|Schema|str schema: instance, class or class name of marshmallow.Schema
@@ -19,7 +25,7 @@ def resolve_schema_instance(schema):
         return schema()
     if isinstance(schema, marshmallow.Schema):
         return schema
-    return marshmallow.class_registry.get_class(schema)()
+    return marshmallow.class_registry.get_class(schema)()  # type: ignore
 
 
 def resolve_schema_cls(schema):
@@ -35,7 +41,7 @@ def resolve_schema_cls(schema):
     return marshmallow.class_registry.get_class(schema)
 
 
-def get_fields(schema, *, exclude_dump_only=False):
+def get_fields(schema, *, exclude_dump_only: bool = False):
     """Return fields from schema.
 
     :param Schema schema: A marshmallow Schema instance or a class object
@@ -71,7 +77,7 @@ def warn_if_fields_defined_in_meta(fields, Meta):
             )
 
 
-def filter_excluded_fields(fields, Meta, *, exclude_dump_only):
+def filter_excluded_fields(fields, Meta, *, exclude_dump_only: bool) -> dict:
     """Filter fields that should be ignored in the OpenAPI spec.
 
     :param dict fields: A dictionary of fields name field object pairs
@@ -91,7 +97,7 @@ def filter_excluded_fields(fields, Meta, *, exclude_dump_only):
     return filtered_fields
 
 
-def make_schema_key(schema):
+def make_schema_key(schema: marshmallow.Schema) -> tuple:
     if not isinstance(schema, marshmallow.Schema):
         raise TypeError("can only make a schema key based on a Schema instance.")
     modifiers = []
@@ -107,7 +113,7 @@ def make_schema_key(schema):
     return tuple([schema.__class__, *modifiers])
 
 
-def get_unique_schema_name(components, name, counter=0):
+def get_unique_schema_name(components: Components, name: str, counter: int = 0) -> str:
     """Function to generate a unique name based on the provided name and names
     already in the spec.  Will append a number to the name to make it unique if
     the name is already in the spec.

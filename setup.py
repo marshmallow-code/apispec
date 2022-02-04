@@ -5,7 +5,13 @@ EXTRAS_REQUIRE = {
     "marshmallow": ["marshmallow>=3.13.0"],
     "yaml": ["PyYAML>=3.10"],
     "validation": ["prance[osv]>=0.11"],
-    "lint": ["flake8==4.0.1", "flake8-bugbear==22.1.11", "pre-commit~=2.4"],
+    "lint": [
+        "flake8==4.0.1",
+        "flake8-bugbear==22.1.11",
+        "pre-commit~=2.4",
+        "mypy==0.931",
+        "types-PyYAML",
+    ],
     "docs": [
         "marshmallow>=3.13.0",
         "pyyaml==6.0",

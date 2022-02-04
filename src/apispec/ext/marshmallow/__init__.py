@@ -69,15 +69,22 @@ with `"x-"` (vendor extension).
     #           'type': 'object'}}
 
 """
-import warnings
 
-from apispec import BasePlugin
+from __future__ import annotations
+
+import warnings
+import typing
+
+from marshmallow import Schema
+
+from apispec import BasePlugin, APISpec
+from apispec.utils import OpenAPIVersion
 from .common import resolve_schema_instance, make_schema_key, resolve_schema_cls
 from .openapi import OpenAPIConverter
 from .schema_resolver import SchemaResolver
 
 
-def resolver(schema):
+def resolver(schema: type[Schema]) -> str:
     """Default schema name resolver function that strips 'Schema' from the end of the class name."""
     schema_cls = resolve_schema_cls(schema)
     name = schema_cls.__name__
@@ -106,15 +113,18 @@ class MarshmallowPlugin(BasePlugin):
     Converter = OpenAPIConverter
     Resolver = SchemaResolver
 
-    def __init__(self, schema_name_resolver=None):
+    def __init__(
+        self,
+        schema_name_resolver: typing.Callable[[type[Schema]], str] | None = None,
+    ) -> None:
         super().__init__()
         self.schema_name_resolver = schema_name_resolver or resolver
-        self.spec = None
-        self.openapi_version = None
-        self.converter = None
-        self.resolver = None
+        self.spec: APISpec | None = None
+        self.openapi_version: OpenAPIVersion | None = None
+        self.converter: OpenAPIConverter | None = None
+        self.resolver: SchemaResolver | None = None
 
-    def init_spec(self, spec):
+    def init_spec(self, spec: APISpec) -> None:
         super().init_spec(spec)
         self.spec = spec
         self.openapi_version = spec.openapi_version
@@ -187,23 +197,31 @@ class MarshmallowPlugin(BasePlugin):
         self.resolver.resolve_response(response)
         return response
 
-    def header_helper(self, header, **kwargs):
+    def header_helper(self, header: dict, **kwargs: typing.Any):
         """Header component helper that allows using a marshmallow
         :class:`Schema <marshmallow.Schema>` in header definition.
 
         :param dict header: header fields. May contain a marshmallow
             Schema class or instance.
         """
+        assert self.resolver  # needed for mypy
         self.resolver.resolve_schema(header)
         return header
 
-    def operation_helper(self, operations, **kwargs):
+    def operation_helper(
+        self,
+        path: str | None = None,
+        operations: dict | None = None,
+        **kwargs: typing.Any,
+    ) -> None:
+        assert self.resolver  # needed for mypy
         self.resolver.resolve_operations(operations)
 
-    def warn_if_schema_already_in_spec(self, schema_key):
+    def warn_if_schema_already_in_spec(self, schema_key: str) -> None:
         """Method to warn the user if the schema has already been added to the
         spec.
         """
+        assert self.converter  # needed for mypy
         if schema_key in self.converter.refs:
             warnings.warn(
                 "{} has already been added to the spec. Adding it twice may "

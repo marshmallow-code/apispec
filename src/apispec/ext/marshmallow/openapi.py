@@ -6,9 +6,13 @@ marshmallow :class:`Schemas <marshmallow.Schema>` and :class:`Fields <marshmallo
     This module is treated as private API.
     Users should not need to use this module directly.
 """
+
+from __future__ import annotations
+
 import marshmallow
 from marshmallow.utils import is_collection
 
+from apispec import APISpec
 from apispec.utils import OpenAPIVersion
 from apispec.exceptions import APISpecError
 from .field_converter import FieldConverterMixin
@@ -45,13 +49,18 @@ class OpenAPIConverter(FieldConverterMixin):
         spec
     """
 
-    def __init__(self, openapi_version, schema_name_resolver, spec):
+    def __init__(
+        self,
+        openapi_version: OpenAPIVersion | str,
+        schema_name_resolver,
+        spec: APISpec,
+    ) -> None:
         self.openapi_version = OpenAPIVersion(openapi_version)
         self.schema_name_resolver = schema_name_resolver
         self.spec = spec
         self.init_attribute_functions()
         # Schema references
-        self.refs = {}
+        self.refs: dict = {}
 
     def resolve_nested_schema(self, schema):
         """Return the OpenAPI representation of a marshmallow Schema.
@@ -93,7 +102,13 @@ class OpenAPIConverter(FieldConverterMixin):
         return self.get_ref_dict(schema_instance)
 
     def schema2parameters(
-        self, schema, *, location, name="body", required=False, description=None
+        self,
+        schema,
+        *,
+        location,
+        name: str = "body",
+        required: bool = False,
+        description: str | None = None,
     ):
         """Return an array of OpenAPI parameters given a given marshmallow
         :class:`Schema <marshmallow.Schema>`. If `location` is "body", then return an array
@@ -133,17 +148,20 @@ class OpenAPIConverter(FieldConverterMixin):
             for field_name, field_obj in fields.items()
         ]
 
-    def _field2parameter(self, field, *, name, location):
+    def _field2parameter(
+        self, field: marshmallow.fields.Field, *, name: str, location: str
+    ):
         """Return an OpenAPI parameter as a `dict`, given a marshmallow
         :class:`Field <marshmallow.Field>`.
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameterObject
         """
-        ret = {"in": location, "name": name}
+        ret: dict = {"in": location, "name": name}
 
         partial = getattr(field.parent, "partial", False)
         ret["required"] = field.required and (
-            not partial or (is_collection(partial) and field.name not in partial)
+            not partial
+            or (is_collection(partial) and field.name not in partial)  # type:ignore
         )
 
         prop = self.field2property(field)

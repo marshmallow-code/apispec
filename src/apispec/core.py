@@ -1,4 +1,8 @@
 """Core apispec classes and functions."""
+
+from __future__ import annotations
+
+import typing
 from copy import deepcopy
 import warnings
 
@@ -25,20 +29,24 @@ class Components:
     They became sub-fields of "components" top-level field in OAS v3.
     """
 
-    def __init__(self, plugins, openapi_version):
+    def __init__(
+        self,
+        plugins: tuple | list,
+        openapi_version: OpenAPIVersion,
+    ) -> None:
         self._plugins = plugins
         self.openapi_version = openapi_version
-        self.schemas = {}
-        self.responses = {}
-        self.parameters = {}
-        self.headers = {}
-        self.examples = {}
-        self.security_schemes = {}
-        self.schemas_lazy = {}
-        self.responses_lazy = {}
-        self.parameters_lazy = {}
-        self.headers_lazy = {}
-        self.examples_lazy = {}
+        self.schemas: dict[str, dict] = {}
+        self.responses: dict[str, dict] = {}
+        self.parameters: dict[str, dict] = {}
+        self.headers: dict[str, dict] = {}
+        self.examples: dict[str, dict] = {}
+        self.security_schemes: dict[str, dict] = {}
+        self.schemas_lazy: dict[str, dict] = {}
+        self.responses_lazy: dict[str, dict] = {}
+        self.parameters_lazy: dict[str, dict] = {}
+        self.headers_lazy: dict[str, dict] = {}
+        self.examples_lazy: dict[str, dict] = {}
 
         self._subsections = {
             "schema": self.schemas,
@@ -56,20 +64,31 @@ class Components:
             "example": self.examples_lazy,
         }
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, dict]:
         return {
             COMPONENT_SUBSECTIONS[self.openapi_version.major][k]: v
             for k, v in self._subsections.items()
             if v != {}
         }
 
-    def _register_component(self, obj_type, component_id, component, *, lazy=False):
+    def _register_component(
+        self,
+        obj_type: str,
+        component_id: str,
+        component: dict,
+        *,
+        lazy: bool = False,
+    ) -> None:
         subsection = (self._subsections if lazy is False else self._subsections_lazy)[
             obj_type
         ]
         subsection[component_id] = component
 
-    def _do_register_lazy_component(self, obj_type, component_id):
+    def _do_register_lazy_component(
+        self,
+        obj_type: str,
+        component_id: str,
+    ) -> None:
         component_buffer = self._subsections_lazy[obj_type]
         # If component was lazy registered, register it for real
         if component_id in component_buffer:
@@ -77,7 +96,11 @@ class Components:
                 component_id
             )
 
-    def get_ref(self, obj_type, obj_or_component_id):
+    def get_ref(
+        self,
+        obj_type: str,
+        obj_or_component_id: dict | str,
+    ) -> dict:
         """Return object or reference
 
         If obj is a dict, it is assumed to be a complete description and it is returned as is.
@@ -95,7 +118,14 @@ class Components:
             obj_type, self.openapi_version.major, obj_or_component_id
         )
 
-    def schema(self, component_id, component=None, *, lazy=False, **kwargs):
+    def schema(
+        self,
+        component_id: str,
+        component: dict | None = None,
+        *,
+        lazy: bool = False,
+        **kwargs: typing.Any,
+    ) -> Components:
         """Add a new schema to the spec.
 
         :param str component_id: identifier by which schema may be referenced
@@ -135,7 +165,14 @@ class Components:
         self._register_component("schema", component_id, ret, lazy=lazy)
         return self
 
-    def response(self, component_id, component=None, *, lazy=False, **kwargs):
+    def response(
+        self,
+        component_id: str,
+        component: dict | None = None,
+        *,
+        lazy: bool = False,
+        **kwargs: typing.Any,
+    ) -> Components:
         """Add a response which can be referenced.
 
         :param str component_id: ref_id to use as reference
@@ -159,8 +196,14 @@ class Components:
         return self
 
     def parameter(
-        self, component_id, location, component=None, *, lazy=False, **kwargs
-    ):
+        self,
+        component_id: str,
+        location: str,
+        component: dict | None = None,
+        *,
+        lazy: bool = False,
+        **kwargs: typing.Any,
+    ) -> Components:
         """Add a parameter which can be referenced.
 
         :param str component_id: identifier by which parameter may be referenced
@@ -191,7 +234,14 @@ class Components:
         self._register_component("parameter", component_id, ret, lazy=lazy)
         return self
 
-    def header(self, component_id, component, *, lazy=False, **kwargs):
+    def header(
+        self,
+        component_id: str,
+        component: dict,
+        *,
+        lazy: bool = False,
+        **kwargs: typing.Any,
+    ) -> Components:
         """Add a header which can be referenced.
 
         :param str component_id: identifier by which header may be referenced
@@ -216,7 +266,9 @@ class Components:
         self._register_component("header", component_id, ret, lazy=lazy)
         return self
 
-    def example(self, component_id, component, *, lazy=False):
+    def example(
+        self, component_id: str, component: dict, *, lazy: bool = False
+    ) -> Components:
         """Add an example which can be referenced
 
         :param str component_id: identifier by which example may be referenced
@@ -232,7 +284,7 @@ class Components:
         self._register_component("example", component_id, component, lazy=lazy)
         return self
 
-    def security_scheme(self, component_id, component):
+    def security_scheme(self, component_id: str, component: dict) -> Components:
         """Add a security scheme which can be referenced.
 
         :param str component_id: component_id to use as reference
@@ -245,7 +297,7 @@ class Components:
         self._register_component("security_scheme", component_id, component)
         return self
 
-    def _resolve_schema(self, obj):
+    def _resolve_schema(self, obj) -> None:
         """Replace schema reference as string with a $ref if needed
 
         Also resolve references in the schema
@@ -254,12 +306,12 @@ class Components:
             obj["schema"] = self.get_ref("schema", obj["schema"])
             self._resolve_refs_in_schema(obj["schema"])
 
-    def _resolve_examples(self, obj):
+    def _resolve_examples(self, obj) -> None:
         """Replace example reference as string with a $ref"""
         for name, example in obj.get("examples", {}).items():
             obj["examples"][name] = self.get_ref("example", example)
 
-    def _resolve_refs_in_schema(self, schema):
+    def _resolve_refs_in_schema(self, schema: dict) -> None:
         if "properties" in schema:
             for key in schema["properties"]:
                 schema["properties"][key] = self.get_ref(
@@ -278,17 +330,17 @@ class Components:
             schema["not"] = self.get_ref("schema", schema["not"])
             self._resolve_refs_in_schema(schema["not"])
 
-    def _resolve_refs_in_parameter_or_header(self, parameter_or_header):
+    def _resolve_refs_in_parameter_or_header(self, parameter_or_header) -> None:
         self._resolve_schema(parameter_or_header)
         self._resolve_examples(parameter_or_header)
 
-    def _resolve_refs_in_request_body(self, request_body):
+    def _resolve_refs_in_request_body(self, request_body) -> None:
         # requestBody is OpenAPI v3+
         for media_type in request_body["content"].values():
             self._resolve_schema(media_type)
             self._resolve_examples(media_type)
 
-    def _resolve_refs_in_response(self, response):
+    def _resolve_refs_in_response(self, response) -> None:
         if self.openapi_version.major < 3:
             self._resolve_schema(response)
         else:
@@ -300,7 +352,7 @@ class Components:
                 self._resolve_refs_in_parameter_or_header(response["headers"][name])
             # TODO: Resolve link refs when Components supports links
 
-    def _resolve_refs_in_operation(self, operation):
+    def _resolve_refs_in_operation(self, operation) -> None:
         if "parameters" in operation:
             parameters = []
             for parameter in operation["parameters"]:
@@ -318,7 +370,7 @@ class Components:
                 responses[code] = response
             operation["responses"] = responses
 
-    def resolve_refs_in_path(self, path):
+    def resolve_refs_in_path(self, path) -> None:
         if "parameters" in path:
             parameters = []
             for parameter in path["parameters"]:
@@ -353,7 +405,14 @@ class APISpec:
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#openapi-object
     """
 
-    def __init__(self, title, version, openapi_version, plugins=(), **options):
+    def __init__(
+        self,
+        title: str,
+        version: str,
+        openapi_version: OpenAPIVersion | str,
+        plugins: tuple | list = (),
+        **options: typing.Any,
+    ) -> None:
         self.title = title
         self.version = version
         self.openapi_version = OpenAPIVersion(openapi_version)
@@ -361,8 +420,8 @@ class APISpec:
         self.plugins = plugins
 
         # Metadata
-        self._tags = []
-        self._paths = {}
+        self._tags: list[dict] = []
+        self._paths: dict = {}
 
         # Components
         self.components = Components(self.plugins, self.openapi_version)
@@ -371,8 +430,8 @@ class APISpec:
         for plugin in self.plugins:
             plugin.init_spec(self)
 
-    def to_dict(self):
-        ret = {
+    def to_dict(self) -> dict[str, typing.Any]:
+        ret: dict[str, typing.Any] = {
             "paths": self._paths,
             "info": {"title": self.title, "version": self.version},
         }
@@ -389,7 +448,7 @@ class APISpec:
         ret = deepupdate(ret, self.options)
         return ret
 
-    def to_yaml(self, yaml_dump_kwargs=None):
+    def to_yaml(self, yaml_dump_kwargs: typing.Any | None = None) -> str:
         """Render the spec to YAML. Requires PyYAML to be installed.
 
         :param dict yaml_dump_kwargs: Additional keyword arguments to pass to `yaml.dump`
@@ -398,7 +457,7 @@ class APISpec:
 
         return dict_to_yaml(self.to_dict(), yaml_dump_kwargs)
 
-    def tag(self, tag):
+    def tag(self, tag: dict) -> APISpec:
         """Store information about a tag.
 
         :param dict tag: the dictionary storing information about the tag.
@@ -408,14 +467,14 @@ class APISpec:
 
     def path(
         self,
-        path=None,
+        path: dict | None = None,
         *,
-        operations=None,
-        summary=None,
-        description=None,
-        parameters=None,
-        **kwargs,
-    ):
+        operations: dict[str, typing.Any] | None = None,
+        summary: str | None = None,
+        description: str | None = None,
+        parameters: list[dict] | None = None,
+        **kwargs: typing.Any,
+    ) -> APISpec:
         """Add a new path object to the spec.
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#path-item-object
@@ -467,7 +526,10 @@ class APISpec:
 
         return self
 
-    def _clean_parameters(self, parameters):
+    def _clean_parameters(
+        self,
+        parameters: list[dict],
+    ) -> list[dict]:
         """Ensure that all parameters with "in" equal to "path" are also required
         as required by the OpenAPI specification, as well as normalizing any
         references to global parameters and checking for duplicates parameters
@@ -503,7 +565,10 @@ class APISpec:
 
         return parameters
 
-    def _clean_operations(self, operations):
+    def _clean_operations(
+        self,
+        operations: dict[str, dict],
+    ) -> None:
         """Ensure that all parameters with "in" equal to "path" are also required
         as required by the OpenAPI specification, as well as normalizing any
         references to global parameters. Also checks for invalid HTTP methods.

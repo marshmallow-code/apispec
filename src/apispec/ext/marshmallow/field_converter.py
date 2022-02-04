@@ -9,10 +9,13 @@
 import re
 import functools
 import operator
+import typing
 import warnings
 
 import marshmallow
 from marshmallow.orderedset import OrderedSet
+
+from apispec.utils import OpenAPIVersion
 
 
 RegexType = type(re.compile(""))
@@ -87,6 +90,7 @@ class FieldConverterMixin:
     """Adds methods for converting marshmallow fields to an OpenAPI properties."""
 
     field_mapping = DEFAULT_FIELD_MAPPING
+    openapi_version: OpenAPIVersion
 
     def init_attribute_functions(self):
         self.attribute_functions = [
@@ -154,7 +158,7 @@ class FieldConverterMixin:
         setattr(self, func.__name__, bound_func)
         self.attribute_functions.append(bound_func)
 
-    def field2property(self, field):
+    def field2property(self, field: marshmallow.fields.Field) -> dict:
         """Return the JSON Schema property definition given a marshmallow
         :class:`Field <marshmallow.fields.Field>`.
 
@@ -166,14 +170,16 @@ class FieldConverterMixin:
         :param Field field: A marshmallow field.
         :rtype: dict, a Property Object
         """
-        ret = {}
+        ret: dict = {}
 
         for attr_func in self.attribute_functions:
             ret.update(attr_func(field, ret=ret))
 
         return ret
 
-    def field2type_and_format(self, field, **kwargs):
+    def field2type_and_format(
+        self, field: marshmallow.fields.Field, **kwargs: typing.Any
+    ) -> dict:
         """Return the dictionary of OpenAPI type and format based on the field type.
 
         :param Field field: A marshmallow field.
@@ -202,7 +208,9 @@ class FieldConverterMixin:
 
         return ret
 
-    def field2default(self, field, **kwargs):
+    def field2default(
+        self, field: marshmallow.fields.Field, **kwargs: typing.Any
+    ) -> dict:
         """Return the dictionary containing the field's default value.
 
         Will first look for a `default` key in the field's metadata and then
@@ -218,11 +226,13 @@ class FieldConverterMixin:
         else:
             default = field.load_default
             if default is not marshmallow.missing and not callable(default):
-                default = field._serialize(default, None, None)
+                default = field._serialize(default, None, None)  # type:ignore
                 ret["default"] = default
         return ret
 
-    def field2choices(self, field, **kwargs):
+    def field2choices(
+        self, field: marshmallow.fields.Field, **kwargs: typing.Any
+    ) -> dict:
         """Return the dictionary of OpenAPI field attributes for valid choices definition.
 
         :param Field field: A marshmallow field.
@@ -231,7 +241,7 @@ class FieldConverterMixin:
         attributes = {}
 
         comparable = [
-            validator.comparable
+            validator.comparable  # type:ignore
             for validator in field.validators
             if hasattr(validator, "comparable")
         ]
@@ -239,7 +249,7 @@ class FieldConverterMixin:
             attributes["enum"] = comparable
         else:
             choices = [
-                OrderedSet(validator.choices)
+                OrderedSet(validator.choices)  # type:ignore
                 for validator in field.validators
                 if hasattr(validator, "choices")
             ]
@@ -248,7 +258,9 @@ class FieldConverterMixin:
 
         return attributes
 
-    def field2read_only(self, field, **kwargs):
+    def field2read_only(
+        self, field: marshmallow.fields.Field, **kwargs: typing.Any
+    ) -> dict:
         """Return the dictionary of OpenAPI field attributes for a dump_only field.
 
         :param Field field: A marshmallow field.
@@ -259,7 +271,9 @@ class FieldConverterMixin:
             attributes["readOnly"] = True
         return attributes
 
-    def field2write_only(self, field, **kwargs):
+    def field2write_only(
+        self, field: marshmallow.fields.Field, **kwargs: typing.Any
+    ) -> dict:
         """Return the dictionary of OpenAPI field attributes for a load_only field.
 
         :param Field field: A marshmallow field.
@@ -270,13 +284,13 @@ class FieldConverterMixin:
             attributes["writeOnly"] = True
         return attributes
 
-    def field2nullable(self, field, ret):
+    def field2nullable(self, field: marshmallow.fields.Field, ret) -> dict:
         """Return the dictionary of OpenAPI field attributes for a nullable field.
 
         :param Field field: A marshmallow field.
         :rtype: dict
         """
-        attributes = {}
+        attributes: dict = {}
         if field.allow_none:
             if self.openapi_version.major < 3:
                 attributes["x-nullable"] = True
@@ -286,7 +300,7 @@ class FieldConverterMixin:
                 attributes["type"] = [*make_type_list(ret.get("type")), "null"]
         return attributes
 
-    def field2range(self, field, ret):
+    def field2range(self, field: marshmallow.fields.Field, ret) -> dict:
         """Return the dictionary of OpenAPI field attributes for a set of
         :class:`Range <marshmallow.validators.Range>` validators.
 
@@ -310,7 +324,9 @@ class FieldConverterMixin:
         )
         return make_min_max_attributes(validators, min_attr, max_attr)
 
-    def field2length(self, field, **kwargs):
+    def field2length(
+        self, field: marshmallow.fields.Field, **kwargs: typing.Any
+    ) -> dict:
         """Return the dictionary of OpenAPI field attributes for a set of
         :class:`Length <marshmallow.validators.Length>` validators.
 
@@ -334,14 +350,18 @@ class FieldConverterMixin:
         max_attr = "maxItems" if is_array else "maxLength"
 
         equal_list = [
-            validator.equal for validator in validators if validator.equal is not None
+            validator.equal  # type:ignore
+            for validator in validators
+            if validator.equal is not None  # type:ignore
         ]
         if equal_list:
             return {min_attr: equal_list[0], max_attr: equal_list[0]}
 
         return make_min_max_attributes(validators, min_attr, max_attr)
 
-    def field2pattern(self, field, **kwargs):
+    def field2pattern(
+        self, field: marshmallow.fields.Field, **kwargs: typing.Any
+    ) -> dict:
         """Return the dictionary of OpenAPI field attributes for a
         :class:`Regexp <marshmallow.validators.Regexp>` validator.
 
@@ -357,7 +377,7 @@ class FieldConverterMixin:
             if isinstance(getattr(v, "regex", None), RegexType)
         )
         v = next(regex_validators, None)
-        attributes = {} if v is None else {"pattern": v.regex.pattern}
+        attributes = {} if v is None else {"pattern": v.regex.pattern}  # type:ignore
 
         if next(regex_validators, None) is not None:
             warnings.warn(
@@ -368,7 +388,9 @@ class FieldConverterMixin:
 
         return attributes
 
-    def metadata2properties(self, field, **kwargs):
+    def metadata2properties(
+        self, field: marshmallow.fields.Field, **kwargs: typing.Any
+    ) -> dict:
         """Return a dictionary of properties extracted from field metadata.
 
         Will include field metadata that are valid properties of `OpenAPI schema
@@ -400,7 +422,7 @@ class FieldConverterMixin:
         }
         return ret
 
-    def nested2properties(self, field, ret):
+    def nested2properties(self, field: marshmallow.fields.Field, ret) -> dict:
         """Return a dictionary of properties from :class:`Nested <marshmallow.fields.Nested` fields.
 
         Typically provides a reference object and will add the schema to the spec
@@ -416,14 +438,14 @@ class FieldConverterMixin:
         if isinstance(field, marshmallow.fields.Nested) and not isinstance(
             field, marshmallow.fields.Pluck
         ):
-            schema_dict = self.resolve_nested_schema(field.schema)
+            schema_dict = self.resolve_nested_schema(field.schema)  # type:ignore
             if ret and "$ref" in schema_dict:
                 ret.update({"allOf": [schema_dict]})
             else:
                 ret.update(schema_dict)
         return ret
 
-    def pluck2properties(self, field, **kwargs):
+    def pluck2properties(self, field, **kwargs: typing.Any) -> dict:
         """Return a dictionary of properties from :class:`Pluck <marshmallow.fields.Pluck` fields.
 
         Pluck effectively trans-includes a field from another schema into this,
@@ -438,7 +460,7 @@ class FieldConverterMixin:
             return {"type": "array", "items": ret} if field.many else ret
         return {}
 
-    def list2properties(self, field, **kwargs):
+    def list2properties(self, field, **kwargs: typing.Any) -> dict:
         """Return a dictionary of properties from :class:`List <marshmallow.fields.List>` fields.
 
         Will provide an `items` property based on the field's `inner` attribute
@@ -451,7 +473,7 @@ class FieldConverterMixin:
             ret["items"] = self.field2property(field.inner)
         return ret
 
-    def dict2properties(self, field, **kwargs):
+    def dict2properties(self, field, **kwargs: typing.Any) -> dict:
         """Return a dictionary of properties from :class:`Dict <marshmallow.fields.Dict>` fields.
 
         Only applicable for Marshmallow versions greater than 3. Will provide an
@@ -467,7 +489,7 @@ class FieldConverterMixin:
                 ret["additionalProperties"] = self.field2property(value_field)
         return ret
 
-    def timedelta2properties(self, field, **kwargs):
+    def timedelta2properties(self, field, **kwargs: typing.Any) -> dict:
         """Return a dictionary of properties from :class:`TimeDelta <marshmallow.fields.TimeDelta>` fields.
 
         Adds a `x-unit` vendor property based on the field's `precision` attribute
@@ -496,7 +518,7 @@ def make_type_list(types):
     return types
 
 
-def make_min_max_attributes(validators, min_attr, max_attr):
+def make_min_max_attributes(validators, min_attr, max_attr) -> dict:
     """Return a dictionary of minimum and maximum attributes based on a list
     of validators. If either minimum or maximum values are not present in any
     of the validator objects that attribute will be omitted.
