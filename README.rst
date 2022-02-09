@@ -43,7 +43,7 @@ Installation
 
     $ pip install -U apispec
 
-When using marshmallow pluging, ensure a compatible marshmallow version is used: ::
+When using the marshmallow plugin, ensure a compatible marshmallow version is used: ::
 
     $ pip install -U apispec[marshmallow]
 
