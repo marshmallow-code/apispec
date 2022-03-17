@@ -1,12 +1,19 @@
 """Various utilities for parsing OpenAPI operations from docstrings and validating against
 the OpenAPI spec.
 """
+
+from __future__ import annotations
+
 import re
 import json
+import typing
 
 from distutils import version
 
 from apispec import exceptions
+
+if typing.TYPE_CHECKING:
+    from apispec.core import APISpec
 
 
 COMPONENT_SUBSECTIONS = {
@@ -27,7 +34,9 @@ COMPONENT_SUBSECTIONS = {
 }
 
 
-def build_reference(component_type, openapi_major_version, component_name):
+def build_reference(
+    component_type: str, openapi_major_version: int, component_name: str
+) -> dict[str, str]:
     """Return path to reference
 
     :param str component_type: Component type (schema, parameter, response, security_scheme)
@@ -43,7 +52,7 @@ def build_reference(component_type, openapi_major_version, component_name):
     }
 
 
-def validate_spec(spec):
+def validate_spec(spec: APISpec) -> bool:
     """Validate the output of an :class:`APISpec` object against the
     OpenAPI specification.
 
@@ -95,7 +104,7 @@ class OpenAPIVersion(version.LooseVersion):
     MIN_INCLUSIVE_VERSION = version.LooseVersion("2.0")
     MAX_EXCLUSIVE_VERSION = version.LooseVersion("4.0")
 
-    def __init__(self, openapi_version):
+    def __init__(self, openapi_version: version.LooseVersion | str) -> None:
         if isinstance(openapi_version, version.LooseVersion):
             openapi_version = openapi_version.vstring
         if (
@@ -109,20 +118,20 @@ class OpenAPIVersion(version.LooseVersion):
         super().__init__(openapi_version)
 
     @property
-    def major(self):
-        return self.version[0]
+    def major(self) -> int:
+        return int(self.version[0])
 
     @property
-    def minor(self):
-        return self.version[1]
+    def minor(self) -> int:
+        return int(self.version[1])
 
     @property
-    def patch(self):
-        return self.version[2]
+    def patch(self) -> int:
+        return int(self.version[2])
 
 
 # from django.contrib.admindocs.utils
-def trim_docstring(docstring):
+def trim_docstring(docstring: str) -> str:
     """Uniformly trims leading/trailing whitespace from docstrings.
 
     Based on http://www.python.org/peps/pep-0257.html#handling-docstring-indentation
@@ -137,7 +146,7 @@ def trim_docstring(docstring):
 
 
 # from rest_framework.utils.formatting
-def dedent(content):
+def dedent(content: str) -> str:
     """
     Remove leading indent from a block of text.
     Used when generating descriptions from docstrings.
@@ -160,7 +169,7 @@ def dedent(content):
 
 
 # http://stackoverflow.com/a/8310229
-def deepupdate(original, update):
+def deepupdate(original: dict, update: dict) -> dict:
     """Recursively update a dict.
 
     Subdict's won't be overwritten but also updated.

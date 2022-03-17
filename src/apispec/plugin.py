@@ -1,19 +1,23 @@
 """Base class for Plugin classes."""
 
+from __future__ import annotations
+
+import typing
 
 from .exceptions import PluginMethodNotImplementedError
+from .core import APISpec
 
 
 class BasePlugin:
     """Base class for APISpec plugin classes."""
 
-    def init_spec(self, spec):
+    def init_spec(self, spec: APISpec) -> None:
         """Initialize plugin with APISpec object
 
         :param APISpec spec: APISpec object this plugin instance is attached to
         """
 
-    def schema_helper(self, name, definition, **kwargs):
+    def schema_helper(self, name: str, definition: dict, **kwargs: typing.Any) -> None:
         """May return definition as a dict.
 
         :param str name: Identifier by which schema may be referenced
@@ -22,7 +26,7 @@ class BasePlugin:
         """
         raise PluginMethodNotImplementedError
 
-    def response_helper(self, response, **kwargs):
+    def response_helper(self, response: dict, **kwargs: typing.Any) -> None:
         """May return response component description as a dict.
 
         :param dict response: Response fields
@@ -30,7 +34,7 @@ class BasePlugin:
         """
         raise PluginMethodNotImplementedError
 
-    def parameter_helper(self, parameter, **kwargs):
+    def parameter_helper(self, parameter: dict, **kwargs: typing.Any) -> None:
         """May return parameter component description as a dict.
 
         :param dict parameter: Parameter fields
@@ -38,7 +42,7 @@ class BasePlugin:
         """
         raise PluginMethodNotImplementedError
 
-    def header_helper(self, header, **kwargs):
+    def header_helper(self, header: dict, **kwargs: typing.Any) -> None:
         """May return header component description as a dict.
 
         :param dict header: Header fields
@@ -46,7 +50,13 @@ class BasePlugin:
         """
         raise PluginMethodNotImplementedError
 
-    def path_helper(self, path=None, operations=None, parameters=None, **kwargs):
+    def path_helper(
+        self,
+        path: str | None = None,
+        operations: dict | None = None,
+        parameters: list[dict] | None = None,
+        **kwargs: typing.Any,
+    ) -> None:
         """May return a path as string and mutate operations dict and parameters list.
 
         :param str path: Path to the resource
@@ -66,7 +76,12 @@ class BasePlugin:
         """
         raise PluginMethodNotImplementedError
 
-    def operation_helper(self, path=None, operations=None, **kwargs):
+    def operation_helper(
+        self,
+        path: str | None = None,
+        operations: dict | None = None,
+        **kwargs: typing.Any,
+    ) -> None:
         """May mutate operations.
 
         :param str path: Path to the resource

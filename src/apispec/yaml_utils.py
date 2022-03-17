@@ -1,17 +1,20 @@
 """YAML utilities"""
 
+from __future__ import annotations
+
 import yaml
+import typing
 
 from apispec.utils import trim_docstring, dedent
 
 
-def dict_to_yaml(dic, yaml_dump_kwargs=None):
+def dict_to_yaml(dic: dict, yaml_dump_kwargs: typing.Any | None = None) -> str:
     if yaml_dump_kwargs is None:
         yaml_dump_kwargs = {}
     return yaml.dump(dic, **yaml_dump_kwargs)
 
 
-def load_yaml_from_docstring(docstring):
+def load_yaml_from_docstring(docstring: str) -> dict:
     """Loads YAML from docstring."""
     split_lines = trim_docstring(docstring).split("\n")
 
@@ -32,7 +35,7 @@ def load_yaml_from_docstring(docstring):
 PATH_KEYS = {"get", "put", "post", "delete", "options", "head", "patch"}
 
 
-def load_operations_from_docstring(docstring):
+def load_operations_from_docstring(docstring: str) -> dict:
     """Return a dictionary of OpenAPI operations parsed from a
     a docstring.
     """
