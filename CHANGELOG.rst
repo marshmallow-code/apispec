@@ -12,6 +12,7 @@ Other changes:
 
 - Test against Python 3.10 (:pr:`724`).
 - Drop support for Python 3.6 (:pr:`727`).
+- Switch to Github Actions for CI (:pr:`751`).
 
 5.1.1 (2021-09-27)
 ******************
