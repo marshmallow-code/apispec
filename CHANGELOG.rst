@@ -10,6 +10,7 @@ Refactoring:
 
 Other changes:
 
+- Add type hints (:pr:`747`). Thanks :user:`kasium` for the PR.
 - Test against Python 3.10 (:pr:`724`).
 - Drop support for Python 3.6 (:pr:`727`).
 - Switch to Github Actions for CI (:pr:`751`).
