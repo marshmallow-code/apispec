@@ -1,5 +1,6 @@
 name: build
 on:
+  push:
   pull_request:
   # Run builds nightly to catch incompatibilities with new marshmallow releases
   schedule:
