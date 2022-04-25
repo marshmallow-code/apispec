@@ -8,7 +8,7 @@ import re
 import json
 import typing
 
-from distutils import version
+from packaging.version import Version
 
 from apispec import exceptions
 
@@ -83,7 +83,7 @@ def validate_spec(spec: APISpec) -> bool:
         return True
 
 
-class OpenAPIVersion(version.LooseVersion):
+class OpenAPIVersion(Version):
     """OpenAPI version
 
     :param str|OpenAPIVersion openapi_version: OpenAPI version
@@ -101,11 +101,11 @@ class OpenAPIVersion(version.LooseVersion):
             assert str(ver) == '3.0.2'
     """
 
-    MIN_INCLUSIVE_VERSION = version.LooseVersion("2.0")
-    MAX_EXCLUSIVE_VERSION = version.LooseVersion("4.0")
+    MIN_INCLUSIVE_VERSION = Version("2.0")
+    MAX_EXCLUSIVE_VERSION = Version("4.0")
 
-    def __init__(self, openapi_version: version.LooseVersion | str) -> None:
-        if isinstance(openapi_version, version.LooseVersion):
+    def __init__(self, openapi_version: Version | str) -> None:
+        if isinstance(openapi_version, Version):
             openapi_version = openapi_version.vstring
         if (
             not self.MIN_INCLUSIVE_VERSION

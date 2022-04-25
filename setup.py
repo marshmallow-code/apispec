@@ -27,6 +27,8 @@ EXTRAS_REQUIRE["tests"] = (
 )
 EXTRAS_REQUIRE["dev"] = EXTRAS_REQUIRE["tests"] + EXTRAS_REQUIRE["lint"] + ["tox"]
 
+INSTALL_REQUIRES = "packaging>=21.3"
+
 
 def find_version(fname):
     """Attempts to find the version number in the file names fname.
@@ -63,6 +65,7 @@ setup(
     packages=find_packages("src"),
     package_dir={"": "src"},
     include_package_data=True,
+    install_requires=INSTALL_REQUIRES,
     extras_require=EXTRAS_REQUIRE,
     license="MIT",
     zip_safe=False,
