@@ -71,14 +71,14 @@ def validate_spec(spec: APISpec) -> bool:
             "validate_spec requires prance to be installed. "
             "You can install all validation requirements using:\n"
             "    pip install 'apispec[validation]'"
-        )
+        ) from error
     parser_kwargs = {}
     if spec.openapi_version.version[0] == 3:
         parser_kwargs["backend"] = "openapi-spec-validator"
     try:
         prance.BaseParser(spec_string=json.dumps(spec.to_dict()), **parser_kwargs)
     except prance.ValidationError as err:
-        raise exceptions.OpenAPIError(*err.args)
+        raise exceptions.OpenAPIError(*err.args) from err
     else:
         return True
 
