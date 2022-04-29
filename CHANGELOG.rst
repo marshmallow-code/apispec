@@ -6,7 +6,7 @@ Changelog
 
 Features:
 
-- Use ``raise from`` whenever possible (:pr: `763`).
+- Use ``raise from`` whenever possible (:pr:`763`).
 
 Refactoring:
 
