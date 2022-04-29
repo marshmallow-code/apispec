@@ -1,8 +1,12 @@
 Changelog
 ---------
 
-5.2.0 (unreleased)
+5.2.0 (2022-04-29)
 ******************
+
+Features:
+
+- Use ``raise from`` whenever possible (:pr: `763`).
 
 Refactoring:
 
