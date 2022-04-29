@@ -467,7 +467,7 @@ class APISpec:
 
     def path(
         self,
-        path: dict | None = None,
+        path: str | None = None,
         *,
         operations: dict[str, typing.Any] | None = None,
         summary: str | None = None,
