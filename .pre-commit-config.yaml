@@ -23,5 +23,4 @@ repos:
   rev: v0.950
   hooks:
   - id: mypy
-    files: ^src/apispec/
     additional_dependencies: ["marshmallow>=3,<4", "types-PyYAML"]

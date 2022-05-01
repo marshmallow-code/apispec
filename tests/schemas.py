@@ -43,7 +43,7 @@ class PatternedObjectSchema(Schema):
 class SelfReferencingSchema(Schema):
     id = fields.Int()
     single = fields.Nested(lambda: SelfReferencingSchema())
-    many = fields.Nested(lambda: SelfReferencingSchema(many=True))
+    multiple = fields.Nested(lambda: SelfReferencingSchema(many=True))
 
 
 class OrderedSchema(Schema):
