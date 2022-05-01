@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+5.2.1 (2022-05-01)
+******************
+
+Bug fixes:
+
+- Fix type hints for ``APISpec.path`` and ``BasePlugin`` methods (:pr:`765`).
+
 5.2.0 (2022-04-29)
 ******************
 
