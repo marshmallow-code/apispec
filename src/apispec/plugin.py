@@ -17,7 +17,9 @@ class BasePlugin:
         :param APISpec spec: APISpec object this plugin instance is attached to
         """
 
-    def schema_helper(self, name: str, definition: dict, **kwargs: typing.Any) -> None:
+    def schema_helper(
+        self, name: str, definition: dict, **kwargs: typing.Any
+    ) -> dict | None:
         """May return definition as a dict.
 
         :param str name: Identifier by which schema may be referenced
@@ -26,7 +28,7 @@ class BasePlugin:
         """
         raise PluginMethodNotImplementedError
 
-    def response_helper(self, response: dict, **kwargs: typing.Any) -> None:
+    def response_helper(self, response: dict, **kwargs: typing.Any) -> dict | None:
         """May return response component description as a dict.
 
         :param dict response: Response fields
@@ -34,7 +36,7 @@ class BasePlugin:
         """
         raise PluginMethodNotImplementedError
 
-    def parameter_helper(self, parameter: dict, **kwargs: typing.Any) -> None:
+    def parameter_helper(self, parameter: dict, **kwargs: typing.Any) -> dict | None:
         """May return parameter component description as a dict.
 
         :param dict parameter: Parameter fields
@@ -42,7 +44,7 @@ class BasePlugin:
         """
         raise PluginMethodNotImplementedError
 
-    def header_helper(self, header: dict, **kwargs: typing.Any) -> None:
+    def header_helper(self, header: dict, **kwargs: typing.Any) -> dict | None:
         """May return header component description as a dict.
 
         :param dict header: Header fields
@@ -56,7 +58,7 @@ class BasePlugin:
         operations: dict | None = None,
         parameters: list[dict] | None = None,
         **kwargs: typing.Any,
-    ) -> None:
+    ) -> str | None:
         """May return a path as string and mutate operations dict and parameters list.
 
         :param str path: Path to the resource
