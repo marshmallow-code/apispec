@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+5.2.2 (2022-05-13)
+******************
+
+Bug fixes:
+
+- Fix schema property ordering regression in ``ApiSpec.to_yaml()`` (:issue:`768`).
+  Thanks :user:`vorticity` for the PR.
+
 5.2.1 (2022-05-01)
 ******************
 
