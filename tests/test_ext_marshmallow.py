@@ -1237,7 +1237,7 @@ class TestSelfReference:
     def test_self_referencing_field_many(self, spec):
         spec.components.schema("SelfReference", schema=SelfReferencingSchema)
         definitions = get_schemas(spec)
-        result = definitions["SelfReference"]["properties"]["many"]
+        result = definitions["SelfReference"]["properties"]["multiple"]
         assert result == {
             "type": "array",
             "items": build_ref(spec, "schema", "SelfReference"),

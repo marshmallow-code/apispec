@@ -1,8 +1,27 @@
 Changelog
 ---------
 
-5.2.0 (unreleased)
+5.2.2 (2022-05-13)
 ******************
+
+Bug fixes:
+
+- Fix schema property ordering regression in ``ApiSpec.to_yaml()`` (:issue:`768`).
+  Thanks :user:`vorticity` for the PR.
+
+5.2.1 (2022-05-01)
+******************
+
+Bug fixes:
+
+- Fix type hints for ``APISpec.path`` and ``BasePlugin`` methods (:pr:`765`).
+
+5.2.0 (2022-04-29)
+******************
+
+Features:
+
+- Use ``raise from`` whenever possible (:pr:`763`).
 
 Refactoring:
 
