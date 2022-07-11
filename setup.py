@@ -7,15 +7,15 @@ EXTRAS_REQUIRE = {
     "validation": ["prance[osv]>=0.11"],
     "lint": [
         "flake8==4.0.1",
-        "flake8-bugbear==22.3.23",
+        "flake8-bugbear==22.7.1",
         "pre-commit~=2.4",
-        "mypy==0.942",
+        "mypy==0.961",
         "types-PyYAML",
     ],
     "docs": [
         "marshmallow>=3.13.0",
         "pyyaml==6.0",
-        "sphinx==4.5.0",
+        "sphinx==5.0.2",
         "sphinx-issues==3.0.1",
         "sphinx-rtd-theme==1.0.0",
     ],

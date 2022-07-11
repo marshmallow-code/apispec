@@ -74,3 +74,4 @@ Contributors (chronological)
 - François Magimel `<https://github.com/Linkid>`_
 - Stefan van der Walt `<https://github.com/stefanv>`_
 - `<https://github.com/kasium>`_
+- Edwin Erdmanis `@vorticity <https://github.com/vorticity>`_

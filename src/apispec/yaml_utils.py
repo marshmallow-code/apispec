@@ -9,8 +9,11 @@ from apispec.utils import trim_docstring, dedent
 
 
 def dict_to_yaml(dic: dict, yaml_dump_kwargs: typing.Any | None = None) -> str:
-    if yaml_dump_kwargs is None:
-        yaml_dump_kwargs = {}
+    """Serializes a dictionary to YAML."""
+    yaml_dump_kwargs = yaml_dump_kwargs or {}
+
+    # By default, don't sort alphabetically to respect schema field ordering
+    yaml_dump_kwargs.setdefault("sort_keys", False)
     return yaml.dump(dic, **yaml_dump_kwargs)
 
 

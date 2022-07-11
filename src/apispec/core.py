@@ -1,6 +1,8 @@
 """Core apispec classes and functions."""
 
 from __future__ import annotations
+from collections.abc import Sequence
+
 
 import typing
 from copy import deepcopy
@@ -14,6 +16,10 @@ from .exceptions import (
     InvalidParameterError,
 )
 from .utils import OpenAPIVersion, deepupdate, COMPONENT_SUBSECTIONS, build_reference
+
+if typing.TYPE_CHECKING:
+    from .plugin import BasePlugin
+
 
 VALID_METHODS_OPENAPI_V2 = ["get", "post", "put", "patch", "delete", "head", "options"]
 
@@ -31,7 +37,7 @@ class Components:
 
     def __init__(
         self,
-        plugins: tuple | list,
+        plugins: Sequence[BasePlugin],
         openapi_version: OpenAPIVersion,
     ) -> None:
         self._plugins = plugins
@@ -410,7 +416,7 @@ class APISpec:
         title: str,
         version: str,
         openapi_version: OpenAPIVersion | str,
-        plugins: tuple | list = (),
+        plugins: Sequence[BasePlugin] = (),
         **options: typing.Any,
     ) -> None:
         self.title = title
@@ -467,7 +473,7 @@ class APISpec:
 
     def path(
         self,
-        path: dict | None = None,
+        path: str | None = None,
         *,
         operations: dict[str, typing.Any] | None = None,
         summary: str | None = None,

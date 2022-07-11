@@ -86,14 +86,14 @@ class OpenAPIConverter(FieldConverterMixin):
             if not name:
                 try:
                     json_schema = self.schema2jsonschema(schema_instance)
-                except RuntimeError:
+                except RuntimeError as exc:
                     raise APISpecError(
                         "Name resolver returned None for schema {schema} which is "
                         "part of a chain of circular referencing schemas. Please"
                         " ensure that the schema_name_resolver passed to"
                         " MarshmallowPlugin returns a string for all circular"
                         " referencing schemas.".format(schema=schema)
-                    )
+                    ) from exc
                 if getattr(schema, "many", False):
                     return {"type": "array", "items": json_schema}
                 return json_schema
