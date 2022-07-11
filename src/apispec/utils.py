@@ -115,16 +115,25 @@ class OpenAPIVersion(Version):
             raise exceptions.APISpecError(
                 f"Not a valid OpenAPI version number: {openapi_version}"
             )
+
+        # Ensure compatibility with distutils.version.LooseVersion
+        self.version = [
+            openapi_version.major,
+            openapi_version.minor,
+            openapi_version.micro,
+        ]
         openapi_version = str(openapi_version)
         super().__init__(openapi_version)
 
     def __eq__(self, version: Version | str):
         return str(self) == str(version)
 
+    # Ensure compatibility with distutils.version.LooseVersion
     @property
     def vstring(self) -> str:
         return str(self)
 
+    # Ensure compatibility with distutils.version.LooseVersion
     @property
     def patch(self) -> str:
         return self.micro
