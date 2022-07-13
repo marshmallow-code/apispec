@@ -207,20 +207,36 @@ class TestMarshmallowSchemaToModelDefinition:
 
 
 class TestMarshmallowSchemaToParameters:
-    @pytest.mark.parametrize("ListClass", [fields.List, CustomList])
-    def test_field_multiple(self, ListClass, openapi):
-        field = ListClass(fields.Str)
-        res = openapi._field2parameter(field, name="field", location="query")
-        assert res["in"] == "query"
-        if openapi.openapi_version.major < 3:
-            assert res["type"] == "array"
-            assert res["items"]["type"] == "string"
-            assert res["collectionFormat"] == "multi"
+    def test_custom_properties_for_custom_fields(self, spec_fixture):
+        class DelimitedList(fields.List):
+            """Delimited list field"""
+
+        def delimited_list2param(self, field, **kwargs):
+            ret: dict = {}
+            if isinstance(field, DelimitedList):
+                if self.openapi_version.major < 3:
+                    ret["collectionFormat"] = "csv"
+                else:
+                    ret["explode"] = False
+                    ret["style"] = "form"
+            return ret
+
+        spec_fixture.marshmallow_plugin.converter.add_parameter_attribute_function(
+            delimited_list2param
+        )
+
+        class MySchema(Schema):
+            delimited_list = DelimitedList(fields.Int)
+
+        param = spec_fixture.marshmallow_plugin.converter.schema2parameters(
+            MySchema(), location="query"
+        )[0]
+
+        if spec_fixture.openapi.openapi_version.major < 3:
+            assert param["collectionFormat"] == "csv"
         else:
-            assert res["schema"]["type"] == "array"
-            assert res["schema"]["items"]["type"] == "string"
-            assert res["style"] == "form"
-            assert res["explode"] is True
+            assert param["explode"] is False
+            assert param["style"] == "form"
 
     def test_field_required(self, openapi):
         field = fields.Str(required=True)
@@ -251,6 +267,21 @@ class TestMarshmallowSchemaToParameters:
         assert param["required"] is True
         param = next(p for p in res_nodump if p["name"] == "partial_field")
         assert param["required"] is False
+
+    @pytest.mark.parametrize("ListClass", [fields.List, CustomList])
+    def test_field_list(self, ListClass, openapi):
+        field = ListClass(fields.Str)
+        res = openapi._field2parameter(field, name="field", location="query")
+        assert res["in"] == "query"
+        if openapi.openapi_version.major < 3:
+            assert res["type"] == "array"
+            assert res["items"]["type"] == "string"
+            assert res["collectionFormat"] == "multi"
+        else:
+            assert res["schema"]["type"] == "array"
+            assert res["schema"]["items"]["type"] == "string"
+            assert res["style"] == "form"
+            assert res["explode"] is True
 
     # json/body is invalid for OpenAPI 3
     @pytest.mark.parametrize("openapi", ("2.0",), indirect=True)

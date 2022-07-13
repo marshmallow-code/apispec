@@ -8,6 +8,7 @@ marshmallow :class:`Schemas <marshmallow.Schema>` and :class:`Fields <marshmallo
 """
 
 from __future__ import annotations
+import typing
 
 import marshmallow
 from marshmallow.utils import is_collection
@@ -59,8 +60,36 @@ class OpenAPIConverter(FieldConverterMixin):
         self.schema_name_resolver = schema_name_resolver
         self.spec = spec
         self.init_attribute_functions()
+        self.init_parameter_attribute_functions()
         # Schema references
         self.refs: dict = {}
+
+    def init_parameter_attribute_functions(self) -> None:
+        self.parameter_attribute_functions = [
+            self.field2required,
+            self.list2param,
+        ]
+
+    def add_parameter_attribute_function(self, func) -> None:
+        """Method to add a field parameter function to the list of field
+        parameter functions that will be called on a field to convert it to a
+        field parameter.
+
+        :param func func: the field parameter function to add
+            The attribute function will be bound to the
+            `OpenAPIConverter <apispec.ext.marshmallow.openapi.OpenAPIConverter>`
+            instance.
+            It will be called for each field in a schema with
+            `self <apispec.ext.marshmallow.openapi.OpenAPIConverter>` and a
+            `field <marshmallow.fields.Field>` instance
+            positional arguments and `ret <dict>` keyword argument.
+            May mutate `ret`.
+            User added field parameter functions will be called after all built-in
+            field parameter functions in the order they were added.
+        """
+        bound_func = func.__get__(self)
+        setattr(self, func.__name__, bound_func)
+        self.parameter_attribute_functions.append(bound_func)
 
     def resolve_nested_schema(self, schema):
         """Return the OpenAPI representation of a marshmallow Schema.
@@ -150,7 +179,7 @@ class OpenAPIConverter(FieldConverterMixin):
 
     def _field2parameter(
         self, field: marshmallow.fields.Field, *, name: str, location: str
-    ):
+    ) -> dict:
         """Return an OpenAPI parameter as a `dict`, given a marshmallow
         :class:`Field <marshmallow.Field>`.
 
@@ -158,22 +187,44 @@ class OpenAPIConverter(FieldConverterMixin):
         """
         ret: dict = {"in": location, "name": name}
 
+        prop = self.field2property(field)
+        if self.openapi_version.major < 3:
+            ret.update(prop)
+        else:
+            if "description" in prop:
+                ret["description"] = prop.pop("description")
+            ret["schema"] = prop
+
+        for param_attr_func in self.parameter_attribute_functions:
+            ret.update(param_attr_func(field, ret=ret))
+
+        return ret
+
+    def field2required(
+        self, field: marshmallow.fields.Field, **kwargs: typing.Any
+    ) -> dict:
+        """Return the dictionary of OpenAPI parameter attributes for a required field.
+
+        :param Field field: A marshmallow field.
+        :rtype: dict
+        """
+        ret = {}
         partial = getattr(field.parent, "partial", False)
         ret["required"] = field.required and (
             not partial
             or (is_collection(partial) and field.name not in partial)  # type:ignore
         )
+        return ret
 
-        prop = self.field2property(field)
-        if self.openapi_version.major < 3:
-            ret.update(prop)
-        else:
-            if prop.get("description", None):
-                ret["description"] = prop.pop("description")
-            ret["schema"] = prop
+    def list2param(self, field: marshmallow.fields.Field, **kwargs: typing.Any) -> dict:
+        """Return a dictionary of parameter properties from
+        :class:`List <marshmallow.fields.List` fields.
 
-        multiple = isinstance(field, marshmallow.fields.List)
-        if multiple:
+        :param Field field: A marshmallow field.
+        :rtype: dict
+        """
+        ret: dict = {}
+        if isinstance(field, marshmallow.fields.List):
             if self.openapi_version.major < 3:
                 ret["collectionFormat"] = "multi"
             else:
