@@ -165,19 +165,20 @@ class OpenAPIConverter(FieldConverterMixin):
         )
 
         prop = self.field2property(field)
-        multiple = isinstance(field, marshmallow.fields.List)
-
         if self.openapi_version.major < 3:
-            if multiple:
-                ret["collectionFormat"] = "multi"
             ret.update(prop)
         else:
-            if multiple:
-                ret["explode"] = True
-                ret["style"] = "form"
             if prop.get("description", None):
                 ret["description"] = prop.pop("description")
             ret["schema"] = prop
+
+        multiple = isinstance(field, marshmallow.fields.List)
+        if multiple:
+            if self.openapi_version.major < 3:
+                ret["collectionFormat"] = "multi"
+            else:
+                ret["explode"] = True
+                ret["style"] = "form"
         return ret
 
     def schema2jsonschema(self, schema):
