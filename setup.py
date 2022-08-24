@@ -7,7 +7,7 @@ EXTRAS_REQUIRE = {
     "validation": ["prance[osv]>=0.11"],
     "lint": [
         "flake8==5.0.4",
-        "flake8-bugbear==22.8.22",
+        "flake8-bugbear==22.8.23",
         "pre-commit~=2.4",
         "mypy==0.971",
         "types-PyYAML",
