@@ -1,5 +1,6 @@
 import datetime as dt
 import re
+from enum import Enum
 
 import pytest
 from marshmallow import fields, validate
@@ -261,6 +262,32 @@ def test_field_with_multiple_patterns(recwarn, spec_fixture):
     with pytest.warns(UserWarning, match="More than one regex validator"):
         ret = spec_fixture.openapi.field2property(field)
     assert ret["pattern"] == "winner"
+
+
+def test_enum_symbol_field(spec_fixture):
+    class MyEnum(Enum):
+        one = 1
+        two = 2
+
+    field = fields.Enum(MyEnum)
+    ret = spec_fixture.openapi.field2property(field)
+    assert ret["type"] == "string"
+    assert ret["enum"] == "one, two"
+
+
+@pytest.mark.parametrize("by_value", [fields.Integer, True])
+def test_enum_value_field(spec_fixture, by_value):
+    class MyEnum(Enum):
+        one = 1
+        two = 2
+
+    field = fields.Enum(MyEnum, by_value=by_value)
+    ret = spec_fixture.openapi.field2property(field)
+    if by_value is True:
+        assert "type" not in ret
+    else:
+        assert ret["type"] == "integer"
+    assert ret["enum"] == "1, 2"
 
 
 def test_field2property_nested_spec_metadatas(spec_fixture):
