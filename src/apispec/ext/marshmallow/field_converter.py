@@ -226,7 +226,7 @@ class FieldConverterMixin:
         else:
             default = field.load_default
             if default is not marshmallow.missing and not callable(default):
-                default = field._serialize(default, None, None)  # type:ignore
+                default = field._serialize(default, None, None)
                 ret["default"] = default
         return ret
 
