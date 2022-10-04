@@ -74,11 +74,11 @@ from __future__ import annotations
 
 import warnings
 import typing
+from packaging.version import Version
 
 from marshmallow import Schema
 
 from apispec import BasePlugin, APISpec
-from apispec.utils import OpenAPIVersion
 from .common import resolve_schema_instance, make_schema_key, resolve_schema_cls
 from .openapi import OpenAPIConverter
 from .schema_resolver import SchemaResolver
@@ -120,7 +120,7 @@ class MarshmallowPlugin(BasePlugin):
         super().__init__()
         self.schema_name_resolver = schema_name_resolver or resolver
         self.spec: APISpec | None = None
-        self.openapi_version: OpenAPIVersion | None = None
+        self.openapi_version: Version | None = None
         self.converter: OpenAPIConverter | None = None
         self.resolver: SchemaResolver | None = None
 

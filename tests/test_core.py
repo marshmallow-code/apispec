@@ -148,10 +148,10 @@ class TestMetadata:
         assert metadata["info"]["version"] == "1.0.0"
         assert metadata["info"]["description"] == description
         if spec.openapi_version.major < 3:
-            assert metadata["swagger"] == spec.openapi_version.vstring
+            assert metadata["swagger"] == str(spec.openapi_version)
             assert metadata["security"] == [{"apiKey": []}]
         else:
-            assert metadata["openapi"] == spec.openapi_version.vstring
+            assert metadata["openapi"] == str(spec.openapi_version)
             security_schemes = {
                 "bearerAuth": dict(type="http", scheme="bearer", bearerFormat="JWT")
             }

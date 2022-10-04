@@ -1,6 +1,8 @@
 import re
 from setuptools import setup, find_packages
 
+INSTALL_REQUIRES = "packaging>=21.3"
+
 EXTRAS_REQUIRE = {
     "marshmallow": ["marshmallow>=3.13.0"],
     "yaml": ["PyYAML>=3.10"],
@@ -63,6 +65,7 @@ setup(
     packages=find_packages("src"),
     package_dir={"": "src"},
     include_package_data=True,
+    install_requires=INSTALL_REQUIRES,
     extras_require=EXTRAS_REQUIRE,
     license="MIT",
     zip_safe=False,

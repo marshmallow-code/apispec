@@ -1,12 +1,13 @@
 """Core apispec classes and functions."""
 
 from __future__ import annotations
+
 from collections.abc import Sequence
-
-
-import typing
 from copy import deepcopy
 import warnings
+import typing
+
+from packaging.version import Version
 
 from .exceptions import (
     APISpecError,
@@ -15,7 +16,7 @@ from .exceptions import (
     DuplicateParameterError,
     InvalidParameterError,
 )
-from .utils import OpenAPIVersion, deepupdate, COMPONENT_SUBSECTIONS, build_reference
+from .utils import deepupdate, COMPONENT_SUBSECTIONS, build_reference
 
 if typing.TYPE_CHECKING:
     from .plugin import BasePlugin
@@ -26,6 +27,9 @@ VALID_METHODS_OPENAPI_V2 = ["get", "post", "put", "patch", "delete", "head", "op
 VALID_METHODS_OPENAPI_V3 = VALID_METHODS_OPENAPI_V2 + ["trace"]
 
 VALID_METHODS = {2: VALID_METHODS_OPENAPI_V2, 3: VALID_METHODS_OPENAPI_V3}
+
+MIN_INCLUSIVE_OPENAPI_VERSION = Version("2.0")
+MAX_EXCLUSIVE_OPENAPI_VERSION = Version("4.0")
 
 
 class Components:
@@ -38,7 +42,7 @@ class Components:
     def __init__(
         self,
         plugins: Sequence[BasePlugin],
-        openapi_version: OpenAPIVersion,
+        openapi_version: Version,
     ) -> None:
         self._plugins = plugins
         self.openapi_version = openapi_version
@@ -405,7 +409,7 @@ class APISpec:
     :param str version: API version
     :param list|tuple plugins: Plugin instances.
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#infoObject
-    :param str|OpenAPIVersion openapi_version: OpenAPI Specification version.
+    :param str openapi_version: OpenAPI Specification version.
         Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
     :param options: Optional top-level keys
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#openapi-object
@@ -415,15 +419,21 @@ class APISpec:
         self,
         title: str,
         version: str,
-        openapi_version: OpenAPIVersion | str,
+        openapi_version: str,
         plugins: Sequence[BasePlugin] = (),
         **options: typing.Any,
     ) -> None:
         self.title = title
         self.version = version
-        self.openapi_version = OpenAPIVersion(openapi_version)
         self.options = options
         self.plugins = plugins
+        self.openapi_version = Version(openapi_version)
+        if not (
+            MIN_INCLUSIVE_OPENAPI_VERSION
+            <= self.openapi_version
+            < MAX_EXCLUSIVE_OPENAPI_VERSION
+        ):
+            raise APISpecError(f"Not a valid OpenAPI version number: {openapi_version}")
 
         # Metadata
         self._tags: list[dict] = []
@@ -444,10 +454,10 @@ class APISpec:
         if self._tags:
             ret["tags"] = self._tags
         if self.openapi_version.major < 3:
-            ret["swagger"] = self.openapi_version.vstring
+            ret["swagger"] = str(self.openapi_version)
             ret.update(self.components.to_dict())
         else:
-            ret["openapi"] = self.openapi_version.vstring
+            ret["openapi"] = str(self.openapi_version)
             components_dict = self.components.to_dict()
             if components_dict:
                 ret["components"] = components_dict

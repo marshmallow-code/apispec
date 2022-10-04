@@ -11,11 +11,10 @@ import functools
 import operator
 import typing
 import warnings
+from packaging.version import Version
 
 import marshmallow
 from marshmallow.orderedset import OrderedSet
-
-from apispec.utils import OpenAPIVersion
 
 
 RegexType = type(re.compile(""))
@@ -90,7 +89,7 @@ class FieldConverterMixin:
     """Adds methods for converting marshmallow fields to an OpenAPI properties."""
 
     field_mapping = DEFAULT_FIELD_MAPPING
-    openapi_version: OpenAPIVersion
+    openapi_version: Version
 
     def init_attribute_functions(self):
         self.attribute_functions = [
