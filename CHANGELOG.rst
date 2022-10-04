@@ -1,6 +1,17 @@
 Changelog
 ---------
 
+6.0.0b1 (2022-10-04)
+********************
+
+Features:
+
+- Add ``OpenAPIConverter.add_parameter_attribute_function`` to allow
+  documentation of custom list fields such as webargs ``DelimitedList``
+  (:pr:`778`).
+- *Backwards-incompatible*: Remove ``OpenAPIVersion`` and use ``packaging.Version``
+  instead (:pr:`801`).
+
 5.2.2 (2022-05-13)
 ******************
 
