@@ -295,6 +295,32 @@ method. Continuing from the example above:
 The function passed to `add_attribute_function` will be bound to the converter.
 It must accept the converter instance as first positional argument.
 
+In some rare cases, typically with container fields such as fields derived from
+:class:`List <marshmallow.fields.List>`, documenting the parameters using this
+field require some more customization.
+This can be achieved using the `add_parameter_attribute_function
+<apispec.ext.marshmallow.openapi.OpenAPIConverter.add_parameter_attribute_function>`
+method.
+
+For instance, when documenting webargs's
+:class:`DelimitedList <webargs.fields.DelimitedList>` field, one may register
+this function:
+
+.. code-block:: python
+
+    def delimited_list2param(self, field, **kwargs):
+        ret: dict = {}
+        if isinstance(field, DelimitedList):
+            if self.openapi_version.major < 3:
+                ret["collectionFormat"] = "csv"
+            else:
+                ret["explode"] = False
+                ret["style"] = "form"
+        return ret
+
+
+    ma_plugin.converter.add_parameter_attribute_function(delimited_list2param)
+
 Next Steps
 ----------
 
