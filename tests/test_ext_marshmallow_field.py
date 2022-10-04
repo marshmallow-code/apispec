@@ -398,7 +398,7 @@ def test_custom_properties_for_custom_fields(spec_fixture):
         CustomStringField()
     )
     assert properties["x-customString"] == (
-        spec_fixture.openapi.openapi_version == "2.0"
+        spec_fixture.openapi.openapi_version.major == 2
     )
 
 

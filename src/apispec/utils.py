@@ -8,8 +8,6 @@ import re
 import json
 import typing
 
-from distutils import version
-
 from apispec import exceptions
 
 if typing.TYPE_CHECKING:
@@ -73,7 +71,7 @@ def validate_spec(spec: APISpec) -> bool:
             "    pip install 'apispec[validation]'"
         ) from error
     parser_kwargs = {}
-    if spec.openapi_version.version[0] == 3:
+    if spec.openapi_version.major == 3:
         parser_kwargs["backend"] = "openapi-spec-validator"
     try:
         prance.BaseParser(spec_string=json.dumps(spec.to_dict()), **parser_kwargs)
@@ -81,53 +79,6 @@ def validate_spec(spec: APISpec) -> bool:
         raise exceptions.OpenAPIError(*err.args) from err
     else:
         return True
-
-
-class OpenAPIVersion(version.LooseVersion):
-    """OpenAPI version
-
-    :param str|OpenAPIVersion openapi_version: OpenAPI version
-
-    Parses an OpenAPI version expressed as string. Provides shortcut to digits
-    (major, minor, patch).
-
-        Example: ::
-
-            ver = OpenAPIVersion('3.0.2')
-            assert ver.major == 3
-            assert ver.minor == 0
-            assert ver.patch == 1
-            assert ver.vstring == '3.0.2'
-            assert str(ver) == '3.0.2'
-    """
-
-    MIN_INCLUSIVE_VERSION = version.LooseVersion("2.0")
-    MAX_EXCLUSIVE_VERSION = version.LooseVersion("4.0")
-
-    def __init__(self, openapi_version: version.LooseVersion | str) -> None:
-        if isinstance(openapi_version, version.LooseVersion):
-            openapi_version = openapi_version.vstring
-        if (
-            not self.MIN_INCLUSIVE_VERSION
-            <= openapi_version
-            < self.MAX_EXCLUSIVE_VERSION
-        ):
-            raise exceptions.APISpecError(
-                f"Not a valid OpenAPI version number: {openapi_version}"
-            )
-        super().__init__(openapi_version)
-
-    @property
-    def major(self) -> int:
-        return int(self.version[0])
-
-    @property
-    def minor(self) -> int:
-        return int(self.version[1])
-
-    @property
-    def patch(self) -> int:
-        return int(self.version[2])
 
 
 # from django.contrib.admindocs.utils

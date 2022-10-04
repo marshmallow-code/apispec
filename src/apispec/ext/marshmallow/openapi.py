@@ -9,12 +9,12 @@ marshmallow :class:`Schemas <marshmallow.Schema>` and :class:`Fields <marshmallo
 
 from __future__ import annotations
 import typing
+from packaging.version import Version
 
 import marshmallow
 from marshmallow.utils import is_collection
 
 from apispec import APISpec
-from apispec.utils import OpenAPIVersion
 from apispec.exceptions import APISpecError
 from .field_converter import FieldConverterMixin
 from .common import (
@@ -40,7 +40,7 @@ __location_map__ = {
 class OpenAPIConverter(FieldConverterMixin):
     """Adds methods for generating OpenAPI specification from marshmallow schemas and fields.
 
-    :param str|OpenAPIVersion openapi_version: The OpenAPI version to use.
+    :param Version openapi_version: The OpenAPI version to use.
         Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
     :param callable schema_name_resolver: Callable to generate the schema definition name.
         Receives the `Schema` class and returns the name to be used in refs within
@@ -52,11 +52,11 @@ class OpenAPIConverter(FieldConverterMixin):
 
     def __init__(
         self,
-        openapi_version: OpenAPIVersion | str,
+        openapi_version: Version,
         schema_name_resolver,
         spec: APISpec,
     ) -> None:
-        self.openapi_version = OpenAPIVersion(openapi_version)
+        self.openapi_version = openapi_version
         self.schema_name_resolver = schema_name_resolver
         self.spec = spec
         self.init_attribute_functions()
