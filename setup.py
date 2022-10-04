@@ -9,7 +9,7 @@ EXTRAS_REQUIRE = {
         "flake8==5.0.4",
         "flake8-bugbear==22.9.23",
         "pre-commit~=2.4",
-        "mypy==0.981",
+        "mypy==0.982",
         "types-PyYAML",
     ],
     "docs": [
