@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 INSTALL_REQUIRES = "packaging>=21.3"
 
 EXTRAS_REQUIRE = {
-    "marshmallow": ["marshmallow>=3.13.0"],
+    "marshmallow": ["marshmallow>=3.18.0"],
     "yaml": ["PyYAML>=3.10"],
     "validation": ["prance[osv]>=0.11", "openapi_spec_validator<0.5"],
     "lint": [
