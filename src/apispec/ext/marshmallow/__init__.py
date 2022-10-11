@@ -137,8 +137,10 @@ class MarshmallowPlugin(BasePlugin):
             openapi_version=spec.openapi_version, converter=self.converter
         )
 
-    def map_to_openapi_type(self, *args):
-        """Decorator to set mapping for custom fields.
+    def map_to_openapi_type(self, field_cls, *args):
+        """Set mapping for custom field class.
+
+        :param type field_cls: Field class to set mapping for.
 
         ``*args`` can be:
 
@@ -147,15 +149,19 @@ class MarshmallowPlugin(BasePlugin):
 
         Examples: ::
 
-            @ma_plugin.map_to_openapi_type('string', 'uuid')
-            class MyCustomField(Integer):
+            # Override Integer mapping
+            class Int32(Integer):
                 # ...
 
-            @ma_plugin.map_to_openapi_type(Integer)  # will map to ('integer', None)
-            class MyCustomFieldThatsKindaLikeAnInteger(Integer):
+            ma_plugin.map_to_openapi_type(Int32, 'string', 'int32')
+
+            # Map to ('integer', None) like Integer
+            class IntegerLike(Integer):
                 # ...
+
+            ma_plugin.map_to_openapi_type(IntegerLike, Integer)
         """
-        return self.converter.map_to_openapi_type(*args)
+        return self.converter.map_to_openapi_type(field_cls, *args)
 
     def schema_helper(self, name, _, schema=None, **kwargs):
         """Definition helper that allows using a marshmallow

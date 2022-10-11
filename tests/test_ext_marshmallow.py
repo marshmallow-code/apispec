@@ -314,19 +314,25 @@ class TestComponentHeaderHelper:
 
 class TestCustomField:
     def test_can_use_custom_field_decorator(self, spec_fixture):
-        @spec_fixture.marshmallow_plugin.map_to_openapi_type(DateTime)
         class CustomNameA(Field):
             pass
 
-        @spec_fixture.marshmallow_plugin.map_to_openapi_type("integer", "int32")
+        spec_fixture.marshmallow_plugin.map_to_openapi_type(CustomNameA, DateTime)
+
         class CustomNameB(Field):
             pass
 
-        with pytest.raises(TypeError):
+        spec_fixture.marshmallow_plugin.map_to_openapi_type(
+            CustomNameB, "integer", "int32"
+        )
 
-            @spec_fixture.marshmallow_plugin.map_to_openapi_type("integer")
-            class BadCustomField(Field):
-                pass
+        class BadCustomField(Field):
+            pass
+
+        with pytest.raises(TypeError):
+            spec_fixture.marshmallow_plugin.map_to_openapi_type(
+                BadCustomField, "integer"
+            )
 
         class CustomPetASchema(PetSchema):
             name = CustomNameA()
