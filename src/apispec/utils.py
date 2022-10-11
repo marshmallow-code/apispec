@@ -5,13 +5,6 @@ the OpenAPI spec.
 from __future__ import annotations
 
 import re
-import json
-import typing
-
-from apispec import exceptions
-
-if typing.TYPE_CHECKING:
-    from apispec.core import APISpec
 
 
 COMPONENT_SUBSECTIONS = {
@@ -48,37 +41,6 @@ def build_reference(
             component_name,
         )
     }
-
-
-def validate_spec(spec: APISpec) -> bool:
-    """Validate the output of an :class:`APISpec` object against the
-    OpenAPI specification.
-
-    Note: Requires installing apispec with the ``[validation]`` extras.
-    ::
-
-        pip install 'apispec[validation]'
-
-    :raise: apispec.exceptions.OpenAPIError if validation fails.
-    """
-    try:
-        import prance
-    except ImportError as error:  # re-raise with a more verbose message
-        exc_class = type(error)
-        raise exc_class(
-            "validate_spec requires prance to be installed. "
-            "You can install all validation requirements using:\n"
-            "    pip install 'apispec[validation]'"
-        ) from error
-    parser_kwargs = {}
-    if spec.openapi_version.major == 3:
-        parser_kwargs["backend"] = "openapi-spec-validator"
-    try:
-        prance.BaseParser(spec_string=json.dumps(spec.to_dict()), **parser_kwargs)
-    except prance.ValidationError as err:
-        raise exceptions.OpenAPIError(*err.args) from err
-    else:
-        return True
 
 
 # from django.contrib.admindocs.utils
