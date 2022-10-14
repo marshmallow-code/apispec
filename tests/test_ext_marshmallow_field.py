@@ -212,9 +212,10 @@ def test_field_with_range_string_type(spec_fixture, field):
 
 @pytest.mark.parametrize("spec_fixture", ("3.1.0",), indirect=True)
 def test_field_with_range_type_list_with_number(spec_fixture):
-    @spec_fixture.openapi.map_to_openapi_type(["integer", "null"], None)
     class NullableInteger(fields.Field):
         """Nullable integer"""
+
+    spec_fixture.openapi.map_to_openapi_type(NullableInteger, ["integer", "null"], None)
 
     field = NullableInteger(validate=validate.Range(min=1, max=10))
     res = spec_fixture.openapi.field2property(field)
@@ -225,9 +226,10 @@ def test_field_with_range_type_list_with_number(spec_fixture):
 
 @pytest.mark.parametrize("spec_fixture", ("3.1.0",), indirect=True)
 def test_field_with_range_type_list_without_number(spec_fixture):
-    @spec_fixture.openapi.map_to_openapi_type(["string", "null"], None)
     class NullableInteger(fields.Field):
         """Nullable integer"""
+
+    spec_fixture.openapi.map_to_openapi_type(NullableInteger, ["string", "null"], None)
 
     field = NullableInteger(validate=validate.Range(min=1, max=10))
     res = spec_fixture.openapi.field2property(field)

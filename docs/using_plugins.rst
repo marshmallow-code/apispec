@@ -243,7 +243,7 @@ custom field subclasses a standard marshmallow `Field` class then it will
 inherit the default mapping. If you want to override the OpenAPI type and format
 for custom fields, use the
 `map_to_openapi_type <apispec.ext.marshmallow.MarshmallowPlugin.map_to_openapi_type>`
-decorator. It can be invoked with either a pair of strings providing the
+method. It can be invoked with either a pair of strings providing the
 OpenAPI type and format, or a marshmallow `Field` that has the desired target mapping.
 
 .. code-block:: python
@@ -258,20 +258,25 @@ OpenAPI type and format, or a marshmallow `Field` that has the desired target ma
         title="Demo", version="0.1", openapi_version="3.0.0", plugins=(ma_plugin,)
     )
 
-    # Inherits Integer mapping of ('integer', 'int32')
-    class MyCustomInteger(Integer):
+    # Inherits Integer mapping of ('integer', None)
+    class CustomInteger(Integer):
         pass
 
 
     # Override Integer mapping
-    @ma_plugin.map_to_openapi_type("string", "uuid")
-    class MyCustomField(Integer):
+    class Int32(Integer):
         pass
 
 
-    @ma_plugin.map_to_openapi_type(Integer)  # will map to ('integer', 'int32')
-    class MyCustomFieldThatsKindaLikeAnInteger(Field):
+    ma_plugin.map_to_openapi_type(Int32, "string", "int32")
+
+
+    # Map to ('integer', None) like Integer
+    class IntegerLike(Field):
         pass
+
+
+    ma_plugin.map_to_openapi_type(IntegerLike, Integer)
 
 In situations where greater control of the properties generated for a custom field
 is desired, users may add custom logic to the conversion of fields to OpenAPI properties

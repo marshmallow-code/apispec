@@ -113,8 +113,10 @@ class FieldConverterMixin:
             self.timedelta2properties,
         ]
 
-    def map_to_openapi_type(self, *args):
-        """Decorator to set mapping for custom fields.
+    def map_to_openapi_type(self, field_cls, *args):
+        """Set mapping for custom field class.
+
+        :param type field_cls: Field class to set mapping for.
 
         ``*args`` can be:
 
@@ -128,11 +130,7 @@ class FieldConverterMixin:
         else:
             raise TypeError("Pass core marshmallow field type or (type, fmt) pair.")
 
-        def inner(field_type):
-            self.field_mapping[field_type] = openapi_type_field
-            return field_type
-
-        return inner
+        self.field_mapping[field_cls] = openapi_type_field
 
     def add_attribute_function(self, func):
         """Method to add an attribute function to the list of attribute functions
