@@ -3,5 +3,5 @@
 from .core import APISpec
 from .plugin import BasePlugin
 
-__version__ = "6.0.0b1"
+__version__ = "6.0.0"
 __all__ = ["APISpec", "BasePlugin"]

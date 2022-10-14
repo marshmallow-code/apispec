@@ -1,6 +1,22 @@
 Changelog
 ---------
 
+6.0.0 (2022-10-15)
+******************
+
+Features:
+
+- Support ``fields.Enum`` (:pr:`802`).
+- *Backwards-incompatible*: Change ``MarshmallowPlugin.map_to_openapi_type``
+  from a decorator to a classic function, taking a field as first argument
+  (:pr:`804`).
+- *Backwards-incompatible*: Remove ``validate_spec`` from public API. Users may
+  call their validator of choice directly (:pr:`803`).
+
+Other changes:
+
+- Drop support for marshmallow < 3.18.0 (:pr:`802`).
+
 6.0.0b1 (2022-10-04)
 ********************
 
