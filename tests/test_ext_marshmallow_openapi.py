@@ -1,13 +1,14 @@
-import pytest
 from datetime import datetime
+
+import pytest
 
 from marshmallow import EXCLUDE, fields, INCLUDE, RAISE, Schema, validate
 
 from apispec.ext.marshmallow import MarshmallowPlugin
-from apispec import exceptions, utils, APISpec
+from apispec import exceptions, APISpec
 
 from .schemas import CustomList, CustomStringField
-from .utils import get_schemas, build_ref
+from .utils import get_schemas, build_ref, validate_spec
 
 
 class TestMarshmallowFieldToOpenAPI:
@@ -533,7 +534,7 @@ def test_openapi_tools_validate_v2():
         },
     )
     try:
-        utils.validate_spec(spec)
+        validate_spec(spec)
     except exceptions.OpenAPIError as error:
         pytest.fail(str(error))
 
@@ -602,7 +603,7 @@ def test_openapi_tools_validate_v3():
         },
     )
     try:
-        utils.validate_spec(spec)
+        validate_spec(spec)
     except exceptions.OpenAPIError as error:
         pytest.fail(str(error))
 
