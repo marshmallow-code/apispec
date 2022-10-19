@@ -187,6 +187,7 @@ class FieldConverterMixin:
         # hierarchy until we find something that does.
         for field_class in type(field).__mro__:
             if field_class in self.field_mapping:
+                field_class = get_diverging_field_class_if_required(field, field_class)
                 type_, fmt = self.field_mapping[field_class]
                 break
         else:
@@ -548,3 +549,20 @@ def make_min_max_attributes(validators, min_attr, max_attr) -> dict:
     if max_list:
         attributes[max_attr] = min(max_list)
     return attributes
+
+
+def get_diverging_field_class_if_required(
+    field: marshmallow.fields.Field, field_class: typing.Type
+) -> typing.Type:
+    """Return a field class that diverges from the origin class.
+
+    This is currently only required for Number fields, because some applications serialize decimal
+    numbers as strings, as binary representation of floats can't be precise. However, if more fields
+    would allow diverging serializer fields in the future, this function could be extended.
+    """
+    if (
+        issubclass(field_class, marshmallow.fields.Number)
+        and getattr(field, "as_string", False) is True
+    ):
+        return marshmallow.fields.String
+    return field_class

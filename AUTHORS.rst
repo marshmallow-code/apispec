@@ -76,3 +76,4 @@ Contributors (chronological)
 - `<https://github.com/kasium>`_
 - Edwin Erdmanis `@vorticity <https://github.com/vorticity>`_
 - Mounier Florian `@paradoxxxzero <https://github.com/paradoxxxzero>`_
+- Timotheus Roeck `@rockTA <https://github.com/rockTA>`

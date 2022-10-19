@@ -439,3 +439,12 @@ def test_field2property_with_non_string_metadata_keys(spec_fixture):
     field.metadata[_DesertSentinel()] = "to be ignored"
     result = spec_fixture.openapi.field2property(field)
     assert result == {"description": "A description", "type": "boolean"}
+
+
+def test_number_as_string_is_converted_as_expected(spec_fixture):
+    field = fields.Number(
+        as_string=True,
+        metadata={"description": "A number field that is serialized as a string"},
+    )
+    result = spec_fixture.openapi.field2property(field)
+    assert result["type"] == "string"
