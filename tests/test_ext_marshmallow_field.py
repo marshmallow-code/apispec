@@ -274,7 +274,7 @@ def test_enum_symbol_field(spec_fixture):
     field = fields.Enum(MyEnum)
     ret = spec_fixture.openapi.field2property(field)
     assert ret["type"] == "string"
-    assert ret["enum"] == "one, two"
+    assert ret["enum"] == ["one", "two"]
 
 
 @pytest.mark.parametrize("by_value", [fields.Integer, True])
@@ -289,7 +289,7 @@ def test_enum_value_field(spec_fixture, by_value):
         assert "type" not in ret
     else:
         assert ret["type"] == "integer"
-    assert ret["enum"] == "1, 2"
+    assert ret["enum"] == [1, 2]
 
 
 def test_field2property_nested_spec_metadatas(spec_fixture):

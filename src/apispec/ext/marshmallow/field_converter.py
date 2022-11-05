@@ -509,7 +509,11 @@ class FieldConverterMixin:
         ret = {}
         if isinstance(field, marshmallow.fields.Enum):
             ret = self.field2property(field.field)
-            ret["enum"] = field.choices_text
+            if field.by_value is False:
+                choices = (m for m in field.enum.__members__)
+            else:
+                choices = (m.value for m in field.enum)
+            ret["enum"] = [field.field._serialize(v, None, None) for v in choices]
         return ret
 
 
