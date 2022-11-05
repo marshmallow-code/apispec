@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+6.0.1 (2022-11-05)
+******************
+
+Bug fixes:
+
+- Document ``fields.Enum`` as list of values, not string (:issue:`806`).
+  Thanks :user:`tadams42` for reporting.
+
 6.0.0 (2022-10-15)
 ******************
 
