@@ -25,7 +25,7 @@ EXTRAS_REQUIRE = {
 EXTRAS_REQUIRE["tests"] = (
     EXTRAS_REQUIRE["yaml"]
     + EXTRAS_REQUIRE["validation"]
-    + ["marshmallow>=3.13.0", "pytest", "mock"]
+    + ["marshmallow>=3.13.0", "pytest"]
 )
 EXTRAS_REQUIRE["dev"] = EXTRAS_REQUIRE["tests"] + EXTRAS_REQUIRE["lint"] + ["tox"]
 
