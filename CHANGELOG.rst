@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+6.0.2 (2022-11-10)
+******************
+
+Bug fixes:
+
+- Allow passing ``openapi_version`` as string in ``marshmallow OpenAPIConverter``
+  (:issue:`810`). Thanks :user:`paradoxxxzero` for the PR.
+
 6.0.1 (2022-11-05)
 ******************
 
