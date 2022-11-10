@@ -4,8 +4,9 @@ import pytest
 
 from marshmallow import EXCLUDE, fields, INCLUDE, RAISE, Schema, validate
 
-from apispec.ext.marshmallow import MarshmallowPlugin
+from apispec.ext.marshmallow import MarshmallowPlugin, OpenAPIConverter
 from apispec import exceptions, APISpec
+from packaging.version import Version
 
 from .schemas import CustomList, CustomStringField
 from .utils import get_schemas, build_ref, validate_spec
@@ -606,6 +607,15 @@ def test_openapi_tools_validate_v3():
         validate_spec(spec)
     except exceptions.OpenAPIError as error:
         pytest.fail(str(error))
+
+
+def test_openapi_converter_openapi_version_types():
+    converter_with_version = OpenAPIConverter(Version("3.1"), None, None)
+    converter_with_str_version = OpenAPIConverter("3.1", None, None)
+    assert (
+        converter_with_version.openapi_version
+        == converter_with_str_version.openapi_version
+    )
 
 
 class TestFieldValidation:

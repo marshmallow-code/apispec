@@ -40,7 +40,7 @@ __location_map__ = {
 class OpenAPIConverter(FieldConverterMixin):
     """Adds methods for generating OpenAPI specification from marshmallow schemas and fields.
 
-    :param Version openapi_version: The OpenAPI version to use.
+    :param Version|str openapi_version: The OpenAPI version to use.
         Should be in the form '2.x' or '3.x.x' to comply with the OpenAPI standard.
     :param callable schema_name_resolver: Callable to generate the schema definition name.
         Receives the `Schema` class and returns the name to be used in refs within
@@ -52,11 +52,15 @@ class OpenAPIConverter(FieldConverterMixin):
 
     def __init__(
         self,
-        openapi_version: Version,
+        openapi_version: Version | str,
         schema_name_resolver,
         spec: APISpec,
     ) -> None:
-        self.openapi_version = openapi_version
+        self.openapi_version = (
+            Version(openapi_version)
+            if isinstance(openapi_version, str)
+            else openapi_version
+        )
         self.schema_name_resolver = schema_name_resolver
         self.spec = spec
         self.init_attribute_functions()
