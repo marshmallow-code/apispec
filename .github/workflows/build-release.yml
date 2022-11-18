@@ -25,8 +25,8 @@ jobs:
       matrix:
         include:
           - {name: '3.7-ma3', python: '3.7', os: ubuntu-latest, tox: py37-marshmallow3}
-          - {name: '3.10-ma3', python: '3.10', os: ubuntu-latest, tox: py310-marshmallow3}
-          - {name: '3.10-madev', python: '3.10', os: ubuntu-latest, tox: py310-marshmallowdev}
+          - {name: '3.11-ma3', python: '3.11', os: ubuntu-latest, tox: py311-marshmallow3}
+          - {name: '3.11-madev', python: '3.11', os: ubuntu-latest, tox: py311-marshmallowdev}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
