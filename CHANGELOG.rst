@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+6.1.0 (unreleased)
+******************
+
+Other changes:
+
+- Test against Python 3.11 (:pr:`809`).
+
 6.0.2 (2022-11-10)
 ******************
 
