@@ -239,7 +239,7 @@ class FieldConverterMixin:
         attributes = {}
 
         comparable = [
-            validator.comparable  # type:ignore
+            validator.comparable
             for validator in field.validators
             if hasattr(validator, "comparable")
         ]
@@ -247,7 +247,7 @@ class FieldConverterMixin:
             attributes["enum"] = comparable
         else:
             choices = [
-                OrderedSet(validator.choices)  # type:ignore
+                OrderedSet(validator.choices)
                 for validator in field.validators
                 if hasattr(validator, "choices")
             ]
@@ -348,9 +348,7 @@ class FieldConverterMixin:
         max_attr = "maxItems" if is_array else "maxLength"
 
         equal_list = [
-            validator.equal  # type:ignore
-            for validator in validators
-            if validator.equal is not None  # type:ignore
+            validator.equal for validator in validators if validator.equal is not None
         ]
         if equal_list:
             return {min_attr: equal_list[0], max_attr: equal_list[0]}
