@@ -1185,7 +1185,7 @@ class TestPlugins:
 class TestPluginsOrder:
     class OrderedPlugin(BasePlugin):
         def __init__(self, index, output):
-            super(TestPluginsOrder.OrderedPlugin, self).__init__()
+            super().__init__()
             self.index = index
             self.output = output
 
