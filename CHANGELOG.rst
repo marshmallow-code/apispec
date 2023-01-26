@@ -584,7 +584,7 @@ Features:
 
 - ``apispec.core.Components`` is added. Each ``APISpec`` instance has a
   ``Components`` object used to define components such as schemas, parameters
-  or reponses. "Components" is the OpenAPI v3 terminology for those reusable
+  or responses. "Components" is the OpenAPI v3 terminology for those reusable
   top-level objects.
 - ``apispec.core.Components.parameter`` and ``apispec.core.Components.response``
   are added.

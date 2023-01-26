@@ -102,7 +102,7 @@ class OpenAPIConverter(FieldConverterMixin):
 
         Typically will return a dictionary with the reference to the schema's
         path in the spec unless the `schema_name_resolver` returns `None`, in
-        which case the returned dictoinary will contain a JSON Schema Object
+        which case the returned dictionary will contain a JSON Schema Object
         representation of the schema.
 
         :param schema: schema to add to the spec

@@ -67,7 +67,7 @@ The ``APISpec`` object contains helpers to add top-level components:
    * - Parameter
      - `spec.components.parameter <apispec.core.Components.parameter>`
      - 2, 3
-   * - Reponse
+   * - Response
      - `spec.components.response <apispec.core.Components.response>`
      - 2, 3
    * - Header

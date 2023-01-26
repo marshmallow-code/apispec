@@ -149,7 +149,7 @@ class FieldConverterMixin:
             merged with the return values of all other attribute functions called on the field.
             User added attribute functions will be called after all built-in attribute
             functions in the order they were added. The merged results of all
-            previously called attribute functions are accessable via the `ret`
+            previously called attribute functions are accessible via the `ret`
             argument.
         """
         bound_func = func.__get__(self)
