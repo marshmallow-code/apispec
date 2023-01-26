@@ -526,8 +526,8 @@ class TestComponents(RefsSchemaTestMixin):
         assert schemas["Pet_2"]["properties"] == self.properties
 
     def test_response_lazy(self, spec):
-        response_1 = {"description": "Reponse 1"}
-        response_2 = {"description": "Reponse 2"}
+        response_1 = {"description": "Response 1"}
+        response_2 = {"description": "Response 2"}
         spec.components.response("Response_1", response_1, lazy=False)
         spec.components.response("Response_2", response_2, lazy=True)
         responses = get_responses(spec)
