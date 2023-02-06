@@ -17,7 +17,8 @@ class SchemaResolver:
 
     def resolve_operations(self, operations, **kwargs):
         """Resolve marshmallow Schemas in a dict mapping operation to OpenApi `Operation Object
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#operationObject`_"""
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#operationObject`_
+        """
 
         for operation in operations.values():
             if not isinstance(operation, dict):

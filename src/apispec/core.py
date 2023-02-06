@@ -556,7 +556,6 @@ class APISpec:
         """
         seen = set()
         for parameter in [p for p in parameters if isinstance(p, dict)]:
-
             # check missing name / location
             missing_attrs = [attr for attr in ("name", "in") if attr not in parameter]
             if missing_attrs:
