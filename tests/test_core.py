@@ -179,7 +179,6 @@ class TestMetadata:
 
 
 class TestTags:
-
     tag = {
         "name": "MyTag",
         "description": "This tag gathers all API endpoints which are mine.",
@@ -196,7 +195,6 @@ class TestTags:
 
 
 class TestComponents(RefsSchemaTestMixin):
-
     properties = {
         "id": {"type": "integer", "format": "int64"},
         "name": {"type": "string", "example": "doggie"},
