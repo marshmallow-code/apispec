@@ -158,7 +158,7 @@ class TestDefinitionHelper:
         pet_exclude = definitions["MultiModifierSchema"]["properties"]["pet_exclude"]
         assert pet_exclude == build_ref(spec, "schema", "Pet_Exclude")
 
-    def test_schema_instance_with_different_modifers_custom_resolver(self):
+    def test_schema_instance_with_different_modifers_custom_resolver(self, recwarn):
         class MultiModifierSchema(Schema):
             pet_unmodified = Nested(PetSchema)
             pet_exclude = Nested(PetSchema(partial=True))
@@ -179,10 +179,8 @@ class TestDefinitionHelper:
             plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
         )
 
-        with pytest.warns(None) as record:
-            spec.components.schema("NameClashSchema", schema=MultiModifierSchema)
-
-        assert len(record) == 0
+        spec.components.schema("NameClashSchema", schema=MultiModifierSchema)
+        assert not recwarn
 
     def test_schema_with_clashing_names(self, spec):
         class Pet(PetSchema):
