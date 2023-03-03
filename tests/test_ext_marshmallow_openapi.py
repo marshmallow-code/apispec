@@ -666,7 +666,7 @@ class TestFieldValidation:
             ("custom_field_length", {"minLength": 1, "maxLength": 10}),
             ("multiple_lengths", {"minLength": 3, "maxLength": 7}),
             ("equal_length", {"minLength": 5, "maxLength": 5}),
-            ("date_range", {"x-minimum": datetime(1900, 1, 1)}),
+            ("date_range", {"x-minimum": "1900-01-01T00:00:00"}),
         ],
     )
     def test_properties(self, field, properties, spec):

@@ -238,6 +238,19 @@ def test_field_with_range_type_list_without_number(spec_fixture):
     assert res["type"] == ["string", "null"]
 
 
+def test_field_with_range_datetime_type(spec_fixture):
+    field = fields.DateTime(
+        validate=validate.Range(
+            min=dt.datetime(1900, 1, 1),
+            max=dt.datetime(2000, 1, 1),
+        )
+    )
+    res = spec_fixture.openapi.field2property(field)
+    assert res["x-minimum"] == "1900-01-01T00:00:00"
+    assert res["x-maximum"] == "2000-01-01T00:00:00"
+    assert isinstance(res["type"], str)
+
+
 def test_field_with_str_regex(spec_fixture):
     regex_str = "^[a-zA-Z0-9]$"
     field = fields.Str(validate=validate.Regexp(regex_str))
