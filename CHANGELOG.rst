@@ -1,8 +1,12 @@
 Changelog
 ---------
 
-6.1.0 (unreleased)
+6.1.0 (2023-03-03)
 ******************
+
+Bug fixes:
+
+- Serialize min/max values in ``field2range`` (:pr:`825`).
 
 Other changes:
 
