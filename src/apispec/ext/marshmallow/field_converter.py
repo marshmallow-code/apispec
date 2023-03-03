@@ -17,8 +17,6 @@ import marshmallow
 from marshmallow.orderedset import OrderedSet
 
 
-RegexType = type(re.compile(""))
-
 # marshmallow field => (JSON Schema type, format)
 DEFAULT_FIELD_MAPPING = {
     marshmallow.fields.Integer: ("integer", None),
@@ -375,7 +373,7 @@ class FieldConverterMixin:
         regex_validators = (
             v
             for v in field.validators
-            if isinstance(getattr(v, "regex", None), RegexType)
+            if isinstance(getattr(v, "regex", None), re.Pattern)
         )
         v = next(regex_validators, None)
         attributes = {} if v is None else {"pattern": v.regex.pattern}  # type:ignore
