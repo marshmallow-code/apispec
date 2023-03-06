@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+6.2.0 (2023-03-06)
+******************
+
+Features:
+
+- Resolve references in callbacks (:issue:`827`).
+  Thanks :user:`codectl` for the PR.
+
 6.1.0 (2023-03-03)
 ******************
 
