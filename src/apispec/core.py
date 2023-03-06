@@ -370,6 +370,11 @@ class Components:
                 self._resolve_refs_in_parameter_or_header(parameter)
                 parameters.append(parameter)
             operation["parameters"] = parameters
+        if "callbacks" in operation:
+            for callback in operation["callbacks"].values():
+                if isinstance(callback, dict):
+                    for path in callback.values():
+                        self.resolve_refs_in_path(path)
         if "requestBody" in operation:
             self._resolve_refs_in_request_body(operation["requestBody"])
         if "responses" in operation:

@@ -23,7 +23,6 @@ from .utils import (
     build_ref,
 )
 
-
 description = "This is a sample Petstore server.  You can find out more "
 'about Swagger at <a href="http://swagger.wordnik.com">http://swagger.wordnik.com</a> '
 "or on irc.freenode.net, #swagger.  For this sample, you can use the api "
@@ -898,6 +897,35 @@ class TestPath(RefsSchemaTestMixin):
         else:
             schema = resp["content"]["application/json"]["schema"]
         assert schema == build_ref(spec, "schema", "PetSchema")
+
+    # callbacks only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_path_resolve_callbacks(self, spec):
+        spec.path(
+            "/pet/{petId}",
+            operations={
+                "get": {
+                    "callbacks": {
+                        "event": {
+                            "/callback": {
+                                "post": {
+                                    "requestBody": {
+                                        "content": {
+                                            "application/json": {"schema": "PetSchema"}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+        )
+        assert get_paths(spec)["/pet/{petId}"]["get"]["callbacks"]["event"][
+            "/callback"
+        ]["post"]["requestBody"]["content"]["application/json"]["schema"] == build_ref(
+            spec, "schema", "PetSchema"
+        )
 
     # requestBody only exists in OAS 3
     @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
