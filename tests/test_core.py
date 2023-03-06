@@ -23,7 +23,6 @@ from .utils import (
     build_ref,
 )
 
-
 description = "This is a sample Petstore server.  You can find out more "
 'about Swagger at <a href="http://swagger.wordnik.com">http://swagger.wordnik.com</a> '
 "or on irc.freenode.net, #swagger.  For this sample, you can use the api "
@@ -898,6 +897,53 @@ class TestPath(RefsSchemaTestMixin):
         else:
             schema = resp["content"]["application/json"]["schema"]
         assert schema == build_ref(spec, "schema", "PetSchema")
+
+    # callbacks only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_path_resolve_callbacks(self, spec):
+        parameter = {"name": "petId", "in": "query", "schema": "PetSchema"}
+        spec.path(
+            "/pet/{petId}",
+            operations={
+                "get": {
+                    "callbacks": {
+                        "onEvent": {
+                            "/callback/{petId}": {
+                                "post": {
+                                    "parameters": [parameter],
+                                    "requestBody": {
+                                        "content": {
+                                            "application/json": {"schema": "PetSchema"}
+                                        }
+                                    },
+                                    "responses": {
+                                        "200": {
+                                            "content": {
+                                                "application/json": {
+                                                    "schema": "PetSchema"
+                                                }
+                                            }
+                                        }
+                                    },
+                                }
+                            }
+                        }
+                    },
+                }
+            },
+        )
+        path = get_paths(spec)["/pet/{petId}"]
+        schema_ref = build_ref(spec, "schema", "PetSchema")
+        callback_op = path["get"]["callbacks"]["onEvent"]["/callback/{petId}"]["post"]
+        assert callback_op["parameters"][0]["schema"] == schema_ref
+        assert (
+            callback_op["requestBody"]["content"]["application/json"]["schema"]
+            == schema_ref
+        )
+        assert (
+            callback_op["responses"]["200"]["content"]["application/json"]["schema"]
+            == schema_ref
+        )
 
     # requestBody only exists in OAS 3
     @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
