@@ -901,30 +901,48 @@ class TestPath(RefsSchemaTestMixin):
     # callbacks only exists in OAS 3
     @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
     def test_path_resolve_callbacks(self, spec):
+        parameter = {"name": "petId", "in": "query", "schema": "PetSchema"}
         spec.path(
             "/pet/{petId}",
             operations={
                 "get": {
                     "callbacks": {
-                        "event": {
-                            "/callback": {
+                        "onEvent": {
+                            "/callback/{petId}": {
                                 "post": {
+                                    "parameters": [parameter],
                                     "requestBody": {
                                         "content": {
                                             "application/json": {"schema": "PetSchema"}
                                         }
-                                    }
+                                    },
+                                    "responses": {
+                                        "200": {
+                                            "content": {
+                                                "application/json": {
+                                                    "schema": "PetSchema"
+                                                }
+                                            }
+                                        }
+                                    },
                                 }
                             }
                         }
-                    }
+                    },
                 }
             },
         )
-        assert get_paths(spec)["/pet/{petId}"]["get"]["callbacks"]["event"][
-            "/callback"
-        ]["post"]["requestBody"]["content"]["application/json"]["schema"] == build_ref(
-            spec, "schema", "PetSchema"
+        path = get_paths(spec)["/pet/{petId}"]
+        schema_ref = build_ref(spec, "schema", "PetSchema")
+        callback_op = path["get"]["callbacks"]["onEvent"]["/callback/{petId}"]["post"]
+        assert callback_op["parameters"][0]["schema"] == schema_ref
+        assert (
+            callback_op["requestBody"]["content"]["application/json"]["schema"]
+            == schema_ref
+        )
+        assert (
+            callback_op["responses"]["200"]["content"]["application/json"]["schema"]
+            == schema_ref
         )
 
     # requestBody only exists in OAS 3
