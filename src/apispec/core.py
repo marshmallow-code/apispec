@@ -343,6 +343,9 @@ class Components:
     def _resolve_refs_in_parameter_or_header(self, parameter_or_header) -> None:
         self._resolve_schema(parameter_or_header)
         self._resolve_examples(parameter_or_header)
+        # parameter content is OpenAPI v3+
+        for media_type in parameter_or_header.get("content", {}).values():
+            self._resolve_schema(media_type)
 
     def _resolve_refs_in_request_body(self, request_body) -> None:
         # requestBody is OpenAPI v3+
