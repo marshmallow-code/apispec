@@ -1,6 +1,15 @@
 Changelog
 ---------
 
+6.3.0 (2023-03-10)
+******************
+
+Features:
+
+- Resolve schema references in parameters content (:issue:`830`).
+  Thanks :user:`codectl` for the PR.
+
+
 6.2.0 (2023-03-06)
 ******************
 
