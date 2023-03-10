@@ -481,6 +481,14 @@ class TestComponents(RefsSchemaTestMixin):
         param = get_parameters(spec)["param"]
         assert param["schema"] == build_ref(spec, "schema", "PetSchema")
 
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_parameter_schemas_v3(self, spec):
+        parameter = {"content": {"application/json": {"schema": "PetSchema"}}}
+        spec.components.parameter("param", "path", parameter)
+        param = get_parameters(spec)["param"]
+        schema = param["content"]["application/json"]["schema"]
+        assert schema == build_ref(spec, "schema", "PetSchema")
+
     def test_components_resolve_refs_in_parameter_schema(self, spec):
         parameter = {"schema": copy.deepcopy(self.REFS_SCHEMA)}
         spec.components.parameter("param", "path", parameter)
