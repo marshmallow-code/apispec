@@ -177,6 +177,26 @@ def test_field_with_allow_none(spec_fixture):
         assert res["type"] == ["string", "null"]
 
 
+@pytest.mark.parametrize("spec_fixture", ("2.0", "3.0.0", "3.1.0"), indirect=True)
+def test_nested_field_with_allow_none(spec_fixture):
+    field = fields.Nested(CategorySchema, allow_none=True)
+    res = spec_fixture.openapi.field2property(field)
+    if spec_fixture.openapi.openapi_version.major < 3:
+        assert res["x-nullable"] is True
+        assert res["allOf"] == [build_ref(spec_fixture.spec, "schema", "Category")]
+    elif spec_fixture.openapi.openapi_version.minor < 1:
+        assert res["nullable"] is True
+        assert res["allOf"] == [build_ref(spec_fixture.spec, "schema", "Category")]
+    else:
+        assert "nullable" not in res
+        assert "allOf" not in res
+        assert "type" not in res
+        assert res["anyOf"] == [
+            {"type": "null"},
+            build_ref(spec_fixture.spec, "schema", "Category"),
+        ]
+
+
 def test_field_with_dump_only(spec_fixture):
     field = fields.Str(dump_only=True)
     res = spec_fixture.openapi.field2property(field)
