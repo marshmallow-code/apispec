@@ -439,7 +439,16 @@ class FieldConverterMixin:
         ):
             schema_dict = self.resolve_nested_schema(field.schema)  # type:ignore
             if ret and "$ref" in schema_dict:
-                ret.update({"allOf": [schema_dict]})
+                if "type" in ret:
+                    type = ret.pop("type")
+                    if isinstance(type, list):
+                        types = list(map(lambda t: {"type": t}, type))
+                    else:
+                        types = [{"type": type}]
+                    types.append(schema_dict)
+                    ret.update({"anyOf": types})
+                else:
+                    ret.update({"allOf": [schema_dict]})
             else:
                 ret.update(schema_dict)
         return ret
