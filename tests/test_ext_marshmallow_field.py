@@ -5,6 +5,8 @@ from enum import Enum
 import pytest
 from marshmallow import fields, validate
 
+from apispec import APISpec
+from apispec.ext.marshmallow import MarshmallowPlugin
 from .schemas import CategorySchema, CustomList, CustomStringField, CustomIntegerField
 from .utils import build_ref, get_schemas
 
@@ -421,6 +423,38 @@ class TestField2PropertyPluck:
             "type": "array",
             "readOnly": True,
         }
+
+
+def test_pluck_nullable():
+    ma = MarshmallowPlugin()
+    spec = APISpec(
+        title="My API Spec",
+        version="1.0.0",
+        openapi_version="3.1.0",
+        plugins=[ma],
+    )
+    spec.components.schema("Category", schema=CategorySchema)
+    breed = fields.Pluck(CategorySchema, "breed", allow_none=True)
+    assert ma.converter.field2property(breed) == {
+        "type": ["string", "null"],
+        "readOnly": True,
+    }
+
+
+def test_pluck_nullable_many():
+    ma = MarshmallowPlugin()
+    spec = APISpec(
+        title="My API Spec",
+        version="1.0.0",
+        openapi_version="3.1.0",
+        plugins=[ma],
+    )
+    spec.components.schema("Category", schema=CategorySchema)
+    breed = fields.Pluck(CategorySchema, "breed", many=True, allow_none=True)
+    assert ma.converter.field2property(breed) == {
+        "items": {"readOnly": True, "type": "string"},
+        "type": ["array", "null"],
+    }
 
 
 def test_custom_properties_for_custom_fields(spec_fixture):

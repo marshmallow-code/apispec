@@ -2,7 +2,16 @@ import json
 
 import pytest
 
-from marshmallow.fields import Field, DateTime, Dict, String, Nested, List, TimeDelta
+from marshmallow.fields import (
+    Field,
+    DateTime,
+    Dict,
+    String,
+    Nested,
+    List,
+    TimeDelta,
+    Integer,
+)
 from marshmallow import Schema
 
 from apispec import APISpec
@@ -1342,3 +1351,67 @@ class TestTimeDelta:
             get_schemas(spec)["SchemaWithTimeDelta"]["properties"]["day"]["x-unit"]
             == "days"
         )
+
+
+def test_nested_nullable_inline():
+    class FooSchema(Schema):
+        bar = Integer(required=True)
+
+    class MySchema(Schema):
+        foo = Nested(FooSchema, allow_none=True)
+
+    spec = APISpec(
+        title="My API Spec",
+        version="1.0.0",
+        openapi_version="3.1.0",
+        plugins=[MarshmallowPlugin(schema_name_resolver=lambda _: None)],
+    )
+    spec.components.schema("MySchema", schema=MySchema)
+
+    assert get_schemas(spec)["MySchema"]["properties"]["foo"]["type"] == [
+        "object",
+        "null",
+    ]
+
+
+def test_nested_nullable_ref():
+    class FooSchema(Schema):
+        bar = Integer(required=True)
+
+    class MySchema(Schema):
+        foo = Nested(FooSchema, allow_none=True)
+
+    spec = APISpec(
+        title="My API Spec",
+        version="1.0.0",
+        openapi_version="3.1.0",
+        plugins=[MarshmallowPlugin()],
+    )
+    spec.components.schema("MySchema", schema=MySchema)
+
+    assert get_schemas(spec)["MySchema"]["properties"]["foo"]["anyOf"] == [
+        {"$ref": "#/components/schemas/Foo"},
+        {"type": "null"},
+    ]
+
+
+def test_nested_nullable_ref_with_other_property():
+    class FooSchema(Schema):
+        bar = Integer(required=True)
+
+    class MySchema(Schema):
+        foo = Nested(FooSchema, allow_none=True, dump_only=True)
+
+    spec = APISpec(
+        title="My API Spec",
+        version="1.0.0",
+        openapi_version="3.1.0",
+        plugins=[MarshmallowPlugin()],
+    )
+    spec.components.schema("MySchema", schema=MySchema)
+
+    assert get_schemas(spec)["MySchema"]["properties"]["foo"]["anyOf"] == [
+        {"$ref": "#/components/schemas/Foo"},
+        {"type": "null"},
+    ]
+    assert get_schemas(spec)["MySchema"]["properties"]["foo"]["readOnly"]
