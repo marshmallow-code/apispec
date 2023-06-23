@@ -478,6 +478,28 @@ def test_custom_properties_for_custom_fields(spec_fixture):
     )
 
 
+@pytest.mark.parametrize("spec_fixture", ("3.1.0",), indirect=True)
+def test_custom_properties_nullable_in_3_dot_one(spec_fixture):
+    class CustomNested(fields.Nested):
+        pass
+
+    def custom_string2properties(self, field, **kwargs):
+        ret = {}
+        if isinstance(field, CustomIntegerField):
+            ret["type"] = "number"
+
+        return ret
+
+    spec_fixture.marshmallow_plugin.converter.add_attribute_function(
+        custom_string2properties
+    )
+    properties = spec_fixture.marshmallow_plugin.converter.field2property(
+        CustomIntegerField(allow_none=True)
+    )
+
+    assert properties == {"type": ["number", "null"]}
+
+
 def test_field2property_with_non_string_metadata_keys(spec_fixture):
     class _DesertSentinel:
         pass

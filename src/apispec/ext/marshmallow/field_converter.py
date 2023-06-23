@@ -146,13 +146,12 @@ class FieldConverterMixin:
             Must return a dictionary of OpenAPI properties that will be shallow
             merged with the return values of all other attribute functions called on the field.
             User added attribute functions will be called after all built-in attribute
-            functions in the order they were added. The merged results of all
-            previously called attribute functions are accessible via the `ret`
-            argument.
+            functions except `field2nullable` in the order they were added. The merged results
+            of all previously called attribute functions are accessible via the `ret` argument.
         """
         bound_func = func.__get__(self)
         setattr(self, func.__name__, bound_func)
-        self.attribute_functions.append(bound_func)
+        self.attribute_functions.insert(-1, bound_func)
 
     def field2property(self, field: marshmallow.fields.Field) -> dict:
         """Return the JSON Schema property definition given a marshmallow
