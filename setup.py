@@ -6,7 +6,7 @@ INSTALL_REQUIRES = "packaging>=21.3"
 EXTRAS_REQUIRE = {
     "marshmallow": ["marshmallow>=3.18.0"],
     "yaml": ["PyYAML>=3.10"],
-    "validation": ["prance[osv]>=0.11", "openapi_spec_validator<0.5"],
+    "validation": ["prance[osv]>=0.11"],
     "lint": [
         "flake8==5.0.4",
         "flake8-bugbear==22.9.23",
