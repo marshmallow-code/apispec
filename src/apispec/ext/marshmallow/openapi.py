@@ -197,6 +197,8 @@ class OpenAPIConverter(FieldConverterMixin):
         else:
             if "description" in prop:
                 ret["description"] = prop.pop("description")
+            if "deprecated" in prop:
+                ret["deprecated"] = prop.pop("deprecated")
             ret["schema"] = prop
 
         for param_attr_func in self.parameter_attribute_functions:
