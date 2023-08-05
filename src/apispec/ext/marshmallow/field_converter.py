@@ -6,6 +6,7 @@
     This module is treated as private API.
     Users should not need to use this module directly.
 """
+from __future__ import annotations
 import re
 import functools
 import operator
@@ -18,7 +19,7 @@ from marshmallow.orderedset import OrderedSet
 
 
 # marshmallow field => (JSON Schema type, format)
-DEFAULT_FIELD_MAPPING = {
+DEFAULT_FIELD_MAPPING: dict[type, tuple[str | None, str | None]] = {
     marshmallow.fields.Integer: ("integer", None),
     marshmallow.fields.Number: ("number", None),
     marshmallow.fields.Float: ("number", None),
@@ -86,7 +87,7 @@ _VALID_PREFIX = "x-"
 class FieldConverterMixin:
     """Adds methods for converting marshmallow fields to an OpenAPI properties."""
 
-    field_mapping = DEFAULT_FIELD_MAPPING
+    field_mapping: dict[type, tuple[str | None, str | None]] = DEFAULT_FIELD_MAPPING
     openapi_version: Version
 
     def init_attribute_functions(self):
