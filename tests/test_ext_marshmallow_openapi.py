@@ -245,6 +245,11 @@ class TestMarshmallowSchemaToParameters:
         res = openapi._field2parameter(field, name="field", location="query")
         assert res["required"] is True
 
+    def test_field_deprecated(self, openapi):
+        field = fields.Str(metadata={"deprecated": True})
+        res = openapi._field2parameter(field, name="field", location="query")
+        assert res["deprecated"] is True
+
     def test_schema_partial(self, openapi):
         class UserSchema(Schema):
             field = fields.Str(required=True)

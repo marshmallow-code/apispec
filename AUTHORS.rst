@@ -77,3 +77,4 @@ Contributors (chronological)
 - Edwin Erdmanis `@vorticity <https://github.com/vorticity>`_
 - Mounier Florian `@paradoxxxzero <https://github.com/paradoxxxzero>`_
 - Renato Damas `@codectl <https://github.com/codectl>`_
+- Tayler Sokalski `@tsokalski <https://github.com/tsokalski>`_
