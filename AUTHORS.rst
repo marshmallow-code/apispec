@@ -78,3 +78,4 @@ Contributors (chronological)
 - Mounier Florian `@paradoxxxzero <https://github.com/paradoxxxzero>`_
 - Renato Damas `@codectl <https://github.com/codectl>`_
 - Tayler Sokalski `@tsokalski <https://github.com/tsokalski>`_
+- Luna Lovegood `@duchuyvp <https://github.com/duchuyvp>`_
