@@ -549,7 +549,7 @@ class FieldConverterMixin:
                     "example": "1676451245.596",
                     "min": "0",
                 }
-            elif field.format ==  "timestamp_ms":
+            elif field.format == "timestamp_ms":
                 ret = {
                     "type": "number",
                     "format": "float",
