@@ -56,6 +56,7 @@ class TestMarshmallowSchemaToModelDefinition:
             _id = fields.Int()
             email = fields.Email(metadata={"description": "email address of the user"})
             name = fields.Str()
+            my_float = fields.Float()
 
             class Meta:
                 title = "User"
@@ -65,6 +66,7 @@ class TestMarshmallowSchemaToModelDefinition:
         assert res["type"] == "object"
         props = res["properties"]
         assert props["_id"]["type"] == "integer"
+        assert props["my_float"]["format"] == "float"
         assert props["email"]["type"] == "string"
         assert props["email"]["format"] == "email"
         assert props["email"]["description"] == "email address of the user"
