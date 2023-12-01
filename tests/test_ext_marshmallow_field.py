@@ -222,6 +222,7 @@ def test_field_with_range_type_list_with_number(spec_fixture):
     assert res["minimum"] == 1
     assert res["maximum"] == 10
     assert res["type"] == ["integer", "null"]
+    assert isinstance(res["minimum"], int)
 
 
 @pytest.mark.parametrize("spec_fixture", ("3.1.0",), indirect=True)
@@ -249,6 +250,36 @@ def test_field_with_range_datetime_type(spec_fixture):
     assert res["x-minimum"] == "1900-01-01T00:00:00"
     assert res["x-maximum"] == "2000-01-01T00:00:00"
     assert isinstance(res["type"], str)
+
+
+def test_field_with_range_integer_type(spec_fixture):
+    field = fields.Integer(validate=validate.Range(min=1, max=10))
+    res = spec_fixture.openapi.field2property(field)
+    assert res["minimum"] == 1
+    assert res["maximum"] == 10
+    assert res["type"] == "integer"
+    assert isinstance(res["minimum"], int)
+    assert isinstance(res["maximum"], int)
+
+
+def test_field_with_range_float_type(spec_fixture):
+    field = fields.Float(validate=validate.Range(min=1, max=10))
+    res = spec_fixture.openapi.field2property(field)
+    assert res["minimum"] == 1.0
+    assert res["maximum"] == 10.0
+    assert res["type"] == "number"
+    assert isinstance(res["minimum"], float)
+    assert isinstance(res["maximum"], float)
+
+
+def test_field_with_range_decimal_type(spec_fixture):
+    field = fields.Decimal(validate=validate.Range(min=1, max=10))
+    res = spec_fixture.openapi.field2property(field)
+    assert res["minimum"] == "1.000000"
+    assert res["maximum"] == "10.000000"
+    assert res["type"] == "number"
+    assert isinstance(res["minimum"], str)
+    assert isinstance(res["maximum"], str)
 
 
 def test_field_with_str_regex(spec_fixture):

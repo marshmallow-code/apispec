@@ -323,6 +323,8 @@ class FieldConverterMixin:
         # Serialize min/max values with the field to which the validator is applied
         return {
             k: field._serialize(v, None, None)
+            if not isinstance(field, marshmallow.fields.Decimal)
+            else field._to_string(v)
             for k, v in make_min_max_attributes(validators, min_attr, max_attr).items()
         }
 
