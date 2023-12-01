@@ -275,11 +275,11 @@ def test_field_with_range_float_type(spec_fixture):
 def test_field_with_range_decimal_type(spec_fixture):
     field = fields.Decimal(validate=validate.Range(min=1, max=10))
     res = spec_fixture.openapi.field2property(field)
-    assert res["minimum"] == "1.000000"
-    assert res["maximum"] == "10.000000"
+    assert res["minimum"] == 1.0
+    assert res["maximum"] == 10.0
     assert res["type"] == "number"
-    assert isinstance(res["minimum"], str)
-    assert isinstance(res["maximum"], str)
+    assert isinstance(res["minimum"], float)
+    assert isinstance(res["maximum"], float)
 
 
 def test_field_with_str_regex(spec_fixture):

@@ -324,7 +324,7 @@ class FieldConverterMixin:
         return {
             k: field._serialize(v, None, None)
             if not isinstance(field, marshmallow.fields.Decimal)
-            else field._to_string(v)
+            else float(v)
             for k, v in make_min_max_attributes(validators, min_attr, max_attr).items()
         }
 
