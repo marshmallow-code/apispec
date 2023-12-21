@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+6.3.1 (unreleased)
+******************
+
+Bug fixes:
+
+-  Fix conversion of deprecated flag on parameters (:issue:`850`).
+  Thanks :user:`tsokalski` for the PR.
+
 6.3.0 (2023-03-10)
 ******************
 
