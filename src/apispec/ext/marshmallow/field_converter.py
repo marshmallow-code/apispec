@@ -99,7 +99,6 @@ class FieldConverterMixin:
             self.field2choices,
             self.field2read_only,
             self.field2write_only,
-            self.field2nullable,
             self.field2range,
             self.field2length,
             self.field2pattern,
@@ -110,6 +109,7 @@ class FieldConverterMixin:
             self.list2properties,
             self.dict2properties,
             self.timedelta2properties,
+            self.field2nullable,
         ]
 
     def map_to_openapi_type(self, field_cls, *args):
@@ -147,13 +147,12 @@ class FieldConverterMixin:
             Must return a dictionary of OpenAPI properties that will be shallow
             merged with the return values of all other attribute functions called on the field.
             User added attribute functions will be called after all built-in attribute
-            functions in the order they were added. The merged results of all
-            previously called attribute functions are accessible via the `ret`
-            argument.
+            functions except `field2nullable` in the order they were added. The merged results
+            of all previously called attribute functions are accessible via the `ret` argument.
         """
         bound_func = func.__get__(self)
         setattr(self, func.__name__, bound_func)
-        self.attribute_functions.append(bound_func)
+        self.attribute_functions.insert(-1, bound_func)
 
     def field2property(self, field: marshmallow.fields.Field) -> dict:
         """Return the JSON Schema property definition given a marshmallow
@@ -294,7 +293,12 @@ class FieldConverterMixin:
             elif self.openapi_version.minor < 1:
                 attributes["nullable"] = True
             else:
-                attributes["type"] = [*make_type_list(ret.get("type")), "null"]
+                if "$ref" in ret:
+                    attributes["anyOf"] = [{"$ref": ret.pop("$ref")}, {"type": "null"}]
+                elif "allOf" in ret:
+                    attributes["anyOf"] = [*ret.pop("allOf"), {"type": "null"}]
+                else:
+                    attributes["type"] = [*make_type_list(ret.get("type")), "null"]
         return attributes
 
     def field2range(self, field: marshmallow.fields.Field, ret) -> dict:

@@ -5,6 +5,8 @@ from enum import Enum
 import pytest
 from marshmallow import fields, validate
 
+from apispec import APISpec
+from apispec.ext.marshmallow import MarshmallowPlugin
 from .schemas import CategorySchema, CustomList, CustomStringField, CustomIntegerField
 from .utils import build_ref, get_schemas
 
@@ -423,6 +425,38 @@ class TestField2PropertyPluck:
         }
 
 
+def test_pluck_nullable():
+    ma = MarshmallowPlugin()
+    spec = APISpec(
+        title="My API Spec",
+        version="1.0.0",
+        openapi_version="3.1.0",
+        plugins=[ma],
+    )
+    spec.components.schema("Category", schema=CategorySchema)
+    breed = fields.Pluck(CategorySchema, "breed", allow_none=True)
+    assert ma.converter.field2property(breed) == {
+        "type": ["string", "null"],
+        "readOnly": True,
+    }
+
+
+def test_pluck_nullable_many():
+    ma = MarshmallowPlugin()
+    spec = APISpec(
+        title="My API Spec",
+        version="1.0.0",
+        openapi_version="3.1.0",
+        plugins=[ma],
+    )
+    spec.components.schema("Category", schema=CategorySchema)
+    breed = fields.Pluck(CategorySchema, "breed", many=True, allow_none=True)
+    assert ma.converter.field2property(breed) == {
+        "items": {"readOnly": True, "type": "string"},
+        "type": ["array", "null"],
+    }
+
+
 def test_custom_properties_for_custom_fields(spec_fixture):
     def custom_string2properties(self, field, **kwargs):
         ret = {}
@@ -442,6 +476,28 @@ def test_custom_properties_for_custom_fields(spec_fixture):
     assert properties["x-customString"] == (
         spec_fixture.openapi.openapi_version.major == 2
     )
+
+
+@pytest.mark.parametrize("spec_fixture", ("3.1.0",), indirect=True)
+def test_custom_properties_nullable_in_3_dot_one(spec_fixture):
+    class CustomNested(fields.Nested):
+        pass
+
+    def custom_string2properties(self, field, **kwargs):
+        ret = {}
+        if isinstance(field, CustomIntegerField):
+            ret["type"] = "number"
+
+        return ret
+
+    spec_fixture.marshmallow_plugin.converter.add_attribute_function(
+        custom_string2properties
+    )
+    properties = spec_fixture.marshmallow_plugin.converter.field2property(
+        CustomIntegerField(allow_none=True)
+    )
+
+    assert properties == {"type": ["number", "null"]}
 
 
 def test_field2property_with_non_string_metadata_keys(spec_fixture):
