@@ -6,7 +6,7 @@ on:
   pull_request:
   # Run builds nightly to catch incompatibilities with new marshmallow releases
   schedule:
-  - cron: "0 0 * * *"
+    - cron: "0 0 * * *"
 jobs:
   lint:
     name: lint
@@ -24,9 +24,24 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {name: '3.7-ma3', python: '3.7', os: ubuntu-latest, tox: py37-marshmallow3}
-          - {name: '3.11-ma3', python: '3.11', os: ubuntu-latest, tox: py311-marshmallow3}
-          - {name: '3.11-madev', python: '3.11', os: ubuntu-latest, tox: py311-marshmallowdev}
+          - {
+              name: "3.8-ma3",
+              python: "3.8",
+              os: ubuntu-latest,
+              tox: py38-marshmallow3,
+            }
+          - {
+              name: "3.11-ma3",
+              python: "3.11",
+              os: ubuntu-latest,
+              tox: py311-marshmallow3,
+            }
+          - {
+              name: "3.11-madev",
+              python: "3.11",
+              os: ubuntu-latest,
+              tox: py311-marshmallowdev,
+            }
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
