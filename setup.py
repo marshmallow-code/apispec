@@ -10,7 +10,7 @@ EXTRAS_REQUIRE = {
     "lint": [
         "flake8==5.0.4",
         "flake8-bugbear==22.9.23",
-        "pre-commit~=2.4",
+        "pre-commit~=3.5",
         "mypy==0.982",
         "types-PyYAML",
     ],
@@ -70,11 +70,10 @@ setup(
     license="MIT",
     zip_safe=False,
     keywords="apispec swagger openapi specification oas documentation spec rest api",
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
