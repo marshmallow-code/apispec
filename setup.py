@@ -8,18 +8,18 @@ EXTRAS_REQUIRE = {
     "yaml": ["PyYAML>=3.10"],
     "validation": ["prance[osv]>=0.11"],
     "lint": [
-        "flake8==5.0.4",
-        "flake8-bugbear==22.9.23",
+        "flake8==7.0.0",
+        "flake8-bugbear==22.12.6",
         "pre-commit~=3.5",
-        "mypy==0.982",
+        "mypy==1.8.0",
         "types-PyYAML",
     ],
     "docs": [
         "marshmallow>=3.13.0",
-        "pyyaml==6.0",
-        "sphinx==5.2.3",
+        "pyyaml==6.0.1",
+        "sphinx==7.2.6",
         "sphinx-issues==3.0.1",
-        "sphinx-rtd-theme==1.0.0",
+        "sphinx-rtd-theme==2.0.0",
     ],
 }
 EXTRAS_REQUIRE["tests"] = (
