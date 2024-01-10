@@ -213,7 +213,7 @@ class TestMarshmallowSchemaToParameters:
         class DelimitedList(fields.List):
             """Delimited list field"""
 
-        def delimited_list2param(self, field, **kwargs):
+        def delimited_list2param(self, field: fields.Field, **kwargs) -> dict:
             ret: dict = {}
             if isinstance(field, DelimitedList):
                 if self.openapi_version.major < 3:
