@@ -518,6 +518,6 @@ def test_field2property_with_non_string_metadata_keys(spec_fixture):
         pass
 
     field = fields.Boolean(metadata={"description": "A description"})
-    field.metadata[_DesertSentinel()] = "to be ignored"
+    field.metadata[_DesertSentinel()] = "to be ignored"  # type: ignore
     result = spec_fixture.openapi.field2property(field)
     assert result == {"description": "A description", "type": "boolean"}

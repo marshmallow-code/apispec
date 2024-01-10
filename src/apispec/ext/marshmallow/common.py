@@ -8,6 +8,8 @@ import warnings
 from apispec.core import Components
 
 import marshmallow
+from marshmallow import fields
+import marshmallow.class_registry
 
 
 MODIFIERS = ["only", "exclude", "load_only", "dump_only", "partial"]
@@ -28,7 +30,9 @@ def resolve_schema_instance(
     return marshmallow.class_registry.get_class(schema)()  # type: ignore
 
 
-def resolve_schema_cls(schema):
+def resolve_schema_cls(
+    schema: type[marshmallow.Schema] | str | marshmallow.Schema,
+) -> type[marshmallow.Schema] | list[type[marshmallow.Schema]]:
     """Return schema class for given schema (instance or class).
 
     :param type|Schema|str: instance, class or class name of marshmallow.Schema
@@ -38,10 +42,14 @@ def resolve_schema_cls(schema):
         return schema
     if isinstance(schema, marshmallow.Schema):
         return type(schema)
-    return marshmallow.class_registry.get_class(schema)
+    return marshmallow.class_registry.get_class(str(schema))
 
 
-def get_fields(schema, *, exclude_dump_only: bool = False):
+def get_fields(
+    schema: type[marshmallow.Schema] | marshmallow.Schema,
+    *,
+    exclude_dump_only: bool = False,
+) -> dict[str, fields.Field]:
     """Return fields from schema.
 
     :param Schema schema: A marshmallow Schema instance or a class object
@@ -59,7 +67,7 @@ def get_fields(schema, *, exclude_dump_only: bool = False):
     return filter_excluded_fields(fields, Meta, exclude_dump_only=exclude_dump_only)
 
 
-def warn_if_fields_defined_in_meta(fields, Meta):
+def warn_if_fields_defined_in_meta(fields: dict[str, fields.Field], Meta):
     """Warns user that fields defined in Meta.fields or Meta.additional will be ignored.
 
     :param dict fields: A dictionary of fields name field object pairs
@@ -77,7 +85,9 @@ def warn_if_fields_defined_in_meta(fields, Meta):
             )
 
 
-def filter_excluded_fields(fields, Meta, *, exclude_dump_only: bool) -> dict:
+def filter_excluded_fields(
+    fields: dict[str, fields.Field], Meta, *, exclude_dump_only: bool
+) -> dict[str, fields.Field]:
     """Filter fields that should be ignored in the OpenAPI spec.
 
     :param dict fields: A dictionary of fields name field object pairs
@@ -97,7 +107,7 @@ def filter_excluded_fields(fields, Meta, *, exclude_dump_only: bool) -> dict:
     return filtered_fields
 
 
-def make_schema_key(schema: marshmallow.Schema) -> tuple:
+def make_schema_key(schema: marshmallow.Schema) -> tuple[type[marshmallow.Schema], ...]:
     if not isinstance(schema, marshmallow.Schema):
         raise TypeError("can only make a schema key based on a Schema instance.")
     modifiers = []
