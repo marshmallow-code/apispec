@@ -1,5 +1,7 @@
 """Utilities to get elements of generated spec"""
-import json
+from typing import cast
+import openapi_spec_validator
+from openapi_spec_validator.exceptions import OpenAPISpecValidatorError
 
 from apispec.core import APISpec
 from apispec import exceptions
@@ -52,28 +54,11 @@ def validate_spec(spec: APISpec) -> bool:
     """Validate the output of an :class:`APISpec` object against the
     OpenAPI specification.
 
-    Note: Requires installing apispec with the ``[validation]`` extras.
-    ::
-
-        pip install 'apispec[validation]'
-
     :raise: apispec.exceptions.OpenAPIError if validation fails.
     """
     try:
-        import prance
-    except ImportError as error:  # re-raise with a more verbose message
-        exc_class = type(error)
-        raise exc_class(
-            "validate_spec requires prance to be installed. "
-            "You can install all validation requirements using:\n"
-            "    pip install 'apispec[validation]'"
-        ) from error
-    parser_kwargs = {}
-    if spec.openapi_version.major == 3:
-        parser_kwargs["backend"] = "openapi-spec-validator"
-    try:
-        prance.BaseParser(spec_string=json.dumps(spec.to_dict()), **parser_kwargs)
-    except prance.ValidationError as err:
+        openapi_spec_validator.validate(spec.to_dict())
+    except OpenAPISpecValidatorError as err:
         raise exceptions.OpenAPIError(*err.args) from err
     else:
         return True
