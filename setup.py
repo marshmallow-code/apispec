@@ -6,7 +6,6 @@ INSTALL_REQUIRES = "packaging>=21.3"
 EXTRAS_REQUIRE = {
     "marshmallow": ["marshmallow>=3.18.0"],
     "yaml": ["PyYAML>=3.10"],
-    "validation": ["prance[osv]>=0.11"],
     "lint": [
         "flake8==7.0.0",
         "flake8-bugbear==22.12.6",
@@ -22,11 +21,11 @@ EXTRAS_REQUIRE = {
         "sphinx-rtd-theme==2.0.0",
     ],
 }
-EXTRAS_REQUIRE["tests"] = (
-    EXTRAS_REQUIRE["yaml"]
-    + EXTRAS_REQUIRE["validation"]
-    + ["marshmallow>=3.13.0", "pytest"]
-)
+EXTRAS_REQUIRE["tests"] = EXTRAS_REQUIRE["yaml"] + [
+    "marshmallow>=3.13.0",
+    "openapi-spec-validator==0.7.1",
+    "pytest",
+]
 EXTRAS_REQUIRE["dev"] = EXTRAS_REQUIRE["tests"] + EXTRAS_REQUIRE["lint"] + ["tox"]
 
 
@@ -78,6 +77,7 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3 :: Only",
     ],
     test_suite="tests",

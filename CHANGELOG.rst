@@ -6,7 +6,9 @@ Changelog
 
 Other changes:
 
+- Support Python 3.12.
 - Drop support for Python 3.7, which is EOL.
+- Remove `[validation]` from extras, as it is no longer used.
 
 
 6.3.1 (2023-12-21)
