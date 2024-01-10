@@ -1,5 +1,4 @@
 """Utilities to get elements of generated spec"""
-from typing import cast
 import openapi_spec_validator
 from openapi_spec_validator.exceptions import OpenAPISpecValidatorError
 
@@ -57,7 +56,8 @@ def validate_spec(spec: APISpec) -> bool:
     :raise: apispec.exceptions.OpenAPIError if validation fails.
     """
     try:
-        openapi_spec_validator.validate(spec.to_dict())
+        # Coerce to dict to satisfy Pyright
+        openapi_spec_validator.validate(dict(spec.to_dict()))
     except OpenAPISpecValidatorError as err:
         raise exceptions.OpenAPIError(*err.args) from err
     else:
