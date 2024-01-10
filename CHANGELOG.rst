@@ -11,7 +11,7 @@ Features:
   Thanks :user:`TheBigRoomXXL` for the suggestion and PR.
 - ``MarshmallowPlugin``: Handle resolving names of schemas with spaces in the name (:pr:`856`).
   Thanks :user:`duchuyvp` for the PR.
-- Various typing improvements.
+- Various typing improvements (:pr:`873`).
 
 Other changes:
 
