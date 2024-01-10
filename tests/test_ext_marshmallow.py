@@ -123,7 +123,7 @@ class TestDefinitionHelper:
             title="Test auto-reference",
             version="0.1",
             openapi_version="2.0",
-            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),  # type: ignore
         )
         with pytest.raises(KeyError):
             get_schemas(spec)
@@ -212,7 +212,7 @@ class TestDefinitionHelper:
             title="Test auto-reference",
             version="0.1",
             openapi_version="2.0",
-            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),  # type: ignore
         )
 
         spec.components.schema("PetFamily", schema=PetFamilySchema)
@@ -675,7 +675,7 @@ class TestOperationHelper:
             title="Test auto-reference",
             version="0.1",
             openapi_version="2.0",
-            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),  # type: ignore
         )
         spec.components.schema("Pet", schema=PetSchema)
         spec.path(
@@ -692,7 +692,7 @@ class TestOperationHelper:
             title="Test auto-reference",
             version="0.1",
             openapi_version="3.0.0",
-            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),  # type: ignore
         )
         spec.components.schema("Pet", schema=PetSchema)
         spec.path(
@@ -804,7 +804,7 @@ class TestOperationHelper:
             title="Test resolver returns None",
             version="0.1",
             openapi_version="2.0",
-            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),  # type: ignore
         )
         spec.path(
             path="/pet",
@@ -825,7 +825,7 @@ class TestOperationHelper:
             title="Test resolver returns None",
             version="0.1",
             openapi_version="3.0.0",
-            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),  # type: ignore
         )
         spec.path(
             path="/pet",
@@ -851,7 +851,7 @@ class TestOperationHelper:
             title="Test auto-reference",
             version="0.1",
             openapi_version="3.0.0",
-            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),  # type: ignore
         )
         spec.components.schema("Pet", schema=PetSchema)
         spec.path(

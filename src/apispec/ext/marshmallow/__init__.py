@@ -69,7 +69,7 @@ with `"x-"` (vendor extension).
     #           'type': 'object'}}
 
 """
-
+# pyright: reportIncompatibleMethodOverride=false
 from __future__ import annotations
 
 import warnings
@@ -86,7 +86,8 @@ from .schema_resolver import SchemaResolver
 
 def resolver(schema: type[Schema]) -> str:
     """Default schema name resolver function that strips 'Schema' from the end of the class name."""
-    schema_cls = resolve_schema_cls(schema)
+    resolved = resolve_schema_cls(schema)
+    schema_cls = resolved[0] if isinstance(resolved, list) else resolved
     name = schema_cls.__name__
     if name.endswith("Schema"):
         name = name[:-6] or name
@@ -161,6 +162,7 @@ class MarshmallowPlugin(BasePlugin):
 
             ma_plugin.map_to_openapi_type(IntegerLike, Integer)
         """
+        assert self.converter is not None, "init_spec has not yet been called"
         return self.converter.map_to_openapi_type(field_cls, *args)
 
     def schema_helper(self, name, _, schema=None, **kwargs):
@@ -177,6 +179,7 @@ class MarshmallowPlugin(BasePlugin):
 
         schema_key = make_schema_key(schema_instance)
         self.warn_if_schema_already_in_spec(schema_key)
+        assert self.converter is not None, "init_spec has not yet been called"
         self.converter.refs[schema_key] = name
 
         json_schema = self.converter.schema2jsonschema(schema_instance)
@@ -190,6 +193,7 @@ class MarshmallowPlugin(BasePlugin):
         :param dict parameter: parameter fields. May contain a marshmallow
             Schema class or instance.
         """
+        assert self.resolver is not None, "init_spec has not yet been called"
         self.resolver.resolve_schema(parameter)
         return parameter
 
@@ -200,6 +204,7 @@ class MarshmallowPlugin(BasePlugin):
         :param dict parameter: response fields. May contain a marshmallow
             Schema class or instance.
         """
+        assert self.resolver is not None, "init_spec has not yet been called"
         self.resolver.resolve_response(response)
         return response
 
@@ -223,7 +228,7 @@ class MarshmallowPlugin(BasePlugin):
         assert self.resolver  # needed for mypy
         self.resolver.resolve_operations(operations)
 
-    def warn_if_schema_already_in_spec(self, schema_key: str) -> None:
+    def warn_if_schema_already_in_spec(self, schema_key: tuple) -> None:
         """Method to warn the user if the schema has already been added to the
         spec.
         """

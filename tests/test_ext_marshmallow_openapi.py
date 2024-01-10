@@ -40,13 +40,13 @@ class TestMarshmallowFieldToOpenAPI:
         res = openapi.schema2parameters(schema=UserSchema(), location="query")
         assert len(res) == 0
 
-        class UserSchema(Schema):
+        class UserSchema2(Schema):
             name = fields.Str()
 
             class Meta:
                 dump_only = ("name",)
 
-        res = openapi.schema2parameters(schema=UserSchema(), location="query")
+        res = openapi.schema2parameters(schema=UserSchema2(), location="query")
         assert len(res) == 0
 
 
@@ -213,7 +213,7 @@ class TestMarshmallowSchemaToParameters:
         class DelimitedList(fields.List):
             """Delimited list field"""
 
-        def delimited_list2param(self, field, **kwargs):
+        def delimited_list2param(self, field: fields.Field, **kwargs) -> dict:
             ret: dict = {}
             if isinstance(field, DelimitedList):
                 if self.openapi_version.major < 3:
@@ -422,7 +422,7 @@ class TestNesting:
             j = fields.Int()
 
         class Parent(Schema):
-            child = fields.Nested(Child, **{modifier: ("i",)})
+            child = fields.Nested(Child, **{modifier: ("i",)})  # type: ignore
 
         spec_fixture.openapi.schema2jsonschema(Parent)
         props = get_schemas(spec_fixture.spec)["Child"]["properties"]
@@ -494,6 +494,7 @@ def test_openapi_tools_validate_v2():
         title="Pets", version="0.1", plugins=(ma_plugin,), openapi_version="2.0"
     )
     openapi = ma_plugin.converter
+    assert openapi is not None
 
     spec.components.schema("Category", schema=CategorySchema)
     spec.components.schema("Pet", {"discriminator": "name"}, schema=PetSchema)
@@ -551,6 +552,7 @@ def test_openapi_tools_validate_v3():
         title="Pets", version="0.1", plugins=(ma_plugin,), openapi_version="3.0.0"
     )
     openapi = ma_plugin.converter
+    assert openapi is not None
 
     spec.components.schema("Category", schema=CategorySchema)
     spec.components.schema("Pet", schema=PetSchema)
@@ -615,8 +617,9 @@ def test_openapi_tools_validate_v3():
 
 
 def test_openapi_converter_openapi_version_types():
-    converter_with_version = OpenAPIConverter(Version("3.1"), None, None)
-    converter_with_str_version = OpenAPIConverter("3.1", None, None)
+    spec = APISpec(title="Pets", version="0.1", openapi_version="2.0")
+    converter_with_version = OpenAPIConverter(Version("3.1"), None, spec)
+    converter_with_str_version = OpenAPIConverter("3.1", None, spec)
     assert (
         converter_with_version.openapi_version
         == converter_with_str_version.openapi_version
