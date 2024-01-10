@@ -1,6 +1,24 @@
 Changelog
 ---------
 
+6.4.0 (unreleased)
+******************
+
+Other changes:
+
+- Support Python 3.12.
+- Drop support for Python 3.7, which is EOL.
+- Remove `[validation]` from extras, as it is no longer used.
+
+
+6.3.1 (2023-12-21)
+******************
+
+Bug fixes:
+
+-  Fix conversion of deprecated flag on parameters (:issue:`850`).
+  Thanks :user:`tsokalski` for the PR.
+
 6.3.0 (2023-03-10)
 ******************
 

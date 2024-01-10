@@ -113,6 +113,7 @@ We'll add some YAML in the docstring to add response information.
 
     app = Flask(__name__)
 
+
     # NOTE: Plugins may inspect docstrings to gather more information for the spec
     @app.route("/gists/<gist_id>")
     def gist_detail(gist_id):
@@ -273,6 +274,7 @@ OpenAPI type and format, or a marshmallow `Field` that has the desired target ma
     spec = APISpec(
         title="Demo", version="0.1", openapi_version="3.0.0", plugins=(ma_plugin,)
     )
+
 
     # Inherits Integer mapping of ('integer', None)
     class CustomInteger(Integer):
