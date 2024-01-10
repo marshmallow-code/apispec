@@ -236,13 +236,13 @@ Schema Modifiers
 
 apispec will respect schema modifiers such as ``exclude`` and ``partial`` in the generated schema definition. If a schema is initialized with modifiers, apispec will treat each combination of modifiers as a unique schema definition.
 
-Custom DateTime format
-*************
+Custom DateTime formats
+***********************
 
-apispec support all four basic formats of `marshmallow.fields.DateTime`: ``"rfc"`` (for RFC822), ``"iso"`` (for ISO8601), 
+apispec supports all four basic formats of `marshmallow.fields.DateTime`: ``"rfc"`` (for RFC822), ``"iso"`` (for ISO8601), 
 ``"timestamp"``, ``"timestamp_ms"`` (for a POSIX timestamp).
 
-If you are using a custom DateTime format you should pass a regex string to the ``pattern`` parametter in your field ``metadata``. 
+If you are using a custom DateTime format you should pass a regex string to the ``pattern`` parameter in your field ``metadata`` so that it is included as documentation. 
 
 .. code-block:: python
 

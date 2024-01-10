@@ -380,7 +380,6 @@ def test_nested_field_with_property(spec_fixture):
 def test_datetime2property_iso(spec_fixture):
     field = fields.DateTime(format="iso")
     res = spec_fixture.openapi.field2property(field)
-    print(test_datetime2property_iso)
     assert res == {
         "type": "string",
         "format": "date-time",
