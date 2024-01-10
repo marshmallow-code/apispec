@@ -36,6 +36,7 @@ Example Application
         plugins=[FlaskPlugin(), MarshmallowPlugin()],
     )
 
+
     # Optional marshmallow support
     class CategorySchema(Schema):
         id = fields.Int()

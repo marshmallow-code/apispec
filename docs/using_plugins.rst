@@ -113,6 +113,7 @@ We'll add some YAML in the docstring to add response information.
 
     app = Flask(__name__)
 
+
     # NOTE: Plugins may inspect docstrings to gather more information for the spec
     @app.route("/gists/<gist_id>")
     def gist_detail(gist_id):
@@ -235,6 +236,22 @@ Schema Modifiers
 
 apispec will respect schema modifiers such as ``exclude`` and ``partial`` in the generated schema definition. If a schema is initialized with modifiers, apispec will treat each combination of modifiers as a unique schema definition.
 
+Custom DateTime formats
+***********************
+
+apispec supports all four basic formats of `marshmallow.fields.DateTime`: ``"rfc"`` (for RFC822), ``"iso"`` (for ISO8601), 
+``"timestamp"``, ``"timestamp_ms"`` (for a POSIX timestamp).
+
+If you are using a custom DateTime format you should pass a regex string to the ``pattern`` parameter in your field ``metadata`` so that it is included as documentation. 
+
+.. code-block:: python
+
+    class SchemaWithCustomDate(Schema):
+        french_date = ma.DateTime(
+            format="%d-%m%Y %H:%M:%S",
+            metadata={"pattern": r"^\d{2}-\d{2}-\d{4} \d{2}:\d{2}:\d{2}$"},
+        )
+
 Custom Fields
 *************
 
@@ -257,6 +274,7 @@ OpenAPI type and format, or a marshmallow `Field` that has the desired target ma
     spec = APISpec(
         title="Demo", version="0.1", openapi_version="3.0.0", plugins=(ma_plugin,)
     )
+
 
     # Inherits Integer mapping of ('integer', None)
     class CustomInteger(Integer):

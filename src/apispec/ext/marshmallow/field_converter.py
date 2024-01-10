@@ -110,6 +110,7 @@ class FieldConverterMixin:
             self.list2properties,
             self.dict2properties,
             self.timedelta2properties,
+            self.datetime2properties,
         ]
 
     def map_to_openapi_type(self, field_cls, *args):
@@ -516,6 +517,53 @@ class FieldConverterMixin:
             else:
                 choices = (m.value for m in field.enum)
             ret["enum"] = [field.field._serialize(v, None, None) for v in choices]
+        return ret
+
+    def datetime2properties(self, field, **kwargs: typing.Any) -> dict:
+        """Return a dictionary of properties from :class:`DateTime <marshmallow.fields.DateTime` fields.
+
+        :param Field field: A marshmallow field.
+        :rtype: dict
+        """
+        ret = {}
+        if isinstance(field, marshmallow.fields.DateTime) and not isinstance(
+            field, marshmallow.fields.Date
+        ):
+            if field.format == "iso" or field.format is None:
+                # Will return { "type": "string", "format": "date-time" }
+                # as specified inside DEFAULT_FIELD_MAPPING
+                pass
+            elif field.format == "rfc":
+                ret = {
+                    "type": "string",
+                    "format": None,
+                    "example": "Wed, 02 Oct 2002 13:00:00 GMT",
+                    "pattern": r"((Mon|Tue|Wed|Thu|Fri|Sat|Sun), ){0,1}\d{2} "
+                    + r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} "
+                    + r"(UT|GMT|EST|EDT|CST|CDT|MST|MDT|PST|PDT|(Z|A|M|N)|(\+|-)\d{4})",
+                }
+            elif field.format == "timestamp":
+                ret = {
+                    "type": "number",
+                    "format": "float",
+                    "example": "1676451245.596",
+                    "min": "0",
+                }
+            elif field.format == "timestamp_ms":
+                ret = {
+                    "type": "number",
+                    "format": "float",
+                    "example": "1676451277514.654",
+                    "min": "0",
+                }
+            else:
+                ret = {
+                    "type": "string",
+                    "format": None,
+                    "pattern": field.metadata["pattern"]
+                    if field.metadata.get("pattern")
+                    else None,
+                }
         return ret
 
 

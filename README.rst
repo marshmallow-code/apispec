@@ -6,8 +6,8 @@ apispec
     :target: https://pypi.org/project/apispec/
     :alt: PyPI version
 
-.. image:: https://dev.azure.com/sloria/sloria/_apis/build/status/marshmallow-code.apispec?branchName=dev
-    :target: https://dev.azure.com/sloria/sloria/_build/latest?definitionId=8&branchName=dev
+.. image:: https://github.com/marshmallow-code/apispec/actions/workflows/build-release.yml/badge.svg
+    :target: https://github.com/marshmallow-code/webargs/actions/workflows/build-release.yml
     :alt: Build status
 
 .. image:: https://readthedocs.org/projects/apispec/badge/
@@ -66,6 +66,7 @@ Example Application
         openapi_version="3.0.2",
         plugins=[FlaskPlugin(), MarshmallowPlugin()],
     )
+
 
     # Optional marshmallow support
     class CategorySchema(Schema):
