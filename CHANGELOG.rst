@@ -6,6 +6,7 @@ Changelog
 
 Other changes:
 
+- Support Python 3.12.
 - Drop support for Python 3.7, which is EOL.
 
 
