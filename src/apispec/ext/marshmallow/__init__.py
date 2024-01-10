@@ -89,8 +89,7 @@ def resolver(schema: type[Schema]) -> str:
     schema_cls = resolve_schema_cls(schema)
     name = schema_cls.__name__
     if name.endswith("Schema"):
-        name_ = name[:-6] or name
-        return name_.strip()
+        name = name[:-6] or name
     return name.strip()
 
 

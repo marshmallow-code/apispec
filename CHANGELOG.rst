@@ -9,6 +9,8 @@ Features:
 - ``MarshmallowPlugin``: Support different datetime formats
   for ``marshmallow.fields.DateTime`` fields (:issue:`814`).
   Thanks :user:`TheBigRoomXXL` for the suggestion and PR.
+- ``MarshmallowPlugin``: Handle resolving names of schemas with spaces in the name (:pr:`856`).
+  Thanks :user:`duchuyvp` for the PR.
 
 Other changes:
 
