@@ -89,8 +89,8 @@ def resolver(schema: type[Schema]) -> str:
     schema_cls = resolve_schema_cls(schema)
     name = schema_cls.__name__
     if name.endswith("Schema"):
-        return name[:-6] or name
-    return name
+        name = name[:-6] or name
+    return name.strip()
 
 
 class MarshmallowPlugin(BasePlugin):

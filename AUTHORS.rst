@@ -79,3 +79,4 @@ Contributors (chronological)
 - Renato Damas `@codectl <https://github.com/codectl>`_
 - Tayler Sokalski `@tsokalski <https://github.com/tsokalski>`_
 - Sebastien Lovergne `@TheBigRoomXXL <https://github.com/TheBigRoomXXL>`_
+- Luna Lovegood `@duchuyvp <https://github.com/duchuyvp>`_
