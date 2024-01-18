@@ -344,6 +344,63 @@ this function:
 
     ma_plugin.converter.add_parameter_attribute_function(delimited_list2param)
 
+Enum Fields
+***********
+
+When using `marshmallow.fields.Enum` fields to (de)serialize `enum.Enum` values, we recommend passing a marshmallow field to ``by_value``.
+This ensures the correct ``type`` property is included in the generated OAI spec.
+
+
+.. code-block:: python
+    :emphasize-lines: 23,42
+
+    from enum import Enum
+    from apispec import APISpec
+
+    from apispec.ext.marshmallow import MarshmallowPlugin
+    from marshmallow import Schema, fields
+
+    spec = APISpec(
+        title="Gisty",
+        version="1.0.0",
+        openapi_version="3.0.2",
+        info=dict(description="A minimal gist API"),
+        plugins=[MarshmallowPlugin()],
+    )
+
+
+    class GistVisibility(Enum):
+        PRIVATE = "private"
+        PUBLIC = "public"
+
+
+    class GistSchema(Schema):
+        id = fields.Int()
+        visibility = fields.Enum(GistVisibility, by_value=fields.String())
+
+
+    spec.components.schema("Gist", schema=GistSchema)
+    print(spec.to_yaml())
+    # info:
+    #   description: A minimal gist API
+    #   title: Gisty
+    #   version: 1.0.0
+    # paths: {}
+    # openapi: 3.0.2
+    # components:
+    #   schemas:
+    #     Gist:
+    #       type: object
+    #       properties:
+    #         id:
+    #           type: integer
+    #         visibility:
+    #           type: string
+    #           enum:
+    #           - private
+    #           - public
+
+
 Next Steps
 ----------
 
