@@ -7,7 +7,7 @@ Changelog
 Other changes:
 
 - Deprecate the ``__version__`` attribute. Use feature detection, or
-  ``importlib.metadata.version("apispec")``, instead.
+  ``importlib.metadata.version("apispec")``, instead (:issue:`878`).
 
 6.4.0 (2024-01-09)
 ******************
