@@ -1077,7 +1077,7 @@ class TestPath(RefsSchemaTestMixin):
 
 class TestPlugins:
     @staticmethod
-    def test_plugin_factory(return_none=False):
+    def make_test_plugin(return_none=False):
         class TestPlugin(BasePlugin):
             """Test Plugin
 
@@ -1125,7 +1125,7 @@ class TestPlugins:
             title="Swagger Petstore",
             version="1.0.0",
             openapi_version=openapi_version,
-            plugins=(self.test_plugin_factory(return_none),),
+            plugins=(self.make_test_plugin(return_none),),
         )
         schema = {"dummy": "dummy"}
         spec.components.schema("Pet", schema)
@@ -1144,7 +1144,7 @@ class TestPlugins:
             title="Swagger Petstore",
             version="1.0.0",
             openapi_version=openapi_version,
-            plugins=(self.test_plugin_factory(return_none),),
+            plugins=(self.make_test_plugin(return_none),),
         )
         parameter = {"dummy": "dummy"}
         spec.components.parameter("Pet", "body", parameter)
@@ -1167,7 +1167,7 @@ class TestPlugins:
             title="Swagger Petstore",
             version="1.0.0",
             openapi_version=openapi_version,
-            plugins=(self.test_plugin_factory(return_none),),
+            plugins=(self.make_test_plugin(return_none),),
         )
         response = {"dummy": "dummy"}
         spec.components.response("Pet", response)
@@ -1186,7 +1186,7 @@ class TestPlugins:
             title="Swagger Petstore",
             version="1.0.0",
             openapi_version=openapi_version,
-            plugins=(self.test_plugin_factory(return_none),),
+            plugins=(self.make_test_plugin(return_none),),
         )
         header = {"dummy": "dummy"}
         spec.components.header("Pet", header)
@@ -1207,7 +1207,7 @@ class TestPlugins:
             title="Swagger Petstore",
             version="1.0.0",
             openapi_version=openapi_version,
-            plugins=(self.test_plugin_factory(return_none),),
+            plugins=(self.make_test_plugin(return_none),),
         )
         spec.path("/path_1")
         paths = get_paths(spec)
@@ -1226,7 +1226,7 @@ class TestPlugins:
             title="Swagger Petstore",
             version="1.0.0",
             openapi_version=openapi_version,
-            plugins=(self.test_plugin_factory(),),
+            plugins=(self.make_test_plugin(),),
         )
         spec.path("/path_2", operations={"post": {"responses": {"200": {}}}})
         paths = get_paths(spec)
