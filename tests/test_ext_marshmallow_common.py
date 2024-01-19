@@ -1,12 +1,12 @@
 import pytest
-
 from marshmallow import Schema, fields
 
 from apispec.ext.marshmallow.common import (
-    make_schema_key,
-    get_unique_schema_name,
     get_fields,
+    get_unique_schema_name,
+    make_schema_key,
 )
+
 from .schemas import PetSchema, SampleSchema
 
 

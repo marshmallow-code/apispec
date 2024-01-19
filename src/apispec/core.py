@@ -2,21 +2,21 @@
 
 from __future__ import annotations
 
+import typing
+import warnings
 from collections.abc import Sequence
 from copy import deepcopy
-import warnings
-import typing
 
 from packaging.version import Version
 
 from .exceptions import (
     APISpecError,
-    PluginMethodNotImplementedError,
     DuplicateComponentNameError,
     DuplicateParameterError,
     InvalidParameterError,
+    PluginMethodNotImplementedError,
 )
-from .utils import deepupdate, COMPONENT_SUBSECTIONS, build_reference
+from .utils import COMPONENT_SUBSECTIONS, build_reference, deepupdate
 
 if typing.TYPE_CHECKING:
     from .plugin import BasePlugin

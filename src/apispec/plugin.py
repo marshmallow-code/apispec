@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import typing
 
-from .exceptions import PluginMethodNotImplementedError
 from .core import APISpec
+from .exceptions import PluginMethodNotImplementedError
 
 
 class BasePlugin:

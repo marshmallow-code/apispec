@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-import yaml
 import typing
 
-from apispec.utils import trim_docstring, dedent
+import yaml
+
+from apispec.utils import dedent, trim_docstring
 
 
 def dict_to_yaml(dic: dict, yaml_dump_kwargs: typing.Any | None = None) -> str:

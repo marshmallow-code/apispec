@@ -5,12 +5,11 @@ from __future__ import annotations
 import copy
 import warnings
 
-from apispec.core import Components
-
 import marshmallow
-from marshmallow import fields
 import marshmallow.class_registry
+from marshmallow import fields
 
+from apispec.core import Components
 
 MODIFIERS = ["only", "exclude", "load_only", "dump_only", "partial"]
 

@@ -1,33 +1,31 @@
 import json
 
 import pytest
-
-from marshmallow.fields import Field, DateTime, Dict, String, Nested, List, TimeDelta
 from marshmallow import Schema
+from marshmallow.fields import DateTime, Dict, Field, List, Nested, String, TimeDelta
 
 from apispec import APISpec
-from apispec.ext.marshmallow import MarshmallowPlugin
-from apispec.ext.marshmallow import common
 from apispec.exceptions import APISpecError
+from apispec.ext.marshmallow import MarshmallowPlugin, common
+
 from .schemas import (
-    PetSchema,
-    SampleSchema,
     AnalysisSchema,
-    RunSchema,
-    SelfReferencingSchema,
+    AnalysisWithListSchema,
+    DefaultValuesSchema,
     OrderedSchema,
     PatternedObjectSchema,
-    DefaultValuesSchema,
-    AnalysisWithListSchema,
+    PetSchema,
+    RunSchema,
+    SampleSchema,
+    SelfReferencingSchema,
 )
-
 from .utils import (
-    get_schemas,
-    get_parameters,
-    get_responses,
-    get_headers,
-    get_paths,
     build_ref,
+    get_headers,
+    get_parameters,
+    get_paths,
+    get_responses,
+    get_schemas,
 )
 
 

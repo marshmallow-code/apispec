@@ -7,16 +7,16 @@
     Users should not need to use this module directly.
 """
 from __future__ import annotations
-import re
+
 import functools
 import operator
+import re
 import typing
 import warnings
-from packaging.version import Version
 
 import marshmallow
 from marshmallow.orderedset import OrderedSet
-
+from packaging.version import Version
 
 # marshmallow field => (JSON Schema type, format)
 DEFAULT_FIELD_MAPPING: dict[type, tuple[str | None, str | None]] = {
@@ -191,9 +191,7 @@ class FieldConverterMixin:
                 break
         else:
             warnings.warn(
-                "Field of type {} does not inherit from marshmallow.Field.".format(
-                    type(field)
-                ),
+                f"Field of type {type(field)} does not inherit from marshmallow.Field.",
                 UserWarning,
             )
             type_, fmt = "string", None

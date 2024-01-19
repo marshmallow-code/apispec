@@ -5,7 +5,7 @@ from enum import Enum
 import pytest
 from marshmallow import fields, validate
 
-from .schemas import CategorySchema, CustomList, CustomStringField, CustomIntegerField
+from .schemas import CategorySchema, CustomIntegerField, CustomList, CustomStringField
 from .utils import build_ref, get_schemas
 
 

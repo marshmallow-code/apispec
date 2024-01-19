@@ -13,14 +13,14 @@ from apispec.exceptions import (
 )
 
 from .utils import (
-    get_schemas,
-    get_examples,
-    get_paths,
-    get_parameters,
-    get_headers,
-    get_responses,
-    get_security_schemes,
     build_ref,
+    get_examples,
+    get_headers,
+    get_parameters,
+    get_paths,
+    get_responses,
+    get_schemas,
+    get_security_schemes,
 )
 
 description = "This is a sample Petstore server.  You can find out more "
