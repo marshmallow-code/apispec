@@ -1,7 +1,92 @@
-[tool.black]
-line-length = 88
-target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+[project]
+name = "apispec"
+version = "6.4.0"
+description = "A pluggable API specification generator. Currently supports the OpenAPI Specification (f.k.a. the Swagger specification)."
+readme = "README.rst"
+license = { file = "LICENSE" }
+authors = [{ name = "Steven Loria", email = "sloria1@gmail.com" }]
+maintainers = [
+  { name = "Steven Loria", email = "sloria1@gmail.com" },
+  { name = "Jérôme Lafréchoux", email = "jerome@jolimont.fr" },
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+keywords = [
+  "apispec",
+  "swagger",
+  "openapi",
+  "specification",
+  "oas",
+  "documentation",
+  "spec",
+  "rest",
+  "api",
+]
+requires-python = ">=3.8"
+dependencies = ["packaging>=21.3"]
 
-[tool.pyright]
-# Allow class Meta in marshmallow Schemas
-reportIncompatibleVariableOverride = false
+[project.urls]
+Changelog = "https://apispec.readthedocs.io/en/latest/changelog.html"
+Funding = "https://opencollective.com/marshmallow"
+Issues = "https://github.com/marshmallow-code/apispec/issues"
+Source = "https://github.com/marshmallow-code/apispec"
+Tidelift = "https://tidelift.com/subscription/pkg/pypi-apispec?utm_source=pypi-apispec&utm_medium=pypi"
+
+[project.optional-dependencies]
+docs = [
+  "marshmallow>=3.13.0",
+  "pyyaml==6.0.1",
+  "sphinx==7.2.6",
+  "sphinx-issues==3.0.1",
+  "sphinx-rtd-theme==2.0.0",
+]
+tests = ["apispec[yaml,marshmallow]", "openapi-spec-validator==0.7.1", "pytest"]
+dev = ["marshmallow[tests]", "tox", "pre-commit~=3.5"]
+
+[build-system]
+requires = ["flit_core<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.sdist]
+include = [
+  "docs/",
+  "tests/",
+  "CHANGELOG.rst",
+  "CONTRIBUTING.rst",
+  "SECURITY.md",
+  "tox.ini",
+]
+exclude = ["docs/_build/"]
+
+[tool.ruff]
+src = ["src"]
+fix = true
+show-fixes = true
+show-source = true
+
+[tool.ruff.lint]
+ignore = ["E203", "E266", "E501", "E731"]
+select = [
+  "B",  # flake8-bugbear
+  "E",  # pycodestyle error
+  "F",  # pyflakes
+  "I",  # isort
+  "UP", # pyupgrade
+  "W",  # pycodestyle warning
+]
+
+[tool.mypy]
+ignore_missing_imports = true
+warn_unreachable = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true

@@ -5,7 +5,7 @@ from enum import Enum
 import pytest
 from marshmallow import fields, validate
 
-from .schemas import CategorySchema, CustomList, CustomStringField, CustomIntegerField
+from .schemas import CategorySchema, CustomIntegerField, CustomList, CustomStringField
 from .utils import build_ref, get_schemas
 
 
@@ -518,6 +518,6 @@ def test_field2property_with_non_string_metadata_keys(spec_fixture):
         pass
 
     field = fields.Boolean(metadata={"description": "A description"})
-    field.metadata[_DesertSentinel()] = "to be ignored"  # type: ignore
+    field.metadata[_DesertSentinel()] = "to be ignored"
     result = spec_fixture.openapi.field2property(field)
     assert result == {"description": "A description", "type": "boolean"}

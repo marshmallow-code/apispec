@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import re
 
-
 COMPONENT_SUBSECTIONS = {
     2: {
         "schema": "definitions",

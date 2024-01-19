@@ -72,14 +72,15 @@ with `"x-"` (vendor extension).
 # pyright: reportIncompatibleMethodOverride=false
 from __future__ import annotations
 
-import warnings
 import typing
-from packaging.version import Version
+import warnings
 
 from marshmallow import Schema
+from packaging.version import Version
 
-from apispec import BasePlugin, APISpec
-from .common import resolve_schema_instance, make_schema_key, resolve_schema_cls
+from apispec import APISpec, BasePlugin
+
+from .common import make_schema_key, resolve_schema_cls, resolve_schema_instance
 from .openapi import OpenAPIConverter
 from .schema_resolver import SchemaResolver
 
@@ -238,4 +239,5 @@ class MarshmallowPlugin(BasePlugin):
                 "{} has already been added to the spec. Adding it twice may "
                 "cause references to not resolve properly.".format(schema_key[0]),
                 UserWarning,
+                stacklevel=2,
             )

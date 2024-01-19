@@ -2,21 +2,21 @@
 
 from __future__ import annotations
 
+import typing
+import warnings
 from collections.abc import Sequence
 from copy import deepcopy
-import warnings
-import typing
 
 from packaging.version import Version
 
 from .exceptions import (
     APISpecError,
-    PluginMethodNotImplementedError,
     DuplicateComponentNameError,
     DuplicateParameterError,
     InvalidParameterError,
+    PluginMethodNotImplementedError,
 )
-from .utils import deepupdate, COMPONENT_SUBSECTIONS, build_reference
+from .utils import COMPONENT_SUBSECTIONS, build_reference, deepupdate
 
 if typing.TYPE_CHECKING:
     from .plugin import BasePlugin
@@ -622,6 +622,10 @@ class APISpec:
                         code = int(code)  # handles IntEnums like http.HTTPStatus
                     except (TypeError, ValueError):
                         if self.openapi_version.major < 3 and code != "default":
-                            warnings.warn("Non-integer code not allowed in OpenAPI < 3")
+                            warnings.warn(
+                                "Non-integer code not allowed in OpenAPI < 3",
+                                UserWarning,
+                                stacklevel=2,
+                            )
                     responses[str(code)] = response
                 operation["responses"] = responses

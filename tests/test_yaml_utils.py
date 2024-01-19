@@ -1,4 +1,5 @@
 import pytest
+
 from apispec import yaml_utils
 
 

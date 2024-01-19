@@ -5,12 +5,11 @@ from __future__ import annotations
 import copy
 import warnings
 
-from apispec.core import Components
-
 import marshmallow
-from marshmallow import fields
 import marshmallow.class_registry
+from marshmallow import fields
 
+from apispec.core import Components
 
 MODIFIERS = ["only", "exclude", "load_only", "dump_only", "partial"]
 
@@ -81,7 +80,9 @@ def warn_if_fields_defined_in_meta(fields: dict[str, fields.Field], Meta):
         ):
             warnings.warn(
                 "Only explicitly-declared fields will be included in the Schema Object. "
-                "Fields defined in Meta.fields or Meta.additional are ignored."
+                "Fields defined in Meta.fields or Meta.additional are ignored.",
+                UserWarning,
+                stacklevel=2,
             )
 
 
@@ -141,6 +142,7 @@ def get_unique_schema_name(components: Components, name: str, counter: int = 0) 
             "Either manually add each of the schemas with a different name or "
             "provide a custom schema_name_resolver.".format(name),
             UserWarning,
+            stacklevel=2,
         )
     else:  # subsequent recursions
         name = name[: -len(str(counter))]

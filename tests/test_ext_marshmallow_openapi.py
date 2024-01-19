@@ -1,15 +1,14 @@
 from datetime import datetime
 
 import pytest
-
-from marshmallow import EXCLUDE, fields, INCLUDE, RAISE, Schema, validate
-
-from apispec.ext.marshmallow import MarshmallowPlugin, OpenAPIConverter
-from apispec import exceptions, APISpec
+from marshmallow import EXCLUDE, INCLUDE, RAISE, Schema, fields, validate
 from packaging.version import Version
 
+from apispec import APISpec, exceptions
+from apispec.ext.marshmallow import MarshmallowPlugin, OpenAPIConverter
+
 from .schemas import CustomList, CustomStringField
-from .utils import get_schemas, build_ref, validate_spec
+from .utils import build_ref, get_schemas, validate_spec
 
 
 class TestMarshmallowFieldToOpenAPI:
@@ -422,7 +421,7 @@ class TestNesting:
             j = fields.Int()
 
         class Parent(Schema):
-            child = fields.Nested(Child, **{modifier: ("i",)})  # type: ignore
+            child = fields.Nested(Child, **{modifier: ("i",)})
 
         spec_fixture.openapi.schema2jsonschema(Parent)
         props = get_schemas(spec_fixture.spec)["Child"]["properties"]

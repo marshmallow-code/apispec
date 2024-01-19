@@ -2,8 +2,8 @@
 import openapi_spec_validator
 from openapi_spec_validator.exceptions import OpenAPISpecValidatorError
 
-from apispec.core import APISpec
 from apispec import exceptions
+from apispec.core import APISpec
 from apispec.utils import build_reference
 
 

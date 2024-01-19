@@ -1,33 +1,31 @@
 import json
 
 import pytest
-
-from marshmallow.fields import Field, DateTime, Dict, String, Nested, List, TimeDelta
 from marshmallow import Schema
+from marshmallow.fields import DateTime, Dict, Field, List, Nested, String, TimeDelta
 
 from apispec import APISpec
-from apispec.ext.marshmallow import MarshmallowPlugin
-from apispec.ext.marshmallow import common
 from apispec.exceptions import APISpecError
+from apispec.ext.marshmallow import MarshmallowPlugin, common
+
 from .schemas import (
-    PetSchema,
-    SampleSchema,
     AnalysisSchema,
-    RunSchema,
-    SelfReferencingSchema,
+    AnalysisWithListSchema,
+    DefaultValuesSchema,
     OrderedSchema,
     PatternedObjectSchema,
-    DefaultValuesSchema,
-    AnalysisWithListSchema,
+    PetSchema,
+    RunSchema,
+    SampleSchema,
+    SelfReferencingSchema,
 )
-
 from .utils import (
-    get_schemas,
-    get_parameters,
-    get_responses,
-    get_headers,
-    get_paths,
     build_ref,
+    get_headers,
+    get_parameters,
+    get_paths,
+    get_responses,
+    get_schemas,
 )
 
 
@@ -123,7 +121,7 @@ class TestDefinitionHelper:
             title="Test auto-reference",
             version="0.1",
             openapi_version="2.0",
-            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),  # type: ignore
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
         )
         with pytest.raises(KeyError):
             get_schemas(spec)
@@ -212,7 +210,7 @@ class TestDefinitionHelper:
             title="Test auto-reference",
             version="0.1",
             openapi_version="2.0",
-            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),  # type: ignore
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
         )
 
         spec.components.schema("PetFamily", schema=PetFamilySchema)
@@ -675,7 +673,7 @@ class TestOperationHelper:
             title="Test auto-reference",
             version="0.1",
             openapi_version="2.0",
-            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),  # type: ignore
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
         )
         spec.components.schema("Pet", schema=PetSchema)
         spec.path(
@@ -692,7 +690,7 @@ class TestOperationHelper:
             title="Test auto-reference",
             version="0.1",
             openapi_version="3.0.0",
-            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),  # type: ignore
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
         )
         spec.components.schema("Pet", schema=PetSchema)
         spec.path(
@@ -804,7 +802,7 @@ class TestOperationHelper:
             title="Test resolver returns None",
             version="0.1",
             openapi_version="2.0",
-            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),  # type: ignore
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
         )
         spec.path(
             path="/pet",
@@ -825,7 +823,7 @@ class TestOperationHelper:
             title="Test resolver returns None",
             version="0.1",
             openapi_version="3.0.0",
-            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),  # type: ignore
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
         )
         spec.path(
             path="/pet",
@@ -851,7 +849,7 @@ class TestOperationHelper:
             title="Test auto-reference",
             version="0.1",
             openapi_version="3.0.0",
-            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),  # type: ignore
+            plugins=(MarshmallowPlugin(schema_name_resolver=resolver),),
         )
         spec.components.schema("Pet", schema=PetSchema)
         spec.path(

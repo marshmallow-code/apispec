@@ -8,23 +8,24 @@ marshmallow :class:`Schemas <marshmallow.Schema>` and :class:`Fields <marshmallo
 """
 
 from __future__ import annotations
+
 import typing
-from packaging.version import Version
 
 import marshmallow
 import marshmallow.exceptions
 from marshmallow.utils import is_collection
+from packaging.version import Version
 
 from apispec import APISpec
 from apispec.exceptions import APISpecError
-from .field_converter import FieldConverterMixin
+
 from .common import (
     get_fields,
+    get_unique_schema_name,
     make_schema_key,
     resolve_schema_instance,
-    get_unique_schema_name,
 )
-
+from .field_converter import FieldConverterMixin
 
 __location_map__ = {
     "match_info": "path",
@@ -122,11 +123,11 @@ class OpenAPIConverter(FieldConverterMixin):
                     json_schema = self.schema2jsonschema(schema_instance)
                 except RuntimeError as exc:
                     raise APISpecError(
-                        "Name resolver returned None for schema {schema} which is "
+                        f"Name resolver returned None for schema {schema} which is "
                         "part of a chain of circular referencing schemas. Please"
                         " ensure that the schema_name_resolver passed to"
                         " MarshmallowPlugin returns a string for all circular"
-                        " referencing schemas.".format(schema=schema)
+                        " referencing schemas."
                     ) from exc
                 if getattr(schema, "many", False):
                     return {"type": "array", "items": json_schema}
@@ -218,8 +219,7 @@ class OpenAPIConverter(FieldConverterMixin):
         ret = {}
         partial = getattr(field.parent, "partial", False)
         ret["required"] = field.required and (
-            not partial
-            or (is_collection(partial) and field.name not in partial)  # type:ignore
+            not partial or (is_collection(partial) and field.name not in partial)  # type:ignore
         )
         return ret
 
@@ -256,11 +256,11 @@ class OpenAPIConverter(FieldConverterMixin):
         jsonschema = self.fields2jsonschema(fields, partial=partial)
 
         if hasattr(Meta, "title"):
-            jsonschema["title"] = Meta.title  # type: ignore
+            jsonschema["title"] = Meta.title
         if hasattr(Meta, "description"):
-            jsonschema["description"] = Meta.description  # type: ignore
-        if hasattr(Meta, "unknown") and Meta.unknown != marshmallow.EXCLUDE:  # type: ignore
-            jsonschema["additionalProperties"] = Meta.unknown == marshmallow.INCLUDE  # type: ignore
+            jsonschema["description"] = Meta.description
+        if hasattr(Meta, "unknown") and Meta.unknown != marshmallow.EXCLUDE:
+            jsonschema["additionalProperties"] = Meta.unknown == marshmallow.INCLUDE
 
         return jsonschema
 
