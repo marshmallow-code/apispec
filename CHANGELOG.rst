@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+6.5.0 (unreleased)
+******************
+
+Other changes:
+
+- Deprecate the ``__version__`` attribute. Use feature detection, or
+  ``importlib.metadata.version("apispec")``, instead.
+
 6.4.0 (2024-01-09)
 ******************
 
