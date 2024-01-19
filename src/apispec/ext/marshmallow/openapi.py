@@ -256,11 +256,11 @@ class OpenAPIConverter(FieldConverterMixin):
         jsonschema = self.fields2jsonschema(fields, partial=partial)
 
         if hasattr(Meta, "title"):
-            jsonschema["title"] = Meta.title  # type: ignore
+            jsonschema["title"] = Meta.title
         if hasattr(Meta, "description"):
-            jsonschema["description"] = Meta.description  # type: ignore
-        if hasattr(Meta, "unknown") and Meta.unknown != marshmallow.EXCLUDE:  # type: ignore
-            jsonschema["additionalProperties"] = Meta.unknown == marshmallow.INCLUDE  # type: ignore
+            jsonschema["description"] = Meta.description
+        if hasattr(Meta, "unknown") and Meta.unknown != marshmallow.EXCLUDE:
+            jsonschema["additionalProperties"] = Meta.unknown == marshmallow.INCLUDE
 
         return jsonschema
 

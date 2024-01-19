@@ -421,7 +421,7 @@ class TestNesting:
             j = fields.Int()
 
         class Parent(Schema):
-            child = fields.Nested(Child, **{modifier: ("i",)})  # type: ignore
+            child = fields.Nested(Child, **{modifier: ("i",)})
 
         spec_fixture.openapi.schema2jsonschema(Parent)
         props = get_schemas(spec_fixture.spec)["Child"]["properties"]

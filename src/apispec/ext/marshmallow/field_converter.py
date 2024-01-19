@@ -193,6 +193,7 @@ class FieldConverterMixin:
             warnings.warn(
                 f"Field of type {type(field)} does not inherit from marshmallow.Field.",
                 UserWarning,
+                stacklevel=2,
             )
             type_, fmt = "string", None
 
@@ -383,6 +384,7 @@ class FieldConverterMixin:
                 "More than one regex validator defined on {} field. Only the "
                 "first one will be used in the output spec.".format(type(field)),
                 UserWarning,
+                stacklevel=2,
             )
 
         return attributes

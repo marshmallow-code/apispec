@@ -239,4 +239,5 @@ class MarshmallowPlugin(BasePlugin):
                 "{} has already been added to the spec. Adding it twice may "
                 "cause references to not resolve properly.".format(schema_key[0]),
                 UserWarning,
+                stacklevel=2,
             )
