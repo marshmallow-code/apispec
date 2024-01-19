@@ -1,12 +1,9 @@
 import datetime as dt
+import importlib
 import os
-import sys
 import time
 
 import sphinx_rtd_theme
-
-sys.path.insert(0, os.path.abspath(os.path.join("..", "src")))
-import apispec  # noqa: E402
 
 extensions = [
     "sphinx.ext.autodoc",
@@ -39,7 +36,7 @@ master_doc = "index"
 project = "apispec"
 copyright = f"2014-{build_date:%Y}, Steven Loria and contributors"
 
-version = release = apispec.__version__
+version = release = importlib.metadata.version("apispec")
 
 exclude_patterns = ["_build"]
 

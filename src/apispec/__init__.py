@@ -19,6 +19,6 @@ def __getattr__(name: str) -> typing.Any:
             DeprecationWarning,
             stacklevel=2,
         )
-        return importlib.metadata.version("flask")
+        return importlib.metadata.version("apispec")
 
     raise AttributeError(name)
