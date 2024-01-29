@@ -42,15 +42,17 @@ Source = "https://github.com/marshmallow-code/apispec"
 Tidelift = "https://tidelift.com/subscription/pkg/pypi-apispec?utm_source=pypi-apispec&utm_medium=pypi"
 
 [project.optional-dependencies]
+yaml = ["PyYAML>=3.10"]
+marshmallow = ["marsmallow>=3.18.0"]
 docs = [
-  "marshmallow>=3.13.0",
+  "apispec[marshmallow]",
   "pyyaml==6.0.1",
   "sphinx==7.2.6",
   "sphinx-issues==3.0.1",
   "sphinx-rtd-theme==2.0.0",
 ]
 tests = ["apispec[yaml,marshmallow]", "openapi-spec-validator==0.7.1", "pytest"]
-dev = ["marshmallow[tests]", "tox", "pre-commit~=3.5"]
+dev = ["apispec[tests]", "tox", "pre-commit~=3.5"]
 
 [build-system]
 requires = ["flit_core<4"]
