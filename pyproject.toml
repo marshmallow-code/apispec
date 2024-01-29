@@ -43,7 +43,7 @@ Tidelift = "https://tidelift.com/subscription/pkg/pypi-apispec?utm_source=pypi-a
 
 [project.optional-dependencies]
 yaml = ["PyYAML>=3.10"]
-marshmallow = ["marsmallow>=3.18.0"]
+marshmallow = ["marshmallow>=3.18.0"]
 docs = [
   "apispec[marshmallow]",
   "pyyaml==6.0.1",
