@@ -1,7 +1,4 @@
-import datetime as dt
 import importlib
-import os
-import time
 
 import sphinx_rtd_theme
 
@@ -24,17 +21,10 @@ intersphinx_mapping = {
 
 issues_github_path = "marshmallow-code/apispec"
 
-
-# Use SOURCE_DATE_EPOCH for reproducible build output
-# https://reproducible-builds.org/docs/source-date-epoch/
-build_date = dt.datetime.utcfromtimestamp(
-    int(os.environ.get("SOURCE_DATE_EPOCH", time.time()))
-)
-
 source_suffix = ".rst"
 master_doc = "index"
 project = "apispec"
-copyright = f"2014-{build_date:%Y}, Steven Loria and contributors"
+copyright = "Steven Loria, Jérôme Lafréchoux, and contributors"
 
 version = release = importlib.metadata.version("apispec")
 
