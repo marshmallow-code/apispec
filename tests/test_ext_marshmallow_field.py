@@ -130,6 +130,14 @@ def test_field_with_nullable_choices(spec_fixture):
     assert set(res["enum"]) == {"freddie", "brian", "john", None}
 
 
+def test_field_with_nullable_choices_returns_only_one_none(spec_fixture):
+    field = fields.Str(
+        validate=validate.OneOf(["freddie", "brian", "john", None]), allow_none=True
+    )
+    res = spec_fixture.openapi.field2property(field)
+    assert set(res["enum"]) == {"freddie", "brian", "john", None}
+
+
 def test_field_with_equal(spec_fixture):
     field = fields.Str(validate=validate.Equal("only choice"))
     res = spec_fixture.openapi.field2property(field)
@@ -317,6 +325,17 @@ def test_nullable_enum(spec_fixture):
     class MyEnum(Enum):
         one = 1
         two = 2
+
+    field = fields.Enum(MyEnum, allow_none=True, by_value=True)
+    ret = spec_fixture.openapi.field2property(field)
+    assert ret["enum"] == [1, 2, None]
+
+
+def test_nullable_enum_returns_only_one_none(spec_fixture):
+    class MyEnum(Enum):
+        one = 1
+        two = 2
+        three = None
 
     field = fields.Enum(MyEnum, allow_none=True, by_value=True)
     ret = spec_fixture.openapi.field2property(field)
