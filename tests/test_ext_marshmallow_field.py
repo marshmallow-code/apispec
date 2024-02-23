@@ -305,6 +305,16 @@ def test_enum_value_field(spec_fixture, by_value):
     assert ret["enum"] == [1, 2]
 
 
+def test_nullable_enum(spec_fixture):
+    class MyEnum(Enum):
+        one = 1
+        two = 2
+
+    field = fields.Enum(MyEnum, allow_none=True, by_value=True)
+    ret = spec_fixture.openapi.field2property(field)
+    assert ret["enum"] == [1, 2, None]
+
+
 def test_field2property_nested_spec_metadatas(spec_fixture):
     spec_fixture.spec.components.schema("Category", schema=CategorySchema)
     category = fields.Nested(
