@@ -4,6 +4,12 @@ Changelog
 6.5.0 (unreleased)
 ******************
 
+Bug fixes:
+
+- Include ``null`` as a value when using ``validate.OneOf`` or ``fields.Enum``
+  when ``allow_none`` is ``True`` for a field (:issue:`812`).
+  Thanks :user:`pmdarrow` for reporting and :user:`kolditz-senec` for the PR.
+
 Other changes:
 
 - Deprecate the ``__version__`` attribute. Use feature detection, or
