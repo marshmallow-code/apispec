@@ -135,7 +135,7 @@ def test_field_with_nullable_choices_returns_only_one_none(spec_fixture):
         validate=validate.OneOf(["freddie", "brian", "john", None]), allow_none=True
     )
     res = spec_fixture.openapi.field2property(field)
-    assert set(res["enum"]) == {"freddie", "brian", "john", None}
+    assert res["enum"] == ["freddie", "brian", "john", None]
 
 
 def test_field_with_equal(spec_fixture):
