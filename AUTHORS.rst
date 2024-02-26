@@ -80,3 +80,4 @@ Contributors (chronological)
 - Tayler Sokalski `@tsokalski <https://github.com/tsokalski>`_
 - Sebastien Lovergne `@TheBigRoomXXL <https://github.com/TheBigRoomXXL>`_
 - Luna Lovegood `@duchuyvp <https://github.com/duchuyvp>`_
+- Tobias Kolditz `@kolditz-senec <https://github.com/kolditz-senec>`_
