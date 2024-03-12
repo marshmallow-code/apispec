@@ -69,6 +69,7 @@ with `"x-"` (vendor extension).
     #           'type': 'object'}}
 
 """
+
 # pyright: reportIncompatibleMethodOverride=false
 from __future__ import annotations
 
@@ -236,8 +237,8 @@ class MarshmallowPlugin(BasePlugin):
         assert self.converter  # needed for mypy
         if schema_key in self.converter.refs:
             warnings.warn(
-                "{} has already been added to the spec. Adding it twice may "
-                "cause references to not resolve properly.".format(schema_key[0]),
+                f"{schema_key[0]} has already been added to the spec. Adding it twice may "
+                "cause references to not resolve properly.",
                 UserWarning,
                 stacklevel=2,
             )

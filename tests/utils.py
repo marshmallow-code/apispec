@@ -1,4 +1,5 @@
 """Utilities to get elements of generated spec"""
+
 import openapi_spec_validator
 from openapi_spec_validator.exceptions import OpenAPISpecValidatorError
 

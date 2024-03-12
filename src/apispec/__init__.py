@@ -1,4 +1,5 @@
 """Contains main apispec classes: `APISpec` and `BasePlugin`"""
+
 import typing
 
 from .core import APISpec
