@@ -138,9 +138,9 @@ def get_unique_schema_name(components: Components, name: str, counter: int = 0) 
         return name
     if not counter:  # first time through recursion
         warnings.warn(
-            "Multiple schemas resolved to the name {}. The name has been modified. "
+            f"Multiple schemas resolved to the name {name}. The name has been modified. "
             "Either manually add each of the schemas with a different name or "
-            "provide a custom schema_name_resolver.".format(name),
+            "provide a custom schema_name_resolver.",
             UserWarning,
             stacklevel=2,
         )

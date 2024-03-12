@@ -6,6 +6,7 @@
     This module is treated as private API.
     Users should not need to use this module directly.
 """
+
 from __future__ import annotations
 
 import functools
@@ -386,8 +387,8 @@ class FieldConverterMixin:
 
         if next(regex_validators, None) is not None:
             warnings.warn(
-                "More than one regex validator defined on {} field. Only the "
-                "first one will be used in the output spec.".format(type(field)),
+                f"More than one regex validator defined on {type(field)} field. Only the "
+                "first one will be used in the output spec.",
                 UserWarning,
                 stacklevel=2,
             )
