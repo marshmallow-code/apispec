@@ -66,6 +66,7 @@ def test_formatted_field_translates_to_array(ListClass, spec_fixture):
         (fields.Date, "date"),
         (fields.Email, "email"),
         (fields.URL, "url"),
+        (fields.Float, "float"),
     ],
 )
 def test_field2property_formats(FieldClass, expected_format, spec_fixture):
