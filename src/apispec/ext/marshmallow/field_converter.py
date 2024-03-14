@@ -38,6 +38,9 @@ DEFAULT_FIELD_MAPPING: dict[type, tuple[str | None, str | None]] = {
     marshmallow.fields.Field: (None, None),
     marshmallow.fields.Raw: (None, None),
     marshmallow.fields.List: ("array", None),
+    marshmallow.fields.IP: ("string", "ip"),
+    marshmallow.fields.IPv4: ("string", "ipv4"),
+    marshmallow.fields.IPv6: ("string", "ipv6"),
 }
 
 
