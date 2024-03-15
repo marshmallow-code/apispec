@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+6.6.0 (2024-03-15)
+******************
+
+Featyres:
+
+- Add IP fields to `DEFAULT_FIELD_MAPPING (:pr:`892`) to document format.
+  Thanks :user:`cjproud` for the PR.
+
 6.5.0 (2024-02-26)
 ******************
 
