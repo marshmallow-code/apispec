@@ -32,6 +32,9 @@ def test_field2choices_preserving_order(openapi):
         (fields.TimeDelta, "integer"),
         (fields.Email, "string"),
         (fields.URL, "string"),
+        (fields.IP, "string"),
+        (fields.IPv4, "string"),
+        (fields.IPv6, "string"),
         # Custom fields inherit types from their parents
         (CustomStringField, "string"),
         (CustomIntegerField, "integer"),
@@ -66,6 +69,9 @@ def test_formatted_field_translates_to_array(ListClass, spec_fixture):
         (fields.Date, "date"),
         (fields.Email, "email"),
         (fields.URL, "url"),
+        (fields.IP, "ip"),
+        (fields.IPv4, "ipv4"),
+        (fields.IPv6, "ipv6"),
     ],
 )
 def test_field2property_formats(FieldClass, expected_format, spec_fixture):
