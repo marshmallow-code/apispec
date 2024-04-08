@@ -3,7 +3,7 @@ import re
 from enum import Enum
 
 import pytest
-from marshmallow import fields, validate
+from marshmallow import Schema, fields, validate
 
 from .schemas import CategorySchema, CustomIntegerField, CustomList, CustomStringField
 from .utils import build_ref, get_schemas
@@ -197,6 +197,41 @@ def test_field_with_allow_none(spec_fixture):
     else:
         assert "nullable" not in res
         assert res["type"] == ["string", "null"]
+
+
+@pytest.mark.parametrize("spec_fixture", ("2.0", "3.0.0", "3.1.0"), indirect=True)
+def test_nested_nullable(spec_fixture):
+    class Child(Schema):
+        name = fields.Str()
+
+    field = fields.Nested(Child, allow_none=True)
+    res = spec_fixture.openapi.field2property(field)
+    if spec_fixture.openapi.openapi_version.major < 3:
+        assert res == {"$ref": "#/definitions/Child", "x-nullable": True}
+    elif spec_fixture.openapi.openapi_version.minor < 1:
+        assert res == {
+            "nullable": True,
+            "allOf": [{"$ref": "#/components/schemas/Child"}],
+        }
+    else:
+        assert res == {
+            "anyOf": [{"$ref": "#/components/schemas/Child"}, {"type": "null"}]
+        }
+
+
+@pytest.mark.parametrize("spec_fixture", ("2.0", "3.0.0", "3.1.0"), indirect=True)
+def test_nullable_pluck(spec_fixture):
+    class Example(Schema):
+        name = fields.Str()
+
+    field = fields.Pluck(Example, "name", allow_none=True)
+    res = spec_fixture.openapi.field2property(field)
+    if spec_fixture.openapi.openapi_version.major < 3:
+        assert res == {"type": "string", "x-nullable": True}
+    elif spec_fixture.openapi.openapi_version.minor < 1:
+        assert res == {"type": "string", "nullable": True}
+    else:
+        assert res == {"type": ["string", "null"]}
 
 
 def test_field_with_dump_only(spec_fixture):
