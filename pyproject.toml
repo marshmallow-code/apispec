@@ -48,7 +48,7 @@ docs = [
   "apispec[marshmallow]",
   "pyyaml==6.0.1",
   "sphinx==7.2.6",
-  "sphinx-issues==4.0.0",
+  "sphinx-issues==4.1.0",
   "sphinx-rtd-theme==2.0.0",
 ]
 tests = ["apispec[yaml,marshmallow]", "openapi-spec-validator==0.7.1", "pytest"]
