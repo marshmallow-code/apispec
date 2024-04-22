@@ -103,7 +103,6 @@ class FieldConverterMixin:
             self.field2choices,
             self.field2read_only,
             self.field2write_only,
-            self.field2nullable,
             self.field2range,
             self.field2length,
             self.field2pattern,
@@ -115,6 +114,7 @@ class FieldConverterMixin:
             self.dict2properties,
             self.timedelta2properties,
             self.datetime2properties,
+            self.field2nullable,
         ]
 
     def map_to_openapi_type(self, field_cls, *args):
@@ -302,8 +302,15 @@ class FieldConverterMixin:
                 attributes["x-nullable"] = True
             elif self.openapi_version.minor < 1:
                 attributes["nullable"] = True
+                if "$ref" in ret:
+                    attributes["allOf"] = [{"$ref": ret.pop("$ref")}]
             else:
-                attributes["type"] = [*make_type_list(ret.get("type")), "null"]
+                if "$ref" in ret:
+                    attributes["anyOf"] = [{"$ref": ret.pop("$ref")}, {"type": "null"}]
+                elif "allOf" in ret:
+                    attributes["anyOf"] = [*ret.pop("allOf"), {"type": "null"}]
+                else:
+                    attributes["type"] = [*make_type_list(ret.get("type")), "null"]
         return attributes
 
     def field2range(self, field: marshmallow.fields.Field, ret) -> dict:

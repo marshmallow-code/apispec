@@ -82,3 +82,4 @@ Contributors (chronological)
 - Luna Lovegood `@duchuyvp <https://github.com/duchuyvp>`_
 - Tobias Kolditz `@kolditz-senec <https://github.com/kolditz-senec>`_
 - Christian Proud `@cjproud <https://github.com/cjproud>`_
+- `<https://github.com/kolditz-senec >`_
