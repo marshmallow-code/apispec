@@ -1,10 +1,19 @@
 Changelog
 ---------
 
+6.6.1 (unreleased)
+******************
+
+Bug fixes:
+
+- ``MarshmallowPlugin``: Fix handling of ``Nested`` fields with 
+  ``allow_none=True`` (:issue:`833`). Thanks :user:`jc-harrison`
+  for reporting and :user:`kolditz-senec` for the PR.
+
 6.6.0 (2024-03-15)
 ******************
 
-Featyres:
+Features:
 
 - Add IP fields to `DEFAULT_FIELD_MAPPING (:pr:`892`) to document format.
   Thanks :user:`cjproud` for the PR.
