@@ -206,9 +206,10 @@ def test_nested_nullable(spec_fixture):
 
     field = fields.Nested(Child, allow_none=True)
     res = spec_fixture.openapi.field2property(field)
-    if spec_fixture.openapi.openapi_version.major < 3:
+    version = spec_fixture.openapi.openapi_version
+    if version.major < 3:
         assert res == {"$ref": "#/definitions/Child", "x-nullable": True}
-    elif spec_fixture.openapi.openapi_version.minor < 1:
+    elif version.major == 3 and version.minor < 1:
         assert res == {
             "nullable": True,
             "allOf": [{"$ref": "#/components/schemas/Child"}],
@@ -226,9 +227,10 @@ def test_nullable_pluck(spec_fixture):
 
     field = fields.Pluck(Example, "name", allow_none=True)
     res = spec_fixture.openapi.field2property(field)
-    if spec_fixture.openapi.openapi_version.major < 3:
+    version = spec_fixture.openapi.openapi_version
+    if version.major < 3:
         assert res == {"type": "string", "x-nullable": True}
-    elif spec_fixture.openapi.openapi_version.minor < 1:
+    elif version.major == 3 and version.minor < 1:
         assert res == {"type": "string", "nullable": True}
     else:
         assert res == {"type": ["string", "null"]}
