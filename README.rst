@@ -2,29 +2,28 @@
 apispec
 *******
 
-.. image:: https://badgen.net/pypi/v/apispec
-    :target: https://pypi.org/project/apispec/
-    :alt: PyPI version
+|pypi| |build-status| |docs| |marshmallow3| |openapi|
 
-.. image:: https://github.com/marshmallow-code/apispec/actions/workflows/build-release.yml/badge.svg
+.. |pypi| image:: https://badgen.net/pypi/v/apispec
+    :target: https://pypi.org/project/apispec/
+    :alt: PyPI package
+
+.. |build-status| image:: https://github.com/marshmallow-code/apispec/actions/workflows/build-release.yml/badge.svg
     :target: https://github.com/marshmallow-code/webargs/actions/workflows/build-release.yml
     :alt: Build status
 
-.. image:: https://readthedocs.org/projects/apispec/badge/
+.. |docs| image:: https://readthedocs.org/projects/apispec/badge/
    :target: https://apispec.readthedocs.io/
    :alt: Documentation
 
-.. image:: https://badgen.net/badge/marshmallow/3?list=1
+.. |marshmallow3| image:: https://badgen.net/badge/marshmallow/3?list=1
     :target: https://marshmallow.readthedocs.io/en/latest/upgrading.html
     :alt: marshmallow 3 only
 
-.. image:: https://badgen.net/badge/OAS/2,3?list=1&color=cyan
+.. |openapi| image:: https://badgen.net/badge/OAS/2,3?list=1&color=cyan
     :target: https://github.com/OAI/OpenAPI-Specification
     :alt: OpenAPI Specification 2/3 compatible
 
-.. image:: https://badgen.net/badge/code%20style/black/000
-    :target: https://github.com/ambv/black
-    :alt: code style: black
 
 A pluggable API specification generator. Currently supports the `OpenAPI Specification <https://github.com/OAI/OpenAPI-Specification>`_ (f.k.a. the Swagger specification).
 
