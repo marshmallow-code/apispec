@@ -52,7 +52,7 @@ with `"x-"` (vendor extension).
         created = fields.DateTime(
             dump_only=True,
             dump_default=dt.datetime.utcnow,
-            metadata={"default": "The current datetime"}
+            metadata={"default": "The current datetime"},
         )
 
 
@@ -107,6 +107,7 @@ class MarshmallowPlugin(BasePlugin):
         Example: ::
 
             from apispec.ext.marshmallow.common import resolve_schema_cls
+
 
             def schema_name_resolver(schema):
                 schema_cls = resolve_schema_cls(schema)

@@ -42,24 +42,20 @@ class SchemaResolver:
 
         Example: ::
 
-            #Input
+            # Input
             {
                 "userEvent": {
                     "https://my.example/user-callback": {
                         "post": {
                             "requestBody": {
-                                "content": {
-                                    "application/json": {
-                                        "schema": UserSchema
-                                    }
-                                }
+                                "content": {"application/json": {"schema": UserSchema}}
                             }
                         },
                     }
                 }
             }
 
-            #Output
+            # Output
             {
                 "userEvent": {
                     "https://my.example/user-callback": {
@@ -67,9 +63,7 @@ class SchemaResolver:
                             "requestBody": {
                                 "content": {
                                     "application/json": {
-                                        "schema": {
-                                            "$ref": "#/components/schemas/User"
-                                        }
+                                        "schema": {"$ref": "#/components/schemas/User"}
                                     }
                                 }
                             }
@@ -97,19 +91,28 @@ class SchemaResolver:
 
         Example: ::
 
-            #Input
+            # Input
             class UserSchema(Schema):
                 name = fields.String()
                 id = fields.Int()
 
-            [
-                {"in": "query", "schema": "UserSchema"}
-            ]
 
-            #Output
+            [{"in": "query", "schema": "UserSchema"}]
+
+            # Output
             [
-                {"in": "query", "name": "id", "required": False, "schema": {"type": "integer"}},
-                {"in": "query", "name": "name", "required": False, "schema": {"type": "string"}}
+                {
+                    "in": "query",
+                    "name": "id",
+                    "required": False,
+                    "schema": {"type": "integer"},
+                },
+                {
+                    "in": "query",
+                    "name": "name",
+                    "required": False,
+                    "schema": {"type": "string"},
+                },
             ]
 
         If the Parameter Object contains a `content` key a single Parameter
@@ -118,19 +121,23 @@ class SchemaResolver:
 
         Example: ::
 
-            #Input
-            [{"in": "query", "name": "pet", "content":{"application/json": {"schema": "PetSchema"}} }]
+            # Input
+            [
+                {
+                    "in": "query",
+                    "name": "pet",
+                    "content": {"application/json": {"schema": "PetSchema"}},
+                }
+            ]
 
-            #Output
+            # Output
             [
                 {
                     "in": "query",
                     "name": "pet",
                     "content": {
-                        "application/json": {
-                            "schema": {"$ref": "#/components/schemas/Pet"}
-                        }
-                    }
+                        "application/json": {"schema": {"$ref": "#/components/schemas/Pet"}}
+                    },
                 }
             ]
 
@@ -160,17 +167,17 @@ class SchemaResolver:
 
         Example: ::
 
-            #Input
+            # Input
             {
                 "content": {"application/json": {"schema": "PetSchema"}},
                 "description": "successful operation",
                 "headers": {"PetHeader": {"schema": "PetHeaderSchema"}},
             }
 
-            #Output
+            # Output
             {
                 "content": {
-                    "application/json":{"schema": {"$ref": "#/components/schemas/Pet"}}
+                    "application/json": {"schema": {"$ref": "#/components/schemas/Pet"}}
                 },
                 "description": "successful operation",
                 "headers": {
@@ -192,26 +199,18 @@ class SchemaResolver:
 
         OpenAPIv3 Components: ::
 
-            #Input
+            # Input
             {
                 "description": "user to add to the system",
-                "content": {
-                    "application/json": {
-                        "schema": "UserSchema"
-                    }
-                }
+                "content": {"application/json": {"schema": "UserSchema"}},
             }
 
-            #Output
+            # Output
             {
                 "description": "user to add to the system",
                 "content": {
-                    "application/json": {
-                        "schema": {
-                            "$ref": "#/components/schemas/User"
-                        }
-                    }
-                }
+                    "application/json": {"schema": {"$ref": "#/components/schemas/User"}}
+                },
             }
 
         :param dict|str data: either a parameter or response dictionary that may
@@ -241,10 +240,10 @@ class SchemaResolver:
 
         Example: ::
 
-            #Input
+            # Input
             "PetSchema"
 
-            #Output
+            # Output
             {"$ref": "#/components/schemas/Pet"}
 
         If the input is a dictionary representation of an OpenAPI Schema Object
@@ -255,22 +254,22 @@ class SchemaResolver:
 
         Examples: ::
 
-            #Input
+            # Input
             {"type": "array", "items": "PetSchema"}
 
-            #Output
+            # Output
             {"type": "array", "items": {"$ref": "#/components/schemas/Pet"}}
 
-            #Input
+            # Input
             {"type": "object", "properties": {"pet": "PetSchcema", "user": "UserSchema"}}
 
-            #Output
+            # Output
             {
                 "type": "object",
                 "properties": {
                     "pet": {"$ref": "#/components/schemas/Pet"},
-                    "user": {"$ref": "#/components/schemas/User"}
-                }
+                    "user": {"$ref": "#/components/schemas/User"},
+                },
             }
 
         :param string|Schema|dict schema: the schema to resolve.
