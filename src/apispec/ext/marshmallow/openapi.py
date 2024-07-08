@@ -48,8 +48,7 @@ class OpenAPIConverter(FieldConverterMixin):
         Receives the `Schema` class and returns the name to be used in refs within
         the generated spec. When working with circular referencing this function
         must must not return `None` for schemas in a circular reference chain.
-    :param APISpec spec: An initalied spec. Nested schemas will be added to the
-        spec
+    :param APISpec spec: An initialized spec. Nested schemas will be added to the spec
     """
 
     def __init__(
