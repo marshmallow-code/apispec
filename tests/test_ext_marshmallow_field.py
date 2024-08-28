@@ -597,3 +597,36 @@ def test_field2property_with_non_string_metadata_keys(spec_fixture):
     field.metadata[_DesertSentinel()] = "to be ignored"
     result = spec_fixture.openapi.field2property(field)
     assert result == {"description": "A description", "type": "boolean"}
+
+
+@pytest.mark.parametrize(
+    ("format", "expected"),
+    [
+        (
+            None,
+            {
+                "type": "string",
+                "format": "date",
+            },
+        ),
+        (
+            "iso",
+            {
+                "type": "string",
+                "format": "date",
+            },
+        ),
+        (
+            "%d-%m-%Y",
+            {
+                "type": "string",
+                "format": None,
+                "pattern": None,
+            },
+        ),
+    ],
+)
+def test_date2property(spec_fixture, format, expected):
+    field = fields.Date(format=format)
+    res = spec_fixture.openapi.field2property(field)
+    assert res == expected
