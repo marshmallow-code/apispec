@@ -113,6 +113,7 @@ class FieldConverterMixin:
             self.list2properties,
             self.dict2properties,
             self.timedelta2properties,
+            self.date2properties,
             self.datetime2properties,
             self.field2nullable,
         ]
@@ -544,9 +545,7 @@ class FieldConverterMixin:
         :rtype: dict
         """
         ret = {}
-        if isinstance(field, marshmallow.fields.DateTime) and not isinstance(
-            field, marshmallow.fields.Date
-        ):
+        if isinstance(field, marshmallow.fields.DateTime):
             if field.format == "iso" or field.format is None:
                 # Will return { "type": "string", "format": "date-time" }
                 # as specified inside DEFAULT_FIELD_MAPPING
@@ -594,6 +593,40 @@ class FieldConverterMixin:
                         else None
                     ),
                 }
+        return ret
+
+    def date2properties(
+        self, field: marshmallow.fields.Date, **kwargs: typing.Any
+    ) -> dict:
+        """Return a dictionary of OpenAPI properties for a Date field.
+
+        :param Field field: A marshmallow Date field.
+        :rtype: dict
+        """
+        ret = {}
+
+        if isinstance(field, marshmallow.fields.Date):
+            if field.format == "iso" or field.format is None:
+                ret = {
+                    "type": "string",
+                    "format": "date",
+                }
+            elif field.format:
+                ret = {
+                    "type": "string",
+                    "format": None,
+                }
+            else:
+                ret = {
+                    "type": "string",
+                    "format": None,
+                    "pattern": (
+                        field.metadata["pattern"]
+                        if field.metadata.get("pattern")
+                        else None
+                    ),
+                }
+
         return ret
 
 
