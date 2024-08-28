@@ -574,13 +574,25 @@ class FieldConverterMixin:
                     "example": "1676451277514.654",
                     "min": "0",
                 }
+            elif field.format is not None:
+                ret = {
+                    "type": "string",
+                    "format": None,
+                    "pattern": (
+                        field.metadata["pattern"]
+                        if field.metadata.get("pattern")
+                        else None
+                    ),
+                }
             else:
                 ret = {
                     "type": "string",
                     "format": None,
-                    "pattern": field.metadata["pattern"]
-                    if field.metadata.get("pattern")
-                    else None,
+                    "pattern": (
+                        field.metadata["pattern"]
+                        if field.metadata.get("pattern")
+                        else None
+                    ),
                 }
         return ret
 
