@@ -1294,7 +1294,7 @@ class TestDictValues:
 
         spec.components.schema("SchemaWithDict", schema=SchemaWithDict)
         result = get_schemas(spec)["SchemaWithDict"]["properties"]["dict_field"]
-        assert result == {"type": "object"}
+        assert result == {"type": "object", "additionalProperties": {}}
 
     def test_dict_with_nested(self, spec):
         class SchemaWithDict(Schema):
