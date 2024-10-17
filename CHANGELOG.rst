@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+6.7.0 (unreleased)
+******************
+
+Other changes:
+
+- Officially support Python 3.13 (:pr:`948`).
+- Drop support for Python 3.8 (:pr:`947`).
+
 6.6.1 (2024-04-22)
 ******************
 
