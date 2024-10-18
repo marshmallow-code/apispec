@@ -83,3 +83,4 @@ Contributors (chronological)
 - Tobias Kolditz `@kolditz-senec <https://github.com/kolditz-senec>`_
 - Christian Proud `@cjproud <https://github.com/cjproud>`_
 - `<https://github.com/kolditz-senec >`_
+- Theron Luhn `@luhn <https://github.com/luhn>`_
