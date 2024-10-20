@@ -4,6 +4,11 @@ Changelog
 6.7.0 (unreleased)
 ******************
 
+Bug fixes:
+
+- Fix handling of ``fields.Dict()`` with ``values`` unset (:issue:`949`).
+  Thanks :user:`luhn` for the catch and patch.
+
 Other changes:
 
 - Officially support Python 3.13 (:pr:`948`).
