@@ -457,63 +457,59 @@ def test_nested_field_with_property(spec_fixture):
     }
 
 
-def test_datetime2property_iso(spec_fixture):
-    field = fields.DateTime(format="iso")
+@pytest.mark.parametrize(
+    ("format", "expected"),
+    [
+        (
+            "iso",
+            {
+                "type": "string",
+                "format": "date-time",
+            },
+        ),
+        (
+            "rfc",
+            {
+                "type": "string",
+                "format": None,
+                "example": "Wed, 02 Oct 2002 13:00:00 GMT",
+                "pattern": r"((Mon|Tue|Wed|Thu|Fri|Sat|Sun), ){0,1}\d{2} "
+                + r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} "
+                + r"(UT|GMT|EST|EDT|CST|CDT|MST|MDT|PST|PDT|(Z|A|M|N)|(\+|-)\d{4})",
+            },
+        ),
+        (
+            "timestamp",
+            {
+                "type": "number",
+                "format": "float",
+                "min": "0",
+                "example": "1676451245.596",
+            },
+        ),
+        (
+            "timestamp_ms",
+            {
+                "type": "number",
+                "format": "float",
+                "min": "0",
+                "example": "1676451277514.654",
+            },
+        ),
+        (
+            "%d-%m%Y %H:%M:%S",
+            {
+                "type": "string",
+                "format": None,
+                "pattern": None,
+            },
+        ),
+    ],
+)
+def test_datetime2property(spec_fixture, format, expected):
+    field = fields.DateTime(format=format)
     res = spec_fixture.openapi.field2property(field)
-    assert res == {
-        "type": "string",
-        "format": "date-time",
-    }
-
-
-def test_datetime2property_rfc(spec_fixture):
-    field = fields.DateTime(format="rfc")
-    res = spec_fixture.openapi.field2property(field)
-    assert res == {
-        "type": "string",
-        "format": None,
-        "example": "Wed, 02 Oct 2002 13:00:00 GMT",
-        "pattern": r"((Mon|Tue|Wed|Thu|Fri|Sat|Sun), ){0,1}\d{2} "
-        + r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} "
-        + r"(UT|GMT|EST|EDT|CST|CDT|MST|MDT|PST|PDT|(Z|A|M|N)|(\+|-)\d{4})",
-    }
-
-
-def test_datetime2property_timestamp(spec_fixture):
-    field = fields.DateTime(format="timestamp")
-    res = spec_fixture.openapi.field2property(field)
-    assert res == {
-        "type": "number",
-        "format": "float",
-        "min": "0",
-        "example": "1676451245.596",
-    }
-
-
-def test_datetime2property_timestamp_ms(spec_fixture):
-    field = fields.DateTime(format="timestamp_ms")
-    res = spec_fixture.openapi.field2property(field)
-    assert res == {
-        "type": "number",
-        "format": "float",
-        "min": "0",
-        "example": "1676451277514.654",
-    }
-
-
-def test_datetime2property_custom_format(spec_fixture):
-    field = fields.DateTime(
-        format="%d-%m%Y %H:%M:%S",
-        metadata={
-            "pattern": r"^((?:(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2}(?:\.\d+)?))(Z|[\+-]\d{2}:\d{2})?)$"
-        },
-    )
-    res = spec_fixture.openapi.field2property(field)
-    assert res == {
-        "type": "string",
-        "format": None,
-        "pattern": r"^((?:(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2}(?:\.\d+)?))(Z|[\+-]\d{2}:\d{2})?)$",
-    }
+    assert res == expected
 
 
 def test_datetime2property_custom_format_missing_regex(spec_fixture):
@@ -601,3 +597,36 @@ def test_field2property_with_non_string_metadata_keys(spec_fixture):
     field.metadata[_DesertSentinel()] = "to be ignored"
     result = spec_fixture.openapi.field2property(field)
     assert result == {"description": "A description", "type": "boolean"}
+
+
+@pytest.mark.parametrize(
+    ("format", "expected"),
+    [
+        (
+            None,
+            {
+                "type": "string",
+                "format": "date",
+            },
+        ),
+        (
+            "iso",
+            {
+                "type": "string",
+                "format": "date",
+            },
+        ),
+        (
+            "%d-%m-%Y",
+            {
+                "type": "string",
+                "format": None,
+                "pattern": None,
+            },
+        ),
+    ],
+)
+def test_date2property(spec_fixture, format, expected):
+    field = fields.Date(format=format)
+    res = spec_fixture.openapi.field2property(field)
+    assert res == expected
