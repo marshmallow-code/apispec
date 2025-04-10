@@ -85,3 +85,4 @@ Contributors (chronological)
 - `<https://github.com/kolditz-senec >`_
 - Theron Luhn `@luhn <https://github.com/luhn>`_
 - Robert Shepley `@ShepleySound <https://github.com/ShepleySound>`_
+- Robin `@allrob23 <https://github.com/allrob23>`_

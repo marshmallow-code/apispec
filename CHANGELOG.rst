@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+(unreleased)
+************
+
+- Perf improvement to ``filter_excluded_fields`` (:issue:`972`).
+  Thanks :user:`allrob23` for the PR.
+
 6.8.1 (2025-01-07)
 ******************
 
