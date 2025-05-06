@@ -565,9 +565,7 @@ class FieldConverterMixin:
         :rtype: dict
         """
         ret = {}
-        if isinstance(field, marshmallow.fields.DateTime) and not isinstance(
-            field, marshmallow.fields.Date
-        ):
+        if isinstance(field, marshmallow.fields.DateTime):
             if field.format == "iso" or field.format is None:
                 # Will return { "type": "string", "format": "date-time" }
                 # as specified inside DEFAULT_FIELD_MAPPING

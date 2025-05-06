@@ -218,7 +218,7 @@ class OpenAPIConverter(FieldConverterMixin):
         ret = {}
         partial = getattr(field.parent, "partial", False)
         ret["required"] = field.required and (
-            not partial or (is_collection(partial) and field.name not in partial)  # type:ignore
+            not partial or (is_collection(partial) and field.name not in partial)
         )
         return ret
 
