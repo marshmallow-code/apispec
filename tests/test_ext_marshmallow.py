@@ -1296,6 +1296,14 @@ class TestDictValues:
         result = get_schemas(spec)["SchemaWithDict"]["properties"]["dict_field"]
         assert result == {"type": "object", "additionalProperties": {}}
 
+    def test_dict_with_empty_values_field_and_metadata(self, spec):
+        class SchemaWithDict(Schema):
+            dict_field = Dict(metadata={"additionalProperties": True})
+
+        spec.components.schema("SchemaWithDict", schema=SchemaWithDict)
+        result = get_schemas(spec)["SchemaWithDict"]["properties"]["dict_field"]
+        assert result == {"type": "object", "additionalProperties": True}
+
     def test_dict_with_nested(self, spec):
         class SchemaWithDict(Schema):
             dict_field = Dict(values=Nested(PetSchema))

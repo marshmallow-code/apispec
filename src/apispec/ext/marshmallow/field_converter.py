@@ -523,6 +523,8 @@ class FieldConverterMixin:
             value_field = field.value_field
             if value_field:
                 ret["additionalProperties"] = self.field2property(value_field)
+            elif kwargs.get("ret") and "additionalProperties" in kwargs["ret"]:
+                pass
             else:
                 ret["additionalProperties"] = {}
         return ret
