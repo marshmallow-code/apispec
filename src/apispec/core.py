@@ -459,7 +459,11 @@ class APISpec:
     def to_dict(self) -> dict[str, typing.Any]:
         ret: dict[str, typing.Any] = {
             "paths": self._paths,
-            "info": {"title": self.title, "version": self.version, "description": self.description},
+            "info": {
+                "title": self.title,
+                "version": self.version,
+                "description": self.description,
+            },
         }
         if self._tags:
             ret["tags"] = self._tags
