@@ -2,7 +2,16 @@ import json
 
 import pytest
 from marshmallow import Schema
-from marshmallow.fields import DateTime, Dict, Field, List, Nested, String, TimeDelta
+from marshmallow.fields import (
+    DateTime,
+    Dict,
+    Field,
+    Int,
+    List,
+    Nested,
+    String,
+    TimeDelta,
+)
 
 from apispec import APISpec
 from apispec.exceptions import APISpecError
@@ -12,7 +21,6 @@ from .schemas import (
     AnalysisSchema,
     AnalysisWithListSchema,
     DefaultValuesSchema,
-    OrderedSchema,
     PatternedObjectSchema,
     PetSchema,
     RunSchema,
@@ -1246,8 +1254,15 @@ class TestSelfReference:
         }
 
 
-class TestOrderedSchema:
-    def test_ordered_schema(self, spec):
+class TestFieldOrdering:
+    def test_field_order_preserved(self, spec):
+        class OrderedSchema(Schema):
+            field1 = Int()
+            field2 = Int()
+            field3 = Int()
+            field4 = Int()
+            field5 = Int()
+
         spec.components.schema("Ordered", schema=OrderedSchema)
         result = get_schemas(spec)["Ordered"]["properties"]
         assert list(result.keys()) == ["field1", "field2", "field3", "field4", "field5"]

@@ -46,17 +46,6 @@ class SelfReferencingSchema(Schema):
     multiple = fields.Nested(lambda: SelfReferencingSchema(many=True))
 
 
-class OrderedSchema(Schema):
-    field1 = fields.Int()
-    field2 = fields.Int()
-    field3 = fields.Int()
-    field4 = fields.Int()
-    field5 = fields.Int()
-
-    class Meta:
-        ordered = True
-
-
 class DefaultValuesSchema(Schema):
     number_auto_default = fields.Int(load_default=12)
     number_manual_default = fields.Int(load_default=12, metadata={"default": 42})

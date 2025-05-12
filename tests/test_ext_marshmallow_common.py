@@ -71,7 +71,6 @@ class TestGetFields:
             field5 = fields.Int()
 
             class Meta:
-                ordered = True
                 exclude = exclude_type(("field1", "field2"))
                 dump_only = dump_only_type(("field3", "field4"))
 
