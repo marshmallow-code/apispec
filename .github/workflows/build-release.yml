@@ -17,6 +17,9 @@ jobs:
         include:
           - { name: "3.9-ma3", python: "3.9", tox: py39-marshmallow3 }
           - { name: "3.13-ma3", python: "3.13", tox: py313-marshmallow3 }
+          - { name: "3.9-ma4", python: "3.9", tox: py39-marshmallow4 }
+          - { name: "3.13-ma4", python: "3.13", tox: py313-marshmallow4 }
+          - { name: "lowest", python: "3.9", tox: py39-lowest }
           - { name: "3.13-madev", python: "3.13", tox: py313-marshmallowdev }
     steps:
       - uses: actions/checkout@v4.2.2
