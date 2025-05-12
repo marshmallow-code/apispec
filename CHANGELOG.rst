@@ -4,6 +4,12 @@ Changelog
 (unreleased)
 ************
 
+Bug fixes:
+
+- ``MarshmallowPlugin`` doesn't override ``additionalProperties`` explicitly
+  passed to ``fields.Dict`` (:pr:`976`).
+  Thanks :user:`0x0400` for the PR.
+
 - Perf improvement to ``filter_excluded_fields`` (:issue:`972`).
   Thanks :user:`allrob23` for the PR.
 
