@@ -4,6 +4,13 @@ Changelog
 (unreleased)
 ************
 
+Features:
+
+- Add ``description`` to `APISpec` constructor (:pr:`977`).
+  Thanks :user:`ShekharDipankar` for the PR.
+
+Other changes:
+
 - Perf improvement to ``filter_excluded_fields`` (:issue:`972`).
   Thanks :user:`allrob23` for the PR.
 

@@ -415,6 +415,7 @@ class APISpec:
 
     :param str title: API title
     :param str version: API version
+    :param str description: API description
     :param list|tuple plugins: Plugin instances.
         See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#infoObject
     :param str openapi_version: OpenAPI Specification version.

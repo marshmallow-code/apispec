@@ -86,3 +86,4 @@ Contributors (chronological)
 - Theron Luhn `@luhn <https://github.com/luhn>`_
 - Robert Shepley `@ShepleySound <https://github.com/ShepleySound>`_
 - Robin `@allrob23 <https://github.com/allrob23>`_
+- Shekhar Dipankar `@ShekharDipankar <https://github.com/ShekharDipankar>`_
