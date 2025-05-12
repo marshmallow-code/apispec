@@ -427,12 +427,14 @@ class APISpec:
         self,
         title: str,
         version: str,
+        description: str,
         openapi_version: str,
         plugins: Sequence[BasePlugin] = (),
         **options: typing.Any,
     ) -> None:
         self.title = title
         self.version = version
+        self.description = description
         self.options = options
         self.plugins = plugins
         self.openapi_version = Version(openapi_version)
@@ -457,7 +459,7 @@ class APISpec:
     def to_dict(self) -> dict[str, typing.Any]:
         ret: dict[str, typing.Any] = {
             "paths": self._paths,
-            "info": {"title": self.title, "version": self.version},
+            "info": {"title": self.title, "version": self.version, "description": self.description},
         }
         if self._tags:
             ret["tags"] = self._tags
