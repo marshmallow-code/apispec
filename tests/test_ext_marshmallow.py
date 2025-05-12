@@ -1,4 +1,5 @@
 import json
+import sys
 
 import pytest
 from marshmallow import Schema
@@ -1262,6 +1263,10 @@ class TestFieldOrdering:
             field3 = Int()
             field4 = Int()
             field5 = Int()
+            if sys.version_info < (3, 10):
+
+                class Meta:
+                    ordered = True
 
         spec.components.schema("Ordered", schema=OrderedSchema)
         result = get_schemas(spec)["Ordered"]["properties"]
