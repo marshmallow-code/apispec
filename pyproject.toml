@@ -51,7 +51,7 @@ docs = [
   "sphinx-issues==5.0.1",
   "sphinx-rtd-theme==3.0.2",
 ]
-tests = ["apispec[yaml,marshmallow]", "openapi-spec-validator==0.7.1", "pytest"]
+tests = ["apispec[yaml,marshmallow]", "openapi-spec-validator==0.7.2", "pytest"]
 dev = ["apispec[tests]", "tox", "pre-commit>=3.5,<5.0"]
 
 [build-system]
