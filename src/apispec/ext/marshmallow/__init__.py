@@ -120,6 +120,7 @@ class MarshmallowPlugin(BasePlugin):
     def __init__(
         self,
         schema_name_resolver: typing.Callable[[type[Schema]], str] | None = None,
+        list_as_array: bool = False,
     ) -> None:
         super().__init__()
         self.schema_name_resolver = schema_name_resolver or resolver
@@ -127,6 +128,7 @@ class MarshmallowPlugin(BasePlugin):
         self.openapi_version: Version | None = None
         self.converter: OpenAPIConverter | None = None
         self.resolver: SchemaResolver | None = None
+        self.list_as_array = list_as_array
 
     def init_spec(self, spec: APISpec) -> None:
         super().init_spec(spec)
@@ -136,6 +138,7 @@ class MarshmallowPlugin(BasePlugin):
             openapi_version=spec.openapi_version,
             schema_name_resolver=self.schema_name_resolver,
             spec=spec,
+            list_as_array=self.list_as_array,
         )
         self.resolver = self.Resolver(
             openapi_version=spec.openapi_version, converter=self.converter

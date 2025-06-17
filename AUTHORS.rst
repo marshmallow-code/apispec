@@ -87,3 +87,4 @@ Contributors (chronological)
 - Robert Shepley `@ShepleySound <https://github.com/ShepleySound>`_
 - Robin `@allrob23 <https://github.com/allrob23>`_
 - Xingang Zhang `@0x0400 <https://github.com/0x0400>`_
+- nomi3 `@nomi3 <https://github.com/nomi3>`_
