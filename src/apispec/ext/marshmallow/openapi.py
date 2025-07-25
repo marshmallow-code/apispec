@@ -110,15 +110,13 @@ class OpenAPIConverter(FieldConverterMixin):
 
         :param schema: schema to add to the spec
         """
-        if isinstance(schema, marshmallow.fields.List) and getattr(
-            self, "list_as_array", False
-        ):
+        if isinstance(schema, marshmallow.fields.List) and self.list_as_array:
             return {
                 "type": "array",
                 "items": self.resolve_nested_schema(schema.inner),
             }
 
-        if getattr(self, "list_as_array", False):
+        if self.list_as_array:
             if isinstance(schema, marshmallow.Schema):
                 field_dict = schema.fields
             elif isinstance(schema, type) and issubclass(schema, marshmallow.Schema):
