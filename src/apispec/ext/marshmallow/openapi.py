@@ -56,6 +56,7 @@ class OpenAPIConverter(FieldConverterMixin):
         openapi_version: Version | str,
         schema_name_resolver,
         spec: APISpec,
+        list_as_array: bool = False,
     ) -> None:
         self.openapi_version = (
             Version(openapi_version)
@@ -66,6 +67,7 @@ class OpenAPIConverter(FieldConverterMixin):
         self.spec = spec
         self.init_attribute_functions()
         self.init_parameter_attribute_functions()
+        self.list_as_array = list_as_array
         # Schema references
         self.refs: dict = {}
 
@@ -108,6 +110,28 @@ class OpenAPIConverter(FieldConverterMixin):
 
         :param schema: schema to add to the spec
         """
+        if isinstance(schema, marshmallow.fields.List) and self.list_as_array:
+            return {
+                "type": "array",
+                "items": self.resolve_nested_schema(schema.inner),
+            }
+
+        if self.list_as_array:
+            if isinstance(schema, marshmallow.Schema):
+                field_dict = schema.fields
+            elif isinstance(schema, type) and issubclass(schema, marshmallow.Schema):
+                field_dict = schema._declared_fields
+            else:
+                field_dict = None
+
+            if field_dict is not None and len(field_dict) == 1:
+                fld = next(iter(field_dict.values()))
+                if isinstance(fld, marshmallow.fields.List) and fld.data_key is None:
+                    return {
+                        "type": "array",
+                        "items": self.resolve_nested_schema(fld.inner),
+                    }
+
         try:
             schema_instance = resolve_schema_instance(schema)
         # If schema is a string and is not found in registry,
