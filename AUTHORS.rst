@@ -82,7 +82,7 @@ Contributors (chronological)
 - Luna Lovegood `@duchuyvp <https://github.com/duchuyvp>`_
 - Tobias Kolditz `@kolditz-senec <https://github.com/kolditz-senec>`_
 - Christian Proud `@cjproud <https://github.com/cjproud>`_
-- `<https://github.com/kolditz-senec >`_
+- `<https://github.com/kolditz-senec>`_
 - Theron Luhn `@luhn <https://github.com/luhn>`_
 - Robert Shepley `@ShepleySound <https://github.com/ShepleySound>`_
 - Robin `@allrob23 <https://github.com/allrob23>`_

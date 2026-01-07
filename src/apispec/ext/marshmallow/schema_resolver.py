@@ -17,7 +17,7 @@ class SchemaResolver:
 
     def resolve_operations(self, operations, **kwargs):
         """Resolve marshmallow Schemas in a dict mapping operation to OpenApi `Operation Object
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#operationObject`_
+        <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#operationObject>`_
         """
 
         for operation in operations.values():
@@ -36,7 +36,7 @@ class SchemaResolver:
 
     def resolve_callback(self, callbacks):
         """Resolve marshmallow Schemas in a dict mapping callback name to OpenApi `Callback Object
-        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#callbackObject`_.
+        <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#callbackObject>`_.
 
         This is done recursively, so it is possible to define callbacks in your callbacks.
 
