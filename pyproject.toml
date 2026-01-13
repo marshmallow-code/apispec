@@ -49,7 +49,7 @@ docs = [
   "pyyaml==6.0.3",
   "sphinx==9.1.0",
   "sphinx-issues==5.0.1",
-  "sphinx-rtd-theme==3.1.0rc2",
+  "sphinx-rtd-theme==3.1.0",
 ]
 tests = ["apispec[yaml,marshmallow]", "openapi-spec-validator==0.7.2", "pytest"]
 dev = ["apispec[tests]", "tox", "pre-commit>=3.5,<5.0"]
