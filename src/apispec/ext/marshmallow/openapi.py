@@ -248,6 +248,14 @@ class OpenAPIConverter(FieldConverterMixin):
         :param Schema schema: A marshmallow Schema instance
         :rtype: dict, a JSON Schema Object
         """
+        # Check if this is a OneOfSchema from marshmallow-oneofschema
+        try:
+            from marshmallow_oneofschema import OneOfSchema
+            if isinstance(schema, OneOfSchema):
+                return self._oneof_schema2jsonschema(schema)
+        except ImportError:
+            pass
+
         fields = get_fields(schema)
         Meta = getattr(schema, "Meta", None)
         partial = getattr(schema, "partial", None)
@@ -260,6 +268,36 @@ class OpenAPIConverter(FieldConverterMixin):
             jsonschema["description"] = Meta.description
         if hasattr(Meta, "unknown") and Meta.unknown != marshmallow.EXCLUDE:
             jsonschema["additionalProperties"] = Meta.unknown == marshmallow.INCLUDE
+
+        return jsonschema
+
+    def _oneof_schema2jsonschema(self, schema):
+        """Handle OneOfSchema instances by generating oneOf with discriminator.
+
+        :param OneOfSchema schema: A OneOfSchema instance
+        :rtype: dict, a JSON Schema Object with oneOf
+        """
+        type_schemas = getattr(schema, 'type_schemas', {})
+        type_field = getattr(schema, 'type_field', 'type')
+
+        if not type_schemas:
+            # Fallback to empty object if no type schemas defined
+            return {"type": "object", "properties": {}}
+
+        # Build oneOf array with references to each type schema
+        one_of_list = []
+        for type_name, type_schema in type_schemas.items():
+            # Resolve each type schema to get its reference
+            schema_ref = self.resolve_nested_schema(type_schema)
+            one_of_list.append(schema_ref)
+
+        # Build the oneOf structure with discriminator
+        jsonschema = {
+            "oneOf": one_of_list,
+            "discriminator": {
+                "propertyName": type_field
+            }
+        }
 
         return jsonschema
 
