@@ -251,6 +251,7 @@ class OpenAPIConverter(FieldConverterMixin):
         # Check if this is a OneOfSchema from marshmallow-oneofschema
         try:
             from marshmallow_oneofschema import OneOfSchema
+
             if isinstance(schema, OneOfSchema):
                 return self._oneof_schema2jsonschema(schema)
         except ImportError:
@@ -277,8 +278,8 @@ class OpenAPIConverter(FieldConverterMixin):
         :param OneOfSchema schema: A OneOfSchema instance
         :rtype: dict, a JSON Schema Object with oneOf
         """
-        type_schemas = getattr(schema, 'type_schemas', {})
-        type_field = getattr(schema, 'type_field', 'type')
+        type_schemas = getattr(schema, "type_schemas", {})
+        type_field = getattr(schema, "type_field", "type")
 
         if not type_schemas:
             # Fallback to empty object if no type schemas defined
@@ -304,10 +305,7 @@ class OpenAPIConverter(FieldConverterMixin):
         # Build the oneOf structure with discriminator
         jsonschema = {
             "oneOf": one_of_list,
-            "discriminator": {
-                "propertyName": type_field,
-                "mapping": mapping
-            }
+            "discriminator": {"propertyName": type_field, "mapping": mapping},
         }
 
         return jsonschema
