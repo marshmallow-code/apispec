@@ -285,17 +285,28 @@ class OpenAPIConverter(FieldConverterMixin):
             return {"type": "object", "properties": {}}
 
         # Build oneOf array with references to each type schema
+        # Also build mapping from discriminator values to schema references
         one_of_list = []
+        mapping = {}
         for type_name, type_schema in type_schemas.items():
             # Resolve each type schema to get its reference
             schema_ref = self.resolve_nested_schema(type_schema)
             one_of_list.append(schema_ref)
 
+            # Build the mapping entry
+            # schema_ref is either {"$ref": "..."} or the inline schema
+            if "$ref" in schema_ref:
+                mapping[type_name] = schema_ref["$ref"]
+            # Handle array case (many=True)
+            elif "items" in schema_ref and "$ref" in schema_ref["items"]:
+                mapping[type_name] = schema_ref["items"]["$ref"]
+
         # Build the oneOf structure with discriminator
         jsonschema = {
             "oneOf": one_of_list,
             "discriminator": {
-                "propertyName": type_field
+                "propertyName": type_field,
+                "mapping": mapping
             }
         }
 
