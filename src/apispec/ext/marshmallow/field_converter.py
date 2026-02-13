@@ -574,11 +574,11 @@ class FieldConverterMixin:
         """
         ret = {}
         if isinstance(field, marshmallow.fields.DateTime):
-            if field.format == "iso" or field.format is None:
+            if field.format in ("iso", "iso8601") or field.format is None:
                 # Will return { "type": "string", "format": "date-time" }
                 # as specified inside DEFAULT_FIELD_MAPPING
                 pass
-            elif field.format == "rfc":
+            elif field.format in ("rfc", "rfc822"):
                 ret = {
                     "type": "string",
                     "format": None,

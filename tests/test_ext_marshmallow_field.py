@@ -550,8 +550,30 @@ def test_datetime2property_iso(spec_fixture):
     }
 
 
+def test_datetime2property_iso8601(spec_fixture):
+    field = fields.DateTime(format="iso8601")
+    res = spec_fixture.openapi.field2property(field)
+    assert res == {
+        "type": "string",
+        "format": "date-time",
+    }
+
+
 def test_datetime2property_rfc(spec_fixture):
     field = fields.DateTime(format="rfc")
+    res = spec_fixture.openapi.field2property(field)
+    assert res == {
+        "type": "string",
+        "format": None,
+        "example": "Wed, 02 Oct 2002 13:00:00 GMT",
+        "pattern": r"((Mon|Tue|Wed|Thu|Fri|Sat|Sun), ){0,1}\d{2} "
+        + r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} "
+        + r"(UT|GMT|EST|EDT|CST|CDT|MST|MDT|PST|PDT|(Z|A|M|N)|(\+|-)\d{4})",
+    }
+
+
+def test_datetime2property_rfc822(spec_fixture):
+    field = fields.DateTime(format="rfc822")
     res = spec_fixture.openapi.field2property(field)
     assert res == {
         "type": "string",
