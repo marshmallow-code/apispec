@@ -1,6 +1,15 @@
 Changelog
 ---------
 
+unreleased
+**********
+
+Bug fixes:
+
+- ``MarshmallowPlugin``: Handle `DateTime` fields with the `"iso8601"` and `"rfc822"`
+  formats (:issue:`970`). Thanks :user:`matejsp` for reporting and `karthiksai109`
+  for the PR (:pr:`1013`).
+
 6.9.0 (2025-11-30)
 ******************
 

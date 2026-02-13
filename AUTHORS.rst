@@ -89,3 +89,4 @@ Contributors (chronological)
 - Xingang Zhang `@0x0400 <https://github.com/0x0400>`_
 - Lewis Haley `@LewisHaley <https://github.com/LewisHaley>`_
 - Felix Claessen `@Flix6x <https://github.com/Flix6x>`_
+- Karthik Ramadugu `@karthiksai109 <https://github.com/karthiksai109>`_
