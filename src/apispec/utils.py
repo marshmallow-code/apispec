@@ -19,6 +19,7 @@ COMPONENT_SUBSECTIONS = {
         "parameter": "parameters",
         "header": "headers",
         "example": "examples",
+        "link": "links",
         "security_scheme": "securitySchemes",
     },
 }
