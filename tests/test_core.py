@@ -629,20 +629,7 @@ class TestPath(RefsSchemaTestMixin):
 
     def test_path(self, spec):
         route_spec = self.paths["/pet/{petId}"]["get"]
-        spec.path(
-            path="/pet/{petId}",
-            operations=dict(
-                get=dict(
-                    parameters=route_spec["parameters"],
-                    responses=route_spec["responses"],
-                    produces=route_spec["produces"],
-                    operationId=route_spec["operationId"],
-                    summary=route_spec["summary"],
-                    description=route_spec["description"],
-                    tags=route_spec["tags"],
-                )
-            ),
-        )
+        spec.path(path="/pet/{petId}", operations=dict(get=route_spec))
 
         p = get_paths(spec)["/pet/{petId}"]["get"]
         assert p["parameters"] == route_spec["parameters"]
