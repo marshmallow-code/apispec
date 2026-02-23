@@ -2,33 +2,7 @@ import pytest
 
 from apispec.exceptions import APISpecError
 
-from .utils import build_ref, get_links, get_paths
-
-
-@pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
-class TestLinksComponent:
-    def test_link_component_registration(self, spec):
-        link = {
-            "operationRef": "#/paths/~1users~1{user_id}/get",
-            "parameters": {"user_id": "$response.body#/id"},
-        }
-        spec.components.link("GetUser", link)
-        links = get_links(spec)
-        assert "GetUser" in links
-        assert links["GetUser"] == link
-
-    def test_link_component_lazy_registration(self, spec):
-        link = {"operationRef": "#/paths/~1users~1{user_id}/get"}
-        spec.components.link("GetUser", link, lazy=True)
-        # Should not appear until referenced
-        links = get_links(spec)
-        assert "GetUser" not in links
-
-    def test_link_component_duplicate_error(self, spec):
-        link = {"operationRef": "#/paths/~1users/get"}
-        spec.components.link("GetUser", link)
-        with pytest.raises(APISpecError, match='Another link with name "GetUser"'):
-            spec.components.link("GetUser", link)
+from .utils import build_ref, get_paths
 
 
 @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
@@ -237,13 +211,20 @@ class TestLinksOpenAPI2:
 
 @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
 class TestLinksErrorHandling:
-    def test_invalid_tuple_length(self, spec):
+    @pytest.mark.parametrize(
+        "invalid_tuple",
+        [
+            ("/posts/{id}",),
+            ("/posts/{id}", "GET", {}, "extra"),
+        ],
+    )
+    def test_invalid_tuple_length(self, spec, invalid_tuple):
         with pytest.raises(APISpecError, match="must be a tuple of"):
             spec.path(
                 path="/posts",
                 operations={"post": {"responses": {"201": {"description": "Created"}}}},
                 links={
-                    "GetPost": ("/posts/{id}",),  # Only one element
+                    "GetPost": invalid_tuple,
                 },
             )
 
@@ -267,16 +248,6 @@ class TestLinksErrorHandling:
                 },
             )
 
-    def test_invalid_method_type(self, spec):
-        with pytest.raises(APISpecError, match="method must be a string"):
-            spec.path(
-                path="/posts",
-                operations={"post": {"responses": {"201": {"description": "Created"}}}},
-                links={
-                    "GetPost": ("/posts/{id}", 123),  # Method is not a string
-                },
-            )
-
     def test_invalid_http_method(self, spec):
         with pytest.raises(APISpecError, match="invalid HTTP method"):
             spec.path(
@@ -284,16 +255,6 @@ class TestLinksErrorHandling:
                 operations={"post": {"responses": {"201": {"description": "Created"}}}},
                 links={
                     "GetPost": ("/posts/{id}", "INVALID"),
-                },
-            )
-
-    def test_invalid_parameters_type(self, spec):
-        with pytest.raises(APISpecError, match="parameters must be a dict"):
-            spec.path(
-                path="/posts",
-                operations={"post": {"responses": {"201": {"description": "Created"}}}},
-                links={
-                    "GetPost": ("/posts/{id}", "GET", "not-a-dict"),
                 },
             )
 

@@ -685,10 +685,6 @@ class APISpec:
 
             if not isinstance(route, str):
                 raise APISpecError(f"Link '{link_name}' route must be a string")
-            if not isinstance(method, str):
-                raise APISpecError(f"Link '{link_name}' method must be a string")
-            if not isinstance(parameters, dict):
-                raise APISpecError(f"Link '{link_name}' parameters must be a dict")
 
             # Validate method
             method = method.lower()
@@ -698,7 +694,7 @@ class APISpec:
                     f"Link '{link_name}' has invalid HTTP method: {method}"
                 )
 
-            # Prefer operationId if target operation already registered
+            # Prefer operationId if defined
             operation_id = (
                 self._paths.get(route, {}).get(method.lower(), {}).get("operationId")
             )

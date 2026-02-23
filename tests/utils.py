@@ -38,9 +38,10 @@ def get_examples(spec):
 
 def get_links(spec):
     spec_dict = spec.to_dict()
-    if "components" not in spec_dict:
+    components = spec_dict.get("components")
+    if not components:
         return {}
-    return spec_dict["components"]["links"]
+    return components.get("links", {})
 
 
 def get_security_schemes(spec):
