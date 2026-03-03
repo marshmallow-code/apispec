@@ -93,7 +93,6 @@ Here is an example that includes a `Server Object <https://github.com/OAI/OpenAP
     import yaml
     from apispec import APISpec
     from apispec.ext.marshmallow import MarshmallowPlugin
-    from apispec.utils import validate_spec
 
     OPENAPI_SPEC = """
     openapi: 3.0.2
@@ -125,8 +124,6 @@ Here is an example that includes a `Server Object <https://github.com/OAI/OpenAP
         plugins=(MarshmallowPlugin(),),
         **settings
     )
-
-    validate_spec(spec)
 
 
 Documenting Security Schemes
