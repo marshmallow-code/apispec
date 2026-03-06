@@ -10,44 +10,40 @@ from apispec.utils import build_reference
 
 def get_schemas(spec):
     if spec.openapi_version.major < 3:
-        return spec.to_dict()["definitions"]
-    return spec.to_dict()["components"]["schemas"]
+        return spec.to_dict().get("definitions", {})
+    return spec.to_dict()["components"].get("schemas", {})
 
 
 def get_responses(spec):
     if spec.openapi_version.major < 3:
-        return spec.to_dict()["responses"]
-    return spec.to_dict()["components"]["responses"]
+        return spec.to_dict().get("responses", {})
+    return spec.to_dict()["components"].get("responses", {})
 
 
 def get_parameters(spec):
     if spec.openapi_version.major < 3:
-        return spec.to_dict()["parameters"]
-    return spec.to_dict()["components"]["parameters"]
+        return spec.to_dict().get("parameters", {})
+    return spec.to_dict()["components"].get("parameters", {})
 
 
 def get_headers(spec):
     if spec.openapi_version.major < 3:
-        return spec.to_dict()["headers"]
-    return spec.to_dict()["components"]["headers"]
+        return spec.to_dict().get("headers", {})
+    return spec.to_dict()["components"].get("headers", {})
 
 
 def get_examples(spec):
-    return spec.to_dict()["components"]["examples"]
+    return spec.to_dict()["components"].get("examples", {})
 
 
 def get_links(spec):
-    spec_dict = spec.to_dict()
-    components = spec_dict.get("components")
-    if not components:
-        return {}
-    return components.get("links", {})
+    return spec.to_dict()["components"].get("links", {})
 
 
 def get_security_schemes(spec):
     if spec.openapi_version.major < 3:
-        return spec.to_dict()["securityDefinitions"]
-    return spec.to_dict()["components"]["securitySchemes"]
+        return spec.to_dict().get("securityDefinitions", {})
+    return spec.to_dict()["components"].get("securitySchemes", {})
 
 
 def get_paths(spec):
