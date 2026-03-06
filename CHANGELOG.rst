@@ -1,14 +1,19 @@
 Changelog
 ---------
 
-unreleased
-**********
+6.10.0 (2026-03-06)
+*******************
+
+Features:
+
+- Support ``links`` (:issue:`615`).
+  Thanks :user:`kingdomOfIT` for the PR (:pr:`1014`).
 
 Bug fixes:
 
 - ``MarshmallowPlugin``: Handle `DateTime` fields with the `"iso8601"` and `"rfc822"`
-  formats (:issue:`970`). Thanks :user:`matejsp` for reporting and `karthiksai109`
-  for the PR (:pr:`1013`).
+  formats (:issue:`970`).
+  Thanks :user:`matejsp` for reporting and `karthiksai109` for the PR (:pr:`1013`).
 
 6.9.0 (2025-11-30)
 ******************
