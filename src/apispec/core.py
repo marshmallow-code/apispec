@@ -51,12 +51,14 @@ class Components:
         self.parameters: dict[str, dict] = {}
         self.headers: dict[str, dict] = {}
         self.examples: dict[str, dict] = {}
+        self.links: dict[str, dict] = {}
         self.security_schemes: dict[str, dict] = {}
         self.schemas_lazy: dict[str, dict] = {}
         self.responses_lazy: dict[str, dict] = {}
         self.parameters_lazy: dict[str, dict] = {}
         self.headers_lazy: dict[str, dict] = {}
         self.examples_lazy: dict[str, dict] = {}
+        self.links_lazy: dict[str, dict] = {}
 
         self._subsections = {
             "schema": self.schemas,
@@ -64,6 +66,7 @@ class Components:
             "parameter": self.parameters,
             "header": self.headers,
             "example": self.examples,
+            "link": self.links,
             "security_scheme": self.security_schemes,
         }
         self._subsections_lazy = {
@@ -72,6 +75,7 @@ class Components:
             "parameter": self.parameters_lazy,
             "header": self.headers_lazy,
             "example": self.examples_lazy,
+            "link": self.links_lazy,
         }
 
     def to_dict(self) -> dict[str, dict]:
@@ -294,6 +298,24 @@ class Components:
         self._register_component("example", component_id, component, lazy=lazy)
         return self
 
+    def link(
+        self, component_id: str, component: dict, *, lazy: bool = False
+    ) -> Components:
+        """Add a link which can be referenced
+
+        :param str component_id: identifier by which link may be referenced
+        :param dict component: link fields
+        :param bool lazy: register component only when referenced in the spec
+
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#linkObject
+        """
+        if component_id in self.links:
+            raise DuplicateComponentNameError(
+                f'Another link with name "{component_id}" is already registered.'
+            )
+        self._register_component("link", component_id, component, lazy=lazy)
+        return self
+
     def security_scheme(self, component_id: str, component: dict) -> Components:
         """Add a security scheme which can be referenced.
 
@@ -363,7 +385,8 @@ class Components:
             for name, header in response.get("headers", {}).items():
                 response["headers"][name] = self.get_ref("header", header)
                 self._resolve_refs_in_parameter_or_header(response["headers"][name])
-            # TODO: Resolve link refs when Components supports links
+            for name, link in response.get("links", {}).items():
+                response["links"][name] = self.get_ref("link", link)
 
     def _resolve_refs_in_operation(self, operation) -> None:
         if "parameters" in operation:
@@ -537,6 +560,10 @@ class APISpec:
 
         self._clean_operations(operations)
 
+        # Process links if provided (OpenAPI 3+ only)
+        if "links" in kwargs and self.openapi_version.major >= 3:
+            self._process_links(operations, kwargs["links"])
+
         self._paths.setdefault(path, operations).update(operations)
         if summary is not None:
             self._paths[path]["summary"] = summary
@@ -629,3 +656,65 @@ class APISpec:
                             )
                     responses[str(code)] = response
                 operation["responses"] = responses
+
+    def _process_links(
+        self,
+        operations: dict[str, dict],
+        links_spec: dict[str, tuple],
+    ) -> None:
+        """Process links specification and inject into operation responses.
+
+        :param dict operations: Dict mapping HTTP methods to operation objects
+        :param dict links_spec: Dict mapping link names to (route, method) or (route, method, parameters) tuples
+        """
+        # Convert link tuples to proper link objects
+        link_objects = {}
+        for link_name, link_tuple in links_spec.items():
+            if (
+                not isinstance(link_tuple, tuple)
+                or len(link_tuple) < 2
+                or len(link_tuple) > 3
+            ):
+                raise APISpecError(
+                    f"Link '{link_name}' must be a tuple of (route, method) or (route, method, parameters)"
+                )
+
+            route = link_tuple[0]
+            method = link_tuple[1]
+            parameters = link_tuple[2] if len(link_tuple) == 3 else {}
+
+            if not isinstance(route, str):
+                raise APISpecError(f"Link '{link_name}' route must be a string")
+
+            # Validate method
+            method = method.lower()
+            valid_methods = set(VALID_METHODS[self.openapi_version.major])
+            if method not in valid_methods:
+                raise APISpecError(
+                    f"Link '{link_name}' has invalid HTTP method: {method}"
+                )
+
+            # Prefer operationId if defined
+            operation_id = (
+                self._paths.get(route, {}).get(method.lower(), {}).get("operationId")
+            )
+            link_obj = (
+                {"operationId": operation_id}
+                if operation_id
+                else {
+                    "operationRef": f"#/paths/{route.replace('~', '~0').replace('/', '~1')}/{method}"
+                }
+            )
+            if parameters:
+                link_obj["parameters"] = parameters
+
+            link_objects[link_name] = link_obj
+
+        # Inject links into all responses of all operations
+        for operation in operations.values():
+            if isinstance(operation, dict) and "responses" in operation:
+                for response in operation["responses"].values():
+                    if isinstance(response, dict):
+                        if "links" not in response:
+                            response["links"] = {}
+                        response["links"].update(deepcopy(link_objects))
