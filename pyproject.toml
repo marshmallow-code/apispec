@@ -50,7 +50,7 @@ docs = [
   "marshmallow>=3.18.0",
   "pyyaml",
   "sphinx-issues",
-  "sphinx-rtd-theme",
+  "furo",
   "sphinx>=8.1",
 ]
 tests = ["openapi-spec-validator", "pytest"]
