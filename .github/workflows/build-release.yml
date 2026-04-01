@@ -15,17 +15,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: "3.10-ma3", python: "3.10", tox: py310-marshmallow3 }
-          - { name: "3.14-ma3", python: "3.14", tox: py314-marshmallow3 }
-          - { name: "3.10-ma4", python: "3.10", tox: py310-marshmallow4 }
-          - { name: "3.14-ma4", python: "3.14", tox: py314-marshmallow4 }
-          - { name: "lowest", python: "3.10", tox: py310-lowest }
-          - { name: "3.14-madev", python: "3.14", tox: py314-marshmallowdev }
+          - { name: "3.10-ma3", tox: py310-marshmallow3 }
+          - { name: "3.14-ma3", tox: py314-marshmallow3 }
+          - { name: "3.10-ma4", tox: py310-marshmallow4 }
+          - { name: "3.14-ma4", tox: py314-marshmallow4 }
+          - { name: "lowest", tox: py310-lowest }
+          - { name: "3.14-madev", tox: py314-marshmallowdev }
     steps:
       - uses: actions/checkout@v6.0.2
       - uses: astral-sh/setup-uv@v7
         with:
-          python-version: ${{ matrix.python }}
           enable-cache: true
       - run: uv run tox -e${{ matrix.tox }}
   build:
@@ -35,7 +34,6 @@ jobs:
       - uses: actions/checkout@v6.0.2
       - uses: astral-sh/setup-uv@v7
         with:
-          python-version: "3.14"
           enable-cache: true
       - run: uv build
       - run: uvx twine check --strict dist/*
@@ -53,7 +51,6 @@ jobs:
       - uses: actions/checkout@v6.0.2
       - uses: astral-sh/setup-uv@v7
         with:
-          python-version: "3.14"
           enable-cache: true
       - run: uv run tox -e lint
   publish-to-pypi:
