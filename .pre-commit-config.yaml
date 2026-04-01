@@ -21,3 +21,7 @@ repos:
   hooks:
   - id: mypy
     additional_dependencies: ["marshmallow>=3.24.1,<5", "types-PyYAML"]
+- repo: https://github.com/astral-sh/uv-pre-commit
+  rev: 0.10.9
+  hooks:
+    - id: uv-lock
