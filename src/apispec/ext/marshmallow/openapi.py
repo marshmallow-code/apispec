@@ -27,6 +27,13 @@ from .common import (
 )
 from .field_converter import FieldConverterMixin
 
+try:
+    from marshmallow_oneofschema import OneOfSchema as MarshmallowOneOfSchema
+
+    ONEOFSCHEMA_AVAILABLE = True
+except ImportError:
+    ONEOFSCHEMA_AVAILABLE = False
+
 __location_map__ = {
     "match_info": "path",
     "query": "query",
@@ -248,6 +255,9 @@ class OpenAPIConverter(FieldConverterMixin):
         :param Schema schema: A marshmallow Schema instance
         :rtype: dict, a JSON Schema Object
         """
+        if ONEOFSCHEMA_AVAILABLE and isinstance(schema, MarshmallowOneOfSchema):
+            return self._oneof_schema2jsonschema(schema)
+
         fields = get_fields(schema)
         Meta = getattr(schema, "Meta", None)
         partial = getattr(schema, "partial", None)
@@ -266,6 +276,20 @@ class OpenAPIConverter(FieldConverterMixin):
             )
 
         return jsonschema
+
+    def _oneof_schema2jsonschema(self, schema):
+        """Return a JSON Schema Object with ``oneOf`` for a marshmallow-oneofschema
+        :class:`OneOfSchema <marshmallow_oneofschema.OneOfSchema>`.
+
+        :param OneOfSchema schema: A marshmallow_oneofschema OneOfSchema instance
+        :rtype: dict, a JSON Schema Object
+        """
+        one_of = []
+        for type_name, type_schema_class in schema.type_schemas.items():
+            type_schema = resolve_schema_instance(type_schema_class)
+            ref = self.resolve_nested_schema(type_schema)
+            one_of.append(ref)
+        return {"oneOf": one_of}
 
     def fields2jsonschema(self, fields, *, partial=None):
         """Return the JSON Schema Object given a mapping between field names and

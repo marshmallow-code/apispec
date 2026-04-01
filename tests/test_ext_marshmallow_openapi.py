@@ -717,3 +717,32 @@ class TestFieldValidation:
         for attr, expected_value in properties.items():
             assert attr in result
             assert result[attr] == expected_value
+
+
+# https://github.com/marshmallow-code/apispec/issues/1012
+@pytest.mark.skipif(
+    not __import__("importlib").util.find_spec("marshmallow_oneofschema"),
+    reason="marshmallow-oneofschema not installed",
+)
+class TestOneOfSchema:
+    def test_schema2jsonschema_with_oneofschema(self, spec_fixture):
+        from marshmallow_oneofschema import OneOfSchema
+
+        class CatSchema(Schema):
+            indoor = fields.Bool()
+
+        class DogSchema(Schema):
+            breed = fields.Str()
+
+        class PetSchema(OneOfSchema):
+            type_field = "pet_type"
+            type_schemas = {"cat": CatSchema, "dog": DogSchema}
+
+        spec_fixture.spec.components.schema("Pet", schema=PetSchema)
+        schemas = get_schemas(spec_fixture.spec)
+
+        assert "oneOf" in schemas["Pet"]
+        assert len(schemas["Pet"]["oneOf"]) == 2
+        # The sub-schemas should be registered as separate components
+        assert "Cat" in schemas
+        assert "Dog" in schemas
