@@ -285,7 +285,7 @@ class OpenAPIConverter(FieldConverterMixin):
         :rtype: dict, a JSON Schema Object
         """
         one_of = []
-        for type_name, type_schema_class in schema.type_schemas.items():
+        for _type_name, type_schema_class in schema.type_schemas.items():
             type_schema = resolve_schema_instance(type_schema_class)
             ref = self.resolve_nested_schema(type_schema)
             one_of.append(ref)
