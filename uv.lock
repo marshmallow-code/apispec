@@ -27,7 +27,7 @@ wheels = [
 
 [[package]]
 name = "apispec"
-version = "6.9.0"
+version = "6.10.0"
 source = { editable = "." }
 dependencies = [
     { name = "packaging" },
