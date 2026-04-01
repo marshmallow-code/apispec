@@ -23,27 +23,22 @@ jobs:
           - { name: "3.14-madev", python: "3.14", tox: py314-marshmallowdev }
     steps:
       - uses: actions/checkout@v6.0.2
-      - uses: actions/setup-python@v6
+      - uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python }}
-      - run: pip install tox
-      - run: tox -e${{ matrix.tox }}
+          enable-cache: true
+      - run: uv run tox -e${{ matrix.tox }}
   build:
     name: Build package
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6.0.2
-      - uses: actions/setup-python@v6
+      - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.14"
-      - name: Install pypa/build
-        run: python -m pip install build
-      - name: Build a binary wheel and a source tarball
-        run: python -m build
-      - name: Install twine
-        run: python -m pip install twine
-      - name: Check build
-        run: python -m twine check --strict dist/*
+          enable-cache: true
+      - run: uv build
+      - run: uvx twine check --strict dist/*
       - name: Store the distribution packages
         uses: actions/upload-artifact@v7
         with:
@@ -56,11 +51,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6.0.2
-      - uses: actions/setup-python@v6
+      - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.14"
-      - run: python -m pip install tox
-      - run: python -m tox -e lint
+          enable-cache: true
+      - run: uv run tox -e lint
   publish-to-pypi:
     name: PyPI release
     if: startsWith(github.ref, 'refs/tags/')
