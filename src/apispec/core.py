@@ -698,7 +698,7 @@ class APISpec:
             operation_id = (
                 self._paths.get(route, {}).get(method.lower(), {}).get("operationId")
             )
-            link_obj = (
+            link_obj: dict[str, typing.Any] = (
                 {"operationId": operation_id}
                 if operation_id
                 else {
