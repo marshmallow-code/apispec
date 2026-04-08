@@ -120,7 +120,7 @@ Bug fixes:
 
 Features:
 
-- Add IP fields to `DEFAULT_FIELD_MAPPING (:pr:`892`) to document format.
+- Add IP fields to `DEFAULT_FIELD_MAPPING` (:pr:`892`) to document format.
   Thanks :user:`cjproud` for the PR.
 
 6.5.0 (2024-02-26)
@@ -161,7 +161,7 @@ Other changes:
 
 Bug fixes:
 
--  Fix conversion of deprecated flag on parameters (:issue:`850`).
+- Fix conversion of deprecated flag on parameters (:issue:`850`).
   Thanks :user:`tsokalski` for the PR.
 
 6.3.0 (2023-03-10)
@@ -171,7 +171,6 @@ Features:
 
 - Resolve schema references in parameters content (:issue:`830`).
   Thanks :user:`codectl` for the PR.
-
 
 6.2.0 (2023-03-06)
 ******************
