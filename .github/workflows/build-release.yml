@@ -7,6 +7,8 @@ on:
   # Run builds nightly to catch incompatibilities with new marshmallow releases
   schedule:
     - cron: "0 0 * * *"
+permissions:
+  contents: read
 jobs:
   tests:
     name: ${{ matrix.name }}
@@ -23,8 +25,10 @@ jobs:
           - { name: "3.14-madev", tox: py314-marshmallowdev }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
         with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with: # zizmor: ignore[cache-poisoning] cache key is lockfile-derived
           enable-cache: true
       - run: uv run tox -e${{ matrix.tox }}
   build:
@@ -32,8 +36,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
         with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with: # zizmor: ignore[cache-poisoning] cache key is lockfile-derived
           enable-cache: true
       - run: uv build
       - run: uvx twine check --strict dist/*
@@ -49,8 +55,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
         with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with: # zizmor: ignore[cache-poisoning] cache key is lockfile-derived
           enable-cache: true
       - run: uv run tox -e lint
   publish-to-pypi:
