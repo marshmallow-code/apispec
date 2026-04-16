@@ -93,7 +93,7 @@ dev = [
 ]
 docs = [
     { name = "furo" },
-    { name = "marshmallow", specifier = ">=3.18.0" },
+    { name = "marshmallow", specifier = ">=4.0.0" },
     { name = "pyyaml" },
     { name = "sphinx", specifier = ">=8.1" },
     { name = "sphinx-issues" },

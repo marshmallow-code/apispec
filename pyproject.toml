@@ -3,16 +3,15 @@ name = "apispec"
 version = "6.10.0"
 description = "A pluggable API specification generator. Currently supports the OpenAPI Specification (f.k.a. the Swagger specification)."
 readme = "README.rst"
-license = { file = "LICENSE" }
-authors = [{ name = "Steven Loria", email = "sloria1@gmail.com" }]
+license = "MIT"
+authors = [{ name = "Steven Loria", email = "oss@stevenloria.com" }]
 maintainers = [
-  { name = "Steven Loria", email = "sloria1@gmail.com" },
+  { name = "Steven Loria", email = "oss@stevenloria.com" },
   { name = "Jérôme Lafréchoux", email = "jerome@jolimont.fr" },
 ]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
@@ -46,13 +45,7 @@ yaml = ["PyYAML>=3.10"]
 marshmallow = ["marshmallow>=3.18.0"]
 
 [dependency-groups]
-docs = [
-  "marshmallow>=3.18.0",
-  "pyyaml",
-  "sphinx-issues",
-  "furo",
-  "sphinx>=8.1",
-]
+docs = ["marshmallow>=4.0.0", "pyyaml", "sphinx-issues", "furo", "sphinx>=8.1"]
 tests = ["openapi-spec-validator", "pytest"]
 dev = [{ include-group = "tests" }, "tox", "tox-uv", "pre-commit>=3.5,<5.0"]
 
