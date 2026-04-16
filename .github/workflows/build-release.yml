@@ -17,10 +17,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: "3.10-ma3", tox: py310-marshmallow3 }
-          - { name: "3.14-ma3", tox: py314-marshmallow3 }
-          - { name: "3.10-ma4", tox: py310-marshmallow4 }
-          - { name: "3.14-ma4", tox: py314-marshmallow4 }
+          - { name: "3.10", tox: py310 }
+          - { name: "3.14", tox: py314 }
           - { name: "lowest", tox: py310-lowest }
           - { name: "3.14-madev", tox: py314-marshmallowdev }
     steps:
