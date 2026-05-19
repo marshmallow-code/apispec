@@ -523,7 +523,7 @@ class FieldConverterMixin:
         :param Field field: A marshmallow field.
         :rtype: dict
         """
-        ret = {}
+        ret: dict = {}
         if isinstance(field, marshmallow.fields.Tuple):
             tuple_fields = [self.field2property(f) for f in field.tuple_fields]
             ret["minItems"] = ret["maxItems"] = len(tuple_fields)
