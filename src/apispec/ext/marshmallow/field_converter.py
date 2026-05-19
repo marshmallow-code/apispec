@@ -38,6 +38,7 @@ DEFAULT_FIELD_MAPPING: dict[type, tuple[str | None, str | None]] = {
     marshmallow.fields.Field: (None, None),
     marshmallow.fields.Raw: (None, None),
     marshmallow.fields.List: ("array", None),
+    marshmallow.fields.Tuple: ("array", None),
     marshmallow.fields.IP: ("string", "ip"),
     marshmallow.fields.IPv4: ("string", "ipv4"),
     marshmallow.fields.IPv6: ("string", "ipv6"),
@@ -69,6 +70,7 @@ _VALID_PROPERTIES = {
     "enum",
     "type",
     "items",
+    "prefixItems",
     "allOf",
     "oneOf",
     "anyOf",
@@ -112,6 +114,7 @@ class FieldConverterMixin:
             self.nested2properties,
             self.pluck2properties,
             self.list2properties,
+            self.tuple2properties,
             self.dict2properties,
             self.timedelta2properties,
             self.datetime2properties,
@@ -508,6 +511,26 @@ class FieldConverterMixin:
         ret = {}
         if isinstance(field, marshmallow.fields.List):
             ret["items"] = self.field2property(field.inner)
+        return ret
+
+    def tuple2properties(self, field, **kwargs: typing.Any) -> dict:
+        """Return a dictionary of properties from :class:`Tuple <marshmallow.fields.Tuple>` fields.
+
+        A tuple is a fixed-length, ordered array. For OpenAPI 3.1 the contained
+        fields are described with ``prefixItems``; for earlier versions they are
+        described with ``items`` using ``oneOf``.
+
+        :param Field field: A marshmallow field.
+        :rtype: dict
+        """
+        ret = {}
+        if isinstance(field, marshmallow.fields.Tuple):
+            tuple_fields = [self.field2property(f) for f in field.tuple_fields]
+            ret["minItems"] = ret["maxItems"] = len(tuple_fields)
+            if self.openapi_version.major >= 3 and self.openapi_version.minor >= 1:
+                ret["prefixItems"] = tuple_fields
+            else:
+                ret["items"] = {"oneOf": tuple_fields}
         return ret
 
     def dict2properties(self, field, **kwargs: typing.Any) -> dict:

@@ -4,6 +4,10 @@ Changelog
 unreleased
 **********
 
+Features:
+
+- Support the marshmallow ``Tuple`` field (:issue:`399`).
+
 Other changes:
 
 - Drop support for marshmallow 3, which is EOL.

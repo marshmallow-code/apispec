@@ -715,3 +715,34 @@ def test_field2property_examples(spec_fixture):
     assert res == {
         "examples": ["foo", "bar"],
     }
+
+
+def test_tuple_field_translates_to_array(spec_fixture):
+    field = fields.Tuple((fields.String, fields.Integer))
+    res = spec_fixture.openapi.field2property(field)
+    assert res["type"] == "array"
+    assert res["minItems"] == res["maxItems"] == 2
+
+
+@pytest.mark.parametrize("spec_fixture", ("3.1.0",), indirect=True)
+def test_tuple_field_uses_prefix_items_on_openapi_31(spec_fixture):
+    field = fields.Tuple((fields.String, fields.Integer))
+    res = spec_fixture.openapi.field2property(field)
+    assert res["prefixItems"] == [
+        spec_fixture.openapi.field2property(fields.String()),
+        spec_fixture.openapi.field2property(fields.Integer()),
+    ]
+    assert "items" not in res
+
+
+@pytest.mark.parametrize("spec_fixture", ("2.0", "3.0.0"), indirect=True)
+def test_tuple_field_uses_items_one_of_before_openapi_31(spec_fixture):
+    field = fields.Tuple((fields.String, fields.Integer))
+    res = spec_fixture.openapi.field2property(field)
+    assert res["items"] == {
+        "oneOf": [
+            spec_fixture.openapi.field2property(fields.String()),
+            spec_fixture.openapi.field2property(fields.Integer()),
+        ]
+    }
+    assert "prefixItems" not in res
