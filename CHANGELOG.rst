@@ -4,6 +4,12 @@ Changelog
 unreleased
 **********
 
+Bug fixes:
+
+- ``MarshmallowPlugin``: Handle ``DateTime`` and ``Date`` fields that use a
+  custom ``format``. The generated ``format`` is no longer set to ``null`` but
+  keeps ``"date-time"``/``"date"`` (:issue:`938`).
+
 Other changes:
 
 - Drop support for marshmallow 3, which is EOL.

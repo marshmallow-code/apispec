@@ -617,7 +617,7 @@ def test_datetime2property_custom_format(spec_fixture):
     res = spec_fixture.openapi.field2property(field)
     assert res == {
         "type": "string",
-        "format": None,
+        "format": "date-time",
         "pattern": r"^((?:(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2}(?:\.\d+)?))(Z|[\+-]\d{2}:\d{2})?)$",
     }
 
@@ -627,8 +627,16 @@ def test_datetime2property_custom_format_missing_regex(spec_fixture):
     res = spec_fixture.openapi.field2property(field)
     assert res == {
         "type": "string",
-        "format": None,
-        "pattern": None,
+        "format": "date-time",
+    }
+
+
+def test_date2property_custom_format(spec_fixture):
+    field = fields.Date(format="%d-%m-%Y")
+    res = spec_fixture.openapi.field2property(field)
+    assert res == {
+        "type": "string",
+        "format": "date",
     }
 
 

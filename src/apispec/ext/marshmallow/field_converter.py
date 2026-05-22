@@ -602,15 +602,11 @@ class FieldConverterMixin:
                     "min": "0",
                 }
             else:
-                ret = {
-                    "type": "string",
-                    "format": None,
-                    "pattern": (
-                        field.metadata["pattern"]
-                        if field.metadata.get("pattern")
-                        else None
-                    ),
-                }
+                # Custom strftime format string. Keep the "type" and "format"
+                # from DEFAULT_FIELD_MAPPING (e.g. "date-time" or "date") rather
+                # than overriding "format" with None. A "pattern" passed in the
+                # field metadata is already handled by metadata2properties.
+                pass
         return ret
 
 
