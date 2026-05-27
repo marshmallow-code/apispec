@@ -22,14 +22,14 @@ if typing.TYPE_CHECKING:
     from .plugin import BasePlugin
 
 
-VALID_METHODS_OPENAPI_V2 = ["get", "post", "put", "patch", "delete", "head", "options"]
+VALID_METHODS_OPENAPI_V2: list[str] = ["get", "post", "put", "patch", "delete", "head", "options"]
 
-VALID_METHODS_OPENAPI_V3 = VALID_METHODS_OPENAPI_V2 + ["trace"]
+VALID_METHODS_OPENAPI_V3: list[str] = VALID_METHODS_OPENAPI_V2 + ["trace"]
 
-VALID_METHODS = {2: VALID_METHODS_OPENAPI_V2, 3: VALID_METHODS_OPENAPI_V3}
+VALID_METHODS: dict[int, list[str]] = {2: VALID_METHODS_OPENAPI_V2, 3: VALID_METHODS_OPENAPI_V3}
 
-MIN_INCLUSIVE_OPENAPI_VERSION = Version("2.0")
-MAX_EXCLUSIVE_OPENAPI_VERSION = Version("4.0")
+MIN_INCLUSIVE_OPENAPI_VERSION: Version = Version("2.0")
+MAX_EXCLUSIVE_OPENAPI_VERSION: Version = Version("4.0")
 
 
 class Components:
@@ -44,6 +44,11 @@ class Components:
         plugins: Sequence[BasePlugin],
         openapi_version: Version,
     ) -> None:
+        """Initialize a Components store for a given OpenAPI version.
+
+        :param plugins: Sequence of plugin instances used to extend component resolution.
+        :param openapi_version: Parsed OpenAPI version that governs subsection key names.
+        """
         self._plugins = plugins
         self.openapi_version = openapi_version
         self.schemas: dict[str, dict] = {}
@@ -79,6 +84,14 @@ class Components:
         }
 
     def to_dict(self) -> dict[str, dict]:
+        """Serialize registered components to a subsection-keyed dictionary.
+
+        Returns only non-empty subsections, using the key names appropriate
+        for the configured OpenAPI major version (e.g. ``"definitions"`` for
+        v2, ``"schemas"`` for v3).
+
+        :rtype: dict[str, dict]
+        """
         return {
             COMPONENT_SUBSECTIONS[self.openapi_version.major][k]: v
             for k, v in self._subsections.items()
@@ -93,6 +106,14 @@ class Components:
         *,
         lazy: bool = False,
     ) -> None:
+        """Write *component* into the appropriate subsection store.
+
+        :param str obj_type: Subsection key (e.g. ``"schema"``, ``"response"``).
+        :param str component_id: Identifier under which the component is stored.
+        :param dict component: Resolved component definition to store.
+        :param bool lazy: When ``True`` the component is placed in the lazy
+            buffer and promoted only when first referenced.
+        """
         subsection = (self._subsections if lazy is False else self._subsections_lazy)[
             obj_type
         ]
@@ -103,6 +124,14 @@ class Components:
         obj_type: str,
         component_id: str,
     ) -> None:
+        """Promote a lazily registered component to the active subsection store.
+
+        If *component_id* exists in the lazy buffer for *obj_type* it is moved
+        to the live subsection; otherwise this is a no-op.
+
+        :param str obj_type: Subsection key (e.g. ``"schema"``).
+        :param str component_id: Identifier of the component to promote.
+        """
         component_buffer = self._subsections_lazy[obj_type]
         # If component was lazy registered, register it for real
         if component_id in component_buffer:
@@ -115,14 +144,19 @@ class Components:
         obj_type: str,
         obj_or_component_id: dict | str,
     ) -> dict:
-        """Return object or reference
+        """Return an inline object or a ``$ref`` reference dictionary.
 
-        If obj is a dict, it is assumed to be a complete description and it is returned as is.
-        Otherwise, it is assumed to be a reference name as string and the corresponding $ref
-        string is returned.
+        If *obj_or_component_id* is a ``dict`` it is treated as a fully
+        inlined definition and returned unchanged.  If it is a ``str`` the
+        component is promoted from the lazy buffer (if necessary) and the
+        appropriate ``$ref`` dictionary is returned.
 
-        :param str subsection: "schema", "parameter", "response" or "security_scheme"
-        :param dict|str obj: object in dict form or as ref_id string
+        :param str obj_type: Subsection key — ``"schema"``, ``"parameter"``,
+            ``"response"``, ``"header"``, ``"example"``, ``"link"``, or
+            ``"security_scheme"``.
+        :param dict|str obj_or_component_id: Inline object dict or reference
+            identifier string.
+        :rtype: dict
         """
         if isinstance(obj_or_component_id, dict):
             return obj_or_component_id
@@ -329,21 +363,36 @@ class Components:
         self._register_component("security_scheme", component_id, component)
         return self
 
-    def _resolve_schema(self, obj) -> None:
-        """Replace schema reference as string with a $ref if needed
+    def _resolve_schema(self, obj: dict) -> None:
+        """Replace schema reference as string with a $ref if needed.
 
-        Also resolve references in the schema
+        Also resolve references in the schema.
+
+        :param dict obj: Mapping that may contain a ``"schema"`` key whose
+            value is either an inline dict or a component reference string.
         """
         if "schema" in obj:
             obj["schema"] = self.get_ref("schema", obj["schema"])
             self._resolve_refs_in_schema(obj["schema"])
 
-    def _resolve_examples(self, obj) -> None:
-        """Replace example reference as string with a $ref"""
+    def _resolve_examples(self, obj: dict) -> None:
+        """Replace example reference strings with ``$ref`` dicts in-place.
+
+        :param dict obj: Mapping that may contain an ``"examples"`` key whose
+            values are either inline dicts or component reference strings.
+        """
         for name, example in obj.get("examples", {}).items():
             obj["examples"][name] = self.get_ref("example", example)
 
     def _resolve_refs_in_schema(self, schema: dict) -> None:
+        """Recursively resolve all component references within a schema object.
+
+        Handles ``properties``, ``items``, ``allOf`` / ``oneOf`` / ``anyOf``,
+        and ``not`` keywords, replacing any string reference with a ``$ref``
+        dict via :meth:`get_ref`.
+
+        :param dict schema: OpenAPI schema object to mutate in place.
+        """
         if "properties" in schema:
             for key in schema["properties"]:
                 schema["properties"][key] = self.get_ref(
@@ -362,20 +411,41 @@ class Components:
             schema["not"] = self.get_ref("schema", schema["not"])
             self._resolve_refs_in_schema(schema["not"])
 
-    def _resolve_refs_in_parameter_or_header(self, parameter_or_header) -> None:
+    def _resolve_refs_in_parameter_or_header(self, parameter_or_header: dict) -> None:
+        """Resolve schema, example, and content references within a parameter or header object.
+
+        :param dict parameter_or_header: OpenAPI parameter or header object to
+            mutate in place.
+        """
         self._resolve_schema(parameter_or_header)
         self._resolve_examples(parameter_or_header)
         # parameter content is OpenAPI v3+
         for media_type in parameter_or_header.get("content", {}).values():
             self._resolve_schema(media_type)
 
-    def _resolve_refs_in_request_body(self, request_body) -> None:
+    def _resolve_refs_in_request_body(self, request_body: dict) -> None:
+        """Resolve schema and example references within a request body object.
+
+        Only applicable for OpenAPI v3+.  Iterates over each media-type entry
+        in ``content`` and delegates to :meth:`_resolve_schema` and
+        :meth:`_resolve_examples`.
+
+        :param dict request_body: OpenAPI requestBody object to mutate in place.
+        """
         # requestBody is OpenAPI v3+
         for media_type in request_body["content"].values():
             self._resolve_schema(media_type)
             self._resolve_examples(media_type)
 
-    def _resolve_refs_in_response(self, response) -> None:
+    def _resolve_refs_in_response(self, response: dict) -> None:
+        """Resolve all component references within a response object.
+
+        For OpenAPI v2 resolves the top-level schema.  For v3 resolves schemas
+        and examples across all media types, header references, and link
+        references.
+
+        :param dict response: OpenAPI response object to mutate in place.
+        """
         if self.openapi_version.major < 3:
             self._resolve_schema(response)
         else:
@@ -388,7 +458,14 @@ class Components:
             for name, link in response.get("links", {}).items():
                 response["links"][name] = self.get_ref("link", link)
 
-    def _resolve_refs_in_operation(self, operation) -> None:
+    def _resolve_refs_in_operation(self, operation: dict) -> None:
+        """Resolve all component references within a single operation object.
+
+        Handles ``parameters``, ``requestBody``, ``responses``, and
+        ``callbacks`` keys, delegating to the appropriate resolution helpers.
+
+        :param dict operation: OpenAPI operation object to mutate in place.
+        """
         if "parameters" in operation:
             parameters = []
             for parameter in operation["parameters"]:
@@ -411,7 +488,14 @@ class Components:
                 responses[code] = response
             operation["responses"] = responses
 
-    def resolve_refs_in_path(self, path) -> None:
+    def resolve_refs_in_path(self, path: dict) -> None:
+        """Resolve all component references within a path item object in-place.
+
+        Processes path-level ``parameters`` and then delegates each HTTP
+        method's operation object to :meth:`_resolve_refs_in_operation`.
+
+        :param dict path: OpenAPI path item object to mutate in place.
+        """
         if "parameters" in path:
             parameters = []
             for parameter in path["parameters"]:
@@ -454,6 +538,23 @@ class APISpec:
         plugins: Sequence[BasePlugin] = (),
         **options: typing.Any,
     ) -> None:
+        """Initialize the APISpec with top-level metadata and plugins.
+
+        Validates that *openapi_version* falls within the supported range
+        ``[2.0, 4.0)`` and calls :meth:`~apispec.BasePlugin.init_spec` on
+        every supplied plugin.
+
+        :param str title: Human-readable title of the API.
+        :param str version: Semantic version string for the API itself.
+        :param str openapi_version: OpenAPI Specification version (e.g.
+            ``"3.0.2"``).
+        :param plugins: Zero or more :class:`~apispec.BasePlugin` instances
+            that extend spec generation.
+        :param options: Additional top-level fields merged into the output
+            (e.g. ``info``, ``servers``).
+        :raises APISpecError: If *openapi_version* is outside the supported
+            range.
+        """
         self.title = title
         self.version = version
         self.options = options
@@ -478,6 +579,16 @@ class APISpec:
             plugin.init_spec(self)
 
     def to_dict(self) -> dict[str, typing.Any]:
+        """Serialize the full API specification to a Python dictionary.
+
+        Produces a structure conforming to the OpenAPI Specification for the
+        configured major version: v2 uses a top-level ``"swagger"`` key and
+        inlines components; v3 uses ``"openapi"`` and a ``"components"``
+        sub-object.  Any extra *options* passed to the constructor are
+        deep-merged last, allowing overrides of generated keys.
+
+        :rtype: dict[str, Any]
+        """
         ret: dict[str, typing.Any] = {
             "paths": self._paths,
             "info": {"title": self.title, "version": self.version},
