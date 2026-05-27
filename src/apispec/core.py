@@ -22,11 +22,22 @@ if typing.TYPE_CHECKING:
     from .plugin import BasePlugin
 
 
-VALID_METHODS_OPENAPI_V2: list[str] = ["get", "post", "put", "patch", "delete", "head", "options"]
+VALID_METHODS_OPENAPI_V2: list[str] = [
+    "get",
+    "post",
+    "put",
+    "patch",
+    "delete",
+    "head",
+    "options",
+]
 
 VALID_METHODS_OPENAPI_V3: list[str] = VALID_METHODS_OPENAPI_V2 + ["trace"]
 
-VALID_METHODS: dict[int, list[str]] = {2: VALID_METHODS_OPENAPI_V2, 3: VALID_METHODS_OPENAPI_V3}
+VALID_METHODS: dict[int, list[str]] = {
+    2: VALID_METHODS_OPENAPI_V2,
+    3: VALID_METHODS_OPENAPI_V3,
+}
 
 MIN_INCLUSIVE_OPENAPI_VERSION: Version = Version("2.0")
 MAX_EXCLUSIVE_OPENAPI_VERSION: Version = Version("4.0")
