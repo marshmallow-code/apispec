@@ -280,7 +280,7 @@ Project Links
 
 - Docs: https://apispec.readthedocs.io/
 - Changelog: https://apispec.readthedocs.io/en/latest/changelog.html
-- Contributing Guidelines: https://apispec.readthedocs.io/en/latest/contributing.html
+- Contributing Guidelines: https://github.com/marshmallow-code/.github/blob/main/CONTRIBUTING.md
 - PyPI: https://pypi.python.org/pypi/apispec
 - Issues: https://github.com/marshmallow-code/apispec/issues
 
