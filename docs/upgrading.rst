@@ -16,7 +16,7 @@ location is ignored in field metadata
 have a single location.
 
 A ``Schema`` with fields from different locations must be split into multiple
-``Schema``s.
+``Schema`` classes.
 
 Upgrading to 3.0.0
 ------------------
