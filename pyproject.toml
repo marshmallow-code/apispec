@@ -47,7 +47,13 @@ marshmallow = ["marshmallow>=3.18.0"]
 [dependency-groups]
 docs = ["marshmallow>=4.0.0", "pyyaml", "sphinx-issues", "furo", "sphinx>=8.1"]
 tests = ["openapi-spec-validator", "pytest"]
-dev = [{ include-group = "tests" }, "tox", "tox-uv", "pre-commit>=3.5,<5.0"]
+lint = ["pre-commit>=3.5,<5.0"]
+dev = [
+  { include-group = "tests" },
+  { include-group = "lint" },
+  "tox",
+  "tox-uv",
+]
 
 [tool.uv]
 default-groups = ["dev"]
