@@ -4,6 +4,11 @@ Changelog
 unreleased
 **********
 
+Bug fixes:
+
+- Recognize ``trace`` operations defined in view docstrings, instead of
+  silently dropping them (:pr:`1059`).
+
 Other changes:
 
 - Drop support for marshmallow 3, which is EOL.
