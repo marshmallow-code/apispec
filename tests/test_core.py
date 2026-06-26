@@ -708,6 +708,15 @@ class TestPath(RefsSchemaTestMixin):
             spec.path(path="/path", operations={method: {}})
         assert list(spec.to_dict()["paths"]["/path"]) == methods
 
+    def test_trace_path_method_is_openapi3_only(self):
+        spec_v3 = APISpec(title="Test API", version="1.0", openapi_version="3.0.0")
+        spec_v3.path(path="/path", operations={"trace": {}})
+        assert "trace" in spec_v3.to_dict()["paths"]["/path"]
+
+        spec_v2 = APISpec(title="Test API", version="1.0", openapi_version="2.0")
+        with pytest.raises(APISpecError, match="One or more HTTP methods are invalid"):
+            spec_v2.path(path="/path", operations={"trace": {}})
+
     def test_path_merges_paths(self, spec):
         """Test that adding a second HTTP method to an existing path performs
         a merge operation instead of an overwrite"""

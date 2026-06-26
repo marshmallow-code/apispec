@@ -29,22 +29,20 @@ def test_load_operations_from_docstring_empty_docstring(docstring):
     assert yaml_utils.load_operations_from_docstring(docstring) == {}
 
 
-def test_load_operations_from_docstring_trace():
-    def f():
-        """Foo.
-        ---
-        get:
-            responses:
-                200:
-                    description: ok
-        trace:
-            responses:
-                200:
-                    description: ok
-        """
+@pytest.mark.parametrize(
+    "method", ("get", "put", "post", "delete", "options", "head", "patch", "trace")
+)
+def test_load_operations_from_docstring_path_methods(method):
+    docstring = f"""Foo.
+    ---
+    {method}:
+        responses:
+            200:
+                description: ok
+    """
 
-    operations = yaml_utils.load_operations_from_docstring(f.__doc__)
-    assert set(operations) == {"get", "trace"}
+    operations = yaml_utils.load_operations_from_docstring(docstring)
+    assert operations == {method: {"responses": {200: {"description": "ok"}}}}
 
 
 def test_dict_to_yaml_unicode():
