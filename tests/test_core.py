@@ -161,6 +161,32 @@ class TestMetadata:
             assert metadata["info"]["version"] == "1.0.0"
             assert metadata["info"]["description"] == description
 
+    def test_openapi_metadata_preserves_anonymous_security_alternative(self):
+        spec = APISpec(
+            title="Xquik API",
+            version="1.0.0",
+            openapi_version="3.1.0",
+            security=[{}, {"ApiKeyAuth": []}],
+            components={
+                "securitySchemes": {
+                    "ApiKeyAuth": {
+                        "type": "apiKey",
+                        "in": "header",
+                        "name": "X-API-Key",
+                    }
+                }
+            },
+        )
+
+        metadata = spec.to_dict()
+
+        assert metadata["security"] == [{}, {"ApiKeyAuth": []}]
+        assert metadata["components"]["securitySchemes"]["ApiKeyAuth"] == {
+            "type": "apiKey",
+            "in": "header",
+            "name": "X-API-Key",
+        }
+
     @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
     def test_openapi_metadata_merge_v3(self, spec):
         properties = {
