@@ -6,7 +6,6 @@ import typing
 
 import yaml
 
-from apispec.core import VALID_METHODS_OPENAPI_V3
 from apispec.utils import dedent, trim_docstring
 
 
@@ -37,7 +36,7 @@ def load_yaml_from_docstring(docstring: str) -> dict:
     return yaml.safe_load(yaml_string) or {}
 
 
-PATH_KEYS = set(VALID_METHODS_OPENAPI_V3)
+PATH_KEYS = {"get", "put", "post", "delete", "options", "head", "patch", "trace"}
 
 
 def load_operations_from_docstring(docstring: str) -> dict:
