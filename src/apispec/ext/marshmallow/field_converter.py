@@ -592,14 +592,14 @@ class FieldConverterMixin:
                     "type": "number",
                     "format": "float",
                     "example": "1676451245.596",
-                    "min": "0",
+                    "minimum": 0,
                 }
             elif field.format == "timestamp_ms":
                 ret = {
                     "type": "number",
                     "format": "float",
                     "example": "1676451277514.654",
-                    "min": "0",
+                    "minimum": 0,
                 }
             else:
                 ret = {

@@ -4,6 +4,12 @@ Changelog
 unreleased
 **********
 
+Bug fixes:
+
+- ``MarshmallowPlugin``: Emit ``minimum: 0`` rather than the non-standard
+  ``min: "0"`` for ``DateTime`` fields with the ``"timestamp"`` and
+  ``"timestamp_ms"`` formats (:issue:`1064`).
+
 Other changes:
 
 - Drop support for marshmallow 3, which is EOL.
