@@ -198,7 +198,62 @@ def test_field_with_choices_multiple(spec_fixture):
         ]
     )
     res = spec_fixture.openapi.field2property(field)
-    assert set(res["enum"]) == {"brian", "john"}
+    assert res["enum"] == ["brian", "john"]
+
+
+def test_field_with_choices_multiple_non_intersecting(spec_fixture):
+    field = fields.Str(
+        validate=[
+            validate.OneOf(["freddie", "brian"]),
+            validate.OneOf(["john", "roger"]),
+        ]
+    )
+    res = spec_fixture.openapi.field2property(field)
+    assert res["enum"] == []
+
+
+def test_field_with_choices_and_equal(spec_fixture):
+    field = fields.Str(
+        validate=[
+            validate.OneOf(["freddie", "brian", "john"]),
+            validate.Equal("brian"),
+        ]
+    )
+    res = spec_fixture.openapi.field2property(field)
+    assert res["enum"] == ["brian"]
+
+
+def test_field_with_choices_and_equal_non_intersecting(spec_fixture):
+    field = fields.Str(
+        validate=[
+            validate.OneOf(["freddie", "brian"]),
+            validate.Equal("john"),
+        ]
+    )
+    res = spec_fixture.openapi.field2property(field)
+    assert res["enum"] == []
+
+
+def test_field_with_multiple_equal_matching(spec_fixture):
+    field = fields.Str(
+        validate=[
+            validate.Equal("brian"),
+            validate.Equal("brian"),
+        ]
+    )
+    res = spec_fixture.openapi.field2property(field)
+    assert res["enum"] == ["brian"]
+
+
+def test_field_with_multiple_equal_conflicting(spec_fixture):
+    field = fields.Str(
+        validate=[
+            validate.Equal("freddie"),
+            validate.Equal("brian"),
+        ]
+    )
+    res = spec_fixture.openapi.field2property(field)
+    assert res["enum"] == []
 
 
 def test_field_with_additional_metadata(spec_fixture):
