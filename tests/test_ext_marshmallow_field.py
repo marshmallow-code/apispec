@@ -190,70 +190,79 @@ def test_only_allows_valid_properties_in_metadata(spec_fixture):
     assert "not_valid" not in res
 
 
-def test_field_with_choices_multiple(spec_fixture):
-    field = fields.Str(
-        validate=[
-            validate.OneOf(["freddie", "brian", "john"]),
-            validate.OneOf(["brian", "john", "roger"]),
-        ]
-    )
+@pytest.mark.parametrize(
+    ("validators", "expected_enum"),
+    [
+        (
+            [
+                validate.OneOf(["freddie", "brian", "john"]),
+                validate.OneOf(["brian", "john", "roger"]),
+            ],
+            {"brian", "john"},
+        ),
+        (
+            [
+                validate.OneOf(["freddie", "brian"]),
+                validate.OneOf(["john", "roger"]),
+            ],
+            set(),
+        ),
+    ],
+)
+def test_field_with_multiple_oneof(spec_fixture, validators, expected_enum):
+    field = fields.Str(validate=validators)
     res = spec_fixture.openapi.field2property(field)
-    assert res["enum"] == ["brian", "john"]
+    assert set(res["enum"]) == expected_enum
 
 
-def test_field_with_choices_multiple_non_intersecting(spec_fixture):
-    field = fields.Str(
-        validate=[
-            validate.OneOf(["freddie", "brian"]),
-            validate.OneOf(["john", "roger"]),
-        ]
-    )
+@pytest.mark.parametrize(
+    ("validators", "expected_enum"),
+    [
+        (
+            [
+                validate.Equal("brian"),
+                validate.Equal("brian"),
+            ],
+            {"brian"},
+        ),
+        (
+            [
+                validate.Equal("freddie"),
+                validate.Equal("brian"),
+            ],
+            set(),
+        ),
+    ],
+)
+def test_field_with_multiple_equal(spec_fixture, validators, expected_enum):
+    field = fields.Str(validate=validators)
     res = spec_fixture.openapi.field2property(field)
-    assert res["enum"] == []
+    assert set(res["enum"]) == expected_enum
 
 
-def test_field_with_choices_and_equal(spec_fixture):
-    field = fields.Str(
-        validate=[
-            validate.OneOf(["freddie", "brian", "john"]),
-            validate.Equal("brian"),
-        ]
-    )
+@pytest.mark.parametrize(
+    ("validators", "expected_enum"),
+    [
+        (
+            [
+                validate.OneOf(["freddie", "brian", "john"]),
+                validate.Equal("brian"),
+            ],
+            {"brian"},
+        ),
+        (
+            [
+                validate.OneOf(["freddie", "brian"]),
+                validate.Equal("john"),
+            ],
+            set(),
+        ),
+    ],
+)
+def test_field_with_oneof_and_equal(spec_fixture, validators, expected_enum):
+    field = fields.Str(validate=validators)
     res = spec_fixture.openapi.field2property(field)
-    assert res["enum"] == ["brian"]
-
-
-def test_field_with_choices_and_equal_non_intersecting(spec_fixture):
-    field = fields.Str(
-        validate=[
-            validate.OneOf(["freddie", "brian"]),
-            validate.Equal("john"),
-        ]
-    )
-    res = spec_fixture.openapi.field2property(field)
-    assert res["enum"] == []
-
-
-def test_field_with_multiple_equal_matching(spec_fixture):
-    field = fields.Str(
-        validate=[
-            validate.Equal("brian"),
-            validate.Equal("brian"),
-        ]
-    )
-    res = spec_fixture.openapi.field2property(field)
-    assert res["enum"] == ["brian"]
-
-
-def test_field_with_multiple_equal_conflicting(spec_fixture):
-    field = fields.Str(
-        validate=[
-            validate.Equal("freddie"),
-            validate.Equal("brian"),
-        ]
-    )
-    res = spec_fixture.openapi.field2property(field)
-    assert res["enum"] == []
+    assert set(res["enum"]) == expected_enum
 
 
 def test_field_with_additional_metadata(spec_fixture):
