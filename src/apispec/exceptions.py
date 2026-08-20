@@ -6,20 +6,20 @@ class APISpecError(Exception):
 
 
 class PluginMethodNotImplementedError(APISpecError, NotImplementedError):
-    """Raised when calling an unimplemented helper method in a plugin"""
+    """Raised when calling an unimplemented helper method in a plugin."""
 
 
 class DuplicateComponentNameError(APISpecError):
-    """Raised when registering two components with the same name"""
+    """Raised when registering two components with the same name."""
 
 
 class DuplicateParameterError(APISpecError):
-    """Raised when registering a parameter already existing in a given scope"""
+    """Raised when registering a parameter already existing in a given scope."""
 
 
 class InvalidParameterError(APISpecError):
-    """Raised when parameter doesn't contains required keys"""
+    """Raised when parameter doesn't contain required keys."""
 
 
 class OpenAPIError(APISpecError):
-    """Raised when a OpenAPI spec validation fails."""
+    """Raised when an OpenAPI spec validation fails."""
