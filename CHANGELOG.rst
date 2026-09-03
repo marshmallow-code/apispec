@@ -4,6 +4,14 @@ Changelog
 unreleased
 **********
 
+Bug fixes:
+
+- ``MarshmallowPlugin``: stop emitting ``"format": null`` and ``"pattern": null``
+  for ``DateTime`` fields declared with the ``"rfc"``/``"rfc822"`` format or a
+  custom ``strftime`` format string. The OpenAPI 3 schema rejects null values
+  for these keywords, so the resulting document failed
+  ``openapi-spec-validator`` (:issue:`938`).
+
 Other changes:
 
 - Drop support for marshmallow 3, which is EOL.
