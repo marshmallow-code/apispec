@@ -591,7 +591,7 @@ def test_datetime2property_timestamp(spec_fixture):
     assert res == {
         "type": "number",
         "format": "float",
-        "min": "0",
+        "minimum": 0,
         "example": "1676451245.596",
     }
 
@@ -602,7 +602,7 @@ def test_datetime2property_timestamp_ms(spec_fixture):
     assert res == {
         "type": "number",
         "format": "float",
-        "min": "0",
+        "minimum": 0,
         "example": "1676451277514.654",
     }
 
