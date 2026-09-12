@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import datetime as dt
 import functools
 import operator
 import re
@@ -327,6 +328,11 @@ class FieldConverterMixin:
         """Return the dictionary of OpenAPI field attributes for a set of
         :class:`Range <marshmallow.validators.Range>` validators.
 
+        Also documents the inherent bounds of temporal fields
+        (:class:`Date <marshmallow.fields.Date>` and
+        :class:`DateTime <marshmallow.fields.DateTime>`) when no
+        ``Range`` validator sets stricter ones.
+
         :param Field field: A marshmallow field.
         :rtype: dict
         """
@@ -346,11 +352,22 @@ class FieldConverterMixin:
             else ("x-minimum", "x-maximum")
         )
 
+        attributes = make_min_max_attributes(validators, min_attr, max_attr)
+
+        # Date and DateTime fields have inherent bounds
+        # (datetime.date.min/max, datetime.datetime.min/max).
+        # Timestamp formats are skipped as serializing naive datetimes
+        # to POSIX timestamps is timezone-dependent.
+        if getattr(field, "format", None) not in ("timestamp", "timestamp_ms"):
+            if isinstance(field, marshmallow.fields.DateTime):
+                attributes.setdefault(min_attr, dt.datetime.min)
+                attributes.setdefault(max_attr, dt.datetime.max)
+            elif isinstance(field, marshmallow.fields.Date):
+                attributes.setdefault(min_attr, dt.date.min)
+                attributes.setdefault(max_attr, dt.date.max)
+
         # Serialize min/max values with the field to which the validator is applied
-        return {
-            k: field._serialize(v, None, None)
-            for k, v in make_min_max_attributes(validators, min_attr, max_attr).items()
-        }
+        return {k: field._serialize(v, None, None) for k, v in attributes.items()}
 
     def field2length(
         self, field: marshmallow.fields.Field, **kwargs: typing.Any
