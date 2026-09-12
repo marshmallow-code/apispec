@@ -91,3 +91,4 @@ Contributors (chronological)
 - Felix Claessen `@Flix6x <https://github.com/Flix6x>`_
 - Karthik Ramadugu `@karthiksai109 <https://github.com/karthiksai109>`_
 - Amir Kahriman `@kingdomOfIT <https://github.com/kingdomOfIT>`_
+- Louis Deconinck `@LouisDeconinck <https://github.com/LouisDeconinck>`_

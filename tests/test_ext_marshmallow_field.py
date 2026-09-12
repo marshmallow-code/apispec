@@ -383,6 +383,51 @@ def test_field_with_range_datetime_type(spec_fixture):
     assert isinstance(res["type"], str)
 
 
+def test_date_field_min_max(spec_fixture):
+    field = fields.Date()
+    res = spec_fixture.openapi.field2property(field)
+    assert res["x-minimum"] == "0001-01-01"
+    assert res["x-maximum"] == "9999-12-31"
+
+
+def test_datetime_field_min_max(spec_fixture):
+    field = fields.DateTime()
+    res = spec_fixture.openapi.field2property(field)
+    assert res["x-minimum"] == "0001-01-01T00:00:00"
+    assert res["x-maximum"] == "9999-12-31T23:59:59.999999"
+
+
+def test_datetime_field_min_max_with_range(spec_fixture):
+    # Range validator bounds take precedence over the field's inherent bounds
+    field = fields.DateTime(
+        validate=validate.Range(
+            min=dt.datetime(1900, 1, 1),
+            max=dt.datetime(2000, 1, 1),
+        )
+    )
+    res = spec_fixture.openapi.field2property(field)
+    assert res["x-minimum"] == "1900-01-01T00:00:00"
+    assert res["x-maximum"] == "2000-01-01T00:00:00"
+
+
+def test_datetime_field_min_max_with_partial_range(spec_fixture):
+    # The field's inherent bounds fill in the side a Range validator doesn't set
+    field = fields.DateTime(validate=validate.Range(max=dt.datetime(2000, 1, 1)))
+    res = spec_fixture.openapi.field2property(field)
+    assert res["x-minimum"] == "0001-01-01T00:00:00"
+    assert res["x-maximum"] == "2000-01-01T00:00:00"
+
+
+@pytest.mark.parametrize("fmt", ("timestamp", "timestamp_ms"))
+def test_datetime_field_timestamp_no_min_max(spec_fixture, fmt):
+    # No bounds are documented for timestamp formats: serializing the naive
+    # datetime bounds to POSIX timestamps would be timezone-dependent
+    field = fields.DateTime(format=fmt)
+    res = spec_fixture.openapi.field2property(field)
+    assert "x-minimum" not in res
+    assert "x-maximum" not in res
+
+
 def test_field_with_str_regex(spec_fixture):
     regex_str = "^[a-zA-Z0-9]$"
     field = fields.Str(validate=validate.Regexp(regex_str))
@@ -547,6 +592,8 @@ def test_datetime2property_iso(spec_fixture):
     assert res == {
         "type": "string",
         "format": "date-time",
+        "x-minimum": "0001-01-01T00:00:00",
+        "x-maximum": "9999-12-31T23:59:59.999999",
     }
 
 
@@ -556,6 +603,8 @@ def test_datetime2property_iso8601(spec_fixture):
     assert res == {
         "type": "string",
         "format": "date-time",
+        "x-minimum": "0001-01-01T00:00:00",
+        "x-maximum": "9999-12-31T23:59:59.999999",
     }
 
 
@@ -569,6 +618,8 @@ def test_datetime2property_rfc(spec_fixture):
         "pattern": r"((Mon|Tue|Wed|Thu|Fri|Sat|Sun), ){0,1}\d{2} "
         + r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} "
         + r"(UT|GMT|EST|EDT|CST|CDT|MST|MDT|PST|PDT|(Z|A|M|N)|(\+|-)\d{4})",
+        "x-minimum": "Mon, 01 Jan 0001 00:00:00 -0000",
+        "x-maximum": "Fri, 31 Dec 9999 23:59:59 -0000",
     }
 
 
@@ -582,6 +633,8 @@ def test_datetime2property_rfc822(spec_fixture):
         "pattern": r"((Mon|Tue|Wed|Thu|Fri|Sat|Sun), ){0,1}\d{2} "
         + r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} "
         + r"(UT|GMT|EST|EDT|CST|CDT|MST|MDT|PST|PDT|(Z|A|M|N)|(\+|-)\d{4})",
+        "x-minimum": "Mon, 01 Jan 0001 00:00:00 -0000",
+        "x-maximum": "Fri, 31 Dec 9999 23:59:59 -0000",
     }
 
 
@@ -608,8 +661,9 @@ def test_datetime2property_timestamp_ms(spec_fixture):
 
 
 def test_datetime2property_custom_format(spec_fixture):
+    fmt = "%d-%m%Y %H:%M:%S"
     field = fields.DateTime(
-        format="%d-%m%Y %H:%M:%S",
+        format=fmt,
         metadata={
             "pattern": r"^((?:(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2}(?:\.\d+)?))(Z|[\+-]\d{2}:\d{2})?)$"
         },
@@ -619,16 +673,21 @@ def test_datetime2property_custom_format(spec_fixture):
         "type": "string",
         "format": None,
         "pattern": r"^((?:(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2}(?:\.\d+)?))(Z|[\+-]\d{2}:\d{2})?)$",
+        "x-minimum": dt.datetime.min.strftime(fmt),
+        "x-maximum": dt.datetime.max.strftime(fmt),
     }
 
 
 def test_datetime2property_custom_format_missing_regex(spec_fixture):
-    field = fields.DateTime(format="%d-%m%Y %H:%M:%S")
+    fmt = "%d-%m%Y %H:%M:%S"
+    field = fields.DateTime(format=fmt)
     res = spec_fixture.openapi.field2property(field)
     assert res == {
         "type": "string",
         "format": None,
         "pattern": None,
+        "x-minimum": dt.datetime.min.strftime(fmt),
+        "x-maximum": dt.datetime.max.strftime(fmt),
     }
 
 

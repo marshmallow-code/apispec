@@ -4,6 +4,13 @@ Changelog
 unreleased
 **********
 
+Features:
+
+- ``MarshmallowPlugin``: Document the inherent bounds of ``Date`` and
+  ``DateTime`` fields (``datetime.date.min``/``max``,
+  ``datetime.datetime.min``/``max``) as ``x-minimum``/``x-maximum``
+  when no ``Range`` validator sets stricter ones (:issue:`440`).
+
 Other changes:
 
 - Drop support for marshmallow 3, which is EOL.
