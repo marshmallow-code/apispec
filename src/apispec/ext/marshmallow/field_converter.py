@@ -566,52 +566,63 @@ class FieldConverterMixin:
                 ret["enum"].append(None)
         return ret
 
-    def datetime2properties(self, field, **kwargs: typing.Any) -> dict:
+    def datetime2properties(self, field, ret=None, **kwargs: typing.Any) -> dict:
         """Return a dictionary of properties from :class:`DateTime <marshmallow.fields.DateTime` fields.
+
+        For non-ISO formats the OpenAPI ``format`` keyword from the default
+        field mapping (``date-time`` for DateTime fields) does not apply, so
+        we drop it from the accumulator ``ret`` rather than emitting an
+        explicit ``"format": null``: the OpenAPI 3 schema rejects null values
+        for ``format`` and ``pattern`` (#938).
 
         :param Field field: A marshmallow field.
         :rtype: dict
         """
-        ret = {}
+        attributes: dict = {}
         if isinstance(field, marshmallow.fields.DateTime):
             if field.format in ("iso", "iso8601") or field.format is None:
                 # Will return { "type": "string", "format": "date-time" }
                 # as specified inside DEFAULT_FIELD_MAPPING
                 pass
             elif field.format in ("rfc", "rfc822"):
-                ret = {
+                # rfc822 strings do not match the OpenAPI ``date-time`` format
+                # (RFC 3339 / ISO 8601); drop the inherited format and describe
+                # the value with an example and pattern instead.
+                if ret is not None:
+                    ret.pop("format", None)
+                attributes = {
                     "type": "string",
-                    "format": None,
                     "example": "Wed, 02 Oct 2002 13:00:00 GMT",
                     "pattern": r"((Mon|Tue|Wed|Thu|Fri|Sat|Sun), ){0,1}\d{2} "
                     + r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} "
                     + r"(UT|GMT|EST|EDT|CST|CDT|MST|MDT|PST|PDT|(Z|A|M|N)|(\+|-)\d{4})",
                 }
             elif field.format == "timestamp":
-                ret = {
+                attributes = {
                     "type": "number",
                     "format": "float",
                     "example": "1676451245.596",
                     "min": "0",
                 }
             elif field.format == "timestamp_ms":
-                ret = {
+                attributes = {
                     "type": "number",
                     "format": "float",
                     "example": "1676451277514.654",
                     "min": "0",
                 }
             else:
-                ret = {
-                    "type": "string",
-                    "format": None,
-                    "pattern": (
-                        field.metadata["pattern"]
-                        if field.metadata.get("pattern")
-                        else None
-                    ),
-                }
-        return ret
+                # Custom strftime format string: there is no standard OpenAPI
+                # ``format`` value for an arbitrary user pattern, so drop the
+                # inherited ``date-time`` and only emit ``pattern`` when the
+                # user supplied one in metadata.
+                if ret is not None:
+                    ret.pop("format", None)
+                attributes = {"type": "string"}
+                pattern = field.metadata.get("pattern")
+                if pattern:
+                    attributes["pattern"] = pattern
+        return attributes
 
 
 def make_type_list(types):

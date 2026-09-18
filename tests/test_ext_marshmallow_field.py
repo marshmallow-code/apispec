@@ -564,7 +564,6 @@ def test_datetime2property_rfc(spec_fixture):
     res = spec_fixture.openapi.field2property(field)
     assert res == {
         "type": "string",
-        "format": None,
         "example": "Wed, 02 Oct 2002 13:00:00 GMT",
         "pattern": r"((Mon|Tue|Wed|Thu|Fri|Sat|Sun), ){0,1}\d{2} "
         + r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} "
@@ -577,7 +576,6 @@ def test_datetime2property_rfc822(spec_fixture):
     res = spec_fixture.openapi.field2property(field)
     assert res == {
         "type": "string",
-        "format": None,
         "example": "Wed, 02 Oct 2002 13:00:00 GMT",
         "pattern": r"((Mon|Tue|Wed|Thu|Fri|Sat|Sun), ){0,1}\d{2} "
         + r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} "
@@ -617,7 +615,6 @@ def test_datetime2property_custom_format(spec_fixture):
     res = spec_fixture.openapi.field2property(field)
     assert res == {
         "type": "string",
-        "format": None,
         "pattern": r"^((?:(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2}(?:\.\d+)?))(Z|[\+-]\d{2}:\d{2})?)$",
     }
 
@@ -627,9 +624,49 @@ def test_datetime2property_custom_format_missing_regex(spec_fixture):
     res = spec_fixture.openapi.field2property(field)
     assert res == {
         "type": "string",
-        "format": None,
-        "pattern": None,
     }
+
+
+def test_datetime2property_emits_valid_openapi_spec(spec_fixture):
+    """Regression test for #938: DateTime fields with non-iso/non-default
+    formats used to emit ``"format": null`` and/or ``"pattern": null`` in the
+    rendered OpenAPI document, which is rejected by the OpenAPI 3.0 schema
+    (both keywords MUST be strings when present). The full spec is now
+    validated to make sure no null-valued keywords leak through.
+    """
+    from apispec import APISpec
+    from apispec.ext.marshmallow import MarshmallowPlugin
+
+    from .utils import validate_spec
+
+    class S(Schema):
+        rfc = fields.DateTime(format="rfc")
+        custom_no_pattern = fields.DateTime(format="%Y-%m-%dT%H:%M:%S")
+        custom_with_pattern = fields.DateTime(
+            format="%Y-%m-%dT%H:%M:%S",
+            metadata={"pattern": r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$"},
+        )
+
+    spec = APISpec(
+        title="t",
+        version="v",
+        openapi_version="3.0.2",
+        plugins=[MarshmallowPlugin()],
+    )
+    spec.components.schema("S", schema=S)
+    # Round-trip through to_dict so any null leakage is captured. The
+    # validation call below would raise OpenAPIError("...is not valid under
+    # any of the given schemas...") if `format` or `pattern` were emitted
+    # as null on any of the three fields.
+    props = spec.to_dict()["components"]["schemas"]["S"]["properties"]
+    for name, prop in props.items():
+        assert prop.get("format") is not None or "format" not in prop, (
+            f"{name} emits null format"
+        )
+        assert prop.get("pattern") is not None or "pattern" not in prop, (
+            f"{name} emits null pattern"
+        )
+    validate_spec(spec)
 
 
 class TestField2PropertyPluck:
