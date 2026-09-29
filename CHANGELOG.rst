@@ -4,6 +4,12 @@ Changelog
 unreleased
 **********
 
+Bug fixes:
+
+- ``schema2parameters``: Default parameter ``name`` to schema class name or
+  ``"body"`` if not specified (:issue:`829`).
+  Thanks :user:`rd3x` for reporting.
+
 Other changes:
 
 - Drop support for marshmallow 3, which is EOL.

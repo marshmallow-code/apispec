@@ -363,6 +363,28 @@ class TestMarshmallowSchemaToParameters:
         assert param["schema"]["type"] == "array"
         assert param["schema"]["items"] == {"$ref": "#/definitions/User"}
 
+    # json/body is invalid for OpenAPI 3
+    @pytest.mark.parametrize("openapi", ("2.0",), indirect=True)
+    def test_schema_body_name_default(self, openapi):
+        class UserSchema(Schema):
+            name = fields.Str()
+
+        # Schema class defaults to class name
+        res = openapi.schema2parameters(UserSchema, location="body")
+        assert res[0]["name"] == "UserSchema"
+
+        # Schema instance defaults to class name
+        res = openapi.schema2parameters(UserSchema(), location="body")
+        assert res[0]["name"] == "UserSchema"
+
+        # Explicit name overrides default
+        res = openapi.schema2parameters(UserSchema, location="body", name="custom_name")
+        assert res[0]["name"] == "custom_name"
+
+        # Non-schema fallback defaults to "body"
+        res = openapi.schema2parameters("UserRef", location="body")
+        assert res[0]["name"] == "body"
+
     def test_schema_query(self, openapi):
         class UserSchema(Schema):
             name = fields.Str()

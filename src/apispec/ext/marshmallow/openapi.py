@@ -139,8 +139,8 @@ class OpenAPIConverter(FieldConverterMixin):
         self,
         schema,
         *,
-        location,
-        name: str = "body",
+        location: str,
+        name: str | None = None,
         required: bool = False,
         description: str | None = None,
     ):
@@ -157,6 +157,15 @@ class OpenAPIConverter(FieldConverterMixin):
         location = __location_map__.get(location, location)
         # OAS 2 body parameter
         if location == "body":
+            if name is None:
+                if isinstance(schema, marshmallow.Schema):
+                    name = schema.__class__.__name__
+                elif isinstance(schema, type) and issubclass(
+                    schema, marshmallow.Schema
+                ):
+                    name = schema.__name__
+                else:
+                    name = "body"
             param = {
                 "in": location,
                 "required": required,
