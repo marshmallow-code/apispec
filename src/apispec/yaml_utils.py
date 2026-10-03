@@ -36,7 +36,7 @@ def load_yaml_from_docstring(docstring: str) -> dict:
     return yaml.safe_load(yaml_string) or {}
 
 
-PATH_KEYS = {"get", "put", "post", "delete", "options", "head", "patch"}
+PATH_KEYS = {"get", "put", "post", "delete", "options", "head", "patch", "trace"}
 
 
 def load_operations_from_docstring(docstring: str) -> dict:
