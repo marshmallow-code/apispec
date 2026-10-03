@@ -242,21 +242,14 @@ class FieldConverterMixin:
         """
         attributes = {}
 
-        comparable = [
-            validator.comparable
-            for validator in field.validators
-            if hasattr(validator, "comparable")
-        ]
-        if comparable:
-            attributes["enum"] = comparable
-        else:
-            choices = [
-                OrderedSet(validator.choices)
-                for validator in field.validators
-                if hasattr(validator, "choices")
-            ]
-            if choices:
-                attributes["enum"] = list(functools.reduce(operator.and_, choices))
+        choices = []
+        for validator in field.validators:
+            if hasattr(validator, "choices"):
+                choices.append(OrderedSet(validator.choices))
+            elif hasattr(validator, "comparable"):
+                choices.append(OrderedSet([validator.comparable]))
+        if choices:
+            attributes["enum"] = list(functools.reduce(operator.and_, choices))
 
         if field.allow_none:
             enum = attributes.get("enum")

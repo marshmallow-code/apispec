@@ -8,6 +8,9 @@ Bug fixes:
 
 - Recognize ``trace`` operations defined in view docstrings, instead of
   silently dropping them (:pr:`1059`).
+  Thanks :user:`binggao1230` for the PR.
+- Fix intersect ``OneOf`` and ``Equal`` choices in ``field2choices`` (:issue:`198`).
+  Thanks :user:`alexchen-sys` for the PR.
 
 Other changes:
 
@@ -123,7 +126,7 @@ Other changes:
 
 Bug fixes:
 
-- ``MarshmallowPlugin``: Fix handling of ``Nested`` fields with 
+- ``MarshmallowPlugin``: Fix handling of ``Nested`` fields with
   ``allow_none=True`` (:issue:`833`). Thanks :user:`jc-harrison`
   for reporting and :user:`kolditz-senec` for the PR.
 
