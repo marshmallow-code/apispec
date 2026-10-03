@@ -4,6 +4,11 @@ Changelog
 unreleased
 **********
 
+Bug fixes:
+
+- Fix intersect ``OneOf`` and ``Equal`` choices in ``field2choices`` (:issue:`198`).
+  Thanks :user:`alexchen-sys` for the PR.
+
 Other changes:
 
 - Drop support for marshmallow 3, which is EOL.
@@ -118,7 +123,7 @@ Other changes:
 
 Bug fixes:
 
-- ``MarshmallowPlugin``: Fix handling of ``Nested`` fields with 
+- ``MarshmallowPlugin``: Fix handling of ``Nested`` fields with
   ``allow_none=True`` (:issue:`833`). Thanks :user:`jc-harrison`
   for reporting and :user:`kolditz-senec` for the PR.
 
