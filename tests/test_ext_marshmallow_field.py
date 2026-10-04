@@ -8,7 +8,7 @@ from marshmallow import Schema, fields, validate
 from packaging.version import Version
 
 from .schemas import CategorySchema, CustomIntegerField, CustomList, CustomStringField
-from .utils import build_ref, get_schemas
+from .utils import build_ref, get_schemas, validate_spec
 
 MA_VERSION = Version(importlib.metadata.version("marshmallow"))
 
@@ -605,6 +605,15 @@ def test_datetime2property_timestamp_ms(spec_fixture):
         "minimum": 0,
         "example": "1676451277514.654",
     }
+
+
+@pytest.mark.parametrize("timestamp_format", ["timestamp", "timestamp_ms"])
+def test_timestamp_schema_validates(spec_fixture, timestamp_format):
+    class TimestampSchema(Schema):
+        timestamp = fields.DateTime(format=timestamp_format)
+
+    spec_fixture.spec.components.schema("Timestamp", schema=TimestampSchema)
+    assert validate_spec(spec_fixture.spec)
 
 
 def test_datetime2property_custom_format(spec_fixture):
