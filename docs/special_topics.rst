@@ -23,6 +23,74 @@ to the ``component`` parameter. If your'e using ``MarshmallowPlugin``, the ``com
 .. note::
     Be careful about the input that you pass to ``component``. ``apispec`` will not guarantee that the passed fields are valid against the OpenAPI spec.
 
+Documenting JSON Query Parameters
+---------------------------------
+
+OpenAPI 3 allows a parameter to use ``content`` instead of ``schema`` when its
+value is serialized using a media type. For example, a query parameter can
+contain a JSON object rather than individual query parameters for each field.
+The `Parameter Object <https://spec.openapis.org/oas/v3.0.3#parameter-object>`_
+requires exactly one of ``schema`` or ``content``, and ``content`` must contain
+only one media type.
+
+To document this with apispec, pass a parameter dictionary to
+`spec.components.parameter <apispec.core.Components.parameter>` and reference
+it from an operation. A schema registered with ``MarshmallowPlugin`` can be
+referenced inside the media type's ``schema`` using its component name:
+
+.. code-block:: python
+
+    from apispec import APISpec
+    from apispec.ext.marshmallow import MarshmallowPlugin
+    from marshmallow import Schema, fields
+
+    class FilterSchema(Schema):
+        name = fields.String()
+        limit = fields.Integer()
+
+    spec = APISpec(
+        title="Search API",
+        version="1.0.0",
+        openapi_version="3.0.3",
+        plugins=[MarshmallowPlugin()],
+    )
+    spec.components.schema("Filter", schema=FilterSchema)
+    spec.components.parameter(
+        "SearchFilter",
+        "query",
+        {
+            "name": "filter",
+            "description": "A JSON-encoded search filter",
+            "content": {
+                "application/json": {
+                    "schema": "Filter",
+                    "example": {"name": "Ada", "limit": 10},
+                }
+            },
+        },
+    )
+    spec.path(
+        path="/search",
+        operations={
+            "get": {
+                "parameters": ["SearchFilter"],
+                "responses": {"200": {"description": "Search results"}},
+            }
+        },
+    )
+
+The generated parameter contains
+``content.application/json.schema.$ref: '#/components/schemas/Filter'`` and no
+top-level ``schema``. The operation references
+``#/components/parameters/SearchFilter``. Clients send the JSON value in the
+``filter`` query parameter with the usual URL encoding.
+
+``MarshmallowPlugin`` generates ``schema``-based parameters when a schema is
+passed directly to an operation's ``parameters``. Use an explicit parameter
+dictionary as above when documenting ``content``. This example describes the
+API contract; apispec does not deserialize the query parameter. OpenAPI 2 does
+not support parameter ``content``.
+
 Rendering to YAML or JSON
 -------------------------
 
