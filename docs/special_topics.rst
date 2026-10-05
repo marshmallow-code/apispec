@@ -44,9 +44,11 @@ referenced inside the media type's ``schema`` using its component name:
     from apispec.ext.marshmallow import MarshmallowPlugin
     from marshmallow import Schema, fields
 
+
     class FilterSchema(Schema):
         name = fields.String()
         limit = fields.Integer()
+
 
     spec = APISpec(
         title="Search API",
