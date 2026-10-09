@@ -6,6 +6,9 @@ unreleased
 
 Bug fixes:
 
+- ``MarshmallowPlugin``: Emit ``minimum: 0`` rather than the non-standard
+  ``min: "0"`` for ``DateTime`` fields with the ``"timestamp"`` and
+  ``"timestamp_ms"`` formats (:issue:`1064`).
 - Recognize ``trace`` operations defined in view docstrings, instead of
   silently dropping them (:pr:`1059`).
   Thanks :user:`binggao1230` for the PR.
