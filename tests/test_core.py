@@ -14,6 +14,7 @@ from apispec.exceptions import (
 
 from .utils import (
     build_ref,
+    get_callbacks,
     get_examples,
     get_headers,
     get_links,
@@ -22,6 +23,7 @@ from .utils import (
     get_responses,
     get_schemas,
     get_security_schemes,
+    validate_spec,
 )
 
 description = "This is a sample Petstore server.  You can find out more "
@@ -359,6 +361,40 @@ class TestComponents(RefsSchemaTestMixin):
         with pytest.raises(APISpecError, match='Another link with name "GetUser"'):
             spec.components.link("GetUser", link)
 
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_callbacks(self, spec):
+        callback = {
+            "{$request.query.callbackUrl}": {
+                "post": {
+                    "requestBody": {
+                        "content": {"application/json": {"schema": {"type": "string"}}}
+                    },
+                    "responses": {"200": {"description": "callback received"}},
+                }
+            }
+        }
+        spec.components.callback("myCallback", callback)
+        callbacks = get_callbacks(spec)
+        assert "myCallback" in callbacks
+        assert callbacks["myCallback"] == callback
+        assert validate_spec(spec)
+
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_callback_is_chainable(self, spec):
+        spec.components.callback("cb1", {}).callback("cb2", {})
+        callbacks = get_callbacks(spec)
+        assert "cb1" in callbacks
+        assert "cb2" in callbacks
+
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_callback_duplicate_name(self, spec):
+        spec.components.callback("myCallback", {})
+        with pytest.raises(
+            DuplicateComponentNameError,
+            match='Another callback with name "myCallback" is already registered.',
+        ):
+            spec.components.callback("myCallback", {})
+
     def test_security_scheme(self, spec):
         sec_scheme = {"type": "apiKey", "in": "header", "name": "X-API-Key"}
         spec.components.security_scheme("ApiKeyAuth", sec_scheme)
@@ -641,6 +677,62 @@ class TestComponents(RefsSchemaTestMixin):
         links = get_links(spec)
         assert "GetUser" in links
         assert links["GetUser"] == link
+
+    # "callbacks" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_refs_in_callback(self, spec):
+        callback = {
+            "{$request.query.callbackUrl}": {
+                "post": {
+                    "parameters": [
+                        {"name": "param", "in": "query", "schema": "ParamSchema"}
+                    ],
+                    "requestBody": {
+                        "content": {"application/json": {"schema": "BodySchema"}}
+                    },
+                    "responses": {"200": {"description": "OK"}},
+                }
+            }
+        }
+        spec.components.callback("myCallback", callback)
+        resolved_cb = get_callbacks(spec)["myCallback"]
+        op = resolved_cb["{$request.query.callbackUrl}"]["post"]
+        assert op["parameters"][0]["schema"] == build_ref(spec, "schema", "ParamSchema")
+        assert op["requestBody"]["content"]["application/json"]["schema"] == build_ref(
+            spec, "schema", "BodySchema"
+        )
+
+    # Referenced callbacks are only supported in OAS 3.x
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_callbacks_lazy(self, spec):
+        callback = {
+            "{$request.query.callbackUrl}": {
+                "post": {
+                    "responses": {"200": {"description": "OK"}},
+                }
+            }
+        }
+        spec.components.callback("Callback_1", callback, lazy=False)
+        spec.components.callback("Callback_2", callback, lazy=True)
+        callbacks = get_callbacks(spec)
+        assert "Callback_1" in callbacks
+        assert "Callback_2" not in callbacks
+        spec.path(
+            "/path",
+            operations={
+                "post": {
+                    "callbacks": {"myCallback": "Callback_2"},
+                    "responses": {"200": {"description": "OK"}},
+                }
+            },
+        )
+        callbacks = get_callbacks(spec)
+        assert "Callback_2" in callbacks
+        post_op = spec.to_dict()["paths"]["/path"]["post"]
+        assert post_op["callbacks"]["myCallback"] == build_ref(
+            spec, "callback", "Callback_2"
+        )
+        assert validate_spec(spec)
 
 
 class TestPath(RefsSchemaTestMixin):
@@ -987,6 +1079,23 @@ class TestPath(RefsSchemaTestMixin):
             == schema_ref
         )
 
+    # callbacks only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_path_resolve_callback_ref(self, spec):
+        spec.path(
+            "/pet/{petId}",
+            operations={
+                "get": {
+                    "callbacks": {
+                        "onEvent": "EventCallback",
+                    }
+                }
+            },
+        )
+        assert get_paths(spec)["/pet/{petId}"]["get"]["callbacks"][
+            "onEvent"
+        ] == build_ref(spec, "callback", "EventCallback")
+
     # requestBody only exists in OAS 3
     @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
     def test_path_resolve_request_body(self, spec):
@@ -1139,6 +1248,11 @@ class TestPlugins:
                 if not return_none:
                     return {"description": "some header"}
 
+            def callback_helper(self, callback, **kwargs):
+                callback.pop("dummy", None)
+                if not return_none:
+                    return {"description": "some callback"}
+
             def path_helper(self, path, operations, parameters, **kwargs):
                 if not return_none:
                     if path == "/path_1":
@@ -1233,6 +1347,27 @@ class TestPlugins:
             }
         # Check original header is not modified
         assert header == {"dummy": "dummy"}
+
+    @pytest.mark.parametrize("openapi_version", ("3.0.0",))
+    @pytest.mark.parametrize("return_none", (True, False))
+    def test_plugin_callback_helper_is_used(self, openapi_version, return_none):
+        spec = APISpec(
+            title="Swagger Petstore",
+            version="1.0.0",
+            openapi_version=openapi_version,
+            plugins=(self.make_test_plugin(return_none),),
+        )
+        callback = {"dummy": "dummy"}
+        spec.components.callback("myCallback", callback)
+        callbacks = get_callbacks(spec)
+        if return_none:
+            assert callbacks["myCallback"] == {}
+        else:
+            assert callbacks["myCallback"] == {
+                "description": "some callback",
+            }
+        # Check original callback is not modified
+        assert callback == {"dummy": "dummy"}
 
     @pytest.mark.parametrize("openapi_version", ("2.0", "3.0.0"))
     @pytest.mark.parametrize("return_none", (True, False))

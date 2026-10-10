@@ -75,9 +75,10 @@ class SchemaResolver:
 
         """
         for callback in callbacks.values():
-            if isinstance(callback, dict):
+            if isinstance(callback, dict) and "$ref" not in callback:
                 for path in callback.values():
-                    self.resolve_operations(path)
+                    if isinstance(path, dict):
+                        self.resolve_operations(path)
 
     def resolve_parameters(self, parameters):
         """Resolve marshmallow Schemas in a list of OpenAPI `Parameter Objects

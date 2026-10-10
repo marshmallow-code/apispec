@@ -222,6 +222,16 @@ class MarshmallowPlugin(BasePlugin):
         self.resolver.resolve_schema(header)
         return header
 
+    def callback_helper(self, callback: dict, **kwargs: typing.Any):
+        """Callback component helper that allows using a marshmallow
+        :class:`Schema <marshmallow.Schema>` in callback definition.
+
+        :param dict callback: callback fields.
+        """
+        assert self.resolver  # needed for mypy
+        self.resolver.resolve_callback({"": callback})
+        return callback
+
     def operation_helper(
         self,
         path: str | None = None,

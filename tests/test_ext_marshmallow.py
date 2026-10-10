@@ -31,6 +31,7 @@ from .schemas import (
 )
 from .utils import (
     build_ref,
+    get_callbacks,
     get_headers,
     get_parameters,
     get_paths,
@@ -309,6 +310,33 @@ class TestComponentHeaderHelper:
         spec.components.header("Pet", param)
         header = get_headers(spec)["Pet"]
         reference = header["schema"]
+        assert reference == build_ref(spec, "schema", "Pet")
+
+        resolved_schema = spec.components.schemas["Pet"]
+        assert resolved_schema["properties"]["name"]["type"] == "string"
+        assert resolved_schema["properties"]["password"]["type"] == "string"
+        assert resolved_schema["properties"]["id"]["type"] == "integer"
+
+
+class TestComponentCallbackHelper:
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    @pytest.mark.parametrize("schema", [PetSchema, PetSchema()])
+    def test_can_use_schema_in_callback(self, spec, schema):
+        cb = {
+            "{$request.query.callbackUrl}": {
+                "post": {
+                    "requestBody": {
+                        "content": {"application/json": {"schema": schema}}
+                    },
+                    "responses": {"200": {"description": "success"}},
+                }
+            }
+        }
+        spec.components.callback("myCallback", cb)
+        resolved_cb = get_callbacks(spec)["myCallback"]
+        reference = resolved_cb["{$request.query.callbackUrl}"]["post"]["requestBody"][
+            "content"
+        ]["application/json"]["schema"]
         assert reference == build_ref(spec, "schema", "Pet")
 
         resolved_schema = spec.components.schemas["Pet"]

@@ -21,6 +21,7 @@ COMPONENT_SUBSECTIONS = {
         "example": "examples",
         "link": "links",
         "security_scheme": "securitySchemes",
+        "callback": "callbacks",
     },
 }
 
@@ -30,7 +31,7 @@ def build_reference(
 ) -> dict[str, str]:
     """Return path to reference
 
-    :param str component_type: Component type (schema, parameter, response, security_scheme)
+    :param str component_type: Component type (schema, parameter, response, security_scheme, callback)
     :param int openapi_major_version: OpenAPI major version (2 or 3)
     :param str component_name: Name of component to reference
     """
