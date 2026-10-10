@@ -40,6 +40,10 @@ def get_links(spec):
     return spec.to_dict()["components"].get("links", {})
 
 
+def get_request_bodies(spec):
+    return spec.to_dict()["components"].get("requestBodies", {})
+
+
 def get_security_schemes(spec):
     if spec.openapi_version.major < 3:
         return spec.to_dict().get("securityDefinitions", {})

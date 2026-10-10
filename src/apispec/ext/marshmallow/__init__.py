@@ -222,6 +222,17 @@ class MarshmallowPlugin(BasePlugin):
         self.resolver.resolve_schema(header)
         return header
 
+    def request_body_helper(self, request_body: dict, **kwargs: typing.Any):
+        """Request body component helper that allows using a marshmallow
+        :class:`Schema <marshmallow.Schema>` in request body definition.
+
+        :param dict request_body: request_body fields. May contain a marshmallow
+            Schema class or instance.
+        """
+        assert self.resolver  # needed for mypy
+        self.resolver.resolve_schema(request_body)
+        return request_body
+
     def operation_helper(
         self,
         path: str | None = None,

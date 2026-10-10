@@ -34,6 +34,7 @@ from .utils import (
     get_headers,
     get_parameters,
     get_paths,
+    get_request_bodies,
     get_responses,
     get_schemas,
 )
@@ -309,6 +310,22 @@ class TestComponentHeaderHelper:
         spec.components.header("Pet", param)
         header = get_headers(spec)["Pet"]
         reference = header["schema"]
+        assert reference == build_ref(spec, "schema", "Pet")
+
+        resolved_schema = spec.components.schemas["Pet"]
+        assert resolved_schema["properties"]["name"]["type"] == "string"
+        assert resolved_schema["properties"]["password"]["type"] == "string"
+        assert resolved_schema["properties"]["id"]["type"] == "integer"
+
+
+class TestComponentRequestBodyHelper:
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    @pytest.mark.parametrize("schema", [PetSchema, PetSchema()])
+    def test_can_use_schema_in_request_body(self, spec, schema):
+        param = {"content": {"application/json": {"schema": schema}}}
+        spec.components.request_body("Pet", param)
+        body = get_request_bodies(spec)["Pet"]
+        reference = body["content"]["application/json"]["schema"]
         assert reference == build_ref(spec, "schema", "Pet")
 
         resolved_schema = spec.components.schemas["Pet"]
