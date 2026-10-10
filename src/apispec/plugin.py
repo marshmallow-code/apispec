@@ -36,6 +36,14 @@ class BasePlugin:
         """
         raise PluginMethodNotImplementedError
 
+    def callback_helper(self, callback: dict, **kwargs: typing.Any) -> dict | None:
+        """May return callback component description as a dict.
+
+        :param dict callback: Callback fields
+        :param kwargs: All additional keywords arguments sent to `APISpec.callback()`
+        """
+        raise PluginMethodNotImplementedError
+
     def parameter_helper(self, parameter: dict, **kwargs: typing.Any) -> dict | None:
         """May return parameter component description as a dict.
 

@@ -4,6 +4,10 @@ Changelog
 unreleased
 **********
 
+Features:
+
+- Add ``callback`` component (:issue:`245`).
+
 Bug fixes:
 
 - Recognize ``trace`` operations defined in view docstrings, instead of

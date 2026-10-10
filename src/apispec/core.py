@@ -53,12 +53,14 @@ class Components:
         self.examples: dict[str, dict] = {}
         self.links: dict[str, dict] = {}
         self.security_schemes: dict[str, dict] = {}
+        self.callbacks: dict[str, dict] = {}
         self.schemas_lazy: dict[str, dict] = {}
         self.responses_lazy: dict[str, dict] = {}
         self.parameters_lazy: dict[str, dict] = {}
         self.headers_lazy: dict[str, dict] = {}
         self.examples_lazy: dict[str, dict] = {}
         self.links_lazy: dict[str, dict] = {}
+        self.callbacks_lazy: dict[str, dict] = {}
 
         self._subsections = {
             "schema": self.schemas,
@@ -68,6 +70,7 @@ class Components:
             "example": self.examples,
             "link": self.links,
             "security_scheme": self.security_schemes,
+            "callback": self.callbacks,
         }
         self._subsections_lazy = {
             "schema": self.schemas_lazy,
@@ -76,6 +79,7 @@ class Components:
             "header": self.headers_lazy,
             "example": self.examples_lazy,
             "link": self.links_lazy,
+            "callback": self.callbacks_lazy,
         }
 
     def to_dict(self) -> dict[str, dict]:
@@ -329,6 +333,38 @@ class Components:
         self._register_component("security_scheme", component_id, component)
         return self
 
+    def callback(
+        self,
+        component_id: str,
+        component: dict | None = None,
+        *,
+        lazy: bool = False,
+        **kwargs: typing.Any,
+    ) -> Components:
+        """Add a callback which can be referenced.
+
+        :param str component_id: identifier by which callback may be referenced
+        :param dict component: callback fields
+        :param bool lazy: register component only when referenced in the spec
+        :param kwargs: plugin-specific arguments
+
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#callbackObject
+        """
+        if component_id in self.callbacks:
+            raise DuplicateComponentNameError(
+                f'Another callback with name "{component_id}" is already registered.'
+            )
+        ret = deepcopy(component) or {}
+        # Execute all helpers from plugins
+        for plugin in self._plugins:
+            try:
+                ret.update(plugin.callback_helper(ret, **kwargs) or {})
+            except PluginMethodNotImplementedError:
+                continue
+        self._resolve_refs_in_callback(ret)
+        self._register_component("callback", component_id, ret, lazy=lazy)
+        return self
+
     def _resolve_schema(self, obj) -> None:
         """Replace schema reference as string with a $ref if needed
 
@@ -375,6 +411,13 @@ class Components:
             self._resolve_schema(media_type)
             self._resolve_examples(media_type)
 
+    def _resolve_refs_in_callback(self, callback) -> None:
+        # callback is OpenAPI v3+
+        if "$ref" not in callback:
+            for path in callback.values():
+                if isinstance(path, dict):
+                    self.resolve_refs_in_path(path)
+
     def _resolve_refs_in_response(self, response) -> None:
         if self.openapi_version.major < 3:
             self._resolve_schema(response)
@@ -397,10 +440,12 @@ class Components:
                 parameters.append(parameter)
             operation["parameters"] = parameters
         if "callbacks" in operation:
-            for callback in operation["callbacks"].values():
-                if isinstance(callback, dict):
-                    for path in callback.values():
-                        self.resolve_refs_in_path(path)
+            callbacks = {}
+            for name, callback in operation["callbacks"].items():
+                callback = self.get_ref("callback", callback)
+                self._resolve_refs_in_callback(callback)
+                callbacks[name] = callback
+            operation["callbacks"] = callbacks
         if "requestBody" in operation:
             self._resolve_refs_in_request_body(operation["requestBody"])
         if "responses" in operation:
