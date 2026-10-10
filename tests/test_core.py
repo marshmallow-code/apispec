@@ -19,9 +19,11 @@ from .utils import (
     get_links,
     get_parameters,
     get_paths,
+    get_request_bodies,
     get_responses,
     get_schemas,
     get_security_schemes,
+    validate_spec,
 )
 
 description = "This is a sample Petstore server.  You can find out more "
@@ -318,6 +320,40 @@ class TestComponents(RefsSchemaTestMixin):
         ):
             spec.components.header("test_header", {"schema": {"type": "integer"}})
 
+    # Referenced request bodies are only supported in OAS 3.x
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_request_body(self, spec):
+        request_body = {
+            "description": "A pet to add",
+            "content": {"application/json": {"schema": {"type": "string"}}},
+        }
+        spec.components.request_body("test_request_body", request_body.copy())
+        request_bodies = get_request_bodies(spec)
+        assert request_bodies["test_request_body"] == request_body
+        assert validate_spec(spec)
+
+    # Referenced request bodies are only supported in OAS 3.x
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_request_body_is_chainable(self, spec):
+        request_body = {"content": {"application/json": {"schema": {"type": "string"}}}}
+        spec.components.request_body("body1", request_body).request_body(
+            "body2", request_body
+        )
+        request_bodies = get_request_bodies(spec)
+        assert "body1" in request_bodies
+        assert "body2" in request_bodies
+
+    # Referenced request bodies are only supported in OAS 3.x
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_request_body_duplicate_name(self, spec):
+        request_body = {"content": {"application/json": {"schema": {"type": "string"}}}}
+        spec.components.request_body("test_request_body", request_body)
+        with pytest.raises(
+            DuplicateComponentNameError,
+            match='Another request body with name "test_request_body" is already registered.',
+        ):
+            spec.components.request_body("test_request_body", request_body)
+
     # Referenced examples are only supported in OAS 3.x
     @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
     def test_example(self, spec):
@@ -538,6 +574,45 @@ class TestComponents(RefsSchemaTestMixin):
         spec.components.header("header", header)
         self.assert_schema_refs(spec, get_headers(spec)["header"]["schema"])
 
+    # "requestBodies" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_request_body_schema(self, spec):
+        body = {"content": {"application/json": {"schema": "PetSchema"}}}
+        spec.components.request_body("body", body)
+        body = get_request_bodies(spec)["body"]
+        assert body["content"]["application/json"]["schema"] == build_ref(
+            spec, "schema", "PetSchema"
+        )
+
+    # "requestBodies" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_request_body_examples(self, spec):
+        body = {
+            "content": {
+                "application/json": {
+                    "schema": {"type": "string"},
+                    "examples": {"example_1": "Example_1"},
+                }
+            }
+        }
+        spec.components.request_body("body", body)
+        body = get_request_bodies(spec)["body"]
+        assert body["content"]["application/json"]["examples"][
+            "example_1"
+        ] == build_ref(spec, "example", "Example_1")
+
+    # "requestBodies" components section only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_components_resolve_refs_in_request_body_schema(self, spec):
+        body = {
+            "content": {"application/json": {"schema": copy.deepcopy(self.REFS_SCHEMA)}}
+        }
+        spec.components.request_body("body", body)
+        self.assert_schema_refs(
+            spec,
+            get_request_bodies(spec)["body"]["content"]["application/json"]["schema"],
+        )
+
     def test_schema_lazy(self, spec):
         spec.components.schema("Pet_1", {"properties": self.properties}, lazy=False)
         spec.components.schema("Pet_2", {"properties": self.properties}, lazy=True)
@@ -641,6 +716,30 @@ class TestComponents(RefsSchemaTestMixin):
         links = get_links(spec)
         assert "GetUser" in links
         assert links["GetUser"] == link
+
+    # Referenced request bodies are only supported in OAS 3.x
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_request_body_lazy(self, spec):
+        body = {"content": {"application/json": {"schema": {"type": "string"}}}}
+        spec.components.request_body("Body_1", body, lazy=False)
+        spec.components.request_body("Body_2", body, lazy=True)
+        bodies = get_request_bodies(spec)
+        assert "Body_1" in bodies
+        assert "Body_2" not in bodies
+        spec.path(
+            "/path",
+            operations={
+                "post": {
+                    "requestBody": "Body_2",
+                    "responses": {"200": {"description": "OK"}},
+                }
+            },
+        )
+        bodies = get_request_bodies(spec)
+        assert "Body_2" in bodies
+        post_op = spec.to_dict()["paths"]["/path"]["post"]
+        assert post_op["requestBody"] == build_ref(spec, "request_body", "Body_2")
+        assert validate_spec(spec)
 
 
 class TestPath(RefsSchemaTestMixin):
@@ -1004,6 +1103,21 @@ class TestPath(RefsSchemaTestMixin):
             "application/json"
         ]["schema"] == build_ref(spec, "schema", "PetSchema")
 
+    # requestBody only exists in OAS 3
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    def test_path_resolve_request_body_ref(self, spec):
+        spec.path(
+            "/pet/{petId}",
+            operations={
+                "post": {
+                    "requestBody": "PetBody",
+                }
+            },
+        )
+        assert get_paths(spec)["/pet/{petId}"]["post"]["requestBody"] == build_ref(
+            spec, "request_body", "PetBody"
+        )
+
     # "headers" components section only exists in OAS 3
     @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
     def test_path_resolve_response_header(self, spec):
@@ -1139,6 +1253,11 @@ class TestPlugins:
                 if not return_none:
                     return {"description": "some header"}
 
+            def request_body_helper(self, request_body, **kwargs):
+                request_body.pop("dummy", None)
+                if not return_none:
+                    return {"description": "some request body"}
+
             def path_helper(self, path, operations, parameters, **kwargs):
                 if not return_none:
                     if path == "/path_1":
@@ -1233,6 +1352,27 @@ class TestPlugins:
             }
         # Check original header is not modified
         assert header == {"dummy": "dummy"}
+
+    @pytest.mark.parametrize("openapi_version", ("3.0.0",))
+    @pytest.mark.parametrize("return_none", (True, False))
+    def test_plugin_request_body_helper_is_used(self, openapi_version, return_none):
+        spec = APISpec(
+            title="Swagger Petstore",
+            version="1.0.0",
+            openapi_version=openapi_version,
+            plugins=(self.make_test_plugin(return_none),),
+        )
+        request_body = {"dummy": "dummy"}
+        spec.components.request_body("Pet", request_body)
+        request_bodies = get_request_bodies(spec)
+        if return_none:
+            assert request_bodies["Pet"] == {}
+        else:
+            assert request_bodies["Pet"] == {
+                "description": "some request body",
+            }
+        # Check original request_body is not modified
+        assert request_body == {"dummy": "dummy"}
 
     @pytest.mark.parametrize("openapi_version", ("2.0", "3.0.0"))
     @pytest.mark.parametrize("return_none", (True, False))

@@ -4,6 +4,10 @@ Changelog
 unreleased
 **********
 
+Features:
+
+- Add ``requestBody`` component (:issue:`886`).
+
 Bug fixes:
 
 - Recognize ``trace`` operations defined in view docstrings, instead of

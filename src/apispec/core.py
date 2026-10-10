@@ -53,12 +53,14 @@ class Components:
         self.examples: dict[str, dict] = {}
         self.links: dict[str, dict] = {}
         self.security_schemes: dict[str, dict] = {}
+        self.request_bodies: dict[str, dict] = {}
         self.schemas_lazy: dict[str, dict] = {}
         self.responses_lazy: dict[str, dict] = {}
         self.parameters_lazy: dict[str, dict] = {}
         self.headers_lazy: dict[str, dict] = {}
         self.examples_lazy: dict[str, dict] = {}
         self.links_lazy: dict[str, dict] = {}
+        self.request_bodies_lazy: dict[str, dict] = {}
 
         self._subsections = {
             "schema": self.schemas,
@@ -68,6 +70,7 @@ class Components:
             "example": self.examples,
             "link": self.links,
             "security_scheme": self.security_schemes,
+            "request_body": self.request_bodies,
         }
         self._subsections_lazy = {
             "schema": self.schemas_lazy,
@@ -76,6 +79,7 @@ class Components:
             "header": self.headers_lazy,
             "example": self.examples_lazy,
             "link": self.links_lazy,
+            "request_body": self.request_bodies_lazy,
         }
 
     def to_dict(self) -> dict[str, dict]:
@@ -329,6 +333,38 @@ class Components:
         self._register_component("security_scheme", component_id, component)
         return self
 
+    def request_body(
+        self,
+        component_id: str,
+        component: dict | None = None,
+        *,
+        lazy: bool = False,
+        **kwargs: typing.Any,
+    ) -> Components:
+        """Add a request body which can be referenced.
+
+        :param str component_id: identifier by which request body may be referenced
+        :param dict component: request body fields
+        :param bool lazy: register component only when referenced in the spec
+        :param kwargs: plugin-specific arguments
+
+        https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#requestBodyObject
+        """
+        if component_id in self.request_bodies:
+            raise DuplicateComponentNameError(
+                f'Another request body with name "{component_id}" is already registered.'
+            )
+        ret = deepcopy(component) or {}
+        # Execute all helpers from plugins
+        for plugin in self._plugins:
+            try:
+                ret.update(plugin.request_body_helper(ret, **kwargs) or {})
+            except PluginMethodNotImplementedError:
+                continue
+        self._resolve_refs_in_request_body(ret)
+        self._register_component("request_body", component_id, ret, lazy=lazy)
+        return self
+
     def _resolve_schema(self, obj) -> None:
         """Replace schema reference as string with a $ref if needed
 
@@ -371,7 +407,7 @@ class Components:
 
     def _resolve_refs_in_request_body(self, request_body) -> None:
         # requestBody is OpenAPI v3+
-        for media_type in request_body["content"].values():
+        for media_type in request_body.get("content", {}).values():
             self._resolve_schema(media_type)
             self._resolve_examples(media_type)
 
@@ -402,6 +438,9 @@ class Components:
                     for path in callback.values():
                         self.resolve_refs_in_path(path)
         if "requestBody" in operation:
+            operation["requestBody"] = self.get_ref(
+                "request_body", operation["requestBody"]
+            )
             self._resolve_refs_in_request_body(operation["requestBody"])
         if "responses" in operation:
             responses = {}
