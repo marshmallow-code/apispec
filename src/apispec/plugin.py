@@ -52,6 +52,16 @@ class BasePlugin:
         """
         raise PluginMethodNotImplementedError
 
+    def request_body_helper(
+        self, request_body: dict, **kwargs: typing.Any
+    ) -> dict | None:
+        """May return requestBody component description as a dict.
+
+        :param dict request_body: RequestBody fields
+        :param kwargs: All additional keywords arguments sent to `APISpec.request_body()`
+        """
+        raise PluginMethodNotImplementedError
+
     def path_helper(
         self,
         path: str | None = None,
