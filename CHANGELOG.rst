@@ -6,6 +6,7 @@ unreleased
 
 Bug fixes:
 
+- Keep custom field mappings scoped to each ``MarshmallowPlugin`` instance.
 - Recognize ``trace`` operations defined in view docstrings, instead of
   silently dropping them (:pr:`1059`).
   Thanks :user:`binggao1230` for the PR.

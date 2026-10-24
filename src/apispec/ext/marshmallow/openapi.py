@@ -57,6 +57,7 @@ class OpenAPIConverter(FieldConverterMixin):
         schema_name_resolver,
         spec: APISpec,
     ) -> None:
+        self.field_mapping = self.field_mapping.copy()
         self.openapi_version = (
             Version(openapi_version)
             if isinstance(openapi_version, str)
