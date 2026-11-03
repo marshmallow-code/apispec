@@ -243,6 +243,34 @@ class TestComponents(RefsSchemaTestMixin):
         ):
             spec.components.schema("Pet", properties=self.properties)
 
+    @pytest.mark.parametrize("spec", ("3.0.0",), indirect=True)
+    @pytest.mark.parametrize(
+        "component_type",
+        ("schema", "response", "parameter", "header", "example", "link"),
+    )
+    @pytest.mark.parametrize("first_lazy", (False, True))
+    @pytest.mark.parametrize("second_lazy", (False, True))
+    def test_duplicate_component_name_with_lazy_registration(
+        self, spec, component_type, first_lazy, second_lazy
+    ):
+        register = getattr(spec.components, component_type)
+        kwargs = {"location": "query"} if component_type == "parameter" else {}
+        register(
+            "Original", component={"description": "first"}, lazy=first_lazy, **kwargs
+        )
+
+        with pytest.raises(DuplicateComponentNameError):
+            register(
+                "Original",
+                component={"description": "second"},
+                lazy=second_lazy,
+                **kwargs,
+            )
+
+        spec.components.get_ref(component_type, "Original")
+        component = spec.components._subsections[component_type]["Original"]
+        assert component["description"] == "first"
+
     def test_response(self, spec):
         response = {"description": "Pet not found"}
         spec.components.response("NotFound", response)
