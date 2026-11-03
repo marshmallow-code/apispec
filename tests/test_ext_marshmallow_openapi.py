@@ -649,6 +649,23 @@ def test_openapi_tools_validate_v3():
         pytest.fail(str(error))
 
 
+@pytest.mark.parametrize("openapi_version", ("2.0", "3.0.0", "3.1.0"))
+def test_datetime_timestamp_spec_validation(openapi_version):
+    class TimestampSchema(Schema):
+        ts = fields.DateTime(format="timestamp")
+        ts_ms = fields.DateTime(format="timestamp_ms")
+
+    ma_plugin = MarshmallowPlugin()
+    spec = APISpec(
+        title="Test",
+        version="0.1",
+        plugins=(ma_plugin,),
+        openapi_version=openapi_version,
+    )
+    spec.components.schema("Timestamp", schema=TimestampSchema)
+    validate_spec(spec)
+
+
 def test_openapi_converter_openapi_version_types():
     spec = APISpec(title="Pets", version="0.1", openapi_version="2.0")
     converter_with_version = OpenAPIConverter(Version("3.1"), None, spec)

@@ -565,7 +565,7 @@ class FieldConverterMixin:
         :param Field field: A marshmallow field.
         :rtype: dict
         """
-        ret = {}
+        ret: dict[str, typing.Any] = {}
         if isinstance(field, marshmallow.fields.DateTime):
             if field.format in ("iso", "iso8601") or field.format is None:
                 # Will return { "type": "string", "format": "date-time" }
@@ -585,14 +585,14 @@ class FieldConverterMixin:
                     "type": "number",
                     "format": "float",
                     "example": "1676451245.596",
-                    "min": "0",
+                    "minimum": 0,
                 }
             elif field.format == "timestamp_ms":
                 ret = {
                     "type": "number",
                     "format": "float",
                     "example": "1676451277514.654",
-                    "min": "0",
+                    "minimum": 0,
                 }
             else:
                 ret = {
