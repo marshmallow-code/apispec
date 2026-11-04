@@ -676,6 +676,20 @@ class TestFieldValidation:
         custom_list_length = CustomList(
             fields.Str, validate=validate.Length(min=1, max=10)
         )
+        dict_length = fields.Dict(validate=validate.Length(min=1, max=10))
+        dict_equal_length = fields.Dict(validate=validate.Length(equal=5))
+        nested_length = fields.Nested(
+            CategorySchema, validate=validate.Length(min=1, max=10)
+        )
+        nested_many_length = fields.Nested(
+            CategorySchema, many=True, validate=validate.Length(min=1, max=10)
+        )
+        nested_inherited_many_length = fields.Nested(
+            CategorySchema(many=True), validate=validate.Length(min=1, max=10)
+        )
+        pluck_length = fields.Pluck(
+            CategorySchema, "name", validate=validate.Length(min=1, max=10)
+        )
         string_length = fields.Str(validate=validate.Length(min=1, max=10))
         custom_field_length = CustomStringField(validate=validate.Length(min=1, max=10))
         multiple_lengths = fields.Str(
@@ -703,6 +717,11 @@ class TestFieldValidation:
             ("multiple_ranges", {"minimum": 3, "maximum": 7}),
             ("list_length", {"minItems": 1, "maxItems": 10}),
             ("custom_list_length", {"minItems": 1, "maxItems": 10}),
+            ("dict_length", {"minProperties": 1, "maxProperties": 10}),
+            ("dict_equal_length", {"minProperties": 5, "maxProperties": 5}),
+            ("nested_length", {"minProperties": 1, "maxProperties": 10}),
+            ("nested_many_length", {"minItems": 1, "maxItems": 10}),
+            ("nested_inherited_many_length", {"minItems": 1, "maxItems": 10}),
             ("string_length", {"minLength": 1, "maxLength": 10}),
             ("custom_field_length", {"minLength": 1, "maxLength": 10}),
             ("multiple_lengths", {"minLength": 3, "maxLength": 7}),
@@ -717,3 +736,11 @@ class TestFieldValidation:
         for attr, expected_value in properties.items():
             assert attr in result
             assert result[attr] == expected_value
+
+    def test_pluck_length_does_not_add_object_properties(self, spec):
+        spec.components.schema("Validation", schema=self.ValidationSchema)
+        result = get_schemas(spec)["Validation"]["properties"]["pluck_length"]
+
+        assert result["type"] == "string"
+        assert "minProperties" not in result
+        assert "maxProperties" not in result

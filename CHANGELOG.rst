@@ -6,6 +6,8 @@ Changelog
 
 Bug fixes:
 
+- Use object property counts for ``Length`` validators on ``Dict`` and
+  non-many ``Nested`` fields.
 - Recognize ``trace`` operations defined in view docstrings, instead of
   silently dropping them (:pr:`1059`).
   Thanks :user:`binggao1230` for the PR.
