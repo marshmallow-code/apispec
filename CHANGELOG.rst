@@ -15,6 +15,8 @@ Bug fixes:
 Other changes:
 
 - Drop support for marshmallow 3, which is EOL.
+- Drop support for Python 3.10.
+- Test against Python 3.15.
 
 6.10.0 (2026-03-06)
 *******************
