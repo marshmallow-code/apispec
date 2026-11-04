@@ -1,6 +1,6 @@
 [project]
 name = "apispec"
-version = "6.10.0"
+version = "6.10.1"
 description = "A pluggable API specification generator. Currently supports the OpenAPI Specification (f.k.a. the Swagger specification)."
 readme = "README.rst"
 license = "MIT"
@@ -48,12 +48,7 @@ marshmallow = ["marshmallow>=3.18.0"]
 docs = ["marshmallow>=4.0.0", "pyyaml", "sphinx-issues", "furo", "sphinx>=8.1"]
 tests = ["openapi-spec-validator", "pytest"]
 lint = ["pre-commit>=3.5,<5.0"]
-dev = [
-  { include-group = "tests" },
-  { include-group = "lint" },
-  "tox",
-  "tox-uv",
-]
+dev = [{ include-group = "tests" }, { include-group = "lint" }, "tox", "tox-uv"]
 
 [tool.uv]
 default-groups = ["dev"]
@@ -64,13 +59,7 @@ requires = ["flit_core<5"]
 build-backend = "flit_core.buildapi"
 
 [tool.flit.sdist]
-include = [
-  "docs/",
-  "tests/",
-  "CHANGELOG.rst",
-  "SECURITY.md",
-  "tox.ini",
-]
+include = ["docs/", "tests/", "CHANGELOG.rst", "SECURITY.md", "tox.ini"]
 exclude = ["docs/_build/"]
 
 [tool.ruff]
