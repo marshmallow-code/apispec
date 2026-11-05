@@ -93,3 +93,4 @@ Contributors (chronological)
 - Amir Kahriman `@kingdomOfIT <https://github.com/kingdomOfIT>`_
 - Alex Chen `@alexchen-sys <https://github.com/alexchen-sys>`_
 - Bing Gao `@binggao1230 <binggao1230>`_
+- `@hugosmoreira <https://github.com/hugosmoreira>`_
