@@ -364,11 +364,16 @@ class FieldConverterMixin:
             )
         ]
 
-        is_array = isinstance(
-            field, (marshmallow.fields.Nested, marshmallow.fields.List)
-        )
-        min_attr = "minItems" if is_array else "minLength"
-        max_attr = "maxItems" if is_array else "maxLength"
+        if isinstance(field, marshmallow.fields.Dict) or (
+            isinstance(field, marshmallow.fields.Nested)
+            and not isinstance(field, marshmallow.fields.Pluck)
+            and not field.schema.many
+        ):
+            min_attr, max_attr = "minProperties", "maxProperties"
+        elif isinstance(field, (marshmallow.fields.Nested, marshmallow.fields.List)):
+            min_attr, max_attr = "minItems", "maxItems"
+        else:
+            min_attr, max_attr = "minLength", "maxLength"
 
         equal_list = [
             validator.equal for validator in validators if validator.equal is not None
