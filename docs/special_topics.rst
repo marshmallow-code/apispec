@@ -23,6 +23,87 @@ to the ``component`` parameter. If your'e using ``MarshmallowPlugin``, the ``com
 .. note::
     Be careful about the input that you pass to ``component``. ``apispec`` will not guarantee that the passed fields are valid against the OpenAPI spec.
 
+Documenting Multipart Form Data
+-------------------------------
+
+To describe form fields and images in an OpenAPI 3 request, pass a
+``requestBody`` with ``multipart/form-data`` content to
+`spec.path <apispec.APISpec.path>`. The following example uses OpenAPI 3.1
+to describe a PNG image sent as a base64-encoded string, alongside object
+and array fields. No plugin is needed when supplying schema dictionaries.
+
+.. code-block:: python
+
+    from pprint import pprint
+
+    from apispec import APISpec
+
+    spec = APISpec(title="Profiles", version="1.0.0", openapi_version="3.1.0")
+    spec.components.schema("Address", {"type": "object", "properties": {}})
+
+    request_body = {
+        "content": {
+            "multipart/form-data": {
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "string", "format": "uuid"},
+                        "address": {"type": "object", "properties": {}},
+                        "profileImage": {
+                            "type": "string",
+                            "contentMediaType": "image/png",
+                            "contentEncoding": "base64",
+                        },
+                        "children": {"type": "array", "items": {"type": "string"}},
+                        "addresses": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "$ref": "#/components/schemas/Address",
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    }
+    spec.path(
+        path="/profiles",
+        operations={
+            "post": {
+                "requestBody": request_body,
+                "responses": {"201": {"description": "Profile created"}},
+            },
+        },
+    )
+    pprint(spec.to_dict()["paths"]["/profiles"]["post"]["requestBody"])
+
+``contentEncoding`` and ``contentMediaType`` are OpenAPI 3.1 schema keywords.
+This example describes base64 text, not raw image bytes. To describe a raw PNG
+part instead, replace its schema and specify the part's media type in
+``encoding``, alongside ``schema``:
+
+.. code-block:: python
+
+    multipart = request_body["content"]["multipart/form-data"]
+    multipart["schema"]["properties"]["profileImage"] = {}
+    multipart["encoding"] = {"profileImage": {"contentType": "image/png"}}
+    spec.path(
+        path="/profiles",
+        operations={
+            "post": {
+                "requestBody": request_body,
+                "responses": {"201": {"description": "Profile created"}},
+            },
+        },
+    )
+
+These examples generate the API description. Your application handles the
+actual upload and decoding. See the OpenAPI 3.1 documentation on
+`multipart content <https://spec.openapis.org/oas/v3.1.0.html#special-considerations-for-multipart-content>`_
+and the `Encoding Object <https://spec.openapis.org/oas/v3.1.0.html#encoding-object>`_
+for details.
+
 Rendering to YAML or JSON
 -------------------------
 
