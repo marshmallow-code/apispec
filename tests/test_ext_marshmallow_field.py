@@ -144,6 +144,19 @@ def test_field_with_default_and_load_default(spec_fixture):
     assert res["default"] == 42
 
 
+def test_list_contains_only_describes_item_choices(spec_fixture):
+    field = fields.List(
+        fields.String(validate=validate.OneOf(["red", "blue"])),
+        validate=validate.ContainsOnly(["blue", "green"]),
+    )
+    assert field.deserialize(["blue", "blue"]) == ["blue", "blue"]
+    assert field.deserialize([]) == []
+    assert spec_fixture.openapi.field2property(field) == {
+        "type": "array",
+        "items": {"type": "string", "enum": ["blue"]},
+    }
+
+
 def test_field_with_choices(spec_fixture):
     field = fields.Str(validate=validate.OneOf(["freddie", "brian", "john"]))
     res = spec_fixture.openapi.field2property(field)
