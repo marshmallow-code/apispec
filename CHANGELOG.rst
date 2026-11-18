@@ -6,6 +6,7 @@ Changelog
 
 Bug fixes:
 
+- Reject duplicate component names before a lazy component is referenced.
 - Recognize ``trace`` operations defined in view docstrings, instead of
   silently dropping them (:pr:`1059`).
   Thanks :user:`binggao1230` for the PR.
