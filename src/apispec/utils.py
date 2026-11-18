@@ -21,6 +21,7 @@ COMPONENT_SUBSECTIONS = {
         "example": "examples",
         "link": "links",
         "security_scheme": "securitySchemes",
+        "request_body": "requestBodies",
     },
 }
 
