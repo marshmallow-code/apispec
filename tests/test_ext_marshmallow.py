@@ -318,6 +318,45 @@ class TestComponentHeaderHelper:
 
 
 class TestCustomField:
+    def test_custom_field_mapping_is_scoped_to_plugin(self):
+        class CustomField(String):
+            pass
+
+        first_plugin = MarshmallowPlugin()
+        second_plugin = MarshmallowPlugin()
+        APISpec(
+            title="First",
+            version="1.0",
+            openapi_version="3.0.0",
+            plugins=[first_plugin],
+        )
+        APISpec(
+            title="Second",
+            version="1.0",
+            openapi_version="3.0.0",
+            plugins=[second_plugin],
+        )
+
+        first_plugin.map_to_openapi_type(CustomField, "integer", "int32")
+        assert first_plugin.converter.field2property(CustomField()) == {
+            "type": "integer",
+            "format": "int32",
+        }
+        assert second_plugin.converter.field2property(CustomField()) == {
+            "type": "string"
+        }
+
+        third_plugin = MarshmallowPlugin()
+        APISpec(
+            title="Third",
+            version="1.0",
+            openapi_version="3.0.0",
+            plugins=[third_plugin],
+        )
+        assert third_plugin.converter.field2property(CustomField()) == {
+            "type": "string"
+        }
+
     def test_can_use_custom_field_decorator(self, spec_fixture):
         class CustomNameA(Field):
             pass
