@@ -164,7 +164,7 @@ class Components:
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schemaObject
         """
-        if component_id in self.schemas:
+        if component_id in self.schemas or component_id in self.schemas_lazy:
             raise DuplicateComponentNameError(
                 f'Another schema with name "{component_id}" is already registered.'
             )
@@ -194,7 +194,7 @@ class Components:
         :param bool lazy: register component only when referenced in the spec
         :param kwargs: plugin-specific arguments
         """
-        if component_id in self.responses:
+        if component_id in self.responses or component_id in self.responses_lazy:
             raise DuplicateComponentNameError(
                 f'Another response with name "{component_id}" is already registered.'
             )
@@ -226,7 +226,7 @@ class Components:
         :param bool lazy: register component only when referenced in the spec
         :param kwargs: plugin-specific arguments
         """
-        if component_id in self.parameters:
+        if component_id in self.parameters or component_id in self.parameters_lazy:
             raise DuplicateComponentNameError(
                 f'Another parameter with name "{component_id}" is already registered.'
             )
@@ -266,7 +266,7 @@ class Components:
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#headerObject
         """
         ret = deepcopy(component) or {}
-        if component_id in self.headers:
+        if component_id in self.headers or component_id in self.headers_lazy:
             raise DuplicateComponentNameError(
                 f'Another header with name "{component_id}" is already registered.'
             )
@@ -291,7 +291,7 @@ class Components:
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#exampleObject
         """
-        if component_id in self.examples:
+        if component_id in self.examples or component_id in self.examples_lazy:
             raise DuplicateComponentNameError(
                 f'Another example with name "{component_id}" is already registered.'
             )
@@ -309,7 +309,7 @@ class Components:
 
         https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#linkObject
         """
-        if component_id in self.links:
+        if component_id in self.links or component_id in self.links_lazy:
             raise DuplicateComponentNameError(
                 f'Another link with name "{component_id}" is already registered.'
             )
