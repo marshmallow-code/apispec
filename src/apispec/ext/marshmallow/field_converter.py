@@ -244,6 +244,8 @@ class FieldConverterMixin:
 
         choices = []
         for validator in field.validators:
+            if isinstance(validator, marshmallow.validate.ContainsOnly):
+                continue  # choices constrain the elements, not the whole collection
             if hasattr(validator, "choices"):
                 choices.append(OrderedSet(validator.choices))
             elif hasattr(validator, "comparable"):
@@ -500,7 +502,14 @@ class FieldConverterMixin:
         """
         ret = {}
         if isinstance(field, marshmallow.fields.List):
-            ret["items"] = self.field2property(field.inner)
+            items = self.field2property(field.inner)
+            for validator in field.validators:
+                if isinstance(validator, marshmallow.validate.ContainsOnly):
+                    choices = validator.choices
+                    if "enum" in items:
+                        choices = [value for value in items["enum"] if value in choices]
+                    items["enum"] = list(choices)
+            ret["items"] = items
         return ret
 
     def dict2properties(self, field, **kwargs: typing.Any) -> dict:
